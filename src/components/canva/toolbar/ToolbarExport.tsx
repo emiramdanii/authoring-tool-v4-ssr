@@ -53,7 +53,7 @@ export function ToolbarExport() {
     isExporting,
   } = useExportActions();
 
-  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
+  // Phase 3: setActivePanel migrated → panelRequest; soundOn stays until Phase 5
   const soundOn = useAuthoringStore((s) => Object.values(s.suara).some(Boolean));
 
   return (
@@ -89,7 +89,7 @@ export function ToolbarExport() {
             </div>
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => setActivePanel('preview')}
+            onClick={() => useCanvaStore.setState({ panelRequest: 'preview' })}
             className="px-3 py-2.5 gap-2.5 focus:bg-cyan-500/10 cursor-pointer"
           >
             <MonitorPlay size={14} className="text-cyan-400 flex-shrink-0" />

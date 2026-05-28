@@ -468,7 +468,7 @@ export function useAutoGenerate() {
         if (schemaPageIdx >= 0) targetIdx = schemaPageIdx;
 
         // Navigate to canva and select the relevant page
-        useAuthoringStore.getState().setActivePanel('canva');
+        useCanvaStore.setState({ panelRequest: 'canva' });
         useCanvaStore.getState().goPage(targetIdx);
 
         toast.success('Materi berhasil di-generate! Lihat hasilnya di Canva.', {
@@ -476,7 +476,7 @@ export function useAutoGenerate() {
           action: {
             label: 'Lihat Hasil di Canva',
             onClick: () => {
-              useAuthoringStore.getState().setActivePanel('canva');
+              useCanvaStore.setState({ panelRequest: 'canva' });
               useCanvaStore.getState().goPage(targetIdx);
             },
           },
@@ -586,7 +586,7 @@ export function useAutoGenerate() {
       action: {
         label: 'Lihat Hasil di Canva',
         onClick: () => {
-          useAuthoringStore.getState().setActivePanel('canva');
+          useCanvaStore.setState({ panelRequest: 'canva' });
           const canvaPages = useCanvaStore.getState().pages;
           const schemaPageIdx = canvaPages.findIndex(
             (p) => p.schema && p.schema.blocks.length > 0
@@ -697,7 +697,7 @@ export function useAutoGenerate() {
         const targetIdx = canvaPages.findIndex(
           (p) => p.schema && p.schema.blocks.length > 0
         );
-        useAuthoringStore.getState().setActivePanel('canva');
+        useCanvaStore.setState({ panelRequest: 'canva' });
         useCanvaStore.getState().goPage(targetIdx >= 0 ? targetIdx : 0);
 
         setAppliedCount((c) => c + 1);
@@ -706,7 +706,7 @@ export function useAutoGenerate() {
           action: {
             label: 'Lihat di Canva',
             onClick: () => {
-              useAuthoringStore.getState().setActivePanel('canva');
+              useCanvaStore.setState({ panelRequest: 'canva' });
               useCanvaStore.getState().goPage(targetIdx >= 0 ? targetIdx : 0);
             },
           },
@@ -789,7 +789,7 @@ export function useAutoGenerate() {
           store.setState({ refleksi: refleksiData, dirty: true });
 
           // 4. Navigate to canvas
-          useAuthoringStore.getState().setActivePanel('canva');
+          useCanvaStore.setState({ panelRequest: 'canva' });
           const canvaPages = useCanvaStore.getState().pages;
           const targetIdx = canvaPages.findIndex(p => p.label?.startsWith(`Pertemuan ${nomor}`));
           useCanvaStore.getState().goPage(targetIdx >= 0 ? targetIdx : 0);

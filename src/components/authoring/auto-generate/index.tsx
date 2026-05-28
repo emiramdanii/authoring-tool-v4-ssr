@@ -18,6 +18,7 @@ import {
 import { renderPreviewContent } from './previews';
 import { useAutoGenerate } from './use-auto-generate';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import { ShowTransition } from '@/lib/transition';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -536,7 +537,7 @@ export default function AutoGenerate() {
               </div>
             </div>
             <button
-              onClick={() => useAuthoringStore.getState().setActivePanel('canva')}
+              onClick={() => useCanvaStore.setState({ panelRequest: 'canva' })}
               className="px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2 flex-shrink-0"
             >
               Buka Canva untuk Edit <ArrowRight size={14} />

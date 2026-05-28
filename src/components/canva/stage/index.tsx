@@ -24,7 +24,6 @@ import {
 import { screenToPct } from '@/lib/virtual-canvas';
 import CanvasEmptyState from '../CanvasEmptyState';
 import BatchOperationsBar from './BatchOperationsBar';
-import { useAuthoringStore } from '@/store/authoring-store';
 
 // ═══════════════════════════════════════════════════════════════
 // STAGE — Virtual Canvas editing area with zoom + pan
@@ -458,7 +457,7 @@ export default function Stage() {
                     <Plus size={13} /> Tambah Block
                   </button>
                   <button
-                    onClick={() => useAuthoringStore.getState().setActivePanel('autogen')}
+                    onClick={() => useCanvaStore.setState({ panelRequest: 'autogen' })}
                     className="flex-1 px-3 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/25 text-purple-400 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
                   >
                     <Sparkles size={13} /> Auto-Generate

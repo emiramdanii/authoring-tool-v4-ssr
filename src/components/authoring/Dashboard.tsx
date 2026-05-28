@@ -113,7 +113,8 @@ export default function Dashboard() {
   const activePreset = useAuthoringStore((s) => s.activePreset);
   const calcCompleteness = useAuthoringStore((s) => s.calcCompleteness);
   const applyFullPreset = useAuthoringStore((s) => s.applyFullPreset);
-  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
+  // Phase 3: setActivePanel migrated → panelRequest
+  const setActivePanel = (_panel: string) => useCanvaStore.setState({ panelRequest: _panel });
   const newProject = useAuthoringStore((s) => s.newProject);
   const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
   const { saveProject, currentProjectId } = useProjectManager();

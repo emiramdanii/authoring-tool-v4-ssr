@@ -3,6 +3,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { Check, ArrowRight } from 'lucide-react';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
@@ -66,8 +67,8 @@ function getCurrentStepIndex(activePanel: PanelId): number {
 }
 
 export default function WorkflowStepIndicator() {
+  // Phase 3: activePanel read stays (source of truth for current panel), write migrated → panelRequest
   const activePanel = useAuthoringStore((s) => s.activePanel);
-  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
   const currentStepIndex = getCurrentStepIndex(activePanel);
   const { isSederhana } = useTeacherMode();
 
@@ -104,7 +105,7 @@ export default function WorkflowStepIndicator() {
           <React.Fragment key={step.id}>
             {/* Step circle + label — clickable for navigation */}
             <button
-              onClick={() => setActivePanel(step.navigateTo)}
+              onClick={() => useCanvaStore.setState({ panelRequest: step.navigateTo })}
               className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer focus-ring rounded-sm"
               title={`Ke ${stepLabel}`}
             >

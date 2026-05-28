@@ -47,7 +47,7 @@ export default function LivePreview() {
   const initialDetectDone = useRef(false);
 
   // ── Store subscriptions ────────────────────────────────────
-  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
+  // Phase 3: setActivePanel migrated → panelRequest; dirty/activePreset stay until Phase 5
   const dirty = useAuthoringStore((s) => s.dirty);
   const activePreset = useAuthoringStore((s) => s.activePreset);
 
@@ -139,7 +139,7 @@ export default function LivePreview() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setActivePanel('canva');
+        useCanvaStore.setState({ panelRequest: 'canva' });
         return;
       }
       // Arrow keys for page navigation in preview
@@ -154,7 +154,7 @@ export default function LivePreview() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setActivePanel, previewMode, activeSlide, canvaPages, navigatePrevPage, navigateNextPage]);
+  }, [previewMode, activeSlide, canvaPages, navigatePrevPage, navigateNextPage]);
 
   // ── Determine if we should show the mode selector at all ──
   // If no schema preset, and user hasn't manually selected, just show "Preview"
@@ -185,7 +185,7 @@ export default function LivePreview() {
 
         {/* ── Kembali ke Editor button (8.4 — prominent) ──────── */}
         <button
-          onClick={() => setActivePanel('canva')}
+          onClick={() => useCanvaStore.setState({ panelRequest: 'canva' })}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 transition-colors"
           title="Kembali ke Editor (Esc)"
         >
@@ -197,21 +197,21 @@ export default function LivePreview() {
 
         {/* ── Quick navigation ─────────────────────────────────── */}
         <button
-          onClick={() => setActivePanel('dashboard')}
+          onClick={() => useCanvaStore.setState({ panelRequest: 'dashboard' })}
           className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
           title="Dashboard"
         >
           <Home size={13} />
         </button>
         <button
-          onClick={() => setActivePanel('dokumen')}
+          onClick={() => useCanvaStore.setState({ panelRequest: 'dokumen' })}
           className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
           title="Edit Dokumen (CP/TP/ATP)"
         >
           <FileText size={13} />
         </button>
         <button
-          onClick={() => setActivePanel('konten')}
+          onClick={() => useCanvaStore.setState({ panelRequest: 'konten' })}
           className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
           title="Edit Konten (Kuis/Game/Materi)"
         >

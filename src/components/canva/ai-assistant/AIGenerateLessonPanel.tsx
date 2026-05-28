@@ -16,7 +16,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { isEnabled } from '@/config/feature-flags';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import {
   useAILessonGeneration,
   type AIGeneratedLesson,
@@ -166,7 +166,7 @@ function generateBlocksForAIPage(
 
 export default function AIGenerateLessonPanel() {
   const { loading, result, error, generateLesson, clear } = useAILessonGeneration();
-  const meta = useAuthoringStore(s => s.meta);
+  const { meta } = useSchemaContext();
   const _pushHistory = useCanvaStore(s => s._pushHistory);
 
   const [topik, setTopik] = useState('');

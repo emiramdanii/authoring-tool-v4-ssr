@@ -4,7 +4,6 @@ import React, { useState, useCallback } from 'react';
 import { FadeIn, ScaleIn, SlideIn, StaggerChildren } from '@/lib/transition';
 import { Sparkles, FileText, Plus, Lightbulb } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
 
@@ -36,8 +35,9 @@ export default function CanvasEmptyState() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const { isSederhana } = useTeacherMode();
 
+  // Phase 3: Migrated setActivePanel → panelRequest
   const handleAutoGenerate = useCallback(() => {
-    useAuthoringStore.getState().setActivePanel('autogen');
+    useCanvaStore.setState({ panelRequest: 'autogen' });
   }, []);
 
   const handleBlankPage = useCallback(() => {

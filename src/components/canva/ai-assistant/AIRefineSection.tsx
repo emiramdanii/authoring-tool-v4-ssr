@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { useAIRefine, getApplicableRefineModes, REFINE_MODES, type RefineMode } from './use-ai-refine';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { Sparkles, Loader2, CheckCircle2, AlertCircle, RotateCcw, MessageSquare } from 'lucide-react';
@@ -28,7 +28,7 @@ export default function AIRefineSection() {
   const updateSchemaBlock = useCanvaStore(s => s.updateSchemaBlock);
   const teacherMode = useCanvaStore(s => s.teacherMode);
 
-  const meta = useAuthoringStore(s => s.meta);
+  const { meta } = useSchemaContext();
   const mapel = meta.mapel || 'PPKn';
   const kelas = meta.kelas || 'Kelas VII';
 

@@ -7,7 +7,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { isEnabled } from '@/config/feature-flags';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { useAIAssistant, type AIAction, type AIGenerateParams } from './use-ai-assistant';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import {
@@ -71,7 +71,7 @@ export default function AIAssistantPanel() {
   const selectedBlockType = useCanvaStore((s) => s.selectedBlockType);
   const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
 
-  const meta = useAuthoringStore((s) => s.meta);
+  const { meta } = useSchemaContext();
   const mapel = meta.mapel || 'PPKn';
   const kelas = meta.kelas || 'Kelas VII';
 

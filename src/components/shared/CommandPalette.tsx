@@ -184,7 +184,6 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     const commands: CommandItem[] = [];
     const blockMetas = getAllBlockMeta();
     const store = useCanvaStore.getState();
-    const authStore = useAuthoringStore.getState();
 
     // ── Block commands (content blocks) ──────────────────────
     // Use capability registry as single source of truth for interactive/game types
@@ -435,7 +434,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         description: 'Pilih preset, kelengkapan, quick actions',
         icon: <Home size={16} className="text-purple-400" />,
         category: 'navigation',
-        action: () => useAuthoringStore.getState().setActivePanel('dashboard'),
+        action: () => useCanvaStore.setState({ panelRequest: 'dashboard' }),
       },
       {
         id: 'nav-dokumen',
@@ -443,7 +442,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         description: 'Edit CP, TP, ATP, Alur Pembelajaran',
         icon: <FileText size={16} className="text-purple-400" />,
         category: 'navigation',
-        action: () => useAuthoringStore.getState().setActivePanel('dokumen'),
+        action: () => useCanvaStore.setState({ panelRequest: 'dokumen' }),
       },
       {
         id: 'nav-konten',
@@ -451,7 +450,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         description: 'Edit Kuis, Game, Materi, Skenario',
         icon: <BookOpen size={16} className="text-purple-400" />,
         category: 'navigation',
-        action: () => useAuthoringStore.getState().setActivePanel('konten'),
+        action: () => useCanvaStore.setState({ panelRequest: 'konten' }),
       },
       {
         id: 'nav-canva',
@@ -459,7 +458,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         description: 'Kembali ke editor visual',
         icon: <Layout size={16} className="text-purple-400" />,
         category: 'navigation',
-        action: () => useAuthoringStore.getState().setActivePanel('canva'),
+        action: () => useCanvaStore.setState({ panelRequest: 'canva' }),
       },
       {
         id: 'nav-sisipkan-tab',
@@ -468,7 +467,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         icon: <Layout size={16} className="text-teal-400" />,
         category: 'navigation',
         action: () => {
-          useAuthoringStore.getState().setActivePanel('canva');
+          useCanvaStore.setState({ panelRequest: 'canva' });
           const canvaState = useCanvaStore.getState();
           if (!canvaState.leftPanelOpen) canvaState.toggleLeftPanel();
           canvaState.setLeftTab('add-block');
@@ -481,7 +480,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         icon: <Layout size={16} className="text-sky-400" />,
         category: 'navigation',
         action: () => {
-          useAuthoringStore.getState().setActivePanel('canva');
+          useCanvaStore.setState({ panelRequest: 'canva' });
           const canvaState = useCanvaStore.getState();
           if (!canvaState.leftPanelOpen) canvaState.toggleLeftPanel();
           canvaState.setLeftTab('pages');
@@ -493,7 +492,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         description: 'Generate konten otomatis dengan AI',
         icon: <AutoGenIcon size={16} className="text-purple-400" />,
         category: 'navigation',
-        action: () => useAuthoringStore.getState().setActivePanel('autogen'),
+        action: () => useCanvaStore.setState({ panelRequest: 'autogen' }),
       },
       {
         id: 'nav.ai-assistant',
@@ -517,7 +516,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         description: 'Preview tampilan siswa lengkap',
         icon: <MonitorPlay size={16} className="text-purple-400" />,
         category: 'navigation',
-        action: () => useAuthoringStore.getState().setActivePanel('preview'),
+        action: () => useCanvaStore.setState({ panelRequest: 'preview' }),
       },
       {
         id: 'nav-import',
@@ -525,7 +524,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         description: 'Import Excel/JSON, Export HTML',
         icon: <Download size={16} className="text-purple-400" />,
         category: 'navigation',
-        action: () => useAuthoringStore.getState().setActivePanel('import'),
+        action: () => useCanvaStore.setState({ panelRequest: 'import' }),
       },
     );
 

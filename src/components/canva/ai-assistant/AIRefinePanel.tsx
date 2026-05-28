@@ -32,7 +32,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { toast } from 'sonner';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { useAIAssistant, type AIAction, type AIGenerateParams } from '../ai-assistant/use-ai-assistant';
@@ -119,7 +119,7 @@ const REFINEMENT_OPTIONS: RefinementOption[] = [
 export default function AIRefinePanel() {
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode;
-  const meta = useAuthoringStore(s => s.meta);
+  const { meta } = useSchemaContext();
 
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);

@@ -1,18 +1,17 @@
 'use client';
 
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
 // TOOLBAR NAV — Project name + back button
 // ═══════════════════════════════════════════════════════════════
+// Phase 3: Migrated setActivePanel → panelRequest (no useAuthoringStore)
 
 export function ToolbarNav() {
   const pages = useCanvaStore((s) => s.pages);
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
-  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
   const page = pages[currentPageIndex];
   const label = page?.label || 'Untitled';
 
@@ -22,7 +21,7 @@ export function ToolbarNav() {
         variant="ghost"
         size="icon"
         className="h-7 w-7 text-app-muted hover:text-app-primary"
-        onClick={() => setActivePanel('dashboard')}
+        onClick={() => useCanvaStore.setState({ panelRequest: 'dashboard' })}
         title="Kembali ke Dashboard"
       >
         <ChevronLeft size={14} />

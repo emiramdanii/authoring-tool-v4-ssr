@@ -552,7 +552,7 @@ export default function TemplateMarketplace({
 
       // Navigate to Canva editor after a short delay
       setTimeout(() => {
-        useAuthoringStore.getState().setActivePanel('canva');
+        useCanvaStore.setState({ panelRequest: 'canva' });
       }, 300);
     } catch (err) {
       toast.error('Gagal menerapkan template. Silakan coba lagi.');

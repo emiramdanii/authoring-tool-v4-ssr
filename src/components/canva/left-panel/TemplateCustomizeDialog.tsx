@@ -31,7 +31,7 @@ import {
   Merge,
   Layers,
 } from 'lucide-react';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { useCanvaStore } from '@/store/canva-store';
 import {
   type LessonTemplate,
@@ -79,7 +79,7 @@ export default function TemplateCustomizeDialog({
 }: TemplateCustomizeDialogProps) {
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode;
-  const meta = useAuthoringStore(s => s.meta);
+  const { meta } = useSchemaContext();
   const existingPageCount = useCanvaStore(s => s.pages.length);
 
   const [config, setConfig] = useState<TemplateCustomization>(() => ({

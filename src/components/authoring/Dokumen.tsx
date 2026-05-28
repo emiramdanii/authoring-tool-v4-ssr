@@ -21,6 +21,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthoringStore, VERB_OPTIONS, COLOR_OPTIONS } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
@@ -652,7 +653,7 @@ export default function Dokumen() {
 
       <div className="mt-6 pt-4 border-t border-app-border flex justify-end">
         <button
-          onClick={() => useAuthoringStore.getState().setActivePanel('konten')}
+          onClick={() => useCanvaStore.setState({ panelRequest: 'konten' })}
           className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
         >
           {isSederhana ? 'Selanjutnya: Tambah Materi →' : 'Selanjutnya: Tambah Konten →'}

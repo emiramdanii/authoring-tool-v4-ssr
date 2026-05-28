@@ -196,9 +196,9 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
       toast.success(`Project "${title.trim()}" berhasil dibuat!`);
       onOpenChange(false);
 
-      // Navigate to Canva editor after a short delay (let modal close animation finish)
+      // Phase 3: Navigate to Canva editor via panelRequest
       setTimeout(() => {
-        useAuthoringStore.getState().setActivePanel('canva');
+        useCanvaStore.setState({ panelRequest: 'canva' });
       }, 300);
 
       // Reset wizard state

@@ -272,7 +272,8 @@ export default function BsnpCompliancePanel() {
   const kuis = useAuthoringStore((s) => s.kuis);
   const games = useAuthoringStore((s) => s.games);
   const alur = useAuthoringStore((s) => s.alur);
-  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
+  // Phase 3: setActivePanel migrated → panelRequest; content reads stay until Phase 5
+  const setActivePanel = (_panel: string) => useCanvaStore.setState({ panelRequest: _panel });
 
   // Get pages from canva store to check for schema blocks
   const pages = useCanvaStore((s) => s.pages);
@@ -474,8 +475,8 @@ export default function BsnpCompliancePanel() {
   );
 
   const handleNavigate = useCallback((panel: PanelId) => {
-    setActivePanel(panel);
-  }, [setActivePanel]);
+    useCanvaStore.setState({ panelRequest: panel });
+  }, []);
 
   // Feature flag guard — after all hooks, before JSX
   if (!isEnabled('bsnpCompliance')) return null;

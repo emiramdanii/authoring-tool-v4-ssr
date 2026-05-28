@@ -30,7 +30,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { toast } from 'sonner';
 import {
   TEMPLATE_PATTERNS,
@@ -72,7 +72,7 @@ interface AITemplateGeneratorProps {
 export default function AITemplateGenerator({ onTemplateGenerated, onClose }: AITemplateGeneratorProps) {
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode;
-  const meta = useAuthoringStore(s => s.meta);
+  const { meta } = useSchemaContext();
   const loadCustomSchema = useCanvaStore(s => s.loadCustomSchema);
   const _pushHistory = useCanvaStore(s => s._pushHistory);
 
