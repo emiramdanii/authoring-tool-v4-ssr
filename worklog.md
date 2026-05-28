@@ -522,3 +522,27 @@ Stage Summary:
 - Phase 3 meta migration: 6 AI panels migrated from direct useAuthoringStore → useSchemaContext()
 - Remaining useAuthoringStore reads are intentional: AuthoringTool.tsx (panel router), Dashboard/Dokumen (content data), LivePreview (dirty/activePreset), BsnpCompliancePanel (content data), sync infrastructure
 - Phase 4 (Safe Page Split / Overflow Policy) is next
+---
+Task ID: 4
+Agent: Main
+Task: Phase 4 — Safe Page Split / Overflow Policy hardening
+
+Work Log:
+- Audited entire overflow/split infrastructure: SceneOverflowEngine, BlockMeasurer, CompressionEngine, page-ops-slice, guided-patch, etc.
+- Identified 7 issues: duplicate PAGE_DENSITY_RULES, hardcoded '16:9', reject undo ghost entries, dead OverflowDialog, no batch undo for auto-split, stale dynamic imports in KontenOverflowBanner
+- Created src/core/template/density-rules.ts as single source for PAGE_DENSITY_RULES, both LearningUnit.ts and TemplateValidator.ts now re-export from it
+- Fixed 2 hardcoded getSceneResolution('16:9') calls in page-ops-slice.ts → getSceneResolution(get().ratioId || '16:9')
+- Fixed 'reject' overflow policy: defer _pushHistory() until after overflow check passes, avoiding ghost undo entries
+- Added batch undo for auto-split loop: set _skipHistory=true during loop, restore after, single undo reverts all splits
+- Deleted OverflowDialog.deprecated.tsx (zero consumers, stale imports)
+- Fixed KontenOverflowBanner: replaced await import() dynamic imports with static imports
+- Build: next build ✅ zero new errors
+- Git push: zero conflicts
+
+Stage Summary:
+- Phase 4 complete: 7 files changed, 90 insertions, 210 deletions (net -120 lines — cleaner codebase)
+- PAGE_DENSITY_RULES now has single source (density-rules.ts) with defaultQuizQuestionsPerPage
+- Overflow policy 'reject' no longer creates ghost undo entries
+- Auto-split sequence is now batch-undoable as single operation
+- Multi-ratio (9:16, 1:1, A4, 4:3) support for merge+promote operations
+- Phase 5 (Cleanup Dual Source) is next
