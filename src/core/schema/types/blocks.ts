@@ -669,6 +669,66 @@ export interface StudiBlock extends BaseBlock {
   accentColor?: string;
 }
 
+// ── Tab Icons Schema (Interactive tabs with icons) ────────────
+// Phase 5-G: Presentation module — previously AuthoringStore Module type 'tab-icons'.
+// Different from FtabBlock which uses nested SchemaBlock[] content;
+// this uses flat text fields (isi, poin, refleksi) per tab.
+
+export interface TabIconsBlock extends BaseBlock {
+  type: 'tab-icons';
+  title: string;
+  intro?: string;
+  /** Layout variant: horizontal, vertical, pills */
+  layout?: 'horizontal' | 'vertical' | 'pills';
+  /** Animation style for tab switching */
+  animation?: 'fade' | 'slide-up' | 'zoom' | 'bounce';
+  tabs: Array<{
+    icon: string;
+    judul: string;
+    warna: string;
+    isi: string;
+    poin?: string[];
+    refleksi?: string;
+  }>;
+  accentColor?: string;
+}
+
+// ── Accordion Schema (Expandable sections) ────────────────────
+// Phase 5-G: Presentation module — previously AuthoringStore Module type 'accordion'.
+// Different from TabelAccordionBlock which has table-like label/value details;
+// this uses simple icon/judul/isi items.
+
+export interface AccordionBlock extends BaseBlock {
+  type: 'accordion';
+  title: string;
+  intro?: string;
+  items: Array<{
+    icon: string;
+    judul: string;
+    isi: string;
+  }>;
+  accentColor?: string;
+}
+
+// ── Infografis Schema (Visual info cards) ─────────────────────
+// Phase 5-G: Presentation module — previously AuthoringStore Module type 'infografis'.
+// No prior schema equivalent — this is a brand new block type.
+
+export interface InfografisBlock extends BaseBlock {
+  type: 'infografis';
+  title: string;
+  intro?: string;
+  /** Layout variant: grid, list, timeline */
+  layout?: 'grid' | 'list' | 'timeline';
+  kartu: Array<{
+    icon: string;
+    judul: string;
+    isi: string;
+    warna?: string;
+  }>;
+  accentColor?: string;
+}
+
 // ── MateriBlok (Legacy) Schema ────────────────────────────────
 // Used by MateriBlokRenderer inside MateriSection content
 

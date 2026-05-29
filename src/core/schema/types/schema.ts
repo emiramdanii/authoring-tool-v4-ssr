@@ -45,6 +45,9 @@ import type {
   StatistikBlock,
   StudiBlock,
   MateriBlokBlock,
+  TabIconsBlock,
+  AccordionBlock,
+  InfografisBlock,
 } from './blocks';
 
 import type { BaseBlock } from './base';
@@ -94,6 +97,9 @@ export type SchemaBlock =
   | StatistikBlock
   | StudiBlock
   | MateriBlokBlock
+  | TabIconsBlock
+  | AccordionBlock
+  | InfografisBlock
   | BaseBlock;
 
 // ── Tab Definition ──────────────────────────────────────────────

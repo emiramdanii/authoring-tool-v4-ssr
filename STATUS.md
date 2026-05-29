@@ -39,6 +39,7 @@
 | 16. P3: Migrate matching+truefalse → schema game blocks | ✅ DONE | Phase 5 |
 | 17. P4: Remove module-slice write actions (read-only projection) | ✅ DONE | Phase 5 |
 | 18. P5: Fix double-write on load (system-slice vs persistence-slice) | ✅ DONE | Phase 5 |
+| 19. P6: Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis) | ✅ DONE | Phase 5 |
 
 ---
 
@@ -186,7 +187,8 @@
 - P5: Fixed double-write on load — system-slice.loadFromStorage() now only loads non-schema fields (cp, atp, petunjuk, penutup, suara, guruPw). Schema-backed fields are derived from schema via persistence-slice + startProjectionSync(). Added modules+games to projection patch. Removed duplicate CanvaStore.loadFromStorage() call from AuthoringTool.tsx. Fixed loadProject() to not overwrite schema-backed fields.
 
 **Remaining (Future Work)**:
-- Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis) so they can be schema-first
+- ~~Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis)~~ ✅ DONE (Phase 5-G)
+- Create dedicated renderers for tab-icons, accordion, infografis (currently using temp renderers)
 - Migrate preset-slice writes (applyFullPreset) to schema-first (requires preset format refactor)
 - Convert import/restore bulk writes to schema-first
 - Full activePanel extraction from AuthoringStore to dedicated navigation store

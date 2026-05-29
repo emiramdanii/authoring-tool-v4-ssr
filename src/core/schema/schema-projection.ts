@@ -129,6 +129,11 @@ export function deriveProjectionFromPages(pages: CanvaPage[]): SchemaProjection 
         case 'drag-drop-game':
         case 'crossword-game':
         case 'team-buzzer-game':
+        // Phase 5-G: Presentation module blocks → modules projection
+        case 'tab-icons':
+        case 'accordion':
+        case 'timeline':
+        case 'infografis':
           deriveGameBlockToModules(block, projection);
           break;
       }
@@ -561,6 +566,11 @@ function gameBlockTypeToModuleType(blockType: string): string {
     'word-search-game': 'wordsearch',
     'true-false-game': 'truefalse',
     'drag-drop-game': 'dragdrop',
+    // Phase 5-G: Presentation module types — direct 1:1 mapping
+    'tab-icons': 'tab-icons',
+    'accordion': 'accordion',
+    'timeline': 'timeline',
+    'infografis': 'infografis',
     'crossword-game': 'crossword',
     'team-buzzer-game': 'teambuzzer',
   };

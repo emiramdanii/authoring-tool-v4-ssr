@@ -896,3 +896,72 @@ export const MATERIBLOK_PROPERTY_SCHEMA: PropertySchema = {
     { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'content' },
   ],
 };
+
+export const TABICONS_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'tab-icons',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'tabs', label: 'Tab', icon: 'Columns' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    {
+      key: 'tabs', type: 'array', label: 'Tab', group: 'tabs',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '🏷️' },
+        { key: 'label', label: 'Label Tab', type: 'text' },
+        { key: 'content', label: 'Konten', type: 'textarea' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+export const ACCORDION_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'accordion',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    {
+      key: 'items', type: 'array', label: 'Item', group: 'content',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📂' },
+        { key: 'title', label: 'Judul', type: 'text' },
+        { key: 'content', label: 'Konten', type: 'textarea' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+    { key: 'interactive', type: 'boolean', label: 'Interaktif', group: 'style', defaultValue: true },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};
+
+export const INFOGRAFIS_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'infografis',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Gaya', icon: 'Palette', collapsed: true },
+  ],
+  properties: [
+    { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    {
+      key: 'cards', type: 'array', label: 'Kartu', group: 'content',
+      fields: [
+        { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📊' },
+        { key: 'title', label: 'Judul', type: 'text' },
+        { key: 'body', label: 'Isi', type: 'textarea' },
+        { key: 'stat', label: 'Statistik', type: 'text' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
+  ],
+};

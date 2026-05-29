@@ -236,6 +236,9 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'drag-drop-game': DragDropGameRenderer,
   'crossword-game': CrosswordGameRenderer,
   'team-buzzer-game': TeamBuzzerGameRenderer,
+  'tab-icons': FtabRenderer,
+  'accordion': TabelAccordionRenderer,
+  'infografis': NcGridRenderer,
 };
 
 // ═══════════════════════════════════════════════════════════════════

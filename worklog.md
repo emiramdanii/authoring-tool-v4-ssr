@@ -1030,3 +1030,29 @@ Stage Summary:
 - **Phase 5-F**: double-write on load fixed, schema projection always wins ✅
 - **Build pass**: `npx next build` compiles successfully
 - **Commits**: ad80341 (5-C/D), 7e8bc8a (5-F)
+
+---
+Task ID: 5-G
+Agent: Main Agent
+Task: Phase 5-G — Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis)
+
+Work Log:
+- Created 3 new schema block interfaces in blocks.ts: TabIconsBlock (type 'tab-icons'), AccordionBlock (type 'accordion'), InfografisBlock (type 'infografis')
+- Added all 3 new types to SchemaBlock union in schema.ts + barrel exports in types/index.ts
+- Added 4 GUIDED_EDITOR_REGISTRY entries in guided-patch.ts: tab-icons, accordion, timeline, infografis — each with content-focused field definitions, sections grouping, and teacher-friendly labels
+- Added 4 schema generator functions in generators.ts: genTabIconsSchema(), genAccordionSchema(), genTimelineModuleSchema(), genInfografisSchema()
+- Migrated autoGenerateContent() in auto-generate.ts: all 4 presentation module types now generate as schema blocks instead of AuthoringStore modules. Zero AuthoringStore.module writes remain for these types.
+- Updated SchemaProjection in schema-projection.ts: added tab-icons/accordion/timeline/infografis to switch cases and gameBlockTypeToModuleType mapping for backward-compatible projection
+- Added 3 property schemas (TABICONS_PROPERTY_SCHEMA, ACCORDION_PROPERTY_SCHEMA, INFOGRAFIS_PROPERTY_SCHEMA) in editor/property-schemas/
+- Added 3 block definition entries in BlockDefinitionRegistry/definitions.ts with capabilities, default layouts, and property schemas
+- Added 3 temporary renderer mappings in SceneRegistry.tsx: tab-icons→FtabRenderer, accordion→TabelAccordionRenderer, infografis→NcGridRenderer
+- Build verified: npx next build ✓ (zero errors, zero regressions)
+
+Stage Summary:
+- **Phase 5-G COMPLETE**: All 4 presentation module types (tab-icons, accordion, timeline, infografis) are now schema-first block types
+- **TabIconsBlock**: Interactive tabs with flat text content (isi, poin, refleksi) — different from FtabBlock which uses nested SchemaBlock[]
+- **AccordionBlock**: Simple expandable sections (icon/judul/isi) — different from TabelAccordionBlock which has table-like label/value details
+- **InfografisBlock**: Visual info cards (icon/judul/isi/warna) — brand new type, no prior schema equivalent
+- **Timeline module**: Already had TimelineBlock in schema, now also has a generator (genTimelineModuleSchema) and GUIDED_EDITOR_REGISTRY entry for the module-type use case
+- **autoGenerateContent() no longer writes to AuthoringStore.modules** for presentation types — all goes to page.schema via schema blocks
+- **Temporary renderers** in place — dedicated TabIconsRenderer, AccordionRenderer, InfografisRenderer needed in future work
