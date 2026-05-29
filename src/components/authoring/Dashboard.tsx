@@ -418,12 +418,12 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h1
-                  className="text-[32px] font-bold text-silse-primary tracking-tight leading-tight"
+                  className="text-[40px] font-bold text-silse-primary tracking-tight leading-tight"
                   style={{ fontFamily: 'var(--font-fredoka), Fredoka, cursive' }}
                 >
                   {getGreeting()}, Guru! Siap buat materi seru hari ini?
                 </h1>
-                <p className="text-sm text-silse-on-surface-variant mt-2">
+                <p className="text-base text-silse-on-surface-variant mt-2" style={{ fontFamily: 'var(--font-nunito), Nunito Sans, sans-serif' }}>
                   {isSederhana
                     ? 'Buat media pembelajaran interaktif dengan mudah.'
                     : 'Kelola proyek media pembelajaran interaktif Anda.'}
@@ -433,7 +433,7 @@ export default function Dashboard() {
                 {/* AI Content Button */}
                 <button
                   onClick={() => setActivePanel('autogen')}
-                  className="flex items-center gap-2 px-8 py-5 rounded-2xl bg-silse-primary-container text-silse-on-primary-container text-sm font-bold border-b-[3px] border-silse-primary hover:-translate-y-0.5 hover:shadow-sm transition-[transform,box-shadow]"
+                  className="flex items-center gap-2 px-8 py-5 rounded-full bg-silse-primary-container text-silse-on-primary-container text-sm font-bold border-b-[3px] border-silse-primary shadow-sm hover:-translate-y-0.5 hover:shadow-sm transition-[transform,box-shadow]"
                 >
                   <AutoAwesome size={18} />
                   Buat Konten Baru dengan AI
@@ -512,22 +512,26 @@ export default function Dashboard() {
             </div>
 
             {/* Views/Status Card — 1-col */}
-            <div className="bg-silse-secondary-container/10 rounded-[24px] p-6 flex flex-col items-center justify-center text-center">
-              <div className="w-14 h-14 rounded-2xl bg-silse-secondary-container/20 flex items-center justify-center mb-3">
-                <span className="material-symbols-outlined text-silse-secondary-container" style={{ fontSize: '32px' }}>visibility</span>
-              </div>
+            <div className="bg-silse-secondary-container rounded-[24px] p-6 text-silse-on-secondary-container flex flex-col items-center justify-center text-center shadow-lg">
+              <span className="material-symbols-outlined text-5xl mb-4">visibility</span>
               <div className="flex items-center gap-2 mb-1">
-                <span className={`w-2 h-2 rounded-full ${isPresetMode ? 'bg-silse-primary' : hasData ? 'bg-silse-primary' : 'bg-silse-on-surface-variant'}`} />
-                <span className="text-sm font-semibold text-silse-on-surface">
+                <span className={`w-2 h-2 rounded-full ${isPresetMode ? 'bg-white/80' : hasData ? 'bg-white/80' : 'bg-white/40'}`} />
+                <span className="text-sm font-semibold">
                   {isPresetMode ? 'Preset Aktif' : hasData ? 'Proyek Aktif' : 'Belum Ada'}
                 </span>
               </div>
-              <div className="text-2xl font-bold text-silse-on-surface" style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}>
+              <div className="text-3xl font-extrabold" style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}>
                 {isPresetMode ? (presetLabels[activePreset || ''] || activePreset || '—') : hasData ? completeness + '%' : '—'}
               </div>
-              <div className="text-xs text-silse-on-surface-variant mt-1">
+              <div className="text-xs opacity-80 mt-1">
                 {isPresetMode ? 'Template aktif' : hasData ? 'Kelengkapan proyek' : 'Mulai proyek baru'}
               </div>
+              {hasData && (
+                <div className="mt-3 flex items-center gap-1 text-silse-primary-fixed-dim">
+                  <span className="material-symbols-outlined text-sm">trending_up</span>
+                  <span className="text-sm font-bold">+{completeness}% minggu ini</span>
+                </div>
+              )}
             </div>
           </div>
 
