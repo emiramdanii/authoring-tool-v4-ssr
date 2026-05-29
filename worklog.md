@@ -854,3 +854,35 @@ Stage Summary:
 - **Right Panel Footer**: Delete block button with `rounded-full` style, only visible when block is selected
 - **All SILSE v4 tokens preserved** — no hardcoded colors introduced
 - **Zero new build/lint/type errors** introduced
+---
+Task ID: silse-v4-ui-overhaul
+Agent: Main Agent
+Task: SILSE v4 MD3 UI Overhaul — Resizable panels, compact toolbar, integrated schema navigator
+
+Work Log:
+- Analyzed full project structure (350+ files, 68 canva components, 61 store files)
+- Read all key UI files: CanvaBuilder, LeftPanel, RightPanel, Toolbar, StatusBar, IconRail, SchemaBlockTree, SceneList, GuidedFormEditor, guided-field-renderer, PropertyGroup
+- Installed react-resizable-panels dependency for resizable panel support
+- Phase A: Enhanced globals.css with SILSE v4 MD3 tokens (panel-surface, md3-segmented, md3-fab, resize-handle, refined canvas dot-grid 20px/0.8px)
+- Phase B: Replaced CanvaBuilder fixed-width panels with ResizablePanelGroup (Left 20%, Stage auto, Right 25%)
+- Phase C: Overhauled LeftPanel — integrated SchemaBlockTree into pages tab, Material Symbol section headers (layers, grid_view, account_tree)
+- Phase C: Overhauled IconRail — MD3 Navigation Rail with active pill indicator, compact 56px width, Material Symbols with FILL variation
+- Phase C: Updated SchemaBlockTree — Material Symbol icons replacing emoji, better depth indentation, subtle border-l
+- Phase C: Updated SceneList — compact scene items (w-10 h-7 thumbnails, text-[11px] labels)
+- Phase D: Overhauled RightPanel — MD3 segmented tab bar, compact header (py-2.5), improved empty states with Material Symbol icons
+- Phase D: Updated GuidedFormEditor — compact p-4 spacing, description with info icon
+- Phase D: Updated guided-field-renderer — compact inputs (px-3 py-2.5), smaller labels (text-xs tracking-wide), placeholder styling
+- Phase D: Updated PropertyGroup — MD3 collapsible sections with Material Symbol expand_more, compact spacing
+- Phase E: Overhauled Toolbar — compact h-14 (56px) from h-16, backdrop-blur-md, tighter px-5
+- Phase E: Updated ToolbarNav — compact brand (text-base "SILSE"), arrow_back icon, smaller project name
+- Phase F: Updated StatusBar — compact 26px height, border-t with /40 opacity
+- Build passed successfully, committed and pushed to GitHub (commit 9adda60)
+
+Stage Summary:
+- Full SILSE v4 MD3 UI overhaul complete
+- Resizable panels replace fixed-width layout
+- MD3 Navigation Rail with active pill indicator
+- Integrated SchemaBlockTree into LeftPanel pages tab
+- MD3 segmented tab bar in RightPanel
+- Compact toolbar (h-14 with backdrop-blur)
+- All build errors resolved, code pushed to GitHub
