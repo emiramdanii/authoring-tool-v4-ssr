@@ -19,6 +19,7 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useLearningMediaStore } from '@/store/learning-media-store';
+import { useInteractiveStore, type ScoreEntry as InteractiveScoreEntry } from '@/store/interactive-store';
 import { PageRenderer } from './page-renderer';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { RATIOS, type CanvaPage } from './types';
@@ -344,14 +345,29 @@ export default function LearningMediaShell() {
 
   // Editing state for direct editing
   const editingBlockId = useCanvaStore(s => s.editingBlockId);
-  const startEditing = useCanvaStore(s => s.startEditing);
   const stopEditing = useCanvaStore(s => s.stopEditing);
-  const selectBlock = useCanvaStore(s => s.selectBlock);
 
   // Clear editing when navigating away from a screen
   useEffect(() => {
     stopEditing();
   }, [currentScreenIndex, stopEditing]);
+
+  // Click outside content area → stop editing (save happens via blur on InlineTextEditor)
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!editingBlockId) return;
+      const target = e.target as HTMLElement;
+      // If click is outside the page canvas and outside the editing overlay
+      const pageEl = canvasRef.current?.querySelector('[data-page-frame]');
+      const inlineEditor = target.closest('[data-inline-editor="true"]');
+      const learnBlock = target.closest('[data-block-id]');
+      if (!inlineEditor && !learnBlock && pageEl && !pageEl.contains(target)) {
+        stopEditing();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [editingBlockId, stopEditing]);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
@@ -362,6 +378,41 @@ export default function LearningMediaShell() {
   useEffect(() => {
     initSession(pages.length);
   }, [pages.length, initSession]);
+
+  // ═══ Score sync bridge: interactive store → learning media store ═══
+  // When interactive widgets (kuis, game) report scores via the interactive
+  // store, we bridge them to the learning media store so the top navbar
+  // score display and completion modal show the correct totals.
+  const syncScores = useLearningMediaStore(s => s.syncScores);
+  useEffect(() => {
+    const unsubscribe = useInteractiveStore.subscribe((state) => {
+      // Convert interactive store ScoreEntry[] → learning media ScoreEntry[]
+      const entries = state.scores
+        .filter(s => s.completed)
+        .map((s: InteractiveScoreEntry) => ({
+          pageId: s.elementId,
+          score: s.score,
+          maxScore: s.maxScore,
+          timestamp: Date.now(),
+        }));
+      if (entries.length > 0) {
+        syncScores(entries);
+      }
+    });
+    // Initial sync on mount
+    const initialScores = useInteractiveStore.getState().scores
+      .filter(s => s.completed)
+      .map((s: InteractiveScoreEntry) => ({
+        pageId: s.elementId,
+        score: s.score,
+        maxScore: s.maxScore,
+        timestamp: Date.now(),
+      }));
+    if (initialScores.length > 0) {
+      syncScores(initialScores);
+    }
+    return () => unsubscribe();
+  }, [syncScores]);
 
   // Sync canva-store's currentPageIndex with learning store
   useEffect(() => {
@@ -422,20 +473,17 @@ export default function LearningMediaShell() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nextScreen, prevScreen, setAppMode, editingBlockId, stopEditing]);
 
-  // Handle "Selesai" button
+  // Handle "Selesai" button — always show completion modal
   const handleSelesai = useCallback(() => {
-    if (isComplete) {
-      showCompletion();
-    } else {
-      // Mark all as complete and show modal
-      showCompletion();
-    }
-  }, [isComplete, showCompletion]);
+    stopEditing(); // Save any pending edits first
+    showCompletion();
+  }, [showCompletion, stopEditing]);
 
-  // Handle back to edit
+  // Handle back to edit — save pending edits first
   const handleBack = useCallback(() => {
+    stopEditing();
     setAppMode('edit');
-  }, [setAppMode]);
+  }, [setAppMode, stopEditing]);
 
   // Handle restart
   const handleRestart = useCallback(() => {

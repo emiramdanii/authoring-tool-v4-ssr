@@ -107,6 +107,10 @@ export function InlineTextEditor({
     if (newText !== value) {
       onSave(newText);
     }
+    // Always stop editing after blur — ensures editingBlockId is cleared
+    // so the UI exits editing mode cleanly. The store's stopEditing is safe
+    // to call even if editingBlockId is already null.
+    useCanvaStore.getState().stopEditing();
   }, [value, onSave]);
 
   const handleInput = useCallback(() => {

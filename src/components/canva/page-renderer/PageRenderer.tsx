@@ -205,6 +205,17 @@ export const PageRenderer = React.memo(function PageRenderer({
   const handleBlockSelect = React.useCallback((blockId: string, blockType: string, addToSelection?: boolean) => {
     selectBlock(blockId, blockType, addToSelection);
   }, [selectBlock]);
+  // Learn mode select: does NOT call selectBlock (which clears editingBlockId).
+  // In learn mode, clicking a block should NOT disrupt the editing flow.
+  // Instead, if a block is being edited, clicking another block just stops editing.
+  const handleBlockLearnSelect = React.useCallback((blockId: string, blockType: string) => {
+    const currentEditing = useCanvaStore.getState().editingBlockId;
+    if (currentEditing && currentEditing !== blockId) {
+      // Clicking a different block while editing → stop editing (save happens via blur)
+      useCanvaStore.getState().stopEditing();
+    }
+    // Do NOT call selectBlock — it resets editingBlockId and opens right panel
+  }, []);
   const handleBlockHover = React.useCallback((blockId: string | null) => {
     hoverBlock(blockId);
   }, [hoverBlock]);
@@ -287,7 +298,7 @@ export const PageRenderer = React.memo(function PageRenderer({
       selectedBlockIds={mode === 'canvas' ? selectedBlockIds : undefined}
       hoveredBlockId={mode === 'canvas' ? hoveredBlockId : undefined}
       editingBlockId={mode === 'canvas' || isLearnMode ? editingBlockId : undefined}
-      onBlockSelect={mode === 'canvas' ? handleBlockSelect : isLearnMode ? handleBlockSelect : undefined}
+      onBlockSelect={mode === 'canvas' ? handleBlockSelect : isLearnMode ? handleBlockLearnSelect : undefined}
       onBlockHover={mode === 'canvas' ? handleBlockHover : undefined}
       onBlockEdit={mode === 'canvas' ? handleBlockEdit : isLearnMode ? handleBlockEdit : undefined}
       onBlockDelete={mode === 'canvas' ? handleBlockDelete : undefined}
