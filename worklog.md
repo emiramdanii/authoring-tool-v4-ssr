@@ -914,3 +914,31 @@ Stage Summary:
 - **Dokumen panel fully migrated** from app-* to silse-* tokens
 - **Schema panel already functional** from prior Phase 2-3 work — now visually polished
 - Phase 4 (Safe Page Split) and Phase 5 (Cleanup Dual Source) remain DEFERRED as planned
+
+---
+Task ID: 2a/2b/2c
+Agent: Main Agent
+Task: Phase 5 P0 — Delete dead code, remove deprecated slice actions, fix SchemaBlockTree typo
+
+Work Log:
+- Task 2a: Deleted `/src/core/schema/sync-projection.ts` — zero importers, all exports (syncKuisToSchema, syncMateriToSchema, syncDiskusiToSchema, syncRefleksiToSchema, hasSchemaBlock) deprecated with zero callers
+- Task 2b: Removed deprecated write actions from 5 authoring store slices:
+  - kuis-slice.ts: removed addKuis, deleteKuis, updateKuis, updateKuisOpt, reorderKuis (5 actions, -44 lines)
+  - materi-slice.ts: removed addMateriBlok, removeMateriBlok, updateMateriBlok, moveMateriBlok (4 actions, -47 lines)
+  - skenario-slice.ts: removed setSkenario + 12 chapter/choice/consequence actions (13 actions, -179 lines)
+  - diskusi-refleksi-slice.ts: removed updateDiskusi/Refleksi + 6 pertanyaan CRUD actions (8 actions, -98 lines)
+  - motivasi-rangkuman-slice.ts: removed updateMotivasi, updateRangkuman (2 actions, -17 lines)
+  - Updated types.ts: removed all deprecated action declarations, replaced with Phase 5 REMOVED comments
+  - Kept: state fields (kuis, materi, skenario, diskusi, refleksi, motivasi, rangkuman), initial state, slice type definitions
+  - Verified zero component callers via grep before removal
+- Task 2c: Fixed SchemaBlockTree.tsx BLOCK_DISPLAY map: key `'sateri'` → `'skenario'` (typo caused skenario blocks to show wrong icon in navigator)
+- Build verified: `npx next build` — compiled successfully, 0 errors
+- Committed: de81874 "Phase 5 P0: Delete dead code (sync-projection), remove deprecated slice actions, fix SchemaBlockTree typo"
+
+Stage Summary:
+- **872 lines deleted, 52 added** (net -820 lines of dead code removed)
+- **sync-projection.ts completely eliminated** — no more deprecated forward-sync functions
+- **32 deprecated write actions removed** from 5 slices — schema is now the single write path
+- **SchemaBlockTree typo fixed** — skenario blocks now show correct theater_comedy icon
+- **Store composition preserved** — all slices still export state + initial values for read-only projection
+- **Zero build errors, zero regressions**

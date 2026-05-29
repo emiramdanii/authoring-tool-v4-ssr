@@ -1,26 +1,19 @@
 'use client';
 
+// DOKUMEN PANEL — Project metadata editor
 // ═══════════════════════════════════════════════════════════════════
-// DOKUMEN PANEL — Project metadata editor (NOT canvas content)
-// ═══════════════════════════════════════════════════════════════════
-// DESIGN NOTE (Phase 5):
-//   Unlike Konten tabs (diskusi, kuis, materi, etc.) which write to
-//   schema via applyGuidedSchemaPatch(), Dokumen writes to the
-//   authoring store directly. This is INTENTIONAL because:
+// Phase 5 P1: CP, TP, ATP, Alur sections now use schema-first hooks.
+//   READ:  useSchemaXxx() ← CanvaStore.pages[].schema.blocks (fallback: AuthoringStore)
+//   WRITE: applyGuidedSchemaPatch() + AuthoringStore (dual-write for backward compat)
 //
-//   - meta, cp, tp, atp, alur are PROJECT METADATA, not canvas content
-//   - They describe the lesson plan structure, not what renders on pages
-//   - Auto-generate reads them as context for content generation
-//   - They don't correspond 1:1 to schema blocks on specific pages
-//
-//   Future: When CpBlock/AtpBlock schema types are added, some of
-//   these writes can migrate to schema patches. But tp and alur are
-//   planning data that gets PROJECTED into pages during generation,
-//   not directly rendered.
+//   Meta section still uses AuthoringStore directly — meta is project-level
+//   config (judulPertemuan, mapel, kelas) that doesn't map to a schema block.
+//   It will be migrated to a dedicated ProjectStore later.
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthoringStore, VERB_OPTIONS, COLOR_OPTIONS } from '@/store/authoring-store';
+import { useSchemaCp, useSchemaTp, useSchemaAlur, useSchemaAtp } from '@/hooks/use-schema-navigator';
 import { useCanvaStore } from '@/store/canva-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
@@ -122,10 +115,7 @@ function MetaSection() {
 
 // ── Capaian Pembelajaran ─────────────────────────────────────────
 function CpSection() {
-  const cp = useAuthoringStore((s) => s.cp);
-  const updateCp = useAuthoringStore((s) => s.updateCp);
-  const addProfil = useAuthoringStore((s) => s.addProfil);
-  const removeProfil = useAuthoringStore((s) => s.removeProfil);
+  const { data: cp, updateField: updateCp, addProfil, removeProfil } = useSchemaCp();
   const [profilInput, setProfilInput] = useState('');
 
   const handleProfilKeyDown = (e: React.KeyboardEvent) => {
@@ -227,11 +217,7 @@ function DragHandle({ onPointerDown, index }: { onPointerDown: (e: React.Pointer
 
 // ── Tujuan Pembelajaran ─────────────────────────────────────────
 function TpSection() {
-  const tp = useAuthoringStore((s) => s.tp);
-  const addTp = useAuthoringStore((s) => s.addTp);
-  const deleteTp = useAuthoringStore((s) => s.deleteTp);
-  const updateTp = useAuthoringStore((s) => s.updateTp);
-  const reorderTp = useAuthoringStore((s) => s.reorderTp);
+  const { data: tp, addTp, deleteTp, updateTp, reorderTp } = useSchemaTp();
   const { isSederhana } = useTeacherMode();
 
   const handleReorder = useCallback((newItems: typeof tp) => {
@@ -360,11 +346,7 @@ function TpSection() {
 
 // ── Alur Tujuan Pembelajaran ────────────────────────────────────
 function AtpSection() {
-  const atp = useAuthoringStore((s) => s.atp);
-  const updateAtpNamaBab = useAuthoringStore((s) => s.updateAtpNamaBab);
-  const addAtpPertemuan = useAuthoringStore((s) => s.addAtpPertemuan);
-  const deleteAtpPertemuan = useAuthoringStore((s) => s.deleteAtpPertemuan);
-  const updateAtpPertemuan = useAuthoringStore((s) => s.updateAtpPertemuan);
+  const { data: atp, updateNamaBab: updateAtpNamaBab, addPertemuan: addAtpPertemuan, deletePertemuan: deleteAtpPertemuan, updatePertemuan: updateAtpPertemuan } = useSchemaAtp();
 
   return (
     <div className="space-y-3">
@@ -473,11 +455,7 @@ function AtpSection() {
 
 // ── Alur Kegiatan ───────────────────────────────────────────────
 function AlurSection() {
-  const alur = useAuthoringStore((s) => s.alur);
-  const addAlur = useAuthoringStore((s) => s.addAlur);
-  const deleteAlur = useAuthoringStore((s) => s.deleteAlur);
-  const updateAlur = useAuthoringStore((s) => s.updateAlur);
-  const reorderAlur = useAuthoringStore((s) => s.reorderAlur);
+  const { data: alur, addAlur, deleteAlur, updateAlur, reorderAlur } = useSchemaAlur();
 
   const handleReorder = useCallback((newItems: typeof alur) => {
     const fromIndex = alur.findIndex((item, i) => newItems[i] !== item);

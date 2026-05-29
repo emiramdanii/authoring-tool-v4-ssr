@@ -840,6 +840,116 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'subtitle', label: 'Subjudul', type: 'text' },
     ],
   },
+
+  'cp': {
+    blockType: 'cp',
+    displayName: 'Capaian Pembelajaran',
+    description: 'Capaian pembelajaran dan profil pelajar Pancasila',
+    icon: '📋',
+    fields: [
+      { key: 'elemen', label: 'Elemen', type: 'text', required: true, placeholder: 'Pancasila' },
+      { key: 'subElemen', label: 'Sub-Elemen', type: 'text', placeholder: 'Pemahaman norma dan nilai' },
+      { key: 'capaianFase', label: 'Capaian Fase', type: 'textarea', required: true, helpText: 'Narasi lengkap capaian pembelajaran', placeholder: 'Peserta didik mampu…' },
+      { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'array', fields: [
+        { key: '', label: 'Profil', type: 'text', placeholder: 'Bernalar Kritis' },
+      ]},
+    ],
+  },
+
+  'tp': {
+    blockType: 'tp',
+    displayName: 'Tujuan Pembelajaran',
+    description: 'Tujuan pembelajaran per pertemuan',
+    icon: '🎯',
+    fields: [
+      { key: 'title', label: 'Judul', type: 'text' },
+      { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'text' },
+      {
+        key: 'items',
+        label: 'Tujuan',
+        type: 'array',
+        maxItems: 4,
+        helpText: 'STANDAR: Maksimal 4 tujuan per halaman',
+        fields: [
+          { key: 'verb', label: 'Kata Kerja', type: 'select', options: [
+            { label: 'Menjelaskan', value: 'Menjelaskan' },
+            { label: 'Menganalisis', value: 'Menganalisis' },
+            { label: 'Mengidentifikasi', value: 'Mengidentifikasi' },
+            { label: 'Membandingkan', value: 'Membandingkan' },
+            { label: 'Mengevaluasi', value: 'Mengevaluasi' },
+            { label: 'Menerapkan', value: 'Menerapkan' },
+            { label: 'Menyimpulkan', value: 'Menyimpulkan' },
+            { label: 'Mendemonstrasikan', value: 'Mendemonstrasikan' },
+          ]},
+          { key: 'desc', label: 'Deskripsi', type: 'textarea', required: true },
+          { key: 'pertemuan', label: 'Pertemuan ke-', type: 'number', min: 1, max: 10 },
+          { key: 'color', label: 'Warna', type: 'color' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['title', 'profil'] },
+      { key: 'items', label: 'Tujuan Pembelajaran', fieldKeys: ['items'] },
+    ],
+  },
+
+  'alur': {
+    blockType: 'alur',
+    displayName: 'Alur Kegiatan',
+    description: 'Langkah-langkah kegiatan pembelajaran',
+    icon: '🗺️',
+    fields: [
+      { key: 'title', label: 'Judul', type: 'text' },
+      {
+        key: 'steps',
+        label: 'Langkah Kegiatan',
+        type: 'array',
+        maxItems: 6,
+        fields: [
+          { key: 'fase', label: 'Fase', type: 'select', options: [
+            { label: 'Pendahuluan', value: 'Pendahuluan' },
+            { label: 'Inti', value: 'Inti' },
+            { label: 'Penutup', value: 'Penutup' },
+          ]},
+          { key: 'durasi', label: 'Durasi', type: 'text', placeholder: '10 menit' },
+          { key: 'judul', label: 'Nama Kegiatan', type: 'text', required: true, placeholder: 'Apersepsi' },
+          { key: 'deskripsi', label: 'Deskripsi', type: 'textarea', required: true, placeholder: 'Detail kegiatan…' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['title'] },
+      { key: 'steps', label: 'Langkah Kegiatan', fieldKeys: ['steps'] },
+    ],
+  },
+
+  'atp': {
+    blockType: 'atp',
+    displayName: 'Alur Tujuan Pembelajaran',
+    description: 'Rencana pertemuan dan tujuan pembelajaran',
+    icon: '📅',
+    fields: [
+      { key: 'namaBab', label: 'Nama Bab / Unit', type: 'text', required: true, placeholder: 'Bab 3 — Patuh terhadap Norma' },
+      { key: 'jumlahPertemuan', label: 'Jumlah Pertemuan', type: 'number', min: 1, max: 10 },
+      {
+        key: 'pertemuan',
+        label: 'Pertemuan',
+        type: 'array',
+        maxItems: 10,
+        fields: [
+          { key: 'judul', label: 'Judul Pertemuan', type: 'text', required: true },
+          { key: 'durasi', label: 'Durasi', type: 'text', placeholder: '2×40 menit' },
+          { key: 'tp', label: 'TP yang Dicapai', type: 'text' },
+          { key: 'kegiatan', label: 'Kegiatan Pembelajaran', type: 'textarea' },
+          { key: 'penilaian', label: 'Penilaian', type: 'text' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['namaBab', 'jumlahPertemuan'] },
+      { key: 'pertemuan', label: 'Daftar Pertemuan', fieldKeys: ['pertemuan'] },
+    ],
+  },
 };
 
 // ── Overflow Detection ─────────────────────────────────────────

@@ -75,6 +75,42 @@ export interface TpBlock extends BaseBlock {
   profilColor?: string;
 }
 
+// ── CP (Capaian Pembelajaran) Schema ────────────────────────────
+
+export interface CpBlock extends BaseBlock {
+  type: 'cp';
+  /** Elemen CP (e.g., "Pancasila") */
+  elemen: string;
+  /** Sub-elemen (e.g., "Pemahaman norma dan nilai") */
+  subElemen: string;
+  /** Full capaian fase narrative */
+  capaianFase: string;
+  /** Profil Pelajar Pancasila tags */
+  profil: string[];
+  /** Fase (e.g., "D") */
+  fase?: string;
+  /** Kelas (e.g., "VII") */
+  kelas?: string;
+}
+
+// ── ATP (Alur Tujuan Pembelajaran) Schema ──────────────────────
+
+export interface AtpBlock extends BaseBlock {
+  type: 'atp';
+  /** Nama bab / unit */
+  namaBab: string;
+  /** Jumlah pertemuan */
+  jumlahPertemuan: number;
+  /** Detail per pertemuan */
+  pertemuan: Array<{
+    judul: string;
+    tp: string;
+    durasi: string;
+    kegiatan: string;
+    penilaian: string;
+  }>;
+}
+
 // ── Alur Schema ────────────────────────────────────────────────
 
 export interface AlurBlock extends BaseBlock {

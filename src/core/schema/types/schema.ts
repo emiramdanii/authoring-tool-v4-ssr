@@ -7,6 +7,8 @@ import type {
   HeroBlock,
   PetunjukBlock,
   TpBlock,
+  CpBlock,
+  AtpBlock,
   AlurBlock,
   SkenarioBlock,
   DefBoxBlock,
@@ -54,6 +56,8 @@ export type SchemaBlock =
   | HeroBlock
   | PetunjukBlock
   | TpBlock
+  | CpBlock
+  | AtpBlock
   | AlurBlock
   | SkenarioBlock
   | DefBoxBlock
