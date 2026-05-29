@@ -1004,3 +1004,29 @@ Stage Summary:
 - **Safety**: Cover isolation (always on by default) prevents any occlusion conflict between cover (zIndex:1) and flow blocks (zIndex:1) — when a cover exists with other blocks, only the cover is rendered
 - **Parking Lot P1**: Marked as FIXED in STATUS.md
 - **No other blocks affected**: Flow blocks stay at zIndex:1, absolute non-cover blocks stay at zIndex:10
+
+---
+Task ID: 5c/5d/5f
+Agent: Main Agent
+Task: Phase 5-C/D/F — Migrate game blocks to schema, remove module-slice actions, fix double-write on load
+
+Work Log:
+- Added genMatchingSchema() and genTrueFalseSchema() to generators.ts — produces MatchingGameBlock and TrueFalseGameBlock from ParseResult
+- Migrated matching+truefalse in use-auto-generate.ts from AuthoringStore.addModule/removeModule/updateModuleField → schema game blocks via applyBlockToPages('game', [block])
+- Migrated memory module in autoGenerateContent() from AuthoringStore projection → memory-game schema block written directly to canvas pages
+- Added gameBlocks field to autoGenerateContent() return type — non-schema modules (tab-icons, accordion, timeline, infografis) still go to AuthoringStore
+- Removed all 7 write actions from module-slice.ts — modules field is now a read-only projection
+- Updated types.ts to mark module actions as REMOVED (Phase 5-D)
+- Fixed double-write on load: system-slice.loadFromStorage() now only loads non-schema fields (cp, atp, petunjuk, penutup, suara, guruPw)
+- Added modules+games to persistence-slice projection patch so game blocks sync properly
+- Removed duplicate CanvaStore.loadFromStorage() call from AuthoringTool.tsx (StoreInit already calls it)
+- Fixed use-project-manager.tsx loadProject() to not overwrite schema-backed fields from raw authoringData
+- Cleaned up unused imports (KuisItem, Module, ensureModuleIds, ensureKuisIds, GAME_TYPES)
+- Updated STATUS.md with tasks 16-18 and detailed progress notes
+
+Stage Summary:
+- **Phase 5-C**: matching+truefalse → schema game blocks ✅
+- **Phase 5-D**: module-slice write actions removed, modules is read-only projection ✅
+- **Phase 5-F**: double-write on load fixed, schema projection always wins ✅
+- **Build pass**: `npx next build` compiles successfully
+- **Commits**: ad80341 (5-C/D), 7e8bc8a (5-F)

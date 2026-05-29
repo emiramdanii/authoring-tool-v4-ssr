@@ -36,6 +36,9 @@
 | 13. P1: Schema migration CP/TP/ATP/Alur (hooks + Dokumen.tsx) | ✅ DONE | Phase 5 |
 | 14. P2: Modules projection sync (SchemaProjection.modules) | ✅ DONE | Phase 5 |
 | 15. Fix: Cover invisible bug (zIndex:0 → zIndex:1) | ✅ DONE | Bug Fix |
+| 16. P3: Migrate matching+truefalse → schema game blocks | ✅ DONE | Phase 5 |
+| 17. P4: Remove module-slice write actions (read-only projection) | ✅ DONE | Phase 5 |
+| 18. P5: Fix double-write on load (system-slice vs persistence-slice) | ✅ DONE | Phase 5 |
 
 ---
 
@@ -66,9 +69,9 @@
 
 ## Masalah yang Belum Diperbaiki
 
-### Dual Source of Truth (SEMI-RESOLVED)
+### Dual Source of Truth (NEAR-RESOLVED)
 - **Arah sekarang**: Konten Tab → Schema (TULIS via applyGuidedSchemaPatch) → startProjectionSync → AuthoringStore (auto-derived, READ-ONLY)
-- **Sisa masalah**: AuthoringStore masih writable — code lama bisa langsung tulis ke situ, bypassing schema
+- **Sisa masalah**: Non-schema fields (cp, atp, petunjuk, penutup, suara) masih ditulis langsung ke AuthoringStore
 - **Phase 5 target**: AuthoringStore jadi fully derived (read-only mirror of schema)
 
 ---
@@ -178,14 +181,16 @@
 - P1: Created CpBlock + AtpBlock schema types, added to SchemaBlock union, added guided editor registry entries for cp/tp/alur/atp, created useSchemaCp/useSchemaTp/useSchemaAlur/useSchemaAtp hooks with dual-write pattern, migrated Dokumen.tsx sections from AuthoringStore to schema hooks
 - P2: Added `modules` to SchemaProjection + deriveGameBlockToModules() — game blocks now auto-sync to AuthoringStore via startProjectionSync()
 - Bug fix: Cover invisible bug (zIndex:0 → zIndex:1 in SceneLayoutEngine)
+- P3: Migrated matching+truefalse in use-auto-generate.ts from AuthoringStore module-slice actions → schema game blocks via applyBlockToPages(). Added genMatchingSchema() and genTrueFalseSchema() to generators.ts. Migrated memory module in autoGenerateContent() from projection → memory-game schema block.
+- P4: Removed all 7 write actions from module-slice.ts (addModule, removeModule, updateModuleField, moveModule, addModuleItem, removeModuleItem, updateModuleItem). Zero callers remain. modules field is now a read-only projection derived from schema via startProjectionSync().
+- P5: Fixed double-write on load — system-slice.loadFromStorage() now only loads non-schema fields (cp, atp, petunjuk, penutup, suara, guruPw). Schema-backed fields are derived from schema via persistence-slice + startProjectionSync(). Added modules+games to projection patch. Removed duplicate CanvaStore.loadFromStorage() call from AuthoringTool.tsx. Fixed loadProject() to not overwrite schema-backed fields.
 
 **Remaining (Future Work)**:
-- Convert auto-generate setSkenario() to schema write
-- Convert auto-generate modules merge to write schema game blocks instead of AuthoringStore.modules
+- Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis) so they can be schema-first
+- Migrate preset-slice writes (applyFullPreset) to schema-first (requires preset format refactor)
 - Convert import/restore bulk writes to schema-first
-- Make AuthoringStore fully read-only for Tier 1 fields (remove write actions after all consumers migrated)
 - Full activePanel extraction from AuthoringStore to dedicated navigation store
+- Eliminate redundant `games` field (replace with computed getter)
 - P2: Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors
 - P3: Font size violations in other block renderers
 - P4: NcGridRenderer card body placeholder text
-- P5: syncMateriToSchema generates new IDs (DELETED — sync-projection.ts removed)
