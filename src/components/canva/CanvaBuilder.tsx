@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { useDirtyStore } from '@/store/dirty-store';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { isEnabled } from '@/config/feature-flags';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
@@ -8,6 +8,8 @@ import { COLORS } from '@/lib/color-palette';
 // All icons migrated to Material Symbols Outlined
 import type { PanelId } from '@/store/authoring/types';
 import { isGameBlockType, isBlockTypeInteractive } from '@/core/schema/capability-registry';
+import { useSchemaKuisProjection, useSchemaModulesProjection } from '@/hooks/use-schema-projection';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
 
 // ═══════════════════════════════════════════════════════════════════
 // BSNP COMPLIANCE PANEL — Enhanced with sub-checks & auto-fix
@@ -247,19 +249,45 @@ function ComponentCard({ comp, onNavigate }: { comp: BsnpComponent; onNavigate: 
 
 // ── Main Component ─────────────────────────────────────────────────
 export default function BsnpCompliancePanel() {
+  // ── Project metadata (still from AuthoringStore — Phase 5 territory) ──
   const petunjuk = useAuthoringStore((s) => s.petunjuk);
   const cp = useAuthoringStore((s) => s.cp);
   const tp = useAuthoringStore((s) => s.tp);
-  const materi = useAuthoringStore((s) => s.materi);
-  const modules = useAuthoringStore((s) => s.modules);
-  const kuis = useAuthoringStore((s) => s.kuis);
-  const games = useAuthoringStore((s) => s.games);
   const alur = useAuthoringStore((s) => s.alur);
-  // Phase 3: setActivePanel migrated → panelRequest; content reads stay until Phase 5
-  const setActivePanel = (_panel: string) => useCanvaStore.setState({ panelRequest: _panel });
 
-  // Get pages from canva store to check for schema blocks
+  // ── Content data (from schema — single source of truth) ──
+  const kuis = useSchemaKuisProjection();
+  const modules = useSchemaModulesProjection();
+  // games auto-derived from modules (same logic as Phase 5-H subscription)
+  const games = useMemo(() => modules.filter(m => isGameBlockType(m.type) || ['matching', 'truefalse', 'memory', 'roda', 'sorting', 'fillblank', 'wordsearch', 'dragdrop', 'crossword', 'teambuzzer', 'spinwheel', 'flashcard'].includes(m.type)), [modules]);
+
+  // ── Schema block detection (from CanvaStore pages) ──
   const pages = useCanvaStore((s) => s.pages);
+
+  // ── Materi data from schema (materi-blok blocks inside materi-section) ──
+  const materi = useMemo(() => {
+    const bloks: unknown[] = [];
+    for (const page of pages) {
+      const schema = ensurePageSchema(page);
+      if (!schema) continue;
+      for (const block of schema.blocks) {
+        if (block.type === 'materi-section') {
+          const section = block as unknown as { content?: Array<{ type: string }> };
+          if (section.content) {
+            for (const child of section.content) {
+              if (child.type === 'materi-blok') {
+                bloks.push(child);
+              }
+            }
+          }
+        }
+      }
+    }
+    return { blok: bloks };
+  }, [pages]);
+
+  // Phase 5: setActivePanel migrated → panelRequest
+  const setActivePanel = (_panel: string) => useCanvaStore.setState({ panelRequest: _panel });
 
   // ── Schema block type detection ──────────────────────────────────
   const schemaBlockTypes = new Set<string>();

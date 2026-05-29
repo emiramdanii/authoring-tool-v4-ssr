@@ -106,46 +106,52 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
     set({ pendingCanvasGenerate: presetKey === 'blank' ? null : presetKey });
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyKuisPreset: (presetKey: string) => {
     const p = PRESETS_KUIS[presetKey];
     if (!p) return;
     set({ kuis: deepClone(p.soal), dirty: true });
-    toast.success(`\u2705 Preset Kuis diterapkan: ${p.label}`);
+    toast.success(`✅ Preset Kuis diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyTpPreset: (presetKey: string) => {
     const p = PRESETS_TP[presetKey];
     if (!p) return;
     set({ tp: deepClone(p.items), dirty: true });
-    toast.success(`\u2705 Preset TP diterapkan: ${p.label}`);
+    toast.success(`✅ Preset TP diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyCpPreset: (presetKey: string) => {
     const p = PRESETS_CP[presetKey];
     if (!p) return;
     set({ cp: deepClone(p), dirty: true });
-    toast.success(`\u2705 Preset CP diterapkan: ${p.label}`);
+    toast.success(`✅ Preset CP diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyAtpPreset: (presetKey: string) => {
     const p = PRESETS_ATP[presetKey];
     if (!p) return;
     set({ atp: deepClone(p), dirty: true });
-    toast.success(`\u2705 Preset ATP diterapkan: ${p.label}`);
+    toast.success(`✅ Preset ATP diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyAlurPreset: (presetKey: string) => {
     const p = PRESETS_ALUR[presetKey];
     if (!p) return;
     set({ alur: deepClone(p.steps), dirty: true });
-    toast.success(`\u2705 Preset Alur diterapkan: ${p.label}`);
+    toast.success(`✅ Preset Alur diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyMetaPreset: (presetKey: string) => {
     const p = PRESETS_META[presetKey];
     if (!p) return;
     set({ meta: deepClone(p), dirty: true });
-    toast.success(`\u2705 Preset meta diterapkan: ${p.label}`);
+    toast.success(`✅ Preset meta diterapkan: ${p.label}`);
   },
 
   newProject: () => {

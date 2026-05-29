@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
 import type { WorkBook } from 'xlsx';
 import type { SheetPreview } from './types';
@@ -55,7 +56,7 @@ export function useExcelImport() {
           materi: data.materi || { blok: [] },
           dirty: true,
         });
-        store.setActivePanel('dashboard');
+        useCanvaStore.setState({ panelRequest: 'dashboard' });
         toast.success('✅ Data berhasil diimport!');
       } catch {
         toast.error('❌ Gagal membaca file JSON');
@@ -338,7 +339,7 @@ export function useExcelImport() {
     }
 
     useAuthoringStore.setState(updates);
-    store.setActivePanel('dashboard');
+    useCanvaStore.setState({ panelRequest: 'dashboard' });
 
     // Clean up
     setPendingWorkbook(null);

@@ -6,7 +6,6 @@ import { Spinner } from './Spinner';
 // All icons migrated to Material Symbols Outlined
 import { renderPreviewContent } from './previews';
 import { useAutoGenerate } from './use-auto-generate';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { ShowTransition } from '@/lib/transition';
 

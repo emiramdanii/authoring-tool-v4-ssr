@@ -197,7 +197,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       }
 
       setCurrentProjectId(id);
-      useAuthoringStore.getState().setActivePanel('canva');
+      useCanvaStore.setState({ panelRequest: 'canva' });
       toast.success(`Proyek "${data.title}" dimuat`);
     } catch (error) {
       logger.error('ProjectProvider', error);

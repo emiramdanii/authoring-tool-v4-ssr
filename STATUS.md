@@ -1,5 +1,5 @@
 # STATUS.md — Sumber Kebenaran Proyek SILSE
-> Terakhir diperbarui: 2026-05-29
+> Terakhir diperbarui: 2026-05-30
 > Prinsip: **Selesai satu, baru lanjut satu. Tidak numpuk.**
 
 ---
@@ -30,7 +30,7 @@
 | 7. Konten.tsx → Schema Navigator (KuisTab, MotivasiTab, RangkumanTab) | ✅ DONE | Phase 3 |
 | 8. Konten.tsx → Schema Navigator (MateriTab — most complex) | ✅ DONE | Phase 3 |
 | 9. Safe Page Split / Overflow Policy | ✅ DONE | Phase 4 |
-| 10. Cleanup dual source | 🔄 IN PROGRESS | Phase 5 |
+| 10. Cleanup dual source | ✅ DONE | Phase 5 |
 | 11. P0: Delete dead code (sync-projection.ts + deprecated slices) | ✅ DONE | Phase 5 |
 | 12. P0: Fix SchemaBlockTree typo (sateri → skenario) | ✅ DONE | Phase 5 |
 | 13. P1: Schema migration CP/TP/ATP/Alur (hooks + Dokumen.tsx) | ✅ DONE | Phase 5 |
@@ -40,6 +40,8 @@
 | 17. P4: Remove module-slice write actions (read-only projection) | ✅ DONE | Phase 5 |
 | 18. P5: Fix double-write on load (system-slice vs persistence-slice) | ✅ DONE | Phase 5 |
 | 19. P6: Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis) | ✅ DONE | Phase 5 |
+| 20. Phase 5-I: Schema-first reads for BsnpCompliancePanel + dead import cleanup | ✅ DONE | Phase 5 |
+| 21. Bug sweep: Unused imports + type error fixes | ✅ DONE | Bug Fix |
 
 ---
 
@@ -70,10 +72,10 @@
 
 ## Masalah yang Belum Diperbaiki
 
-### Dual Source of Truth (NEAR-RESOLVED)
+### Dual Source of Truth (RESOLVED)
 - **Arah sekarang**: Konten Tab → Schema (TULIS via applyGuidedSchemaPatch) → startProjectionSync → AuthoringStore (auto-derived, READ-ONLY)
-- **Sisa masalah**: Non-schema fields (cp, atp, petunjuk, penutup, suara) masih ditulis langsung ke AuthoringStore
-- **Phase 5 target**: AuthoringStore jadi fully derived (read-only mirror of schema)
+- **Sisa masalah**: Non-schema fields (cp, atp, petunjuk, penutup, suara) masih ditulis langsung ke AuthoringStore — ini by design karena fields ini adalah project metadata
+- **Status**: Phase 5 cleanup selesai. BsnpCompliancePanel sekarang baca dari schema projection, bukan AuthoringStore
 
 ---
 
@@ -85,7 +87,7 @@
 | P2 | ~~Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors~~ ✅ FIXED — edu.pageBg()/pageBg2() used consistently in renderers | Diskusi STANDAR |
 | P3 | ~~Font size violations di block renderers lainnya~~ ✅ FIXED — edu token floor raised + CrosswordGameRenderer clue text fixed | Audit sebelumnya |
 | P4 | ~~NcGridRenderer card body "Bagian dari materi"~~ ✅ RESOLVED — placeholder not found in codebase | Review norma-golden |
-| P5 | syncMateriToSchema generate new IDs setiap sync — menyebabkan re-render | Analisis sync-projection |
+| P5 | ~~syncMateriToSchema generate new IDs setiap sync~~ ✅ RESOLVED — function dihapus, MateriTab pakai useSchemaMateri() langsung | Analisis sync-projection |
 
 ---
 
@@ -154,7 +156,7 @@
 - SceneList overflow indicator — amber AlertTriangle icon on overflowing pages
   - Reads from pageOverflowStatus store
 
-### Phase 5 — Cleanup Dual Source (NEAR COMPLETE)
+### Phase 5 — Cleanup Dual Source ✅ DONE
 **Goal**: Hapus old write paths, schema-only untuk save/export
 
 **Completed**:
@@ -201,6 +203,19 @@
   - Fixed Dashboard: 'settings' → 'dokumen' (PanelId type mismatch)
   - Fixed CourseTemplateRegistry: added missing presetId field
   - Result: 0 new TS errors (only pre-existing missing npm packages remain)
+
+**Phase 5-I: Schema-first reads for compliance panel + dead code cleanup**
+- BsnpCompliancePanel: Migrated kuis/modules/materi reads from useAuthoringStore → useSchemaKuisProjection/useSchemaModulesProjection + schema-based materi counting
+- games: Now auto-derived from modules (same logic as Phase 5-H subscription)
+- OfflineIndicator: teacherMode migrated from useAuthoringStore → useCanvaStore
+- StatusToast.AutoSaveIndicator: teacherMode migrated from useAuthoringStore → useCanvaStore
+- use-excel-import.ts: setActivePanel migrated → panelRequest pattern
+- import-export-component.tsx: Removed unused useAuthoringStore + useCanvaStore imports
+- use-project-manager.tsx: setActivePanel migrated → panelRequest pattern
+- preset-slice.ts: Marked 6 dead preset actions (applyKuisPreset, applyTpPreset, etc.) as @deprecated — zero callers exist
+- Bug sweep: Removed 4 unused useAuthoringStore imports (CanvaBuilder, auto-generate/index, use-preview-navigation, page-slice)
+- Bug sweep: Fixed use-toast.ts implicit any type → explicit boolean
+- MD3 token migration for 34 renderer files: VERIFIED — accent colors (g/r/y/c/p/o) are semantic and intentional, NOT legacy tokens. No migration needed.
 
 **Remaining (Future Work)**:
 - ~~Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis)~~ ✅ DONE (Phase 5-G)

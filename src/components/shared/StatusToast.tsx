@@ -79,7 +79,7 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
   const canvaStatus = useCanvaStore(s => s._saveStatus as SaveStatus | undefined);
   const authoringDirty = useDirtyStore(s => s.dirty);  // Phase 5: migrated from useAuthoringStore
   const lastSavedAt = useCanvaStore(s => s._lastSavedAt);
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
 
   // Combine status: if authoring is dirty and canva is saved, still show unsaved
   const status: SaveStatus = (() => {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { WifiOff, Wifi, CloudOff, RefreshCw } from 'lucide-react';
 import { useServiceWorker } from '@/hooks/use-service-worker';
 import { getQueueStatus, type SyncQueueStatus } from '@/lib/offline-sync';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import { cn } from '@/lib/utils';
 
 /**
@@ -24,7 +24,7 @@ export function OfflineIndicator() {
   const { isOnline } = useServiceWorker();
   const [queueStatus, setQueueStatus] = useState<SyncQueueStatus>({ pending: 0 });
   const [isSyncing, setIsSyncing] = useState(false);
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode;
 
   // Poll queue status periodically when offline

@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import { isEnabled } from '@/config/feature-flags';
 // All icons migrated to Material Symbols Outlined
-import { useAuthoringStore } from '@/store/authoring-store';
-import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
 import { useExportActions } from './use-export-actions';
 import { useExcelImport } from './use-excel-import';

@@ -1188,3 +1188,31 @@ Stage Summary:
 - **Store architecture improved**: Double projection write on load eliminated (simpler, more reliable)
 - **Dead code cleaned**: 3 deprecated files removed (-1300+ lines)
 - **Phase 4 Safe Page Split: 98%** — fully functional, no action needed
+
+---
+Task ID: 5-I
+Agent: Main Agent
+Task: Phase 5-I — Schema-first reads for BsnpCompliancePanel + dead code cleanup + bug sweep
+
+Work Log:
+- Audited full codebase: BsnpCompliancePanel, OfflineIndicator, StatusToast, use-excel-import, import-export-component, use-project-manager, preset-slice
+- BsnpCompliancePanel: Migrated kuis/modules/materi from useAuthoringStore → useSchemaKuisProjection/useSchemaModulesProjection + schema-based materi counting
+- games field: Auto-derived from modules with isGameBlockType filter (same logic as Phase 5-H subscription)
+- OfflineIndicator: teacherMode migrated from useAuthoringStore → useCanvaStore
+- StatusToast.AutoSaveIndicator: teacherMode migrated from useAuthoringStore → useCanvaStore
+- use-excel-import.ts: Both setActivePanel calls migrated to panelRequest pattern (handleImportJSON, confirmExcelImport)
+- import-export-component.tsx: Removed unused useAuthoringStore + useCanvaStore imports
+- use-project-manager.tsx: loadProject() setActivePanel → panelRequest
+- preset-slice.ts: Marked 6 dead preset actions as @deprecated (applyKuisPreset, applyTpPreset, applyCpPreset, applyAtpPreset, applyAlurPreset, applyMetaPreset — zero callers)
+- Bug sweep: Removed 4 unused useAuthoringStore imports (CanvaBuilder.tsx, auto-generate/index.tsx, use-preview-navigation.ts, page-slice.ts)
+- Bug sweep: Fixed use-toast.ts implicit any type → explicit boolean
+- MD3 token audit: Verified 34 renderer files using tokens.color('g'/'r'/'y'/'c'/'p'/'o') — these are semantic accent colors, NOT legacy tokens. No migration needed.
+- Build verified: npx next build ✅ (zero errors)
+
+Stage Summary:
+- **Phase 5 is now COMPLETE** — all content data reads use schema projections
+- **BsnpCompliancePanel** no longer reads stale data from AuthoringStore
+- **6 dead preset actions** marked @deprecated with zero callers
+- **4 unused imports** removed (bundle size reduction)
+- **Parking lot P5 resolved** — syncMateriToSchema function deleted, MateriTab uses useSchemaMateri directly
+- All remaining work items are "Future Work": applyFullPreset schema-first, import/restore schema-first, activePanel extraction
