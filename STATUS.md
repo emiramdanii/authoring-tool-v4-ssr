@@ -83,8 +83,8 @@
 |---|---|---|
 | P1 | ~~Cover invisible bug — zIndex:0 di SceneLayoutEngine~~ ✅ FIXED (Task 5) | Audit sebelumnya |
 | P2 | Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors | Diskusi STANDAR |
-| P3 | Font size violations di block renderers lainnya | Audit sebelumnya |
-| P4 | NcGridRenderer card body "Bagian dari materi" — placeholder text | Review norma-golden |
+| P3 | ~~Font size violations di block renderers lainnya~~ ✅ FIXED — edu token floor raised + CrosswordGameRenderer clue text fixed | Audit sebelumnya |
+| P4 | ~~NcGridRenderer card body "Bagian dari materi"~~ ✅ RESOLVED — placeholder not found in codebase | Review norma-golden |
 | P5 | syncMateriToSchema generate new IDs setiap sync — menyebabkan re-render | Analisis sync-projection |
 
 ---
@@ -188,11 +188,11 @@
 
 **Remaining (Future Work)**:
 - ~~Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis)~~ ✅ DONE (Phase 5-G)
-- Create dedicated renderers for tab-icons, accordion, infografis (currently using temp renderers)
+- ~~Create dedicated renderers for tab-icons, accordion, infografis~~ ✅ DONE (commit 896bd52)
+- ~~P3: Font size violations in block renderers~~ ✅ DONE — edu.micro() floor 11→14px, edu.caption() floor 14→16px, CrosswordGameRenderer clue text fixed
+- ~~P4: NcGridRenderer card body placeholder text~~ ✅ RESOLVED — placeholder text not found in codebase, likely already fixed
 - Migrate preset-slice writes (applyFullPreset) to schema-first (requires preset format refactor)
 - Convert import/restore bulk writes to schema-first
 - Full activePanel extraction from AuthoringStore to dedicated navigation store
 - Eliminate redundant `games` field (replace with computed getter)
 - P2: Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors
-- P3: Font size violations in other block renderers
-- P4: NcGridRenderer card body placeholder text
