@@ -97,9 +97,9 @@ export default function RightPanel() {
   if (!rightPanelOpen) return null;
 
   return (
-    <div className="w-full h-full bg-silse-surface-container-lowest border-l border-silse-outline-variant/40 flex flex-col shrink-0 overflow-hidden">
+    <div className="w-full h-full bg-silse-surface-container-lowest border-l border-silse-outline-variant flex flex-col shrink-0 overflow-hidden">
       {/* ── Properties Header — SILSE v4 MD3 reference style ── */}
-      <div className="px-4 py-2.5 border-b border-silse-outline-variant/40 flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
+      <div className="px-4 py-2.5 border-b border-silse-outline-variant/50 flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-silse-tertiary" style={{ fontSize: '20px' }}>tune</span>
           <h3
@@ -111,7 +111,7 @@ export default function RightPanel() {
         </div>
         <button
           onClick={toggleRightPanel}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150"
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:text-silse-on-surface transition-[background-color,color] duration-150"
           aria-label="Tutup panel"
         >
           <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
@@ -237,7 +237,7 @@ export default function RightPanel() {
       </div>
       {/* ── Footer — MD3: delete button when block selected ── */}
       {hasBlockSelection && (
-        <div className="px-4 py-2.5 bg-silse-surface-container-low border-t border-silse-outline-variant/40 flex-shrink-0">
+        <div className="px-4 py-2.5 bg-silse-surface-container-low border-t border-silse-outline-variant/50 flex-shrink-0">
           <button
             onClick={() => {
               if (selectedBlockId && confirm(`Hapus ${blockLabel.toLowerCase()} ini?`)) {

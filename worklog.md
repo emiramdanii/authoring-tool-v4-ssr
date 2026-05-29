@@ -1056,3 +1056,25 @@ Stage Summary:
 - **Timeline module**: Already had TimelineBlock in schema, now also has a generator (genTimelineModuleSchema) and GUIDED_EDITOR_REGISTRY entry for the module-type use case
 - **autoGenerateContent() no longer writes to AuthoringStore.modules** for presentation types — all goes to page.schema via schema blocks
 - **Temporary renderers** in place — dedicated TabIconsRenderer, AccordionRenderer, InfografisRenderer needed in future work
+---
+Task ID: 3-7
+Agent: main
+Task: UI Overhaul to SILSE v4 — Dashboard sidebar + CanvaBuilder dimensions + Left/Right panel styling + Schema panel fix
+
+Work Log:
+- Analyzed SILSE v4 design references (6 HTML files + DESIGN.md)
+- Analyzed current UI architecture (Dashboard, CanvaBuilder, Left/Right panels, Toolbar)
+- Dashboard.tsx: Added fixed w-64 sidebar with navigation (Dashboard/Workspace/Assets/Analytics/Settings/Support), Logo, New Project button, Avatar section. Main content now has ml-64 offset.
+- Toolbar.tsx: Removed NavTabs (navigation now handled by Dashboard sidebar)
+- CanvaBuilder.tsx: Changed pt-14 → pt-16 to match v4 64px toolbar height
+- IconRail.tsx: Changed 56px → w-16 (64px), py-4 gap-2 → py-6 gap-6, hover styling aligned to v4
+- SceneList.tsx: Updated scene nav items to v4 spec (gap-3, px-3 py-2, rounded-xl, w-12 h-8 thumbnails)
+- SchemaBlockTree.tsx: Fixed reactive updates — added page.schema and schemaBlocksLength to useMemo dependencies
+- RightPanel.tsx: Updated borders and hover states to v4 spec
+
+Stage Summary:
+- Dashboard now has SILSE v4 sidebar navigation with Material Symbols icons
+- CanvaBuilder layout matches v4 spec (h-16 toolbar, w-16 icon rail)
+- Schema panel fix: SchemaBlockTree now re-renders reactively when schema changes
+- All existing functionality preserved
+- Dev server running, homepage returns 200

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
@@ -104,7 +104,7 @@ export function SceneList({ searchFilter = '' }: SceneListProps) {
               setDragOverIdx(null);
             }}
             onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-            className={`w-full text-left flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
+            className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
               dragIdx === originalIndex
                 ? 'opacity-40 scale-95'
                 : dragOverIdx === originalIndex
@@ -116,9 +116,9 @@ export function SceneList({ searchFilter = '' }: SceneListProps) {
           >
             {/* Scene Number Thumbnail — SILSE v4 reference style */}
             <div
-              className={`w-10 h-7 rounded-md flex items-center justify-center text-[9px] flex-shrink-0 ${
+              className={`w-12 h-8 rounded flex items-center justify-center text-[10px] flex-shrink-0 ${
                 isActive
-                  ? 'bg-silse-on-surface/10'
+                  ? 'bg-black/10'
                   : 'bg-silse-surface-container-highest'
               }`}
               style={isActive ? {} : bgStyle}

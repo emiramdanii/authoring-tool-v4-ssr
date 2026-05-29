@@ -28,6 +28,26 @@ import { deriveExportPayloadFromSchema } from '@/core/schema/export-projection';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
 
+// ── Sidebar Nav Item Config ────────────────────────────────────
+interface SidebarNavItem {
+  id: string;
+  label: string;
+  icon: string; // Material Symbols Outlined icon name
+  panelRequest: string; // maps to canva-store panelRequest
+}
+
+const SIDEBAR_NAV_ITEMS: SidebarNavItem[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'space_dashboard', panelRequest: 'dashboard' },
+  { id: 'workspace', label: 'Workspace', icon: 'edit_note', panelRequest: 'canva' },
+  { id: 'assets', label: 'Assets', icon: 'folder_open', panelRequest: 'konten' },
+  { id: 'analytics', label: 'Analytics', icon: 'analytics', panelRequest: 'preview' },
+];
+
+const SIDEBAR_SECONDARY_ITEMS: { id: string; label: string; icon: string; panelRequest: string | null }[] = [
+  { id: 'settings', label: 'Settings', icon: 'settings', panelRequest: 'settings' },
+  { id: 'support', label: 'Support', icon: 'help', panelRequest: null },
+];
+
 // Lazy-load TemplateWizard — it's a modal that's not always visible
 const TemplateWizard = dynamic(() => import('@/components/canva/TemplateWizard'), { ssr: false });
 
@@ -115,6 +135,20 @@ export default function Dashboard() {
   const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
   const { saveProject, currentProjectId } = useProjectManager();
   const { isSederhana } = useTeacherMode();
+
+  // ── Sidebar: read activePanel to determine highlighted nav item ──
+  const activePanel = useAuthoringStore((s) => s.activePanel);
+
+  // Map activePanel to sidebar nav id for highlighting
+  const activeNavId = React.useMemo(() => {
+    if (activePanel === 'dashboard') return 'dashboard';
+    if (activePanel === 'canva') return 'workspace';
+    if (activePanel === 'konten') return 'assets';
+    if (activePanel === 'preview') return 'analytics';
+    if (activePanel === 'settings') return 'settings';
+    // For any other active panel, default to dashboard
+    return 'dashboard';
+  }, [activePanel]);
 
   // Get canva pages length for adaptive guidance
   const pagesLength = useCanvaStore((s) => s.pages.length);
@@ -261,8 +295,122 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-full page-transition" style={{ minHeight: 0 }}>
+      {/* ══ SIDEBAR — SILSE v4 Fixed Navigation ══════════════════ */}
+      <aside className="fixed left-0 top-0 bottom-0 w-64 z-30 flex flex-col border-r border-silse-outline-variant bg-silse-surface-bright">
+        {/* Logo Area */}
+        <div className="p-4 pb-2">
+          <div className="flex items-center gap-2.5 mb-1">
+            <div className="w-9 h-9 rounded-xl bg-silse-primary-container/15 flex items-center justify-center border border-silse-primary-container/25">
+              <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '22px', fontVariationSettings: "'FILL' 1, 'wght' 500" }}>school</span>
+            </div>
+            <div>
+              <span
+                className="text-base font-extrabold text-silse-primary tracking-tight leading-none"
+                style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+              >
+                SILSE
+              </span>
+              <p className="text-[0.6rem] text-silse-on-surface-variant leading-tight mt-0.5">Smart Interactive Learning</p>
+            </div>
+          </div>
+        </div>
+
+        {/* New Project Button */}
+        <div className="px-4 pb-3">
+          <button
+            onClick={() => {
+              if (hasData) {
+                showConfirm('Buat Proyek Baru?', 'Data yang belum disimpan akan hilang.', () => newProject());
+              } else {
+                newProject();
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-silse-primary-container text-silse-on-primary-container font-bold border-b-2 border-silse-primary hover:scale-95 transition-transform"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
+            Proyek Baru
+          </button>
+        </div>
+
+        {/* Primary Nav Items — scrollable */}
+        <nav className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1">
+          {SIDEBAR_NAV_ITEMS.map((item) => {
+            const isActive = activeNavId === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActivePanel(item.panelRequest)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? 'bg-silse-primary-container text-silse-on-primary-container'
+                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1'
+                }`}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: '20px',
+                    fontVariationSettings: isActive ? "'FILL' 1, 'wght' 500" : "'FILL' 0, 'wght' 400",
+                  }}
+                >
+                  {item.icon}
+                </span>
+                {item.label}
+              </button>
+            );
+          })}
+
+          {/* Divider */}
+          <div className="my-3 h-px bg-silse-outline-variant/50" />
+
+          {/* Secondary Nav Items */}
+          {SIDEBAR_SECONDARY_ITEMS.map((item) => {
+            const isActive = item.panelRequest !== null && activeNavId === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  if (item.panelRequest) {
+                    setActivePanel(item.panelRequest);
+                  }
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? 'bg-silse-primary-container text-silse-on-primary-container'
+                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1'
+                }`}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: '20px',
+                    fontVariationSettings: isActive ? "'FILL' 1, 'wght' 500" : "'FILL' 0, 'wght' 400",
+                  }}
+                >
+                  {item.icon}
+                </span>
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Bottom: Avatar + Teacher Name */}
+        <div className="p-4 border-t border-silse-outline-variant/50">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-silse-primary-container/20 border border-silse-primary-container/40 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-bold text-silse-primary">G</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-silse-on-surface truncate">Guru</p>
+              <p className="text-[0.6rem] text-silse-on-surface-variant truncate">Pengajar Aktif</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
       {/* ══ MAIN CONTENT AREA — SILSE v4 Bento Grid ════════════ */}
-      <main className="flex-1 min-w-0 overflow-y-auto bg-silse-surface-bright custom-scrollbar">
+      <main className="flex-1 min-w-0 overflow-y-auto bg-silse-surface-bright custom-scrollbar ml-64">
         <div className="p-6 sm:p-8 space-y-16 max-w-5xl">
 
           {/* ══ WELCOME HEADER — SILSE v4 ═══════════════════════ */}

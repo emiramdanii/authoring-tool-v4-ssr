@@ -9,13 +9,15 @@ import {
 } from '@/components/ui/tooltip';
 
 // ═══════════════════════════════════════════════════════════════
-// ICON RAIL v7 — SILSE v4 MD3 Navigation Rail
+// ICON RAIL v8 — SILSE v4 MD3 Navigation Rail (64px)
 // ═══════════════════════════════════════════════════════════════
-// 56px always-visible vertical icon strip.
+// 64px always-visible vertical icon strip.
 // MD3 Navigation Rail spec:
-//   - bg-silse-surface-bright
-//   - Active: pill indicator (3px wide bar) + filled icon + bg-silse-primary-container/20
-//   - Inactive: text-silse-on-surface-variant hover:bg-silse-surface-container-high/60
+//   - w-16 (64px) — bg-silse-surface-bright — border-r border-silse-outline-variant
+//   - py-6 gap-6
+//   - Active: pill indicator (3px) + filled icon + bg-silse-primary-container/20 text-silse-primary
+//   - Inactive: text-silse-on-surface-variant hover:bg-silse-surface-container-high
+//   - Icon buttons: p-2 rounded-xl
 //   - Icons: Material Symbols Outlined with FILL variation
 //   - Active indicator: left-aligned vertical pill
 //   - Transition: smooth 150ms background-color + color
@@ -57,10 +59,10 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
         <TooltipTrigger asChild>
           <button
             onClick={() => onTabChange(item.id)}
-            className={`relative w-10 h-10 flex items-center justify-center rounded-xl transition-[background-color,color] duration-150 group ${
+            className={`relative p-2 flex items-center justify-center rounded-xl transition-[background-color,color] duration-150 group ${
               isActive
                 ? 'bg-silse-primary-container/20 text-silse-primary'
-                : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface'
+                : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:text-silse-on-surface'
             }`}
             aria-label={label}
             aria-pressed={isActive}
@@ -86,8 +88,7 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
 
   return (
     <div
-      className="flex flex-col items-center py-4 gap-2 border-r border-silse-outline-variant/40 bg-silse-surface-bright flex-shrink-0"
-      style={{ width: '56px' }}
+      className="flex flex-col items-center py-6 gap-6 border-r border-silse-outline-variant bg-silse-surface-bright flex-shrink-0 w-16"
     >
       {/* Primary tabs — always visible at top */}
       {PRIMARY_RAIL_ITEMS.map(renderRailButton)}
