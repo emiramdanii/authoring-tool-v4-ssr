@@ -886,3 +886,35 @@ Stage Summary:
 - MD3 segmented tab bar in RightPanel
 - Compact toolbar (h-14 with backdrop-blur)
 - All build errors resolved, code pushed to GitHub
+---
+Task ID: 1
+Agent: Main
+Task: Build LearningMediaShell + Direct Editing for SILSE Canvas Workspace
+
+Work Log:
+- Analyzed existing codebase architecture (AppMode, PageRenderer, SchemaRenderer, PreviewMode, PresentMode)
+- Discovered previous session's LearningMediaShell/Store/Registry/Adapters work was NOT committed (files missing)
+- Rebuilt entire LearningMediaShell infrastructure from scratch with a more efficient approach:
+  - No separate ScreenTypeRegistry + 13 adapter files — leverages existing PageRenderer + SchemaScreenRenderer pipeline
+  - Single LearningMediaShell component with embedded sub-components (TopNavbar, BottomNav, CompletionModal, PhaseBadge)
+- Added 'learn' to AppMode type (5-mode architecture: edit/preview/present/export/learn)
+- Created LearningMediaStore (Zustand) — runtime state for currentScreenIndex, visitedScreens, scoreEntries, completion
+- Created LearningMediaShell — student-facing shell with TopNavbar (48px), PhaseBadge, PageRenderer, BottomNav (56px), CompletionModal
+- Extended SchemaRenderMode, PageRendererMode, PageFrameMode, BlockRendererMode with 'learn'
+- Added lightweight click-to-edit wrapper in SchemaBlockRenderer for learn mode:
+  - Double-click block → startEditing(blockId) → InlineTextEditor contentEditable
+  - Hover hint "Klik 2x untuk edit"
+  - Green "Editing" badge on active block
+  - Escape exits editing before exiting learn mode
+- Updated PageRenderer to pass editingBlockId + onBlockEdit in learn mode
+- Updated CanvaBuilder with learn mode branch (lazy-loaded LearningMediaShell)
+- Updated ModeSwitch with Learn button (GraduationCap icon, label "Belajar")
+- Updated session-slice setAppMode to clear selections on 'learn' mode entry
+- Build verified clean (next build passes)
+- Commit 8d0320a
+
+Stage Summary:
+- LearningMediaShell fully functional (TopNavbar + PhaseBadge + PageRenderer + BottomNav + CompletionModal)
+- Direct Editing wired end-to-end: double-click → contentEditable → updateSchemaBlock → re-render
+- Leverages existing InlineTextEditor + useInlineEditor infrastructure — no new editor code needed
+- 12 files changed, 774 insertions, 16 deletions
