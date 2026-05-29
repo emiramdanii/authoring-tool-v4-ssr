@@ -41,6 +41,11 @@ const PlayOverlay = dynamic(() => import('./PlayOverlay'), {
   loading: () => null,
 });
 
+const LearningMediaShell = dynamic(() => import('./LearningMediaShell'), {
+  ssr: false,
+  loading: () => null,
+});
+
 const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette').then(mod => ({ default: mod.default })), {
   ssr: false,
   loading: () => null,
@@ -50,6 +55,7 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 // CANVA BUILDER v8 — SILSE v4 Resizable Panel Layout
 // ═══════════════════════════════════════════════════════════════
 // Architecture:
+//   appMode === 'learn'    → LearningMediaShell (student-facing, screen nav, score)
 //   appMode === 'present'  → PresentMode (fullscreen stage only)
 //   appMode === 'preview'  → PreviewMode (stage + floating nav, no panels)
 //   appMode === 'edit'     → Fixed header (h-14) + resizable 3-panel
@@ -113,6 +119,21 @@ export default function CanvaBuilder() {
     }),
     [],
   );
+
+  // ── Learn mode: student-facing interactive learning ──────────
+  if (appMode === 'learn') {
+    return (
+      <MobileGuard>
+        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-slate-100 text-slate-800">
+          <UndoRedoToast />
+          <CanvaAutoSaveSync />
+          <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
+          <LearningMediaShell />
+          <OfflineIndicator />
+        </div>
+      </MobileGuard>
+    );
+  }
 
   // ── Present mode: fullscreen stage only ──────────────────────
   if (appMode === 'present') {

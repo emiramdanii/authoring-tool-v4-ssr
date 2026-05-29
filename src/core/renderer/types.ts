@@ -22,7 +22,7 @@ import { IOS_INTERACTION } from '../themes/ios-visual-contract'; // Re-import fo
 // RENDER MODE
 // ═══════════════════════════════════════════════════════════════════
 
-export type SchemaRenderMode = 'canvas' | 'preview' | 'export';
+export type SchemaRenderMode = 'canvas' | 'preview' | 'export' | 'learn';
 
 // ═══════════════════════════════════════════════════════════════════
 // TOKEN RESOLVER — Maps token keys to actual CSS values

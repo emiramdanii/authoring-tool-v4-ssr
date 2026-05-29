@@ -188,7 +188,7 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
   // The existing canvasPreview toggle remains for backward compat —
   // setAppMode('preview') is the canonical way going forward.
   setAppMode: (mode) => {
-    if (mode === 'preview' || mode === 'present') {
+    if (mode === 'preview' || mode === 'present' || mode === 'learn') {
       set({
         appMode: mode,
         ...clearAllSelections(),

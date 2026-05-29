@@ -29,7 +29,7 @@ import { GoldenPageRenderer } from '@/core/renderer/GoldenPageRenderer';
 //   <PageRenderer mode="export" page={page} currentPageIndex={0} totalPages={5} />
 // ═══════════════════════════════════════════════════════════════
 
-export type PageRendererMode = 'canvas' | 'preview' | 'export';
+export type PageRendererMode = 'canvas' | 'preview' | 'export' | 'learn';
 
 export interface PageRendererProps {
   /** Which render context */
@@ -49,12 +49,14 @@ const frameModeMap: Record<PageRendererMode, PageFrameMode> = {
   canvas: 'canvas',
   preview: 'preview',
   export: 'export',
+  learn: 'preview',
 };
 
 const blockModeMap: Record<PageRendererMode, BlockRendererMode> = {
   canvas: 'canvas',
   preview: 'preview',
   export: 'export',
+  learn: 'preview',
 };
 
 export const PageRenderer = React.memo(function PageRenderer({
@@ -185,6 +187,7 @@ export const PageRenderer = React.memo(function PageRenderer({
     canvas: 'canvas',
     preview: 'preview',
     export: 'export',
+    learn: 'learn',
   };
 
   // Block selection handler for canvas editing overlay
@@ -271,6 +274,9 @@ export const PageRenderer = React.memo(function PageRenderer({
   // ═══ FIX 3: Detect if golden contract is active for this page ═══
   const isGoldenContract = !!contractStyle;
 
+  // Learn mode: pass editing state so blocks can be inline-edited
+  const isLearnMode = mode === 'learn';
+
   const schemaContent = useSchemaRenderer && adaptedSchema ? (
     <SchemaScreenRenderer
       screen={adaptedSchema}
@@ -280,10 +286,10 @@ export const PageRenderer = React.memo(function PageRenderer({
       selectedBlockId={mode === 'canvas' ? selectedBlockId : undefined}
       selectedBlockIds={mode === 'canvas' ? selectedBlockIds : undefined}
       hoveredBlockId={mode === 'canvas' ? hoveredBlockId : undefined}
-      editingBlockId={mode === 'canvas' ? editingBlockId : undefined}
-      onBlockSelect={mode === 'canvas' ? handleBlockSelect : undefined}
+      editingBlockId={mode === 'canvas' || isLearnMode ? editingBlockId : undefined}
+      onBlockSelect={mode === 'canvas' ? handleBlockSelect : isLearnMode ? handleBlockSelect : undefined}
       onBlockHover={mode === 'canvas' ? handleBlockHover : undefined}
-      onBlockEdit={mode === 'canvas' ? handleBlockEdit : undefined}
+      onBlockEdit={mode === 'canvas' ? handleBlockEdit : isLearnMode ? handleBlockEdit : undefined}
       onBlockDelete={mode === 'canvas' ? handleBlockDelete : undefined}
       onBlockMoveUp={mode === 'canvas' ? handleBlockMoveUp : undefined}
       onBlockMoveDown={mode === 'canvas' ? handleBlockMoveDown : undefined}

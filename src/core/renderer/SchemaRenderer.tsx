@@ -824,7 +824,36 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
   );
 
   if (!isCompact) {
-    // Preview/export mode — no selection overlay, but compression still applies
+    // Preview/export/learn mode — no selection overlay, but compression still applies
+    if (mode === 'learn' && onEdit) {
+      // Learn mode: lightweight click-to-edit wrapper
+      return (
+        <div
+          className="relative group/learn-block"
+          data-block-id={blockId}
+          data-block-type={block.type}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            onEdit(blockId, block.type);
+          }}
+          style={{ cursor: isEditing ? 'text' : 'pointer' }}
+        >
+          {compressedContent}
+          {/* Subtle editing indicator */}
+          {isEditing && (
+            <div className="absolute -top-0.5 right-1 z-50 flex items-center gap-1 px-1.5 py-0.5 rounded-b text-[8px] font-bold bg-emerald-500 text-white shadow-sm">
+              Editing
+            </div>
+          )}
+          {/* Hover hint — only when NOT editing */}
+          {!isEditing && (
+            <div className="absolute top-1 right-1 z-50 opacity-0 group-hover/learn-block:opacity-100 transition-opacity px-1.5 py-0.5 rounded text-[7px] font-semibold bg-black/60 text-white pointer-events-none">
+              Klik 2x untuk edit
+            </div>
+          )}
+        </div>
+      );
+    }
     return compressedContent;
   }
 

@@ -29,7 +29,7 @@ import { EDU_MODE_BG } from '@/core/edu/education-colors';
 //   - 'glass': Glassmorphism, gradient borders, glowing accents
 // ═══════════════════════════════════════════════════════════════
 
-export type PageFrameMode = 'canvas' | 'preview' | 'export';
+export type PageFrameMode = 'canvas' | 'preview' | 'export' | 'learn';
 
 export interface PageFrameProps {
   /** Which render context is using this frame */

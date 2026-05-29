@@ -19,7 +19,7 @@ import { COLORS } from '@/lib/color-palette';
 // in Stage, PlayOverlay, and ExportApp.
 // ═══════════════════════════════════════════════════════════════
 
-export type BlockRendererMode = 'canvas' | 'preview' | 'export';
+export type BlockRendererMode = 'canvas' | 'preview' | 'export' | 'learn';
 
 export interface BlockRendererProps {
   /** The element to render */
@@ -147,7 +147,7 @@ export function BlockRenderer({
 
 // Map BlockRendererMode to PresetModuleCardMode
 function toModuleCardMode(mode: BlockRendererMode): 'canvas' | 'export' {
-  // Both 'preview' and 'export' should render as 'export' mode
+  // Both 'preview', 'learn' and 'export' should render as 'export' mode
   // (full visual fidelity, no edit controls)
   return mode === 'canvas' ? 'canvas' : 'export';
 }
