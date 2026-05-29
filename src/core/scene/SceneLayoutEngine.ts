@@ -198,6 +198,19 @@ export const BLOCK_GAP: Record<'compact' | 'normal', number> = {
   normal: SPACING.md,   // 12px in preview/export mode
 };
 
+/** Z-index for cover/hero full-page blocks.
+ *
+ * MUST be ≥ 1 so the cover renders ABOVE the page background.
+ * Previously zIndex:0 caused the "cover invisible" bug — the cover
+ * rendered behind the page background in certain CSS stacking contexts.
+ *
+ * Cover isolation (coverIsolation=true, the default) ensures that when
+ * a cover block coexists with flow blocks on the same page, only the
+ * cover is rendered, so there is no occlusion conflict with flow blocks
+ * (which also use zIndex:1).
+ */
+export const COVER_Z_INDEX = 1;
+
 // ── Resolved Block Position ───────────────────────────────────
 
 /**
@@ -499,8 +512,8 @@ export function resolveSceneLayout(
      * as overflow-hidden (height:0) so the OverflowIndicator can
      * suggest splitting the page.
      *
-     * This prevents the "cover invisible" bug where cover (zIndex:0)
-     * appears behind flow blocks (zIndex:1).
+     * Cover blocks use COVER_Z_INDEX (1) — above the page background.
+     * Cover isolation prevents occlusion of flow blocks (also zIndex:1).
      *
      * Default: true (cover isolation is always enforced).
      */
@@ -516,13 +529,16 @@ export function resolveSceneLayout(
   // Other blocks are hidden (height:0, isOverflowing:true) and the
   // OverflowIndicator gives the user the option to split the page.
   //
-  // ROOT CAUSE of "cover invisible":
-  //   Cover gets zIndex:0 (background layer), flow blocks get
-  //   zIndex:1 (foreground). In a mixed layout, flow blocks render
+  // ROOT CAUSE of "cover invisible" (original bug):
+  //   Cover was assigned zIndex:0 (background layer), flow blocks got
+  //   zIndex:1 (foreground). In a mixed layout, flow blocks rendered
   //   ON TOP of the cover, making it invisible. Even worse, the
-  //   safe area pushes the cover down, creating a gap at the top.
+  //   safe area pushed the cover down, creating a gap at the top.
   //
-  // FIX: Cover is NOT a block — it's a page-level layout.
+  // FIX: Cover blocks now use zIndex:1 (COVER_Z_INDEX) — same level
+  // as flow blocks, always above the page background. Cover isolation
+  // ensures no occlusion conflict with flow blocks.
+  //
   // A page with a cover block is a COVER PAGE, period.
   // Other blocks must move to the next page.
   const fullPageBlocks = blocks.filter(b => isFullPageBlockType(b.type));
@@ -550,7 +566,7 @@ export function resolveSceneLayout(
         height: scene.h,
         position: 'absolute',
         overflow: 'clip' as const,
-        zIndex: 0,
+        zIndex: COVER_Z_INDEX, // FIX: was 0 — caused "cover invisible" bug
         rotation: 0,
         key: block.id || `cover-iso-${block.type}-${i}`,
         isOverflowing: false,
@@ -770,11 +786,11 @@ export function resolveSceneLayout(
       height: absH,
       position: 'absolute',
       overflow: getOverflowRule(block.type),
-      // FIX: Full-page blocks (cover/hero) that fill the entire scene must render as
-      // BACKGROUND layer (zIndex: 0). Otherwise they occlude all flow blocks (zIndex: 1)
-      // causing "blocks don't appear on canvas" bug.
+      // FIX: Full-page blocks (cover/hero) use COVER_Z_INDEX (1) so they render
+      // ABOVE the page background. Previously zIndex:0 caused "cover invisible" bug.
+      // Cover isolation prevents occlusion of flow blocks (also zIndex:1).
       // Non-full-page absolute blocks (e.g., floating badges) keep zIndex: 10.
-      zIndex: layout.zIndex ?? (isFullPageBlockType(block.type) ? 0 : 10),
+      zIndex: layout.zIndex ?? (isFullPageBlockType(block.type) ? COVER_Z_INDEX : 10),
       rotation: layout.rotation ?? 0,
       key: block.id || `abs-${block.type}-${i}`,
       isOverflowing,
@@ -819,7 +835,7 @@ export function resolveSceneLayout(
       height: coverH,
       position: 'absolute',
       overflow: 'clip' as const,
-      zIndex: 0,
+      zIndex: COVER_Z_INDEX, // FIX: was 0 — caused "cover invisible" bug
       rotation: 0,
       key: block.id || `legacy-fp-${block.type}-${i}`,
       isOverflowing: false,
