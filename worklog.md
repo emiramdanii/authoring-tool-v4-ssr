@@ -918,3 +918,23 @@ Stage Summary:
 - Direct Editing wired end-to-end: double-click → contentEditable → updateSchemaBlock → re-render
 - Leverages existing InlineTextEditor + useInlineEditor infrastructure — no new editor code needed
 - 12 files changed, 774 insertions, 16 deletions
+---
+Task ID: polish-function-flow
+Agent: main
+Task: Polish function flow — edit→save→render pipeline, navigation, state sync, direct editing UX
+
+Work Log:
+- Audited entire Learn mode pipeline: CanvaBuilder → LearningMediaShell → PageRenderer → SchemaScreenRenderer → SchemaBlockRenderer → InlineTextEditor
+- Identified critical bug: onBlockSelect in learn mode called selectBlock() which clears editingBlockId, immediately cancelling inline editing
+- Fixed by creating handleBlockLearnSelect — a learn-safe select that only stops editing when clicking a different block
+- Polished SchemaBlockRenderer learn mode wrapper: click-to-edit (was double-click), smooth hover ring, emerald editing border + badge
+- Added InlineTextEditor auto-stop on blur — ensures editingBlockId is always cleared cleanly
+- Built score sync bridge: interactive store scores → learning media store via Zustand subscription
+- Added click-outside-to-stop-editing in LearningMediaShell
+- Polished navigation: handleBack/handleSelesai stop editing first, simplified completion flow
+- Build verification: clean build, no new TS errors
+
+Stage Summary:
+- 4 files changed, 97 insertions, 24 deletions
+- Commit: 2333d1f "Polish function flow: direct editing UX, score sync, navigation"
+- Key fixes: editing no longer cancelled on click, score display now shows interactive widget results, smooth click-to-edit UX
