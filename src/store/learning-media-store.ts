@@ -232,6 +232,7 @@ export const useLearningMediaStore = create<LearningMediaState>()(
             const iStore = useInteractiveStore.getState();
             const pages = useCanvaStore.getState().pages;
             const newScores = new Map<number, ScreenScore>();
+            const newCompleted = new Set(get().completedScreens);
 
             for (let i = 0; i < pages.length; i++) {
               const pageScore = iStore.pageScore(i);
@@ -239,14 +240,14 @@ export const useLearningMediaStore = create<LearningMediaState>()(
                 newScores.set(i, { score: pageScore.score, maxScore: pageScore.max });
                 // Auto-mark as complete if there's a completed score entry
                 if (iStore.isPageComplete(i)) {
-                  get().completedScreens.add(i);
+                  newCompleted.add(i);
                 }
               }
             }
 
             set({
               screenScores: newScores,
-              completedScreens: new Set(get().completedScreens),
+              completedScreens: newCompleted,
             });
           } catch { /* stores may not be ready */ }
         },

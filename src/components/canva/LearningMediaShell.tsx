@@ -199,6 +199,7 @@ function LearningContent() {
   const currentScreenIndex = useLearningMediaStore((s) => s.currentScreenIndex);
   const syncScores = useLearningMediaStore((s) => s.syncScores);
   const markScreenComplete = useLearningMediaStore((s) => s.markScreenComplete);
+  const initSession = useLearningMediaStore((s) => s.initSession);
 
   const ratio = useCanvaStore((s) => {
     const r = RATIOS.find((r) => r.id === s.ratioId);
@@ -212,6 +213,11 @@ function LearningContent() {
 
   const page = pages[currentScreenIndex];
   const totalPages = pages.length;
+
+  // Initialize learning session on mount
+  useEffect(() => {
+    initSession();
+  }, [initSession]);
 
   // Sync scores from interactive store
   useEffect(() => {
