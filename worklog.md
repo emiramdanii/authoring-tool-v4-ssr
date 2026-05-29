@@ -886,3 +886,31 @@ Stage Summary:
 - MD3 segmented tab bar in RightPanel
 - Compact toolbar (h-14 with backdrop-blur)
 - All build errors resolved, code pushed to GitHub
+---
+Task ID: silse-v4-ui-overhaul-2
+Agent: Main Agent
+Task: SILSE v4 UI Overhaul — Comprehensive MD3 Polish Pass
+
+Work Log:
+- Phase A: Fixed glass-card dark mode (token-based colors instead of hardcoded white), added .silse-chip MD3 utility, focus-ring uses --silse-primary
+- Phase B: Toolbar compact 52px (from 56px), avatar border-silse-primary-container/40
+- Phase C: LeftPanel search filter with SceneList filtering, SchemaBlockTreeWithBadge with block count chip, compact header (13px)
+- Phase D: RightPanel MD3 tab bar (rounded-lg), anim-enter-fade empty state, softer delete button (text-silse-error/80)
+- Phase E: Dashboard 32px greeting (from 40px), rounded-2xl AI button (from rounded-full), tighter template grid (gap-3)
+- Phase F: StatusBar 28px height, 11px icons, 10px zoom text, rounded-md display mode selector
+- SceneTabBar: rounded-lg tabs, silse-primary-container active state, border-b separation
+- Phase G: AuthoringTool sidebar 260px (from 272px), rounded-xl buttons/avatar, tighter gap-2.5
+- Phase H: GuidedFormEditor entry animation, guided-field-renderer full MD3 migration (surface-container-low inputs, primary toggle switches, silse-error required asterisk), OverflowWarningBanner full MD3 token migration, SchemaDrivenEditor entry animation + silse prefix, field-registry MD3 alignment
+- Phase I: Stage inner shadow for depth, PageNavigation + ZoomControls MD3 button styling, Dokumen full MD3 migration (silse tokens, rounded-2xl cards, 12px labels, uppercase tracking-widest headers)
+- Build verified: next build ✅
+- Committed: c5415c8, pushed to GitHub
+
+Stage Summary:
+- **20 files changed** — comprehensive MD3 token migration across all panels
+- **glass-card dark mode fixed** — was broken with hardcoded white, now uses silse tokens
+- **Consistent MD3 styling** — all inputs, toggles, buttons, cards use silse-* tokens
+- **Search filter added** to LeftPanel + SceneList for page navigation
+- **Schema block count badge** using new .silse-chip utility
+- **Dokumen panel fully migrated** from app-* to silse-* tokens
+- **Schema panel already functional** from prior Phase 2-3 work — now visually polished
+- Phase 4 (Safe Page Split) and Phase 5 (Cleanup Dual Source) remain DEFERRED as planned
