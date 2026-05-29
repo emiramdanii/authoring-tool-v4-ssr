@@ -184,8 +184,8 @@ export function renderField(
 // SHARED STITCH STYLES
 // ═══════════════════════════════════════════════════════════════
 
-const INPUT_BASE = 'w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface font-body-md text-sm focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all duration-200';
-const LABEL_BASE = 'text-[12px] font-bold text-on-surface-variant mb-2 block';
+const INPUT_BASE = 'w-full px-4 py-3 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-silse-on-surface font-body-md text-sm focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200';
+const LABEL_BASE = 'text-[12px] font-bold text-silse-on-surface mb-2 block';
 
 // ═══════════════════════════════════════════════════════════════
 // FIELD WITH RESET
@@ -274,9 +274,9 @@ function RichTextareaField({ label, value, onChange, placeholder, rows = 4, fiel
           <AlignLeft size={14} className="text-on-surface-variant" /> {label}
         </span>
       </label>
-      <div className="border border-outline-variant rounded-xl overflow-hidden bg-surface-bright focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary/20 transition-all duration-200">
+      <div className="border border-silse-outline-variant/40 rounded-xl overflow-hidden bg-silse-surface-container-low focus-within:border-silse-secondary focus-within:ring-2 focus-within:ring-silse-secondary/20 transition-all duration-200">
         {/* Mini toolbar — stitch spec */}
-        <div className="flex gap-1 p-2 border-b border-outline-variant bg-surface-container-low">
+        <div className="flex gap-1 p-2 border-b border-silse-outline-variant/30 bg-silse-surface-container">
           <button className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface" title="Tebal">
             <Bold size={14} />
           </button>
@@ -453,10 +453,10 @@ function BooleanField({ label, value, onChange, fieldId, helpId, helpText }: {
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary-container/10 border border-secondary/20">
+      <div className="flex items-center justify-between p-3 rounded-xl bg-silse-surface-container-low border border-silse-outline-variant/30">
         <div className="flex items-center gap-2">
-          <ToggleLeft size={16} className="text-secondary" />
-          <span className="text-[12px] font-bold text-on-secondary-fixed-variant">{label}</span>
+          <ToggleLeft size={16} className="text-silse-on-surface-variant" />
+          <span className="text-[12px] font-bold text-silse-on-surface">{label}</span>
         </div>
         <button
           id={fieldId}
@@ -465,9 +465,9 @@ function BooleanField({ label, value, onChange, fieldId, helpId, helpText }: {
           aria-checked={value}
           aria-label={label}
           aria-describedby={helpId}
-          className={`relative w-11 h-6 rounded-full transition-all duration-200 ${value ? 'bg-secondary' : 'bg-outline-variant'}`}
+          className={`relative w-11 h-6 rounded-full transition-all duration-200 ${value ? 'bg-silse-primary' : 'bg-silse-surface-container-high'}`}
         >
-          <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${value ? 'left-5.5' : 'left-0.5'}`} />
+          <div className={`absolute top-0.5 w-5 h-5 rounded-full shadow-sm transition-all duration-200 ${value ? 'left-5.5 bg-silse-on-primary' : 'left-0.5 bg-silse-surface-container-lowest'}`} />
         </button>
       </div>
       {helpText && <span id={helpId} className="text-[10px] text-on-surface-variant mt-1 block">{helpText}</span>}

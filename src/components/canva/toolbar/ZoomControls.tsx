@@ -75,7 +75,7 @@ export function ZoomControls() {
       {/* Zoom controls */}
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={zoomToFit} className="focus-ring h-7 w-7">
+          <Button variant="ghost" size="icon" onClick={zoomToFit} className="focus-ring h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30">
             <Maximize size={12} />
           </Button>
         </TooltipTrigger>
@@ -87,7 +87,7 @@ export function ZoomControls() {
         variant="ghost"
         size="icon"
         onClick={() => zoomDelta(-0.1)}
-        className="focus-ring h-7 w-7"
+        className="focus-ring h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30"
         title="Perkecil (Ctrl+-)"
       >
         <Minus size={12} />
@@ -102,7 +102,7 @@ export function ZoomControls() {
         variant="ghost"
         size="icon"
         onClick={() => zoomDelta(0.1)}
-        className="focus-ring h-7 w-7"
+        className="focus-ring h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30"
         title="Perbesar (Ctrl++)"
       >
         <PlusCircle size={12} />

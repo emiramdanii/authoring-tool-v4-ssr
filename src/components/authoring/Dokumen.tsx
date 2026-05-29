@@ -44,22 +44,22 @@ function AccordionSection({
   const [open, setOpen] = useState(defaultOpen ?? false);
 
   return (
-    <div className="border border-app-border rounded-lg overflow-hidden">
+    <div className="rounded-2xl border border-silse-outline-variant bg-silse-surface-container-lowest overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-elevated/80 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-silse-surface-container-lowest hover:bg-silse-surface-container/50 transition-colors"
       >
         <div className="flex items-center gap-2.5">
-          <span className="text-app-secondary">{icon}</span>
-          <span className="text-sm font-semibold text-app-primary">{title}</span>
+          <span className="text-silse-on-surface-variant">{icon}</span>
+          <span className="text-[10px] uppercase tracking-widest font-bold text-silse-outline">{title}</span>
         </div>
         <ChevronDown
           size={16}
-          className={`text-app-muted transition-transform duration-300 ease-in-out ${open ? 'rotate-180' : ''}`}
+          className={`text-silse-on-surface-variant/60 transition-transform duration-300 ease-in-out ${open ? 'rotate-180' : ''}`}
         />
       </button>
-      <Collapse open={open} className="border-t border-app-border" duration={0.25}>
-        <div className="p-4 bg-app-surface/80 space-y-4">
+      <Collapse open={open} className="border-t border-silse-outline-variant/30" duration={0.25}>
+        <div className="p-4 bg-silse-surface-container-lowest/80 space-y-4">
           {children}
         </div>
       </Collapse>
@@ -68,9 +68,9 @@ function AccordionSection({
 }
 
 // ── Shared field styles ──────────────────────────────────────────
-const fieldLabel = 'block text-xs font-medium text-app-secondary mb-1.5';
-const fieldInput = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/40 focus:border-app-accent/60 focus:shadow-[0_0_0_3px_rgba(var(--accent-rgb,59,130,246),0.08)] transition-all duration-200';
-const fieldTextarea = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/40 focus:border-app-accent/60 focus:shadow-[0_0_0_3px_rgba(var(--accent-rgb,59,130,246),0.08)] transition-all duration-200 resize-none';
+const fieldLabel = 'block text-[12px] font-bold text-silse-on-surface mb-1.5';
+const fieldInput = 'w-full bg-silse-surface-container-low border border-silse-outline-variant/40 rounded-xl px-3 py-2 text-sm text-silse-on-surface placeholder:text-silse-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-silse-secondary/20 focus:border-silse-secondary/60 transition-all duration-200';
+const fieldTextarea = 'w-full bg-silse-surface-container-low border border-silse-outline-variant/40 rounded-xl px-3 py-2 text-sm text-silse-on-surface placeholder:text-silse-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-silse-secondary/20 focus:border-silse-secondary/60 transition-all duration-200 resize-none';
 
 // ── Identitas Media ─────────────────────────────────────────────
 function MetaSection() {
@@ -103,7 +103,7 @@ function MetaSection() {
           <div key={f.key}>
             <label className={fieldLabel}>
               {f.label}
-              {f.required && <span className="text-red-400 ml-0.5">*</span>}
+              {f.required && <span className="text-silse-error ml-0.5">*</span>}
             </label>
             <input
               type={f.type || 'text'}
@@ -173,25 +173,25 @@ function CpSection() {
       <div>
         <label className={fieldLabel}>
           Profil Pelajar Pancasila{' '}
-          <span className="text-app-muted font-normal">(ketik + Enter)</span>
+          <span className="text-silse-on-surface-variant font-normal">(ketik + Enter)</span>
         </label>
-        <div className="flex flex-wrap gap-2 p-2 bg-app-elevated border border-app-border rounded-lg min-h-[42px]">
+        <div className="flex flex-wrap gap-2 p-2 bg-silse-surface-container-low border border-silse-outline-variant/40 rounded-xl min-h-[42px]">
           {cp.profil.map((p, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1 bg-app-elevated text-app-primary text-xs px-2.5 py-1 rounded-md"
+              className="inline-flex items-center gap-1 bg-silse-surface-container text-silse-on-surface text-xs px-2.5 py-1 rounded-xl"
             >
               {p}
               <button
                 onClick={() => removeProfil(i)}
-                className="text-app-secondary hover:text-red-400 ml-0.5"
+                className="text-silse-on-surface-variant hover:text-silse-error ml-0.5"
               >
                 ×
               </button>
             </span>
           ))}
           <input
-            className="bg-transparent text-sm text-app-primary placeholder:text-app-muted outline-none flex-1 min-w-[120px]"
+            className="bg-transparent text-sm text-silse-on-surface placeholder:text-silse-on-surface-variant/40 outline-none flex-1 min-w-[120px]"
             placeholder="Tambah profil…"
             value={profilInput}
             onChange={(e) => setProfilInput(e.target.value)}
@@ -217,7 +217,7 @@ function DragHandle({ onPointerDown, index }: { onPointerDown: (e: React.Pointer
   return (
     <span
       onPointerDown={(e) => onPointerDown(e, index)}
-      className="text-app-muted hover:text-app-secondary cursor-grab active:cursor-grabbing select-none text-lg leading-none px-1"
+      className="text-silse-on-surface-variant/50 hover:text-silse-on-surface-variant cursor-grab active:cursor-grabbing select-none text-lg leading-none px-1"
       aria-label="Drag to reorder"
     >
       <GripVertical size={16} />
@@ -244,15 +244,15 @@ function TpSection() {
 
   if (!tp.length) {
     return (
-      <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
-        <div className="w-12 h-12 rounded-xl bg-app-accent/10 flex items-center justify-center mx-auto mb-3">
-          <Target size={24} className="text-app-accent/70" />
+      <div className="text-center py-8 px-4 bg-silse-surface-container-low/30 border border-dashed border-silse-outline-variant/40 rounded-2xl">
+        <div className="w-12 h-12 rounded-xl bg-silse-primary/10 flex items-center justify-center mx-auto mb-3">
+          <Target size={24} className="text-silse-primary/70" />
         </div>
-        <p className="text-sm font-medium text-app-primary mb-1">Belum ada Tujuan Pembelajaran</p>
-        <p className="text-xs text-app-muted mb-4">Tambahkan TP untuk mendefinisikan tujuan setiap pertemuan.</p>
+        <p className="text-sm font-medium text-silse-on-surface mb-1">Belum ada Tujuan Pembelajaran</p>
+        <p className="text-xs text-silse-on-surface-variant mb-4">Tambahkan TP untuk mendefinisikan tujuan setiap pertemuan.</p>
         <button
           onClick={addTp}
-          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+          className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
         >
           ＋ Tambah TP
         </button>
@@ -265,23 +265,23 @@ function TpSection() {
       {tp.map((item, i) => (
         <div
           key={i}
-          className={`bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
+          className={`bg-silse-surface-container-low/50 border border-silse-outline-variant/30 rounded-2xl p-4 space-y-3 transition-all duration-200 ${
             dragHandlers.getIsDragged(i) ? 'opacity-50 scale-[0.98]' : ''
-          } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-app-accent' : ''}`}
+          } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-silse-primary' : ''}`}
         >
           {/* Header */}
           <div className="flex items-center gap-2">
             <DragHandle onPointerDown={dragHandlers.onPointerDown} index={i} />
             <div
-              className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0"
+              className="w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: `${item.color}22`, color: item.color }}
             >
               {i + 1}
             </div>
-            <span className="text-sm font-medium text-app-primary">Tujuan Pembelajaran {i + 1}</span>
+            <span className="text-sm font-medium text-silse-on-surface">Tujuan Pembelajaran {i + 1}</span>
             <button
               onClick={() => deleteTp(i)}
-              className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
+              className="ml-auto text-silse-on-surface-variant/60 hover:text-silse-error transition-colors text-sm"
             >
               <Trash2 size={14} className="inline" />
             </button>
@@ -350,7 +350,7 @@ function TpSection() {
 
       <button
         onClick={addTp}
-        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
       >
         ＋ Tambah TP
       </button>
@@ -379,15 +379,15 @@ function AtpSection() {
       </div>
 
       {!atp.pertemuan.length ? (
-        <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
-            <Calendar size={24} className="text-amber-400/70" />
+        <div className="text-center py-8 px-4 bg-silse-surface-container-low/30 border border-dashed border-silse-outline-variant/40 rounded-2xl">
+          <div className="w-12 h-12 rounded-xl bg-silse-secondary/10 flex items-center justify-center mx-auto mb-3">
+            <Calendar size={24} className="text-silse-secondary/70" />
           </div>
-          <p className="text-sm font-medium text-app-primary mb-1">Belum ada pertemuan</p>
-          <p className="text-xs text-app-muted mb-4">Tambahkan pertemuan untuk menyusun Alur Tujuan Pembelajaran.</p>
+          <p className="text-sm font-medium text-silse-on-surface mb-1">Belum ada pertemuan</p>
+          <p className="text-xs text-silse-on-surface-variant mb-4">Tambahkan pertemuan untuk menyusun Alur Tujuan Pembelajaran.</p>
           <button
             onClick={addAtpPertemuan}
-            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+            className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
           >
             ＋ Tambah Pertemuan
           </button>
@@ -395,15 +395,15 @@ function AtpSection() {
       ) : (
         <div className="space-y-3">
           {atp.pertemuan.map((p, i) => (
-            <div key={i} className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3">
+            <div key={i} className="bg-silse-surface-container-low/50 border border-silse-outline-variant/30 rounded-2xl p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-md bg-app-accent/15 text-app-accent flex items-center justify-center text-xs font-bold flex-shrink-0">
+                <div className="w-7 h-7 rounded-xl bg-silse-secondary/15 text-silse-secondary flex items-center justify-center text-xs font-bold flex-shrink-0">
                   P{i + 1}
                 </div>
-                <span className="text-sm font-medium text-app-primary">Pertemuan {i + 1}</span>
+                <span className="text-sm font-medium text-silse-on-surface">Pertemuan {i + 1}</span>
                 <button
                   onClick={() => deleteAtpPertemuan(i)}
-                  className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
+                  className="ml-auto text-silse-on-surface-variant/60 hover:text-silse-error transition-colors text-sm"
                 >
                   <Trash2 size={14} className="inline" />
                 </button>
@@ -463,7 +463,7 @@ function AtpSection() {
 
       <button
         onClick={addAtpPertemuan}
-        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
       >
         ＋ Tambah Pertemuan
       </button>
@@ -496,15 +496,15 @@ function AlurSection() {
   return (
     <div className="space-y-4">
       {!alur.length ? (
-        <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
+        <div className="text-center py-8 px-4 bg-silse-surface-container-low/30 border border-dashed border-silse-outline-variant/40 rounded-2xl">
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
             <Map size={24} className="text-emerald-400/70" />
           </div>
-          <p className="text-sm font-medium text-app-primary mb-1">Belum ada langkah kegiatan</p>
-          <p className="text-xs text-app-muted mb-4">Tambahkan langkah Pendahuluan, Inti, dan Penutup untuk menyusun alur pembelajaran.</p>
+          <p className="text-sm font-medium text-silse-on-surface mb-1">Belum ada langkah kegiatan</p>
+          <p className="text-xs text-silse-on-surface-variant mb-4">Tambahkan langkah Pendahuluan, Inti, dan Penutup untuk menyusun alur pembelajaran.</p>
           <button
             onClick={addAlur}
-            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+            className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
           >
             ＋ Tambah Langkah
           </button>
@@ -515,9 +515,9 @@ function AlurSection() {
           return (
             <div
               key={i}
-              className={`bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
+              className={`bg-silse-surface-container-low/50 border border-silse-outline-variant/30 rounded-2xl p-4 space-y-3 transition-all duration-200 ${
                 dragHandlers.getIsDragged(i) ? 'opacity-50 scale-[0.98]' : ''
-              } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-app-accent' : ''}`}
+              } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-silse-primary' : ''}`}
             >
               <div className="flex items-center gap-2">
                 <DragHandle onPointerDown={dragHandlers.onPointerDown} index={i} />
@@ -527,10 +527,10 @@ function AlurSection() {
                 >
                   {i + 1}
                 </div>
-                <span className="text-sm font-medium text-app-primary">{step.judul || `Langkah ${i + 1}`}</span>
+                <span className="text-sm font-medium text-silse-on-surface">{step.judul || `Langkah ${i + 1}`}</span>
                 <button
                   onClick={() => deleteAlur(i)}
-                  className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
+                  className="ml-auto text-silse-on-surface-variant/60 hover:text-silse-error transition-colors text-sm"
                 >
                   <Trash2 size={14} className="inline" />
                 </button>
@@ -584,7 +584,7 @@ function AlurSection() {
 
       <button
         onClick={addAlur}
-        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
       >
         ＋ Tambah Langkah
       </button>
@@ -599,10 +599,10 @@ export default function Dokumen() {
   return (
     <div className="p-6 space-y-5 max-w-4xl">
       <div>
-        <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
+        <h2 className="text-xl font-bold text-silse-on-surface flex items-center gap-2">
           <Ruler size={18} /> {isSederhana ? 'RPP & Dokumen' : 'Dokumen Pembelajaran'}
         </h2>
-        <p className="text-sm text-app-secondary mt-1">
+        <p className="text-sm text-silse-on-surface-variant mt-1">
           {isSederhana
             ? 'Isi informasi dasar dan tujuan pembelajaran.'
             : 'Lengkapi semua dokumen perencanaan pembelajaran dalam satu halaman.'
@@ -639,22 +639,22 @@ export default function Dokumen() {
 
       {/* Helpful hint in sederhana mode */}
       {isSederhana && (
-        <div className="bg-app-info/5 border border-app-info/15 rounded-xl p-3.5 flex items-center gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-app-info/10 flex items-center justify-center text-app-info text-sm">
+        <div className="bg-silse-tertiary-container/5 border border-silse-tertiary-container/15 rounded-xl p-3.5 flex items-center gap-3">
+          <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-silse-tertiary-container/10 flex items-center justify-center text-silse-tertiary text-sm">
             💡
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-app-secondary leading-relaxed">
+            <p className="text-xs text-silse-on-surface-variant leading-relaxed">
               Bagian Alur Tujuan Pembelajaran & Alur Kegiatan tersedia di <strong>Mode Lanjutan</strong>. Sebagian besar guru SMP cukup mengisi Identitas, Capaian, dan Tujuan Pembelajaran.
             </p>
           </div>
         </div>
       )}
 
-      <div className="mt-6 pt-4 border-t border-app-border flex justify-end">
+      <div className="mt-6 pt-4 border-t border-silse-outline-variant/30 flex justify-end">
         <button
           onClick={() => useCanvaStore.setState({ panelRequest: 'konten' })}
-          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors flex items-center gap-2"
         >
           {isSederhana ? 'Selanjutnya: Tambah Materi →' : 'Selanjutnya: Tambah Konten →'}
         </button>

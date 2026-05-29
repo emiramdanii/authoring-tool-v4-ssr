@@ -270,7 +270,7 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h1
-                  className="text-[40px] font-bold text-silse-primary tracking-tight leading-tight"
+                  className="text-[32px] font-bold text-silse-primary tracking-tight leading-tight"
                   style={{ fontFamily: 'var(--font-fredoka), Fredoka, cursive' }}
                 >
                   {getGreeting()}, Guru! Siap buat materi seru hari ini?
@@ -285,7 +285,7 @@ export default function Dashboard() {
                 {/* AI Content Button */}
                 <button
                   onClick={() => setActivePanel('autogen')}
-                  className="flex items-center gap-2 px-8 py-5 rounded-full bg-silse-primary-container text-silse-on-primary-container text-sm font-bold border-b-[3px] border-silse-primary hover:-translate-y-0.5 hover:shadow-sm transition-[transform,box-shadow]"
+                  className="flex items-center gap-2 px-8 py-5 rounded-2xl bg-silse-primary-container text-silse-on-primary-container text-sm font-bold border-b-[3px] border-silse-primary hover:-translate-y-0.5 hover:shadow-sm transition-[transform,box-shadow]"
                 >
                   <AutoAwesome size={18} />
                   Buat Konten Baru dengan AI
@@ -418,7 +418,7 @@ export default function Dashboard() {
                 Lihat Semua →
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {templates.map((p) => {
                 const Icon = p.icon;
                 const isCurrentPreset = isPresetMode && activePreset === p.key;

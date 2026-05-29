@@ -29,8 +29,8 @@ import type { GuidedFieldDef } from '@/core/schema/guided-patch';
 
 // ── Shared SILSE v4 Styles ──────────────────────────────────────
 
-const INPUT_BASE = 'w-full px-3 py-2.5 rounded-xl border border-silse-outline-variant/60 bg-silse-surface-bright text-silse-on-surface text-sm focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200 placeholder:text-silse-on-surface-variant/40';
-const LABEL_BASE = 'text-xs font-bold text-silse-on-surface-variant mb-1.5 block tracking-wide';
+const INPUT_BASE = 'w-full px-3 py-2.5 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-silse-on-surface text-sm focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200 placeholder:text-silse-on-surface-variant/40';
+const LABEL_BASE = 'text-[12px] font-bold text-silse-on-surface mb-1.5 block tracking-wide';
 
 // ── Main Render Dispatch ──────────────────────────────────────
 
@@ -160,7 +160,7 @@ function GuidedLabel({ fieldDef, fieldId, icon }: {
       <span className="flex items-center gap-1.5">
         {icon} {fieldDef.label}
         {fieldDef.required && (
-          <Asterisk size={10} className="text-silse-tertiary-container" />
+          <Asterisk size={10} className="text-silse-error" />
         )}
       </span>
     </label>
@@ -219,7 +219,7 @@ function GuidedTextareaField({ fieldDef, value, onChange, fieldId }: {
         placeholder={fieldDef.placeholder}
         rows={4}
         aria-describedby={helpId}
-        className="w-full px-4 py-3 rounded-xl border border-silse-outline-variant bg-silse-surface-bright text-silse-on-surface text-sm leading-relaxed focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200 resize-y"
+        className="w-full px-4 py-3 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-silse-on-surface text-sm leading-relaxed focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200 resize-y"
       />
       <HelpText text={fieldDef.helpText} id={helpId} />
     </div>
@@ -348,7 +348,7 @@ function GuidedColorField({ fieldDef, value, onChange, fieldId }: {
       <label className={LABEL_BASE} id={fieldId}>
         <span className="flex items-center gap-1.5">
           <Palette size={14} className="text-silse-on-surface-variant" /> {fieldDef.label}
-          {fieldDef.required && <Asterisk size={10} className="text-silse-tertiary-container" />}
+          {fieldDef.required && <Asterisk size={10} className="text-silse-error" />}
         </span>
         {/* Current color indicator: rounded swatch + name */}
         {currentToken && (
@@ -432,9 +432,9 @@ function GuidedBooleanField({ fieldDef, value, onChange, fieldId }: {
   const helpId = fieldDef.helpText ? `${fieldId}-help` : undefined;
   return (
     <div>
-      <div className="flex items-center justify-between p-3 rounded-xl bg-silse-secondary-container/10 border border-silse-secondary/20">
+      <div className="flex items-center justify-between p-3 rounded-xl bg-silse-surface-container-low border border-silse-outline-variant/30">
         <div className="flex items-center gap-2">
-          <ToggleLeft size={16} className="text-silse-secondary" />
+          <ToggleLeft size={16} className="text-silse-on-surface-variant" />
           <span className="text-sm font-bold text-silse-on-surface">{fieldDef.label}</span>
         </div>
         <button
@@ -444,10 +444,10 @@ function GuidedBooleanField({ fieldDef, value, onChange, fieldId }: {
           aria-checked={value}
           aria-label={fieldDef.label}
           aria-describedby={helpId}
-          className={`relative w-11 h-6 rounded-full transition-all duration-200 ${value ? 'bg-silse-secondary' : 'bg-silse-outline-variant'}`}
+          className={`relative w-11 h-6 rounded-full transition-all duration-200 ${value ? 'bg-silse-primary' : 'bg-silse-surface-container-high'}`}
           type="button"
         >
-          <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${value ? 'left-5.5' : 'left-0.5'}`} />
+          <div className={`absolute top-0.5 w-5 h-5 rounded-full shadow-sm transition-all duration-200 ${value ? 'left-5.5 bg-silse-on-primary' : 'left-0.5 bg-silse-surface-container-lowest'}`} />
         </button>
       </div>
       <HelpText text={fieldDef.helpText} id={helpId} />
@@ -598,10 +598,10 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                     <span className="text-sm font-bold text-silse-on-surface-variant">{subField.label}</span>
                     <button
                       onClick={() => updateItem(idx, subField.key, !item[subField.key])}
-                      className={`relative w-9 h-5 rounded-full transition-all duration-200 ${item[subField.key] ? 'bg-silse-secondary' : 'bg-silse-outline-variant'}`}
+                      className={`relative w-9 h-5 rounded-full transition-all duration-200 ${item[subField.key] ? 'bg-silse-primary' : 'bg-silse-surface-container-high'}`}
                       type="button"
                     >
-                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200 ${item[subField.key] ? 'left-4' : 'left-0.5'}`} />
+                      <div className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all duration-200 ${item[subField.key] ? 'left-4 bg-silse-on-primary' : 'left-0.5 bg-silse-surface-container-lowest'}`} />
                     </button>
                   </div>
                 ) : subField.type === 'array' && subField.fields ? (
@@ -625,14 +625,14 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                   <div>
                     <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">
                       {subField.label}
-                      {subField.required && <Asterisk size={8} className="inline ml-0.5 text-silse-tertiary-container" />}
+                      {subField.required && <Asterisk size={8} className="inline ml-0.5 text-silse-error" />}
                     </label>
                     <textarea
                       value={String(item[subField.key] || '')}
                       onChange={e => updateItem(idx, subField.key, e.target.value)}
                       placeholder={subField.placeholder}
                       rows={2}
-                      className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant bg-silse-surface-bright text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all resize-y"
+                      className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all resize-y"
                     />
                   </div>
                 ) : subField.type === 'select' && subField.options ? (
@@ -641,7 +641,7 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                     <select
                       value={String(item[subField.key] || '')}
                       onChange={e => updateItem(idx, subField.key, e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant bg-silse-surface-bright text-sm text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all"
                     >
                       {subField.options.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -652,7 +652,7 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                   <div>
                     <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">
                       {subField.label}
-                      {subField.required && <Asterisk size={8} className="inline ml-0.5 text-silse-tertiary-container" />}
+                      {subField.required && <Asterisk size={8} className="inline ml-0.5 text-silse-error" />}
                     </label>
                     <input
                       type={subField.type === 'number' ? 'number' : 'text'}
@@ -661,7 +661,7 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                       placeholder={subField.placeholder}
                       min={subField.min}
                       max={subField.max}
-                      className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant bg-silse-surface-bright text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all"
+                      className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all"
                     />
                   </div>
                 )}
@@ -805,10 +805,10 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
                     <span className="text-[10px] text-silse-on-surface-variant">{subField.label}</span>
                     <button
                       onClick={() => updateNested(idx, subField.key, !item[subField.key])}
-                      className={`relative w-7 h-4 rounded-full transition-all duration-200 ${item[subField.key] ? 'bg-silse-secondary' : 'bg-silse-outline-variant'}`}
+                      className={`relative w-7 h-4 rounded-full transition-all duration-200 ${item[subField.key] ? 'bg-silse-primary' : 'bg-silse-surface-container-high'}`}
                       type="button"
                     >
-                      <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-200 ${item[subField.key] ? 'left-3.5' : 'left-0.5'}`} />
+                      <div className={`absolute top-0.5 w-3 h-3 rounded-full shadow-sm transition-all duration-200 ${item[subField.key] ? 'left-3.5 bg-silse-on-primary' : 'left-0.5 bg-silse-surface-container-lowest'}`} />
                     </button>
                   </div>
                 ) : (
@@ -825,7 +825,7 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
                         value={String(item[subField.key] || '')}
                         onChange={e => updateNested(idx, subField.key, e.target.value)}
                         rows={1}
-                        className="flex-1 px-2 py-1 rounded-lg border border-silse-outline-variant/30 bg-silse-surface-bright text-[11px] text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all resize-y min-w-0"
+                        className="flex-1 px-2 py-1 rounded-xl border border-silse-outline-variant/30 bg-silse-surface-container-low text-[11px] text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all resize-y min-w-0"
                       />
                     ) : (
                       <input
@@ -833,7 +833,7 @@ function InlineGuidedNestedArray({ fieldDef, items, onUpdate }: {
                         value={String(item[subField.key] || '')}
                         onChange={e => updateNested(idx, subField.key, subField.type === 'number' ? Number(e.target.value) : e.target.value)}
                         placeholder={subField.placeholder}
-                        className="flex-1 px-2 py-1 rounded-lg border border-silse-outline-variant/30 bg-silse-surface-bright text-[11px] text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all min-w-0"
+                        className="flex-1 px-2 py-1 rounded-xl border border-silse-outline-variant/30 bg-silse-surface-container-low text-[11px] text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all min-w-0"
                       />
                     )}
                   </div>

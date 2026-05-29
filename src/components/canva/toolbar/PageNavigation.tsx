@@ -26,7 +26,7 @@ export function PageNavigation() {
         size="icon"
         onClick={() => currentPageIndex > 0 && goPage(currentPageIndex - 1)}
         disabled={currentPageIndex <= 0}
-        className="h-7 w-7 disabled:opacity-30"
+        className="h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30 disabled:opacity-30"
         title="Halaman sebelumnya"
       >
         <ChevronLeft size={13} />
@@ -50,7 +50,7 @@ export function PageNavigation() {
         size="icon"
         onClick={() => currentPageIndex < pages.length - 1 && goPage(currentPageIndex + 1)}
         disabled={currentPageIndex >= pages.length - 1}
-        className="h-7 w-7 disabled:opacity-30"
+        className="h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30 disabled:opacity-30"
         title="Halaman berikutnya"
       >
         <ChevronRight size={13} />

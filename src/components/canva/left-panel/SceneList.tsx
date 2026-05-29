@@ -35,7 +35,11 @@ const BADGE_COLOR_MAP: Record<string, string> = {
   custom: 'bg-silse-surface-container/50 text-silse-on-surface-variant border-silse-outline-variant/30',
 };
 
-export function SceneList() {
+interface SceneListProps {
+  searchFilter?: string;
+}
+
+export function SceneList({ searchFilter = '' }: SceneListProps) {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const goPage = useCanvaStore(s => s.goPage);
@@ -60,11 +64,19 @@ export function SceneList() {
     }
   }, [currentPageIndex]);
 
+  const filteredPages = useMemo(() => {
+    if (!searchFilter) return pages;
+    const lower = searchFilter.toLowerCase();
+    return pages.filter(p => p.label.toLowerCase().includes(lower));
+  }, [pages, searchFilter]);
+
   return (
     <div className="flex flex-col gap-1">
       {/* Scenes label — now handled by LeftPanel, but keep for standalone use */}
-      {pages.map((p, i) => {
-        const isActive = i === currentPageIndex;
+      {filteredPages.map((p, i) => {
+        // Find the original index in the full pages array
+        const originalIndex = pages.indexOf(p);
+        const isActive = originalIndex === currentPageIndex;
         const badge = TEMPLATE_BADGE_MAP[p.templateType || 'custom'] || TEMPLATE_BADGE_MAP.custom;
         const bgStyle = p.bgDataUrl
           ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -80,22 +92,22 @@ export function SceneList() {
             key={p.id}
             ref={isActive ? activeRef : undefined}
             data-testid={`page-tab-${i}`}
-            onClick={() => goPage(i)}
+            onClick={() => goPage(originalIndex)}
             draggable
-            onDragStart={() => setDragIdx(i)}
-            onDragOver={(e) => { e.preventDefault(); setDragOverIdx(i); }}
+            onDragStart={() => setDragIdx(originalIndex)}
+            onDragOver={(e) => { e.preventDefault(); setDragOverIdx(originalIndex); }}
             onDragLeave={() => setDragOverIdx(null)}
             onDrop={(e) => {
               e.preventDefault();
-              if (dragIdx !== null && dragIdx !== i) { reorderPage(dragIdx, i); }
+              if (dragIdx !== null && dragIdx !== originalIndex) { reorderPage(dragIdx, originalIndex); }
               setDragIdx(null);
               setDragOverIdx(null);
             }}
             onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
             className={`w-full text-left flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
-              dragIdx === i
+              dragIdx === originalIndex
                 ? 'opacity-40 scale-95'
-                : dragOverIdx === i
+                : dragOverIdx === originalIndex
                   ? 'ring-2 ring-silse-primary/40 bg-silse-surface-container-high'
                   : isActive
                     ? 'bg-silse-primary-container text-silse-on-primary-container border border-silse-primary/20'
@@ -111,7 +123,7 @@ export function SceneList() {
               }`}
               style={isActive ? {} : bgStyle}
             >
-              {isActive ? <span className="font-bold">{i + 1}</span> : <span className="text-silse-on-surface-variant font-medium">{i + 1}</span>}
+              {isActive ? <span className="font-bold">{originalIndex + 1}</span> : <span className="text-silse-on-surface-variant font-medium">{originalIndex + 1}</span>}
             </div>
 
             {/* Scene Label */}
@@ -120,7 +132,7 @@ export function SceneList() {
                 isActive ? 'font-bold' : ''
               }`}>
                 {isSchemaDriven && <span className="material-symbols-outlined inline mr-0.5" style={{ fontSize: '12px' }}>bolt</span>}
-                Scene {i + 1}: {p.label}
+                Scene {originalIndex + 1}: {p.label}
                 {pageOverflowStatus[p.id]?.hasOverflow && (
                   <span className="material-symbols-outlined inline ml-1 text-silse-tertiary" style={{ fontSize: '12px' }} aria-label="Konten melebihi kapasitas">warning</span>
                 )}

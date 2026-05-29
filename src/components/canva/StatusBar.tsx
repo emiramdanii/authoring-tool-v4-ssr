@@ -42,12 +42,11 @@ const DISPLAY_MODES: Array<{
   key: EduDisplayMode;
   label: string;
   icon: React.ReactNode;
-  shortLabel: string;
 }> = [
-  { key: 'classroom', label: 'Kelas', icon: <Monitor size={10} />, shortLabel: '🏫' },
-  { key: 'projector', label: 'Proyektor', icon: <Projector size={10} />, shortLabel: '📽️' },
-  { key: 'print', label: 'Cetak', icon: <Printer size={10} />, shortLabel: '🖨️' },
-  { key: 'student', label: 'Siswa', icon: <Laptop size={10} />, shortLabel: '💻' },
+  { key: 'classroom', label: 'Kelas', icon: <Monitor size={10} /> },
+  { key: 'projector', label: 'Proyektor', icon: <Projector size={10} /> },
+  { key: 'print', label: 'Cetak', icon: <Printer size={10} /> },
+  { key: 'student', label: 'Siswa', icon: <Laptop size={10} /> },
 ];
 
 function DisplayModeSelector() {
@@ -62,7 +61,7 @@ function DisplayModeSelector() {
           <button
             key={m.key}
             onClick={() => setDisplayMode(m.key)}
-            className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded transition-colors text-[9px] font-bold ${
+            className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-md transition-colors text-[9px] font-bold ${
               isActive
                 ? 'bg-silse-primary/15 text-silse-primary'
                 : 'text-silse-on-surface-variant hover:text-silse-on-surface-variant/80 hover:bg-silse-surface-container-high/50'
@@ -88,17 +87,17 @@ const SAVE_INDICATOR_CONFIG: Record<SaveStatus, { icon: React.ReactNode; label: 
     className: 'text-silse-error/60',
   },
   saving: {
-    icon: <Loader2 size={10} className="animate-spin text-silse-tertiary" />,
+    icon: <Loader2 size={11} className="animate-spin text-silse-tertiary" />,
     label: 'Menyimpan...',
     className: 'text-silse-tertiary/60',
   },
   saved: {
-    icon: <CheckCircle2 size={10} className="text-silse-primary" />,
+    icon: <CheckCircle2 size={11} className="text-silse-primary" />,
     label: 'Tersimpan',
     className: 'text-silse-primary/50',
   },
   error: {
-    icon: <AlertCircle size={10} className="text-silse-error" />,
+    icon: <AlertCircle size={11} className="text-silse-error" />,
     label: 'Gagal simpan',
     className: 'text-silse-error/60',
   },
@@ -175,7 +174,7 @@ export default function StatusBar() {
   return (
     <div
       className="flex items-center gap-3 px-4 py-1 bg-silse-surface-container-lowest border-t border-silse-outline-variant/40 text-xs text-silse-on-surface-variant select-none"
-      style={{ height: '26px' }}
+      style={{ height: '28px' }}
     >
       {/* Ratio */}
       <span className="flex items-center gap-1.5">
@@ -298,7 +297,7 @@ export default function StatusBar() {
         )}
         <button
           onClick={zoomToFit}
-          className="font-mono text-[9px] text-silse-on-surface-variant hover:text-silse-primary transition-colors w-12 text-right"
+          className="font-mono text-[10px] text-silse-on-surface-variant hover:text-silse-primary transition-colors w-12 text-right"
           title="Sesuaikan layar"
         >
           {storeZoom === -1 ? `Pas ${Math.round(storeFitZoom * 100)}%` : `${Math.round(storeZoom * 100)}%`}

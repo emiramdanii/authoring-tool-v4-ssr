@@ -371,7 +371,7 @@ export default function Stage() {
     <div
       ref={canvasAreaRef}
       id="cm-canvas-area"
-      className="flex-1 w-full bg-silse-surface-dim canvas-bg overflow-hidden flex items-center justify-center"
+      className="flex-1 w-full bg-silse-surface-dim canvas-bg overflow-hidden flex items-center justify-center shadow-[inset_0_1px_3px_rgba(0,0,0,0.04)]"
       style={{
         cursor: cursorStyle,
       }}

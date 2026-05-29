@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import {
   Plus,
   FilePlus2,
@@ -33,6 +33,7 @@ import { AddBlockSection } from './left-panel/AddBlockSection';
 import { TemplateSection } from './left-panel/TemplateSection';
 import { SettingsSection } from './left-panel/SettingsSection';
 import { SchemaBlockTree } from './left-panel/SchemaBlockTree';
+import { getPageBlocks } from '@/core/schema/ensure-schema';
 
 import HistoryPanel from './left-panel/HistoryPanel';
 import AddBlockPanel from './left-panel/AddBlockPanel';
@@ -70,6 +71,36 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
 //   - Cleaner visual hierarchy
 // ═══════════════════════════════════════════════════════════════
 
+// ── SchemaBlockTree with badge showing total block count ──
+function SchemaBlockTreeWithBadge() {
+  const pages = useCanvaStore(s => s.pages);
+  const totalBlocks = useMemo(() => {
+    let count = 0;
+    for (const page of pages) {
+      if (page.schema) {
+        count += getPageBlocks(page).length;
+      }
+    }
+    return count;
+  }, [pages]);
+
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 px-1 mb-1">
+        <SchemaBlockTree />
+      </div>
+      {totalBlocks > 0 && (
+        <div className="px-1 mt-0.5">
+          <span className="silse-chip text-[9px] py-0.5 px-2">
+            <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>bolt</span>
+            {totalBlocks} block{totalBlocks !== 1 ? 's' : ''}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function LeftPanel() {
   // Sync activeTab with store's leftTab — single source of truth
   const storeLeftTab = useCanvaStore(s => s.leftTab);
@@ -77,6 +108,7 @@ export default function LeftPanel() {
   const [addBlockOpen, setAddBlockOpen] = useState(true);
   const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [searchFilter, setSearchFilter] = useState('');
 
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const blockLabel = teacherMode ? 'Konten' : 'Block';
@@ -107,7 +139,7 @@ export default function LeftPanel() {
         {/* Header — SILSE v4: Workspace + add_circle button */}
         <div className="px-3 py-2.5 flex items-center justify-between flex-shrink-0 border-b border-silse-outline-variant/40">
           <h3
-            className="text-sm font-bold text-silse-on-surface tracking-tight"
+            className="text-[13px] font-bold text-silse-on-surface tracking-tight"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
             Workspace
@@ -120,6 +152,30 @@ export default function LeftPanel() {
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
           </button>
         </div>
+
+        {/* Search filter — only show on Pages tab */}
+        {activeTab === 'pages' && (
+          <div className="px-3 pb-2 flex-shrink-0">
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-silse-outline" style={{ fontSize: '16px' }}>search</span>
+              <input
+                type="text"
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                placeholder="Cari halaman..."
+                className="w-full pl-8 pr-3 py-1.5 text-[11px] bg-silse-surface-container-low rounded-lg border border-silse-outline-variant/40 text-silse-on-surface placeholder:text-silse-outline focus:outline-none focus:border-silse-primary/50 focus:ring-1 focus:ring-silse-primary/20 transition-colors"
+              />
+              {searchFilter && (
+                <button
+                  onClick={() => setSearchFilter('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-silse-outline hover:text-silse-on-surface-variant"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -136,12 +192,12 @@ export default function LeftPanel() {
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <SceneList />
+                    <SceneList searchFilter={searchFilter} />
                   </div>
                 </div>
 
                 {/* Schema Block Tree — integrated per page */}
-                <SchemaBlockTree />
+                <SchemaBlockTreeWithBadge />
 
                 {/* Library Blocks Section — 2x2 dashed grid */}
                 <div className="pt-2 border-t border-silse-outline-variant/40">

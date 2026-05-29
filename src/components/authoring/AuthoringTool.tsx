@@ -315,7 +315,7 @@ function AuthoringToolInner() {
       <aside
         role="navigation"
         aria-label="Menu utama"
-        className="w-[272px] flex-shrink-0 bg-silse-surface-container-lowest border-r border-silse-outline-variant/60 flex flex-col"
+        className="w-[260px] flex-shrink-0 bg-silse-surface-container-lowest border-r border-silse-outline-variant/60 flex flex-col"
       >
         {/* ── Brand Header — SILSE v4 identity ── */}
         <div className="px-5 pt-5 pb-3">
@@ -341,7 +341,7 @@ function AuthoringToolInner() {
         <div className="px-4 pb-3">
           <button
             onClick={() => setWizardOpen(true)}
-            className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl bg-silse-primary-container text-silse-on-primary-container font-bold text-sm border-b-2 border-silse-primary/40 hover:bg-silse-primary-container/90 active:scale-[0.97] transition-[transform,background-color]"
+            className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-silse-primary-container text-silse-on-primary-container font-bold text-sm border-b-2 border-silse-primary/40 hover:bg-silse-primary-container/90 active:scale-[0.97] transition-[transform,background-color]"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
             Proyek Baru
@@ -415,11 +415,11 @@ function AuthoringToolInner() {
 
         {/* ── Bottom Actions — Settings, Support ── */}
         <div className="px-2.5 py-2 space-y-0.5 border-t border-silse-outline-variant/40">
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150">
+          <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12px] text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150">
             <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px' }}>settings</span>
             <span>Pengaturan</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150">
+          <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12px] text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150">
             <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px' }}>contact_support</span>
             <span>Bantuan</span>
           </button>
@@ -429,7 +429,7 @@ function AuthoringToolInner() {
         <div className="px-3 py-3 space-y-2.5 border-t border-silse-outline-variant/40 bg-silse-surface-container-lowest">
           {/* User profile card */}
           <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-silse-surface-container-high/40 transition-colors">
-            <div className="w-9 h-9 rounded-full bg-silse-primary-container/20 flex items-center justify-center flex-shrink-0 border border-silse-primary-container/30">
+            <div className="w-9 h-9 rounded-xl bg-silse-primary-container/20 flex items-center justify-center flex-shrink-0 border border-silse-primary-container/30">
               <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '18px' }}>school</span>
             </div>
             <div className="min-w-0 flex-1">

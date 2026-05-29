@@ -35,7 +35,7 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
 
   return (
     <div
-      className={`flex items-center gap-1 ${isCompact ? 'px-2 py-1' : 'px-3 py-2'} overflow-x-auto custom-scrollbar ${className}`}
+      className={`flex items-center gap-1 ${isCompact ? 'px-2 py-1' : 'px-3 py-2'} overflow-x-auto custom-scrollbar border-b border-silse-outline-variant/30 ${className}`}
       role="tablist"
       aria-label="Tab navigasi"
     >
@@ -45,12 +45,12 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
         aria-selected={activeTabId === null}
         onClick={() => setActiveTabId(null)}
         className={`
-          flex items-center gap-1.5 rounded-full transition-[background-color,border-color,color] whitespace-nowrap
+          flex items-center gap-1.5 rounded-lg transition-[background-color,border-color,color] whitespace-nowrap
           ${isCompact ? 'px-2.5 py-1 text-[9px]' : 'px-3 py-1.5 text-[10px]'}
           font-bold
           ${activeTabId === null
-            ? 'bg-app-accent/15 text-app-accent shadow-sm'
-            : 'bg-app-elevated/50 text-app-muted hover:bg-app-elevated hover:text-app-secondary'
+            ? 'bg-silse-primary-container/20 text-silse-primary font-bold'
+            : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/50'
           }
         `}
         title="Tampilkan semua blok"
@@ -71,12 +71,12 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
             aria-selected={isActive}
             onClick={() => setActiveTabId(isActive ? null : tab.id)}
             className={`
-              flex items-center gap-1.5 rounded-full transition-[background-color,border-color,color] whitespace-nowrap
+              flex items-center gap-1.5 rounded-lg transition-[background-color,border-color,color] whitespace-nowrap
               ${isCompact ? 'px-2.5 py-1 text-[9px]' : 'px-3 py-1.5 text-[10px]'}
               font-bold
               ${isActive
-                ? 'bg-app-accent/15 text-app-accent shadow-sm'
-                : 'bg-app-elevated/50 text-app-muted hover:bg-app-elevated hover:text-app-secondary'
+                ? 'bg-silse-primary-container/20 text-silse-primary font-bold'
+                : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/50'
               }
             `}
             title={tab.label}

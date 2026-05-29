@@ -384,7 +384,7 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
           {/* Type badge — hidden when actions visible */}
           {!showActions && (
             <span
-              className="flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-lg uppercase tracking-wide"
+              className="silse-chip flex-shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-lg uppercase tracking-wide"
               style={{
                 backgroundColor: display.color + '18',
                 color: display.color,
@@ -817,7 +817,7 @@ export function SchemaNavigatorPanel() {
           <Layers size={14} className="text-silse-primary" />
         </div>
         <div className="min-w-0">
-          <h3 className="text-xs uppercase tracking-wider text-silse-outline font-bold leading-tight">
+          <h3 className="text-[10px] uppercase tracking-widest font-bold text-silse-outline leading-tight">
             Navigasi Skema
           </h3>
           <p className="text-[10px] text-silse-on-surface-variant">
@@ -842,7 +842,7 @@ export function SchemaNavigatorPanel() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari blok…"
-            className="w-full bg-silse-surface-bright border border-silse-outline-variant rounded-xl pl-8 pr-3 py-1.5 text-xs text-silse-on-surface placeholder:text-silse-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-silse-secondary/20 focus:border-silse-secondary/30 transition-colors"
+            className="w-full bg-silse-surface-container-low border border-silse-outline-variant/40 rounded-lg pl-8 pr-3 py-1.5 text-[11px] text-silse-on-surface placeholder:text-silse-outline focus:outline-none focus:border-silse-primary/50 focus:ring-1 focus:ring-silse-primary/20 transition-colors"
           />
         </div>
         <div className="flex items-center gap-0.5 bg-silse-surface-container-low border border-silse-outline-variant rounded-xl p-0.5 flex-shrink-0">

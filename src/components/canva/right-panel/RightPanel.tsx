@@ -120,7 +120,7 @@ export default function RightPanel() {
 
       {/* ── Tab Bar — MD3 Segmented Style ─────────────────────── */}
       <div className="flex items-center gap-1 px-3 pt-2 pb-1.5 shrink-0 bg-silse-surface-container-lowest">
-        <div className="flex items-center gap-0.5 bg-silse-surface-container-high/40 rounded-xl p-0.5 w-full">
+        <div className="flex items-center gap-0.5 bg-silse-surface-container-high/40 rounded-lg p-0.5 w-full">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -172,7 +172,7 @@ export default function RightPanel() {
                   </>
                 )}
                 {/* ── Empty state hint — MD3 style ── */}
-                <div className="mx-3 mt-3 mb-4 rounded-2xl border border-dashed border-silse-outline-variant/60 bg-silse-surface-container-low/50 overflow-hidden">
+                <div className="mx-3 mt-3 mb-4 rounded-2xl border border-dashed border-silse-outline-variant/60 bg-silse-surface-container-low/50 overflow-hidden anim-enter-fade">
                   <div className="px-4 pt-4 pb-3 text-center">
                     <div className="w-12 h-12 mx-auto mb-2.5 rounded-2xl bg-silse-secondary/8 border border-silse-secondary/15 flex items-center justify-center">
                       <span className="material-symbols-outlined text-silse-secondary/50" style={{ fontSize: '22px' }}>touch_app</span>
@@ -244,7 +244,7 @@ export default function RightPanel() {
                 deleteBlock(selectedBlockId);
               }
             }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-silse-error-container/10 text-silse-error text-[12px] font-bold hover:bg-silse-error-container/20 active:scale-[0.97] transition-[background-color,transform] duration-150"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-silse-error-container/10 text-silse-error/80 text-[12px] font-bold hover:bg-silse-error-container/20 active:scale-[0.97] transition-[background-color,transform] duration-150"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
             Hapus {blockLabel}

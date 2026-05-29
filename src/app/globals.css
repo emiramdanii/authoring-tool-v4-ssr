@@ -933,7 +933,7 @@ select {
   transition: outline-color 150ms ease, outline-offset 150ms ease;
 }
 .focus-ring:focus-visible {
-  outline: 2px solid var(--semantic-accent);
+  outline: 2px solid var(--silse-primary);
   outline-offset: 2px;
 }
 
@@ -960,9 +960,9 @@ select {
 
 /* ── SILSE v4 Glass card ── */
 .glass-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--silse-surface-container-lowest);
   backdrop-filter: blur(20px);
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--silse-outline-variant);
 }
 
 /* ── SILSE v4 Liquid progress bar ── */
@@ -1104,6 +1104,31 @@ select {
   border: 1px solid;
   white-space: nowrap;
   transition: background 0.15s ease;
+}
+
+/* ── SILSE v4 Chip — MD3 Assist Chip style ── */
+.silse-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--silse-surface-container-high);
+  color: var(--silse-on-surface-variant);
+  border: 1px solid var(--silse-outline-variant);
+  transition: background 0.15s ease, color 0.15s ease;
+  cursor: pointer;
+}
+.silse-chip:hover {
+  background: var(--silse-surface-container-highest);
+  color: var(--silse-on-surface);
+}
+.silse-chip.active {
+  background: var(--silse-secondary);
+  color: var(--silse-on-secondary);
+  border-color: var(--silse-secondary);
 }
 
 /* ── iOS Button — Primary action button ────────────────────── */
