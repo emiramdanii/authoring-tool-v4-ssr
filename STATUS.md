@@ -1,5 +1,5 @@
 # STATUS.md — Sumber Kebenaran Proyek SILSE
-> Terakhir diperbarui: 2026-05-28
+> Terakhir diperbarui: 2026-05-29
 > Prinsip: **Selesai satu, baru lanjut satu. Tidak numpuk.**
 
 ---
@@ -31,6 +31,11 @@
 | 8. Konten.tsx → Schema Navigator (MateriTab — most complex) | ✅ DONE | Phase 3 |
 | 9. Safe Page Split / Overflow Policy | ✅ DONE | Phase 4 |
 | 10. Cleanup dual source | 🔄 IN PROGRESS | Phase 5 |
+| 11. P0: Delete dead code (sync-projection.ts + deprecated slices) | ✅ DONE | Phase 5 |
+| 12. P0: Fix SchemaBlockTree typo (sateri → skenario) | ✅ DONE | Phase 5 |
+| 13. P1: Schema migration CP/TP/ATP/Alur (hooks + Dokumen.tsx) | ✅ DONE | Phase 5 |
+| 14. P2: Modules projection sync (SchemaProjection.modules) | ✅ DONE | Phase 5 |
+| 15. Fix: Cover invisible bug (zIndex:0 → zIndex:1) | ✅ DONE | Bug Fix |
 
 ---
 
@@ -47,7 +52,7 @@
 | applyGuidedSchemaPatch() | `src/core/schema/guided-patch.ts` | Single write path ke schema, 12 block type registry |
 | getEditableSchemaBlocks() | `src/core/schema/guided-patch.ts` | List editable blocks dari schema |
 | getGuidedEditorSchema() | `src/core/schema/guided-patch.ts` | Field definitions per block type |
-| Deprecated sync-projection.ts | `src/core/schema/sync-projection.ts` | @deprecated + console.warn |
+| ~~sync-projection.ts~~ | `src/core/schema/sync-projection.ts` | DELETED — zero importers, all sync* functions dead code |
 | BlockPropertiesPanel (stitch v4) | `src/components/canva/right-panel/BlockPropertiesPanel.tsx` | Guided form routing |
 | GuidedFormEditor | `src/components/canva/right-panel/block-properties/GuidedFormEditor.tsx` | Teacher-friendly content editor |
 | Guided Field Renderer | `src/components/canva/right-panel/block-properties/guided-field-renderer.tsx` | text/textarea/richtext/color/array/boolean/select/number/icon |
@@ -168,9 +173,19 @@
   - Phase 3's panelRequest pattern works for cross-panel navigation
   - Direct reads/writes still in AuthoringStore (requires AuthoringTool.tsx refactor)
 
+**This Session's Progress**:
+- P0: Deleted `sync-projection.ts` (zero importers), removed deprecated slice actions from 5 authoring store slices (kuis, materi, skenario, diskusi-refleksi, motivasi-rangkuman), fixed SchemaBlockTree typo ('sateri' → 'skenario')
+- P1: Created CpBlock + AtpBlock schema types, added to SchemaBlock union, added guided editor registry entries for cp/tp/alur/atp, created useSchemaCp/useSchemaTp/useSchemaAlur/useSchemaAtp hooks with dual-write pattern, migrated Dokumen.tsx sections from AuthoringStore to schema hooks
+- P2: Added `modules` to SchemaProjection + deriveGameBlockToModules() — game blocks now auto-sync to AuthoringStore via startProjectionSync()
+- Bug fix: Cover invisible bug (zIndex:0 → zIndex:1 in SceneLayoutEngine)
+
 **Remaining (Future Work)**:
-- Convert Dokumen.tsx writes (meta, tp, alur) to schema patches — needs CpBlock/AtpBlock schema types
 - Convert auto-generate setSkenario() to schema write
+- Convert auto-generate modules merge to write schema game blocks instead of AuthoringStore.modules
 - Convert import/restore bulk writes to schema-first
 - Make AuthoringStore fully read-only for Tier 1 fields (remove write actions after all consumers migrated)
 - Full activePanel extraction from AuthoringStore to dedicated navigation store
+- P2: Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors
+- P3: Font size violations in other block renderers
+- P4: NcGridRenderer card body placeholder text
+- P5: syncMateriToSchema generates new IDs (DELETED — sync-projection.ts removed)
