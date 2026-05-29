@@ -76,10 +76,10 @@ function RightActions() {
   const { isSederhana } = useTeacherMode();
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3">
       {/* Cloud save indicator — green when saved */}
       <button
-        className="flex items-center justify-center h-8 w-8 rounded-lg text-silse-on-surface-variant hover:text-silse-primary transition-colors"
+        className="flex items-center justify-center h-8 w-8 rounded-xl text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-primary-container/15 transition-[background-color,color] duration-150"
         title="Tersimpan di cloud"
       >
         <span className="material-symbols-outlined text-silse-primary-container" style={{ fontSize: '20px' }}>cloud_done</span>
@@ -94,32 +94,32 @@ function RightActions() {
             triggerCanvaTour();
           }
         }}
-        className="flex items-center justify-center h-8 w-8 rounded-lg text-silse-on-surface-variant hover:text-silse-primary transition-colors"
+        className="flex items-center justify-center h-8 w-8 rounded-xl text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-primary-container/15 transition-[background-color,color] duration-150"
         title={isSederhana ? 'Bantuan — tampilkan panduan' : 'Help — restart tour'}
       >
         <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>help_outline</span>
       </button>
 
       {/* Preview + Publish buttons */}
-      <div className="flex gap-2 ml-2">
+      <div className="flex gap-2 ml-1">
         <button
           onClick={() => setAppMode('preview')}
-          className="px-6 py-2 rounded-full border border-silse-outline-variant text-silse-primary text-sm font-bold hover:bg-silse-surface-container-high transition-colors"
+          className="px-5 py-2 rounded-xl border border-silse-outline-variant/60 text-silse-primary text-[12px] font-bold hover:bg-silse-primary/5 transition-[background-color,color] duration-150"
         >
           Preview
         </button>
         <button
           onClick={exportHtml}
           disabled={isExporting}
-          className="px-6 py-2 rounded-full bg-silse-primary-container text-silse-on-primary-container text-sm font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+          className="px-5 py-2 rounded-xl bg-silse-primary-container text-silse-on-primary-container text-[12px] font-bold hover:opacity-90 active:scale-[0.97] transition-all disabled:opacity-50"
         >
           {isExporting ? 'Publishing…' : 'Publish'}
         </button>
       </div>
 
       {/* Teacher Profile Avatar — SILSE v4 reference */}
-      <div className="w-8 h-8 rounded-full bg-silse-primary-container border border-silse-outline-variant flex items-center justify-center ml-2">
-        <span className="material-symbols-outlined text-silse-on-primary-container" style={{ fontSize: '16px' }}>school</span>
+      <div className="w-8 h-8 rounded-full bg-silse-primary-container/20 border border-silse-primary-container/30 flex items-center justify-center ml-1">
+        <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '16px' }}>school</span>
       </div>
     </div>
   );
@@ -203,7 +203,7 @@ export default function Toolbar() {
   // ── EDIT mode: Full toolbar — SILSE v4 TopAppBar (fixed, compact) ──
   return (
     <header
-      className="fixed top-0 left-0 w-full z-40 flex items-center justify-between px-5 bg-silse-surface-container-lowest/95 backdrop-blur-md border-b border-silse-outline-variant select-none"
+      className="fixed top-0 left-0 w-full z-40 flex items-center justify-between px-5 bg-silse-surface-container-lowest/95 backdrop-blur-md border-b border-silse-outline-variant/60 select-none"
       style={{ height: '56px' }}
     >
       {/* LEFT: Brand + Project */}

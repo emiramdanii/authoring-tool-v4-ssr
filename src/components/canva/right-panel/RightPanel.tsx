@@ -97,7 +97,7 @@ export default function RightPanel() {
   if (!rightPanelOpen) return null;
 
   return (
-    <div className="w-full h-full bg-silse-surface-container-lowest border-l border-silse-outline-variant/60 flex flex-col shrink-0 overflow-hidden">
+    <div className="w-full h-full bg-silse-surface-container-lowest border-l border-silse-outline-variant/40 flex flex-col shrink-0 overflow-hidden">
       {/* ── Properties Header — SILSE v4 MD3 reference style ── */}
       <div className="px-4 py-2.5 border-b border-silse-outline-variant/40 flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
         <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export default function RightPanel() {
         </div>
         <button
           onClick={toggleRightPanel}
-          className="w-6 h-6 flex items-center justify-center rounded-md text-silse-on-surface-variant hover:bg-silse-surface-container-high transition-colors"
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150"
           aria-label="Tutup panel"
         >
           <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
@@ -120,14 +120,14 @@ export default function RightPanel() {
 
       {/* ── Tab Bar — MD3 Segmented Style ─────────────────────── */}
       <div className="flex items-center gap-1 px-3 pt-2 pb-1.5 shrink-0 bg-silse-surface-container-lowest">
-        <div className="flex items-center gap-0.5 bg-silse-surface-container-high/50 rounded-lg p-0.5 w-full">
+        <div className="flex items-center gap-0.5 bg-silse-surface-container-high/40 rounded-xl p-0.5 w-full">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-lg transition-[background-color,color,box-shadow] duration-150 ${
                   isActive
                     ? 'bg-silse-surface-container-lowest text-silse-primary shadow-sm'
                     : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high/50'
@@ -244,7 +244,7 @@ export default function RightPanel() {
                 deleteBlock(selectedBlockId);
               }
             }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-silse-error-container/12 text-silse-error text-xs font-bold hover:bg-silse-error-container/20 active:scale-[0.97] transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-silse-error-container/10 text-silse-error text-[12px] font-bold hover:bg-silse-error-container/20 active:scale-[0.97] transition-[background-color,transform] duration-150"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
             Hapus {blockLabel}
