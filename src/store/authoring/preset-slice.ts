@@ -38,7 +38,7 @@ import {
 } from './initial-state';
 
 export type PresetSlice = Pick<AuthoringState,
-  | 'activePreset' | 'pendingCanvasGenerate' | 'games'
+  | 'activePreset' | 'pendingCanvasGenerate'
   | 'petunjuk' | 'motivasi' | 'rangkuman' | 'penutup' | 'suara'
   | 'applyFullPreset' | 'applyKuisPreset' | 'applyTpPreset'
   | 'applyCpPreset' | 'applyAtpPreset' | 'applyAlurPreset'
@@ -48,7 +48,8 @@ export type PresetSlice = Pick<AuthoringState,
 export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice> = (set, get) => ({
   activePreset: null as string | null,
   pendingCanvasGenerate: null as string | null,
-  games: [],
+  // Phase 5-H: `games` removed from PresetSlice — auto-derived from modules
+  // via subscription in store/authoring/index.ts
   petunjuk: { ...DEFAULT_PETUNJUK },
   motivasi: { ...DEFAULT_MOTIVASI },
   rangkuman: { ...DEFAULT_RANGKUMAN },
@@ -87,7 +88,7 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       skenario: skenario ? deepClone(skenario) as SkenarioChapter[] : [],
       materi: materi ? { blok: deepClone(materi) as unknown as MateriBlok[] } : { blok: [] },
       modules: modules ? ensureModuleIds(deepClone(modules)) as Module[] : [],
-      games: modules ? (ensureModuleIds(deepClone(modules)) as Module[]).filter(m => (GAME_TYPES as readonly string[]).includes(m.type)) : [],
+      // Phase 5-H: games auto-derived from modules — no manual write needed
       petunjuk: petunjuk ? deepClone(petunjuk) : { ...DEFAULT_PETUNJUK },
       diskusi: diskusi ? deepClone(diskusi) : { ...DEFAULT_DISKUSI },
       refleksi: refleksi ? deepClone(refleksi) : { ...DEFAULT_REFLEKSI },
@@ -158,7 +159,7 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       skenario: [],
       kuis: [],
       modules: [],
-      games: [], // Empty because modules is empty
+      // Phase 5-H: games auto-derived from modules — no manual write needed
       materi: { blok: [] },
       petunjuk: { ...DEFAULT_PETUNJUK },
       diskusi: { ...DEFAULT_DISKUSI },

@@ -679,7 +679,7 @@ export interface TabIconsBlock extends BaseBlock {
   title: string;
   intro?: string;
   /** Layout variant: horizontal, vertical, pills */
-  layout?: 'horizontal' | 'vertical' | 'pills';
+  layoutVariant?: 'horizontal' | 'vertical' | 'pills';
   /** Animation style for tab switching */
   animation?: 'fade' | 'slide-up' | 'zoom' | 'bounce';
   tabs: Array<{
@@ -719,7 +719,7 @@ export interface InfografisBlock extends BaseBlock {
   title: string;
   intro?: string;
   /** Layout variant: grid, list, timeline */
-  layout?: 'grid' | 'list' | 'timeline';
+  layoutVariant?: 'grid' | 'list' | 'timeline';
   kartu: Array<{
     icon: string;
     judul: string;

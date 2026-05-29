@@ -85,7 +85,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
     return (
       <div className="text-center p-5 rounded-2xl premium-card-glow"
         style={{
-          background: tokens.color('bg'),
+          background: edu.pageBg(),
           border: '2px solid ' + tokens.colorAlpha('g', 0.3),
           boxShadow: edu.shadow('elevated'),
           animation: 'popSuccess 0.5s ease-out',

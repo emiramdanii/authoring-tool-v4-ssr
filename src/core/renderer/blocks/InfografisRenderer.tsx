@@ -275,7 +275,7 @@ export const InfografisRenderer = React.memo(function InfografisRenderer({
   compression?: CompressionDecision;
 }) {
   const edu = tokens.edu('infografis', isCompact);
-  const layout = block.layout || 'grid';
+  const layout = block.layoutVariant || block.layout || 'grid';
   const accentColor = block.accentColor || 'c';
 
   const allKartu = block.kartu || [];

@@ -33,6 +33,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { SchemaBlock, ScreenSchema } from '../schema/types';
+import { isSpatialLayout } from '../schema/types';
 import type { SceneResolution, SafeArea } from '../scene/SceneLayoutEngine';
 import { estimateBlockHeight } from '../scene/SceneLayoutEngine';
 import { getMeasuredHeight } from '../layout/BlockMeasurer';
@@ -183,7 +184,7 @@ export function computeScenePlan(
     // Full-page blocks fill the entire scene — they should never be split
     // or counted as flow content. Legacy cover blocks from genCoverSchema()
     // have no `layout` property, so we detect them by type via isFullPageBlockType().
-    const isFullPageBlock = isFullPageBlockType(block!.type) || block!.layout?.position === 'absolute';
+    const isFullPageBlock = isFullPageBlockType(block!.type) || (isSpatialLayout(block!.layout) && block!.layout.position === 'absolute');
     if (isFullPageBlock) {
       // Absolute/full-page blocks are included in the first scene only
       if (sceneIndex === 0) {

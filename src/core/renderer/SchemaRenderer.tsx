@@ -483,7 +483,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     if (bg) {
       if (bg.type === 'radial') {
         // Radial backgrounds (cover/hero) keep their design intent
-        style.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${tokens.color('bg2')})`;
+        style.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${modeBg.bg2})`;
       } else if (bg.type === 'gradient') {
         // Gradient backgrounds keep their design intent
         style.background = `linear-gradient(180deg, ${tokens.color(bg.color1 || 'y')}, ${tokens.color(bg.color2 || 'bg')})`;

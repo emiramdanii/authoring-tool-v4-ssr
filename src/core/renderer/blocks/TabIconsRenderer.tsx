@@ -95,7 +95,7 @@ export const TabIconsRenderer = React.memo(function TabIconsRenderer({
   compression?: CompressionDecision;
 }) {
   const edu = tokens.edu('tab-icons', isCompact);
-  const layout = block.layout || 'horizontal';
+  const layout = block.layoutVariant || 'horizontal';
   const animation = block.animation || 'fade';
 
   const [activeTab, setActiveTab] = useState(0);

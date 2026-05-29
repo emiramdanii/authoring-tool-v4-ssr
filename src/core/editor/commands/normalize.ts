@@ -28,6 +28,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { SchemaBlock, CompressionHints, SemanticHints, BlockLayout, BlockVariant, ScreenSchema } from '../../schema/types';
+import { isSpatialLayout } from '../../schema/types';
 import { generateBlockId } from '../../schema/ensure-schema';
 import { regenerateNestedIds } from '../../schema/immutable';
 import { isCompositeBlockType, getCompositeContainerDescriptor } from '../../schema/capability-registry';
@@ -131,12 +132,15 @@ export function normalizeBlock(raw: SchemaBlock, options: NormalizeOptions = {})
   }
 
   // ═══ 4. LAYOUT DEFAULTS ════════════════════════════════════
+  // Note: Some block types (TabIconsBlock, InfografisBlock) use `layout`
+  // as a string variant ('horizontal', 'grid', etc.) not a spatial object.
+  // Only apply spatial layout defaults when layout is a BlockLayout object.
   if (!block.layout) {
     block.layout = { ...DEFAULT_LAYOUT };
     changes.push('layout: added default');
     wasModified = true;
-  } else {
-    // Ensure position is set
+  } else if (isSpatialLayout(block.layout)) {
+    // Ensure position is set on spatial BlockLayout objects
     if (!block.layout.position) {
       block.layout = { ...block.layout, position: 'flow' };
       changes.push('layout.position: defaulted to flow');

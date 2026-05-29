@@ -15,6 +15,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import type { ScreenSchema } from '@/core/schema/types';
+import { isSpatialLayout } from '@/core/schema/types';
 // All icons migrated to Material Symbols Outlined
 import { announceToScreenReader } from '@/lib/a11y';
 import BatchActionsBar from './BatchActionsBar';
@@ -262,7 +263,7 @@ function LayerList({
         const isInMultiSelect = selectedBlockIds?.includes(blockId) ?? false;
         const isHovered = hoveredBlockId === blockId;
         const isEditing = editingBlockId === blockId;
-        const layout = block.layout?.position === 'absolute' ? 'absolute' : 'flow';
+        const layout = (block.layout && isSpatialLayout(block.layout) && block.layout.position === 'absolute') ? 'absolute' : 'flow';
         const isDragging = dragIndex === idx;
         const isDragOver = overIndex === idx && dragIndex !== null && dragIndex !== idx;
         const blockName = definition?.name || block.type;

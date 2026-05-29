@@ -34,6 +34,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { ScreenSchema, SchemaBlock } from '../../schema/types';
+import { isSpatialLayout } from '../../schema/types';
 import { logger } from '../../utils/logger';
 
 // ── Non-determinism Patterns ─────────────────────────────────────
@@ -109,8 +110,10 @@ function blockFingerprint(block: SchemaBlock, depth: number = 0): string {
     `v:${block.variant ?? 'A'}`,
   ];
 
-  if (block.layout) {
+  if (block.layout && isSpatialLayout(block.layout)) {
     parts.push(`pos:${block.layout.position}`);
+  } else if (block.layout && typeof block.layout === 'string') {
+    parts.push(`variant:${block.layout}`);
   }
 
   if (block.compression) {
@@ -233,9 +236,15 @@ function blocksAreStructurallyEqual(a: SchemaBlock, b: SchemaBlock): boolean {
 
   // Layout comparison
   if (a.layout && b.layout) {
-    if (a.layout.position !== b.layout.position) return false;
-    if (a.layout.x !== b.layout.x) return false;
-    if (a.layout.y !== b.layout.y) return false;
+    if (isSpatialLayout(a.layout) && isSpatialLayout(b.layout)) {
+      if (a.layout.position !== b.layout.position) return false;
+      if (a.layout.x !== b.layout.x) return false;
+      if (a.layout.y !== b.layout.y) return false;
+    } else if (typeof a.layout === 'string' && typeof b.layout === 'string') {
+      if (a.layout !== b.layout) return false;
+    } else {
+      return false; // Different layout kinds
+    }
   } else if (a.layout !== b.layout) {
     return false;
   }

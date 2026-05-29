@@ -165,7 +165,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
  <div className="rounded-2xl overflow-hidden p-6 text-center"
  style={{
- background: tokens.color('bg'),
+ background: edu.pageBg(),
  border: '2px solid ' + tokens.colorAlpha(gradeColor, 0.3),
  boxShadow: edu.shadow('elevated'),
  }}>
@@ -228,7 +228,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  aria-describedby={`roda-instructions-${block.id || 'roda'}`}
  data-interactive
  style={{
- background: tokens.color('bg'),
+ background: edu.pageBg(),
  border: '2px solid ' + edu.accentAlpha(0.3),
  boxShadow: edu.shadow('elevated'),
  }}>
@@ -236,7 +236,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  {/* Header */}
  <div className="p-3 border-b"
  style={{
- background: 'linear-gradient(90deg, ' + tokens.color('bg') + ', ' + tokens.color('bg2') + ')',
+ background: 'linear-gradient(90deg, ' + edu.pageBg() + ', ' + edu.pageBg2() + ')',
  borderColor: edu.accentAlpha(0.15),
  }}>
  <div className="flex items-center justify-between">

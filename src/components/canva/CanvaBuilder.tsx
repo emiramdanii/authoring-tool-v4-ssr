@@ -166,7 +166,7 @@ export default function CanvaBuilder() {
 
         {/* Main builder row — Resizable 3-panel layout */}
         <ResizablePanelGroup
-          direction="horizontal"
+          orientation="horizontal"
           className="flex-1 min-h-0"
         >
           {/* Left Panel — Resizable, default 20%, min 220px */}

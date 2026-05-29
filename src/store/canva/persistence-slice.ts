@@ -294,11 +294,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             // in schema properly sync to AuthoringStore.modules.
             if (projection.modules) {
               patch.modules = projection.modules;
-              // Derive games from modules for backward compat
-              const { GAME_TYPES } = require('@/lib/canva-constants');
-              patch.games = projection.modules.filter((m: Record<string, unknown>) =>
-                (GAME_TYPES as readonly string[]).includes(m.type as string)
-              );
+              // Phase 5-H: games auto-derived from modules via subscription
             }
             if (projection.meta) {
               // Merge partial meta into existing meta (keep defaults for missing fields)
@@ -457,10 +453,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             // in schema properly sync to AuthoringStore.modules.
             if (projection.modules) {
               patch.modules = projection.modules;
-              const { GAME_TYPES } = require('@/lib/canva-constants');
-              patch.games = projection.modules.filter((m: Record<string, unknown>) =>
-                (GAME_TYPES as readonly string[]).includes(m.type as string)
-              );
+              // Phase 5-H: games auto-derived from modules via subscription
             }
             if (projection.meta) {
               const currentMeta = useAuthoringStore.getState().meta;

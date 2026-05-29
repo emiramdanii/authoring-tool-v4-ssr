@@ -102,7 +102,7 @@ export function modulePreview(mod: import('@/store/authoring/types').Module): st
     }
     case 'infografis': {
       const k = (mod.kartu as unknown[]) || [];
-      return k.length ? `${k.length} kartu · ${(mod.layout as string) || 'grid'}` : 'Belum ada kartu';
+      return k.length ? `${k.length} kartu · ${(mod.layoutVariant as string) || (mod.layout as string) || 'grid'}` : 'Belum ada kartu';
     }
     case 'studi-kasus': {
       const p = (mod.pertanyaan as unknown[]) || [];

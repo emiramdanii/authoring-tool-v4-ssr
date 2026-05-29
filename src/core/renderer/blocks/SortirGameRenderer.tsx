@@ -210,7 +210,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
  <div className="text-center p-5 rounded-2xl"
  style={{
- background: tokens.color('bg'),
+ background: edu.pageBg(),
  border: '2px solid ' + edu.accentAlpha(0.3),
  boxShadow: edu.shadow('elevated'),
  }}>

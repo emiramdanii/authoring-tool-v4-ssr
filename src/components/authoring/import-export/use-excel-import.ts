@@ -51,7 +51,7 @@ export function useExcelImport() {
           skenario: data.skenario || [],
           kuis: data.kuis || [],
           modules: data.modules || [],
-          games: data.games || [],
+          // Phase 5-H: games auto-derived from modules via subscription
           materi: data.materi || { blok: [] },
           dirty: true,
         });

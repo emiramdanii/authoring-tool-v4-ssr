@@ -120,7 +120,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
         <div className="absolute top-0 left-0 right-0 h-0.5"
           style={{ background: 'linear-gradient(90deg, ' + tokens.color('c') + ', ' + yellow + ', ' + tokens.color('c') + ')' }} />
         <div className="flex items-center justify-between p-3 border-b-2"
-          style={{ background: 'linear-gradient(90deg, ' + tokens.color('bg') + ', ' + tokens.color('bg2') + ')', borderColor: tokens.colorAlpha('c', 0.2) }}>
+          style={{ background: 'linear-gradient(90deg, ' + edu.pageBg() + ', ' + edu.pageBg2() + ')', borderColor: tokens.colorAlpha('c', 0.2) }}>
           <span className="font-black" style={{ ...edu.caption(), fontWeight: 700, color: edu.accent(), fontFamily: tokens.fontFamily('display') }}>
             🎭 <InlineTextEditor {...titleEditor} style={{ color: edu.accent(), fontFamily: tokens.fontFamily('display') }} />
           </span>
@@ -308,7 +308,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
       {/* Progress bar */}
       {chapters.length > 0 && (
         <div className="flex gap-1 p-3 border-t"
-          style={{ background: tokens.color('bg'), borderColor: tokens.colorAlpha('c', 0.15) }}>
+          style={{ background: edu.pageBg(), borderColor: tokens.colorAlpha('c', 0.15) }}>
           {chapters.map((_, i) => (
             <div key={`skenario-prog-${block.id || 'sk'}-${i}`} className="flex-1 h-1.5 rounded-full transition-[background-color,box-shadow]"
               style={{

@@ -139,7 +139,7 @@ export default function Dashboard() {
     if (activePanel === 'canva') return 'workspace';
     if (activePanel === 'konten') return 'assets';
     if (activePanel === 'preview') return 'analytics';
-    if (activePanel === 'settings') return 'settings';
+    if (activePanel === 'dokumen') return 'settings';
     // For any other active panel, default to dashboard
     return 'dashboard';
   }, [activePanel]);

@@ -487,7 +487,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  <div
  className="text-center p-5 rounded-2xl"
  style={{
- background: tokens.color('bg'),
+ background: edu.pageBg(),
  border: '2px solid ' + edu.accentAlpha(0.3),
  boxShadow: edu.shadow('elevated'),
  animation: 'popSuccess 0.5s ease-out',

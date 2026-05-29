@@ -9,7 +9,7 @@ export function InfografisEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <FieldLabel>Layout</FieldLabel>
-          <select className={SELECT_CLS} value={(mod.layout as string) || 'grid'} onChange={(e) => uf('layout', e.target.value)}>
+          <select className={SELECT_CLS} value={(mod.layoutVariant as string) || (mod.layout as string) || 'grid'} onChange={(e) => uf('layoutVariant', e.target.value)}>
             <option value="grid">Grid</option>
             <option value="list">List</option>
             <option value="timeline">Timeline</option>

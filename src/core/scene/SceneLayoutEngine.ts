@@ -21,6 +21,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { SchemaBlock, BlockLayout } from '../schema/types';
+import { isSpatialLayout } from '../schema/types';
 import { getBlockMeta } from '../registry/BlockDefinitionRegistry';
 import { getMeasuredHeight, hasMeasurement } from '../layout/BlockMeasurer';
 import { computeCompressionDecision, type CompressionDecision } from '../layout/CompressionEngine';
@@ -611,10 +612,11 @@ export function resolveSceneLayout(
   // legacy cover blocks (created before layout was added to createDefault())
   // from being stacked as flow blocks and overflowing.
   const flowBlocks = blocks.filter(b => {
-    if (isFullPageBlockType(b.type) && (!b.layout || b.layout.position !== 'flow')) {
+    const bLayout = isSpatialLayout(b.layout) ? b.layout : undefined;
+    if (isFullPageBlockType(b.type) && (!bLayout || bLayout.position !== 'flow')) {
       return false; // Full-page blocks → absolute path
     }
-    return !b.layout || b.layout.position === 'flow';
+    return !bLayout || bLayout.position === 'flow';
   });
   let currentY = contentTop;
 
@@ -747,11 +749,11 @@ export function resolveSceneLayout(
   }
 
   // ── Phase 2: Resolve absolute blocks (coordinate-based) ──
-  const absoluteBlocks = blocks.filter(b => b.layout?.position === 'absolute');
+  const absoluteBlocks = blocks.filter(b => isSpatialLayout(b.layout) && b.layout.position === 'absolute');
 
   for (let i = 0; i < absoluteBlocks.length; i++) {
     const block = absoluteBlocks[i]!;
-    const layout = block.layout!;
+    const layout = block.layout as BlockLayout;
 
     // Convert percentage coordinates to absolute pixels
     const absX = layout.x != null ? (layout.x / 100) * scene.w : contentX;

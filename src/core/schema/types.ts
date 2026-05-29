@@ -15,6 +15,8 @@ export type {
   TransactionResult,
 } from './types/base';
 
+export { isSpatialLayout } from './types/base';
+
 export type {
   CoverBlock,
   HeroBlock,
