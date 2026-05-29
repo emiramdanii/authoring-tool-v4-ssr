@@ -35,7 +35,7 @@ const BLOCK_DISPLAY: Record<string, { icon: string; label: string; color: string
   'petunjuk':          { icon: 'push_pin', label: 'Petunjuk', color: 'text-silse-secondary' },
   'tp':                { icon: 'target', label: 'Tujuan Pembelajaran', color: 'text-silse-secondary' },
   'alur':              { icon: 'map', label: 'Alur Pembelajaran', color: 'text-silse-tertiary' },
-  'sateri':            { icon: 'theater_comedy', label: 'Skenario', color: 'text-silse-error' },
+  'skenario':          { icon: 'theater_comedy', label: 'Skenario', color: 'text-silse-error' },
   'materi-section':    { icon: 'auto_stories', label: 'Materi', color: 'text-silse-primary' },
   'materi-blok':       { icon: 'edit_note', label: 'Blok Materi', color: 'text-silse-primary' },
   'def-box':           { icon: 'push_pin', label: 'Definisi', color: 'text-silse-tertiary-container' },

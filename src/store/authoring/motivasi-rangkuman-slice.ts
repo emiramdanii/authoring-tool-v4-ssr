@@ -1,32 +1,15 @@
 // ── Motivasi & Rangkuman Slice ─────────────────────────────────────
+// [Phase 5] Deprecated write actions removed — schema is now the single write path.
+// Removed: updateMotivasi, updateRangkuman
+// These 2 actions had zero component callers; all writes go through
+// applyGuidedSchemaPatch() via useSchemaMotivasi()/useSchemaRangkuman() hooks.
 import type { StateCreator } from 'zustand';
-import type { AuthoringState, MotivasiData, RangkumanData } from './types';
+import type { AuthoringState } from './types';
 import { DEFAULT_MOTIVASI, DEFAULT_RANGKUMAN } from './initial-state';
 
-export type MotivasiRangkumanSlice = Pick<AuthoringState,
-  | 'motivasi' | 'rangkuman'
-  | 'updateMotivasi' | 'updateRangkuman'
->;
+export type MotivasiRangkumanSlice = Pick<AuthoringState, 'motivasi' | 'rangkuman'>;
 
-export const createMotivasiRangkumanSlice: StateCreator<AuthoringState, [], [], MotivasiRangkumanSlice> = (set) => ({
+export const createMotivasiRangkumanSlice: StateCreator<AuthoringState, [], [], MotivasiRangkumanSlice> = () => ({
   motivasi: { ...DEFAULT_MOTIVASI },
   rangkuman: { ...DEFAULT_RANGKUMAN },
-
-  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMotivasi() hooks instead. Content writes should go through schema. */
-  updateMotivasi: (data: Partial<MotivasiData>) => {
-    console.warn('[deprecated] updateMotivasi() — Use useSchemaMotivasi() or applyGuidedSchemaPatch() instead');
-    set((s) => ({
-      motivasi: { ...s.motivasi, ...data },
-      dirty: true,
-    }));
-  },
-
-  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaRangkuman() hooks instead. Content writes should go through schema. */
-  updateRangkuman: (data: Partial<RangkumanData>) => {
-    console.warn('[deprecated] updateRangkuman() — Use useSchemaRangkuman() or applyGuidedSchemaPatch() instead');
-    set((s) => ({
-      rangkuman: { ...s.rangkuman, ...data },
-      dirty: true,
-    }));
-  },
 });

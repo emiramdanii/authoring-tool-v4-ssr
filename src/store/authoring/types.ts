@@ -357,18 +357,9 @@ export interface AuthoringState {
   updateAlur: (index: number, key: keyof AlurItem, value: string) => void;
   reorderAlur: (fromIndex: number, toIndex: number) => void;
 
-  // Kuis actions — @deprecated Phase 5: Use useSchemaKuis() or applyGuidedSchemaPatch() instead
-  addKuis: () => void;
-  deleteKuis: (index: number) => void;
-  updateKuis: (index: number, key: string, value: unknown) => void;
-  updateKuisOpt: (index: number, optIndex: number, value: string) => void;
-  reorderKuis: (fromIndex: number, toIndex: number) => void;
+  // [Phase 5] Kuis write actions REMOVED — use useSchemaKuis() or applyGuidedSchemaPatch()
 
-  // Materi block actions — @deprecated Phase 5: Use useSchemaMateri() or applyGuidedSchemaPatch() instead
-  addMateriBlok: (tipe: string) => void;
-  removeMateriBlok: (index: number) => void;
-  updateMateriBlok: (index: number, key: string, value: unknown) => void;
-  moveMateriBlok: (fromIndex: number, toIndex: number) => void;
+  // [Phase 5] Materi write actions REMOVED — use useSchemaMateri() or applyGuidedSchemaPatch()
 
   // Module actions — @deprecated Phase 5: Use schema game blocks or applyGuidedSchemaPatch() instead
   addModule: (typeId: string) => void;
@@ -379,50 +370,15 @@ export interface AuthoringState {
   removeModuleItem: (moduleIndex: number, arrayKey: string, itemIndex: number) => void;
   updateModuleItem: (moduleIndex: number, arrayKey: string, itemIndex: number, key: string, value: unknown) => void;
 
-  // Skenario actions — @deprecated Phase 5: Use applyGuidedSchemaPatch() with skenario blocks instead
-  setSkenario: (data: SkenarioChapter[]) => void;
-  /** @deprecated */
-  addSkenarioChapter: () => void;
-  /** @deprecated */
-  removeSkenarioChapter: (index: number) => void;
-  /** @deprecated */
-  updateSkenarioChapter: (index: number, key: string, value: unknown) => void;
-  /** @deprecated */
-  addSkenarioSetup: (chapterIndex: number) => void;
-  /** @deprecated */
-  removeSkenarioSetup: (chapterIndex: number, setupIndex: number) => void;
-  /** @deprecated */
-  updateSkenarioSetup: (chapterIndex: number, setupIndex: number, key: string, value: unknown) => void;
-  /** @deprecated */
-  addSkenarioChoice: (chapterIndex: number) => void;
-  /** @deprecated */
-  removeSkenarioChoice: (chapterIndex: number, choiceIndex: number) => void;
-  /** @deprecated */
-  updateSkenarioChoice: (chapterIndex: number, choiceIndex: number, key: string, value: unknown) => void;
-  /** @deprecated */
-  addSkenarioConsequence: (chapterIndex: number, choiceIndex: number) => void;
-  /** @deprecated */
-  removeSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number) => void;
-  /** @deprecated */
-  updateSkenarioConsequence: (chapterIndex: number, choiceIndex: number, consIndex: number, key: string, value: unknown) => void;
+  // [Phase 5] Skenario write actions REMOVED — use applyGuidedSchemaPatch() with skenario blocks
 
-  // Diskusi actions — @deprecated Phase 5: Use useSchemaDiskusi() or applyGuidedSchemaPatch() instead
-  updateDiskusi: (data: Partial<DiskusiData>) => void;
-  addDiskusiPertanyaan: () => void;
-  removeDiskusiPertanyaan: (index: number) => void;
-  updateDiskusiPertanyaan: (index: number, data: Partial<DiskusiPertanyaan>) => void;
+  // [Phase 5] Diskusi write actions REMOVED — use useSchemaDiskusi() or applyGuidedSchemaPatch()
 
-  // Refleksi actions — @deprecated Phase 5: Use useSchemaRefleksi() or applyGuidedSchemaPatch() instead
-  updateRefleksi: (data: Partial<RefleksiData>) => void;
-  addRefleksiPertanyaan: () => void;
-  removeRefleksiPertanyaan: (index: number) => void;
-  updateRefleksiPertanyaan: (index: number, data: Partial<RefleksiPertanyaan>) => void;
+  // [Phase 5] Refleksi write actions REMOVED — use useSchemaRefleksi() or applyGuidedSchemaPatch()
 
-  // Motivasi actions — @deprecated Phase 5: Use applyGuidedSchemaPatch() with motivasi blocks instead
-  updateMotivasi: (data: Partial<MotivasiData>) => void;
+  // [Phase 5] Motivasi write actions REMOVED — use applyGuidedSchemaPatch() with motivasi blocks
 
-  // Rangkuman actions — @deprecated Phase 5: Use useSchemaRangkuman() or applyGuidedSchemaPatch() instead
-  updateRangkuman: (data: Partial<RangkumanData>) => void;
+  // [Phase 5] Rangkuman write actions REMOVED — use useSchemaRangkuman() or applyGuidedSchemaPatch()
 
   // Sound actions
   toggleSuaraAll: () => void;
