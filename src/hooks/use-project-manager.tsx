@@ -4,9 +4,6 @@ import { createContext, useContext, useState, useCallback, useEffect, useRef, ty
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { DBProjectData } from '@/store/canva-store';
-import type { KuisItem, Module } from '@/store/authoring-store';
-import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
-import { GAME_TYPES } from '@/lib/canva-constants';
 import { canvaPagesToSavePages } from '@/lib/save-utils';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
@@ -174,31 +171,25 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       useCanvaStore.getState().loadFromDB(data);
 
       // Load authoring store data
+      // Phase 5-F: Only load non-schema fields from raw authoringData.
+      // Schema-backed fields (tp, alur, kuis, skenario, materi, diskusi,
+      // refleksi, motivasi, rangkuman, modules, meta) are already derived
+      // from schema by CanvaStore.loadFromDB() above. Writing them here
+      // would overwrite the schema-derived projection with stale DB data.
       if (data.authoringData) {
         try {
           const authData = JSON.parse(data.authoringData);
           const store = useAuthoringStore.getState();
           useAuthoringStore.setState({
-            meta: authData.meta || store.meta,
+            // Non-schema fields — these have no schema block representation
             cp: authData.cp || store.cp,
-            tp: authData.tp || [],
             atp: authData.atp || store.atp,
-            alur: authData.alur || [],
-            skenario: authData.skenario || [],
-            kuis: ensureKuisIds((authData.kuis || []) as KuisItem[]),
-            modules: ensureModuleIds(authData.modules || []) as Module[],
-            games: ensureModuleIds(
-              (authData.modules || []).filter((m: Record<string, unknown>) =>
-                (GAME_TYPES as readonly string[]).includes(m.type as string)
-              )
-            ) as Module[],
-            materi: authData.materi || { blok: [] },
             petunjuk: authData.petunjuk || store.petunjuk,
-            diskusi: authData.diskusi || store.diskusi,
-            refleksi: authData.refleksi || store.refleksi,
             penutup: authData.penutup || store.penutup,
             suara: authData.suara || store.suara,
             dirty: false,
+            // Schema-backed fields — already loaded by CanvaStore.loadFromDB()
+            // via deriveProjectionFromPages() above. Do NOT overwrite them here.
           });
         } catch (err) {
           logger.warn('ProjectProvider', 'Failed to parse authoringData: ' + String(err));

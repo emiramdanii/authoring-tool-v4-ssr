@@ -290,6 +290,16 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             if (projection.skenario) patch.skenario = projection.skenario;
             if (projection.motivasi) patch.motivasi = projection.motivasi;
             if (projection.rangkuman) patch.rangkuman = projection.rangkuman;
+            // Phase 5-F: Include modules in projection patch so game blocks
+            // in schema properly sync to AuthoringStore.modules.
+            if (projection.modules) {
+              patch.modules = projection.modules;
+              // Derive games from modules for backward compat
+              const { GAME_TYPES } = require('@/lib/canva-constants');
+              patch.games = projection.modules.filter((m: Record<string, unknown>) =>
+                (GAME_TYPES as readonly string[]).includes(m.type as string)
+              );
+            }
             if (projection.meta) {
               // Merge partial meta into existing meta (keep defaults for missing fields)
               const currentMeta = useAuthoringStore.getState().meta;
@@ -443,6 +453,15 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             if (projection.skenario) patch.skenario = projection.skenario;
             if (projection.motivasi) patch.motivasi = projection.motivasi;
             if (projection.rangkuman) patch.rangkuman = projection.rangkuman;
+            // Phase 5-F: Include modules in projection patch so game blocks
+            // in schema properly sync to AuthoringStore.modules.
+            if (projection.modules) {
+              patch.modules = projection.modules;
+              const { GAME_TYPES } = require('@/lib/canva-constants');
+              patch.games = projection.modules.filter((m: Record<string, unknown>) =>
+                (GAME_TYPES as readonly string[]).includes(m.type as string)
+              );
+            }
             if (projection.meta) {
               const currentMeta = useAuthoringStore.getState().meta;
               patch.meta = { ...currentMeta, ...projection.meta };
