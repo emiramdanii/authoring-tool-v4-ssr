@@ -60,10 +60,10 @@ export default function BlockPropertiesPanel() {
   // If this block type is not editable, show minimal info
   if (!capabilities.editable) {
     return (
-      <div className="border-b border-blue-500/10">
-        <div className="px-3 py-2 flex items-center gap-1.5 bg-blue-500/5">
-          <span className="material-symbols-outlined text-blue-400" style={ { fontSize: '12px' } }>settings</span>
-          <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">{teacherTerm('Block', teacherMode)}</span>
+      <div className="border-b border-silse-outline-variant/20">
+        <div className="px-3 py-2 flex items-center gap-1.5 bg-silse-primary-container/5">
+          <span className="material-symbols-outlined text-silse-primary" style={ { fontSize: '12px' } }>settings</span>
+          <span className="text-[10px] font-bold text-silse-on-primary-container uppercase tracking-widest">{teacherTerm('Block', teacherMode)}</span>
           <Button
             variant="ghost"
             size="icon"
@@ -81,11 +81,11 @@ export default function BlockPropertiesPanel() {
   }
 
   return (
-    <div className="border-b border-blue-500/10" data-testid="block-properties-panel">
+    <div className="border-b border-silse-outline-variant/20" data-testid="block-properties-panel">
       {/* Header */}
-      <div className="px-3 py-2 flex items-center gap-1.5 bg-blue-500/5">
-        <span className="material-symbols-outlined text-blue-400" style={ { fontSize: '12px' } }>settings</span>
-        <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">{teacherMode ? 'Properti Konten' : 'Block Properti'}</span>
+      <div className="px-3 py-2 flex items-center gap-1.5 bg-silse-primary-container/5">
+        <span className="material-symbols-outlined text-silse-primary" style={ { fontSize: '12px' } }>settings</span>
+        <span className="text-[10px] font-bold text-silse-on-primary-container uppercase tracking-widest">{teacherMode ? 'Properti Konten' : 'Block Properti'}</span>
         <Button
           variant="ghost"
           size="icon"
@@ -105,7 +105,7 @@ export default function BlockPropertiesPanel() {
             <div className="text-[9px] text-silse-on-surface-variant">{teacherMode ? (definition?.category || '') : `${definition?.category || 'unknown'} · ${selectedBlockType}`}</div>
           </div>
           {editingBlockId === selectedBlockId && (
-            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-silse-primary-container/20 text-silse-primary">
               EDITING
             </span>
           )}
@@ -168,7 +168,7 @@ export default function BlockPropertiesPanel() {
                 return Object.entries(info.sources).map(([cap, source]) => (
                   <div key={cap} className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant">
                     <span className={`w-1.5 h-1.5 rounded-full ${
-                      source === 'hint' ? 'bg-emerald-400' : source === 'definition' ? 'bg-blue-400' : 'bg-gray-500 dark:bg-gray-600'
+                      source === 'hint' ? 'bg-silse-primary' : source === 'definition' ? 'bg-silse-secondary-container' : 'bg-silse-on-surface-variant'
                     }`} />
                     <span className="font-mono">{cap}</span>
                     <span className="opacity-60">← {source}</span>
@@ -189,8 +189,8 @@ export default function BlockPropertiesPanel() {
               <span className="text-[10px] text-silse-on-surface-variant">Posisi</span>
               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
                 definition.defaultLayout.position === 'flow'
-                  ? 'bg-emerald-500/20 text-emerald-300'
-                  : 'bg-silse-primary/20 text-silse-primary'
+                  ? 'bg-silse-primary-container/20 text-silse-primary'
+                  : 'bg-silse-secondary-container/20 text-silse-secondary'
               }`}>
                 {definition.defaultLayout.position}
               </span>

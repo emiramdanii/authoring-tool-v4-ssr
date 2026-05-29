@@ -25,7 +25,7 @@ import { useMemo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
-import type { KuisItem, Module, MetaState } from '@/store/authoring/types';
+import type { KuisItem, Module, MetaState, AuthoringState } from '@/store/authoring/types';
 import type { SchemaBlock } from '@/core/schema/types';
 
 // ── Game block type detection ──────────────────────────────────
@@ -137,7 +137,7 @@ export function useSchemaProjection(): {
   }, [pages]);
 
   // ── Meta still from authoring store (project-level, Phase 5 territory) ──
-  const meta = useAuthoringStore((s: any) => s.meta) as MetaState;
+  const meta = useAuthoringStore((s: AuthoringState) => s.meta) as MetaState;
 
   return { kuis, modules, meta };
 }
@@ -227,5 +227,5 @@ export function useSchemaModulesProjection(): Module[] {
  * Phase 5 will move meta to a dedicated project metadata store.
  */
 export function useSchemaMetaProjection(): MetaState {
-  return useAuthoringStore((s: any) => s.meta) as MetaState;
+  return useAuthoringStore((s: AuthoringState) => s.meta) as MetaState;
 }

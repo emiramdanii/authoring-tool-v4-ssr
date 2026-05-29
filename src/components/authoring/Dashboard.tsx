@@ -112,8 +112,8 @@ export default function Dashboard() {
       if (page.schema?.blocks) {
         for (const block of page.schema.blocks) {
           if (block.type === 'materi-section') {
-            const content = (block as any).content || [];
-            count += content.filter((b: any) => b.type === 'materi-blok').length;
+            const content = (block as { content?: import('@/core/schema/types').SchemaBlock[] }).content || [];
+            count += content.filter(b => b.type === 'materi-blok').length;
           }
         }
       }
