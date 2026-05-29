@@ -361,14 +361,7 @@ export interface AuthoringState {
 
   // [Phase 5] Materi write actions REMOVED — use useSchemaMateri() or applyGuidedSchemaPatch()
 
-  // Module actions — @deprecated Phase 5: Use schema game blocks or applyGuidedSchemaPatch() instead
-  addModule: (typeId: string) => void;
-  removeModule: (index: number) => void;
-  updateModuleField: (index: number, key: string, value: unknown) => void;
-  moveModule: (fromIndex: number, toIndex: number) => void;
-  addModuleItem: (moduleIndex: number, arrayKey: string, defaultItem: Record<string, unknown>) => void;
-  removeModuleItem: (moduleIndex: number, arrayKey: string, itemIndex: number) => void;
-  updateModuleItem: (moduleIndex: number, arrayKey: string, itemIndex: number, key: string, value: unknown) => void;
+  // [Phase 5-D] Module write actions REMOVED — use useSchemaModules() or applyGuidedSchemaPatch()
 
   // [Phase 5] Skenario write actions REMOVED — use applyGuidedSchemaPatch() with skenario blocks
 

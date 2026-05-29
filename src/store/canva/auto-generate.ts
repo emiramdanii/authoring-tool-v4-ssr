@@ -36,22 +36,29 @@ import {
   genHasilSchema,
   genPenutupSchema,
   genPetunjukSchema,
+  genMatchingSchema,
+  genTrueFalseSchema,
 } from '@/core/schema/generators';
 import type { SchemaBlock } from '@/core/schema/types';
 import { getStoredText, parseStoredText } from '@/components/authoring/auto-generate/regenerate';
 import { saveCrashCheckpoint, transactionRollback } from '@/core/recovery';
 
 // ── Auto-generate modules from existing authoring data ────────
+// Phase 5-C: Returns both projection modules (for non-schema types
+// like tab-icons, accordion, timeline, infografis) AND schema game
+// blocks (for game types like memory that have schema block types).
 export function autoGenerateContent(): {
   modules: Array<Record<string, unknown>>;
+  gameBlocks: SchemaBlock[];
   skenario: Array<Record<string, unknown>>;
   materi: { blok: Array<Record<string, unknown>> };
 } {
   const authStore = useAuthoringStore.getState();
   const newModules: Array<Record<string, unknown>> = [];
   const newBlok: Array<Record<string, unknown>> = [];
+  const gameBlocks: SchemaBlock[] = [];
 
-  // 1. From TP → tab-icons module
+  // 1. From TP → tab-icons module (no schema block type — projection-only)
   if (authStore.tp.length > 0) {
     newModules.push({
       type: 'tab-icons',
@@ -75,7 +82,7 @@ export function autoGenerateContent(): {
     });
   }
 
-  // 2. From CP → accordion module
+  // 2. From CP → accordion module (no schema block type — projection-only)
   if (authStore.cp.capaianFase) {
     newModules.push({
       type: 'accordion',
@@ -89,7 +96,7 @@ export function autoGenerateContent(): {
     });
   }
 
-  // 3. From alur → timeline module
+  // 3. From alur → timeline module (no schema block type — projection-only)
   if (authStore.alur.length >= 3) {
     newModules.push({
       type: 'timeline',
@@ -104,20 +111,22 @@ export function autoGenerateContent(): {
     });
   }
 
-  // 4. From kuis → memory game
+  // 4. From kuis → memory game (Phase 5-C: now writes as memory-game schema block)
   if (authStore.kuis.length >= 3) {
     const pairs = authStore.kuis.slice(0, 6).map(k => ({
-      teks: k.q.length > 50 ? k.q.slice(0, 50) + '...' : k.q,
-      kategori: k.opts[k.ans] || 'Jawaban',
+      left: k.q.length > 50 ? k.q.slice(0, 50) + '...' : k.q,
+      right: k.opts[k.ans] || 'Jawaban',
     }));
-    newModules.push({
-      type: 'memory',
+    // Write as memory-game schema block instead of projection module
+    gameBlocks.push({
+      type: 'memory-game',
+      id: `auto-gen-memory-${Date.now()}`,
       title: 'Memory: Soal & Jawaban',
-      pasangan: pairs,
-    });
+      pairs,
+    } as SchemaBlock);
   }
 
-  // 5. From CP profil → infografis module
+  // 5. From CP profil → infografis module (no schema block type — projection-only)
   if (authStore.cp.profil && authStore.cp.profil.length > 0) {
     newModules.push({
       type: 'infografis',
@@ -135,6 +144,7 @@ export function autoGenerateContent(): {
 
   return {
     modules: newModules,
+    gameBlocks,
     skenario: [],
     materi: { blok: newBlok },
   };
@@ -159,25 +169,33 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     );
 
     // Step 1: Auto-generate content if enabled
+    // Phase 5-C: Game blocks are now written as schema blocks (not AuthoringStore.modules).
+    // Non-schema presentation modules (tab-icons, accordion, timeline, infografis)
+    // still go to AuthoringStore until schema block types are created for them.
+    let autoGenGameBlocks: SchemaBlock[] = [];
     if (blueprint.autoGenerateModules) {
       const generated = autoGenerateContent();
       const generatedModules = generated.modules;
-      // Merge generated modules into authoring store if not already there
-      const existingTypes = new Set(
-        authStore.modules.map((m: Module) => m.type + '_' + m.title)
-      );
-      const newModules = generatedModules.filter(
-        m => !existingTypes.has((m as Record<string, unknown>).type as string + '_' + (m as Record<string, unknown>).title as string)
-      );
-      if (newModules.length > 0) {
-        // Ensure all auto-generated modules have stable _id fields
-        // so resolveModule() can find them by moduleId
-        const modulesWithIds = ensureModuleIds(newModules) as Module[];
-        useAuthoringStore.setState({
-          modules: [...authStore.modules, ...modulesWithIds],
-        });
-        useDirtyStore.getState().markDirty();
-        toast.success(`🤖 Auto-generate: ${newModules.length} modul dibuat dari data yang ada`);
+      autoGenGameBlocks = generated.gameBlocks;
+
+      // Merge projection-only modules into authoring store if not already there
+      // These are non-schema types (tab-icons, accordion, timeline, infografis)
+      // that still need AuthoringStore until schema block types are created for them.
+      if (generatedModules.length > 0) {
+        const existingTypes = new Set(
+          authStore.modules.map((m: Module) => m.type + '_' + m.title)
+        );
+        const newModules = generatedModules.filter(
+          m => !existingTypes.has((m as Record<string, unknown>).type as string + '_' + (m as Record<string, unknown>).title as string)
+        );
+        if (newModules.length > 0) {
+          const modulesWithIds = ensureModuleIds(newModules) as Module[];
+          useAuthoringStore.setState({
+            modules: [...authStore.modules, ...modulesWithIds],
+          });
+          useDirtyStore.getState().markDirty();
+          toast.success(`🤖 Auto-generate: ${newModules.length} modul dibuat dari data yang ada`);
+        }
       }
       // Re-read after merge
       const updatedModules = useAuthoringStore.getState().modules;
@@ -208,6 +226,16 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
     // ═══════════════════════════════════════════════════════════════
     // GLOBAL PAGES (before per-pertemuan loop)
     // ═══════════════════════════════════════════════════════════════
+
+    // Phase 5-C: Add auto-generated game blocks as schema pages
+    // These are game types (memory, etc.) that now go to schema instead
+    // of AuthoringStore.modules. They are added as game pages with
+    // their schema blocks pre-populated.
+    if (autoGenGameBlocks.length > 0) {
+      for (const gameBlock of autoGenGameBlocks) {
+        addPage('game', `Game: ${gameBlock.type.replace('-game', '').replace('-set', '')}`, [gameBlock]);
+      }
+    }
 
     if (blueprint.includeCover) {
       addPage('cover', undefined, storedParsed ? [genCoverSchema(authStore.meta)] : undefined);

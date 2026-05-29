@@ -38,6 +38,8 @@ import type {
   RangkumanBlock,
   TujuanDisplayBlock,
   MateriSectionBlock,
+  MatchingGameBlock,
+  TrueFalseGameBlock,
   CompressionHints,
   SemanticHints,
 } from './types';
@@ -880,6 +882,101 @@ export function genPenutupSchema(
     ],
     compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
     semantic: { topic: meta.namaBab, learningPhase: 'penutup', importance: 0.7 } satisfies SemanticHints,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MATCHING GAME — Pair matching interactive game
+// ═══════════════════════════════════════════════════════════════════
+// Phase 5-C: Schema generator for matching game blocks.
+// Converts ParseResult → MatchingGameBlock (schema-first).
+// Previously, this went through AuthoringStore.addModule('matching')
+// which is now deprecated. All writes go through schema.
+
+export function genMatchingSchema(
+  parsed: ParseResult,
+): MatchingGameBlock {
+  const { definitions, enumerations } = parsed;
+  const pairs: Array<{ left: string; right: string }> = [];
+
+  for (const def of definitions) {
+    pairs.push({
+      left: def.term,
+      right: def.meaning.slice(0, 60) + (def.meaning.length > 60 ? '...' : ''),
+    });
+  }
+
+  for (const en of enumerations) {
+    pairs.push({
+      left: en.subject.slice(0, 40),
+      right: en.items.slice(0, 3).join(', '),
+    });
+  }
+
+  return {
+    type: 'matching-game',
+    id: generateBlockId(),
+    title: 'Matching Game',
+    pairs: pairs.slice(0, 8),
+    compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { learningPhase: 'inti', interactionType: 'drag', importance: 0.7 } satisfies SemanticHints,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TRUE/FALSE GAME — True/false quiz game
+// ═══════════════════════════════════════════════════════════════════
+// Phase 5-C: Schema generator for true/false game blocks.
+// Converts ParseResult → TrueFalseGameBlock (schema-first).
+// Previously, this went through AuthoringStore.addModule('truefalse')
+// which is now deprecated. All writes go through schema.
+
+export function genTrueFalseSchema(
+  parsed: ParseResult,
+): TrueFalseGameBlock {
+  const { definitions, functions, topWords } = parsed;
+  const questions: Array<{ text: string; correct: boolean; explanation?: string }> = [];
+
+  // True statements from definitions
+  for (const def of definitions) {
+    questions.push({
+      text: `${def.term} adalah ${def.meaning}.`,
+      correct: true,
+      explanation: `Benar, ${def.term} ${def.meaning}.`,
+    });
+  }
+
+  // True statements from functions
+  for (const fn of functions) {
+    questions.push({
+      text: `${fn.subject} berfungsi untuk ${fn.desc}.`,
+      correct: true,
+      explanation: `Benar, ${fn.subject} berfungsi ${fn.desc}.`,
+    });
+  }
+
+  // False statements (negate definitions)
+  for (let i = 0; i < definitions.length && questions.length < definitions.length * 2; i++) {
+    const def = definitions[i]!;
+    const wrongWord = topWords.find(
+      (w) => !def.meaning.toLowerCase().includes(w) && w !== def.term.toLowerCase(),
+    );
+    if (wrongWord) {
+      questions.push({
+        text: `${def.term} adalah ${wrongWord}.`,
+        correct: false,
+        explanation: `Salah, ${def.term} adalah ${def.meaning}.`,
+      });
+    }
+  }
+
+  return {
+    type: 'true-false-game',
+    id: generateBlockId(),
+    title: 'Benar / Salah',
+    questions,
+    compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { learningPhase: 'inti', interactionType: 'choose', importance: 0.7 } satisfies SemanticHints,
   };
 }
 
