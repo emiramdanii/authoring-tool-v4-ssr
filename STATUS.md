@@ -82,7 +82,7 @@
 | ID | Masalah | Ditemukan Saat |
 |---|---|---|
 | P1 | ~~Cover invisible bug — zIndex:0 di SceneLayoutEngine~~ ✅ FIXED (Task 5) | Audit sebelumnya |
-| P2 | Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors | Diskusi STANDAR |
+| P2 | ~~Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors~~ ✅ FIXED — edu.pageBg()/pageBg2() used consistently in renderers | Diskusi STANDAR |
 | P3 | ~~Font size violations di block renderers lainnya~~ ✅ FIXED — edu token floor raised + CrosswordGameRenderer clue text fixed | Audit sebelumnya |
 | P4 | ~~NcGridRenderer card body "Bagian dari materi"~~ ✅ RESOLVED — placeholder not found in codebase | Review norma-golden |
 | P5 | syncMateriToSchema generate new IDs setiap sync — menyebabkan re-render | Analisis sync-projection |
@@ -154,7 +154,7 @@
 - SceneList overflow indicator — amber AlertTriangle icon on overflowing pages
   - Reads from pageOverflowStatus store
 
-### Phase 5 — Cleanup Dual Source (IN PROGRESS)
+### Phase 5 — Cleanup Dual Source (NEAR COMPLETE)
 **Goal**: Hapus old write paths, schema-only untuk save/export
 
 **Completed**:
@@ -185,14 +185,31 @@
 - P3: Migrated matching+truefalse in use-auto-generate.ts from AuthoringStore module-slice actions → schema game blocks via applyBlockToPages(). Added genMatchingSchema() and genTrueFalseSchema() to generators.ts. Migrated memory module in autoGenerateContent() from projection → memory-game schema block.
 - P4: Removed all 7 write actions from module-slice.ts (addModule, removeModule, updateModuleField, moveModule, addModuleItem, removeModuleItem, updateModuleItem). Zero callers remain. modules field is now a read-only projection derived from schema via startProjectionSync().
 - P5: Fixed double-write on load — system-slice.loadFromStorage() now only loads non-schema fields (cp, atp, petunjuk, penutup, suara, guruPw). Schema-backed fields are derived from schema via persistence-slice + startProjectionSync(). Added modules+games to projection patch. Removed duplicate CanvaStore.loadFromStorage() call from AuthoringTool.tsx. Fixed loadProject() to not overwrite schema-backed fields.
+- **Phase 5-H: Games field auto-derivation**
+  - Added Zustand subscription in store/authoring/index.ts that auto-derives games from modules
+  - Removed manual games writes from: preset-slice (applyFullPreset, newProject), persistence-slice (loadFromStorage, loadFromDB), import handler (handleImportJSON)
+  - games can never drift out of sync with modules
+- **P2: Visual system unification**
+  - Replaced tokens.color('bg') → edu.pageBg()/modeBg.bg in 11 game/renderer files
+  - Replaced tokens.color('bg2') → edu.pageBg2()/modeBg.bg2 in background gradients
+  - Contrast text on accent (color: tokens.color('bg')) left as-is — intentional for WCAG contrast
+- **BlockLayout type system fix** (pre-existing TS errors)
+  - Added isSpatialLayout() type guard in schema/types/base.ts
+  - Renamed TabIconsBlock/InfografisBlock.layout → layoutVariant (backward compat with layout fallback)
+  - Updated 8+ files to use isSpatialLayout guard: command-engine, normalize, render-determinism, TransformHandles, LayerPanel, SceneOverflowEngine, SceneLayoutEngine, scene-transaction, TemplateValidator, generators
+  - Fixed CanvaBuilder: direction → orientation (react-resizable-panels v4 API)
+  - Fixed Dashboard: 'settings' → 'dokumen' (PanelId type mismatch)
+  - Fixed CourseTemplateRegistry: added missing presetId field
+  - Result: 0 new TS errors (only pre-existing missing npm packages remain)
 
 **Remaining (Future Work)**:
 - ~~Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis)~~ ✅ DONE (Phase 5-G)
 - ~~Create dedicated renderers for tab-icons, accordion, infografis~~ ✅ DONE (commit 896bd52)
 - ~~P3: Font size violations in block renderers~~ ✅ DONE — edu.micro() floor 11→14px, edu.caption() floor 14→16px, CrosswordGameRenderer clue text fixed
 - ~~P4: NcGridRenderer card body placeholder text~~ ✅ RESOLVED — placeholder text not found in codebase, likely already fixed
+- ~~Eliminate redundant `games` field~~ ✅ DONE — Phase 5-H: games auto-derived from modules via Zustand subscription
+- ~~P2: Multiple visual systems fighting~~ ✅ PARTIALLY FIXED — edu.pageBg()/pageBg2() now used in all game renderers + SchemaRenderer + PageFrame; contrast text on accent (color: tokens.color('bg')) still uses tokens directly which is intentional for WCAG
+- ~~BlockLayout type system errors~~ ✅ FIXED — added isSpatialLayout() type guard, renamed TabIconsBlock/InfografisBlock.layout → layoutVariant, fixed 8+ files
 - Migrate preset-slice writes (applyFullPreset) to schema-first (requires preset format refactor)
 - Convert import/restore bulk writes to schema-first
 - Full activePanel extraction from AuthoringStore to dedicated navigation store
-- Eliminate redundant `games` field (replace with computed getter)
-- P2: Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors

@@ -1131,3 +1131,31 @@ Stage Summary:
 - Phase 4 (Safe Page Split): Already complete (was incorrectly labeled "Deferred")
 - Icon system unified to Material Symbols Outlined
 - Remaining gaps: Token system unification (schema renderer still uses old tokens), named spacing/font tokens in @theme
+---
+Task ID: 6
+Agent: Super Z (Main)
+Task: Phase 5-H + P2 Visual Unification + BlockLayout Type Fix + Git Push
+
+Work Log:
+- Git pull from origin/main (already up to date)
+- Audited full codebase: Phase 1-4 DONE, Phase 5 18/19 sub-tasks done, games field redundant
+- Phase 5-H: Added Zustand subscription to auto-derive games from modules
+- Removed all manual games writes from preset-slice, persistence-slice, import handler
+- P2: Replaced tokens.color('bg') with edu.pageBg() in 11 renderer files
+- P2: Replaced tokens.color('bg2') with edu.pageBg2()/modeBg.bg2 in gradient backgrounds
+- Added isSpatialLayout() type guard to fix BlockLayout vs string variant union type errors
+- Renamed TabIconsBlock/InfografisBlock.layout → layoutVariant (backward compat)
+- Fixed 8+ files with isSpatialLayout guard: command-engine, normalize, render-determinism, TransformHandles, LayerPanel, SceneOverflowEngine, SceneLayoutEngine, scene-transaction, TemplateValidator, generators
+- Fixed CanvaBuilder: direction → orientation (react-resizable-panels v4)
+- Fixed Dashboard: 'settings' → 'dokumen' (PanelId mismatch)
+- Fixed CourseTemplateRegistry: added missing presetId field
+- Updated STATUS.md with honest status labels
+- Git push to origin/main — no conflicts
+
+Stage Summary:
+- Commit: c4e750a — 39 files changed
+- Phase 5-H DONE: games field auto-derived, never manual
+- P2 PARTIALLY FIXED: edu.pageBg() in all renderers, contrast text on accent still uses tokens (intentional)
+- BlockLayout type errors: 0 remaining (was ~25 errors)
+- Parking Lot P1-P4: All resolved
+- Remaining: preset-slice schema-first, import/restore schema-first, activePanel extraction
