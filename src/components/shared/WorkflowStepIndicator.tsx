@@ -119,7 +119,7 @@ export default function WorkflowStepIndicator() {
                 }`}
               >
                 {isCompleted && !isCurrent ? (
-                  <Check size={10} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check</span>
                 ) : (
                   i + 1
                 )}
@@ -135,13 +135,7 @@ export default function WorkflowStepIndicator() {
 
             {/* Connector arrow */}
             {i < STEPS.length - 1 && (
-              <ArrowRight
-                size={10}
-                className={`mx-0.5 flex-shrink-0 ${
-                  isPast ? 'text-silse-primary/40' : 'text-silse-outline-variant/50'
-                }`
-              }
-              />
+              <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>arrow_forward</span>
             )}
           </React.Fragment>
         );

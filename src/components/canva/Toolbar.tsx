@@ -155,7 +155,7 @@ export default function Toolbar() {
   return (
     <header
       className="fixed top-0 left-0 w-full z-40 flex items-center justify-between px-5 bg-silse-surface-container-lowest/95 backdrop-blur-md border-b border-silse-outline-variant/60 select-none"
-      style={{ height: '52px' }}
+      style={{ height: '64px' }}
     >
       {/* LEFT: Brand + Project */}
       <ToolbarNav />

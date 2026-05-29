@@ -26,7 +26,7 @@
 import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition, getBlockCapabilities, getBlockPropertySchema } from '@/core/registry/SceneRegistry';
 import { getBlockCapabilities as getDerivedCapabilities, isBlockTypeInteractive, isBlockTypeCompressionCapable, isBlockTypeSplittable, isBlockTypeMeasurable, isBlockTypeRendererHandlesCompression, type BlockCapabilityInfo } from '@/core/schema/capability-registry';
-import { Settings2, X } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import { useSelectedBlock } from './use-selected-block';
 import { SchemaDrivenEditor } from './SchemaDrivenEditor';
@@ -62,7 +62,7 @@ export default function BlockPropertiesPanel() {
     return (
       <div className="border-b border-blue-500/10">
         <div className="px-3 py-2 flex items-center gap-1.5 bg-blue-500/5">
-          <Settings2 size={12} className="text-blue-400" />
+          <span className="material-symbols-outlined text-blue-400" style={ { fontSize: '12px' } }>settings</span>
           <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">{teacherTerm('Block', teacherMode)}</span>
           <Button
             variant="ghost"
@@ -70,7 +70,7 @@ export default function BlockPropertiesPanel() {
             onClick={() => selectBlock(null)}
             className="ml-auto h-5 w-5 text-silse-on-surface-variant hover:text-silse-on-surface-variant"
           >
-            <X size={10} />
+            <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>close</span>
           </Button>
         </div>
         <div className="px-3 pb-3 pt-2">
@@ -84,7 +84,7 @@ export default function BlockPropertiesPanel() {
     <div className="border-b border-blue-500/10" data-testid="block-properties-panel">
       {/* Header */}
       <div className="px-3 py-2 flex items-center gap-1.5 bg-blue-500/5">
-        <Settings2 size={12} className="text-blue-400" />
+        <span className="material-symbols-outlined text-blue-400" style={ { fontSize: '12px' } }>settings</span>
         <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">{teacherMode ? 'Properti Konten' : 'Block Properti'}</span>
         <Button
           variant="ghost"
@@ -92,7 +92,7 @@ export default function BlockPropertiesPanel() {
           onClick={() => { selectBlock(null); stopEditing(); }}
           className="ml-auto h-5 w-5 text-silse-on-surface-variant hover:text-silse-on-surface-variant"
         >
-          <X size={10} />
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>close</span>
         </Button>
       </div>
 

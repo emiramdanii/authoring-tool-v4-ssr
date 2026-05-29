@@ -38,17 +38,7 @@ import {
 import { assertDocumentPurity } from '@/core/schema/session-state';
 import type { ParseResult } from '@/components/authoring/auto-generate/types';
 import type { PageTemplateType } from '@/components/canva/types';
-import {
-  Sparkles,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Wand2,
-  ChevronDown,
-  BookOpen,
-  Zap,
-  FileText,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
 
@@ -234,8 +224,8 @@ export default function AIGenerateLessonPanel() {
       {/* Header */}
       <div className="flex items-center gap-2">
         <div className="relative">
-          <Wand2 size={14} className="text-amber-400" />
-          <Zap size={8} className="absolute -top-1 -right-1 text-yellow-300" />
+          <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '14px' } }>auto_fix</span>
+          <span className="material-symbols-outlined absolute -top-1 -right-1 text-yellow-300" style={ { fontSize: '8px' } }>bolt</span>
         </div>
         <div className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">Buat Materi AI</div>
         <span className="text-[7px] text-app-muted bg-amber-500/10 px-1.5 py-0.5 rounded-full font-bold">NEW</span>
@@ -249,7 +239,7 @@ export default function AIGenerateLessonPanel() {
       {/* Topic input */}
       <div>
         <label className="text-[8px] text-app-muted font-bold uppercase tracking-wider flex items-center gap-1">
-          <BookOpen size={8} /> Topik / Judul Materi
+          <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>menu_book</span> Topik / Judul Materi
         </label>
         <input
           type="text"
@@ -304,7 +294,7 @@ export default function AIGenerateLessonPanel() {
             className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg bg-app-elevated/60 border border-app-border/30 text-left hover:border-amber-500/30 transition-colors"
           >
             <span className="text-[10px] text-app-primary font-semibold">{patternLabels[pattern]}</span>
-            <ChevronDown size={12} className={`text-app-muted transition-transform ${patternOpen ? 'rotate-180' : ''}`} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>expand_more</span>
           </button>
           {patternOpen && (
             <div className="absolute top-full left-0 right-0 mt-1 rounded-xl bg-app-surface border border-app-border shadow-md z-50 overflow-hidden">
@@ -340,12 +330,12 @@ export default function AIGenerateLessonPanel() {
       >
         {loading ? (
           <>
-            <Loader2 size={12} className="animate-spin" />
+            <span className="material-symbols-outlined animate-spin" style={ { fontSize: '12px' } }>progress_activity</span>
             AI sedang merancang materi...
           </>
         ) : (
           <>
-            <Wand2 size={12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>auto_fix</span>
             Buat Materi dengan AI
           </>
         )}
@@ -354,7 +344,7 @@ export default function AIGenerateLessonPanel() {
       {/* Error display */}
       {error && (
         <div className="flex items-start gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20">
-          <AlertCircle size={12} className="text-red-400 flex-shrink-0 mt-0.5" />
+          <span className="material-symbols-outlined text-red-400 flex-shrink-0 mt-0.5" style={ { fontSize: '12px' } }>error</span>
           <div className="text-[9px] text-red-300">{error}</div>
         </div>
       )}
@@ -364,7 +354,7 @@ export default function AIGenerateLessonPanel() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 size={10} className="text-emerald-400" />
+              <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '10px' } }>check_circle</span>
               <span className="text-[9px] font-bold text-emerald-300">Struktur Materi Siap</span>
             </div>
             <button
@@ -413,12 +403,12 @@ export default function AIGenerateLessonPanel() {
           >
             {applied ? (
               <>
-                <CheckCircle2 size={12} />
+                <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>check_circle</span>
                 Sudah Diterapkan
               </>
             ) : (
               <>
-                <Zap size={12} />
+                <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>bolt</span>
                 Terapkan ke Canvas ({result.data.pages.length} hal.)
               </>
             )}

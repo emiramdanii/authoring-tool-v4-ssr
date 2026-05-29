@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Edit3, Eye, Presentation } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import type { AppMode } from '@/components/canva/types';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
@@ -21,9 +21,9 @@ export function ModeSwitch({ appMode, setAppMode }: ModeSwitchProps) {
   const { isSederhana } = useTeacherMode();
 
   const MODES: { id: AppMode; label: string; labelSederhana: string; icon: React.ReactNode }[] = [
-    { id: 'edit', label: 'Edit', labelSederhana: 'Sunting', icon: <Edit3 size={12} /> },
-    { id: 'preview', label: 'Preview', labelSederhana: 'Pratinjau', icon: <Eye size={12} /> },
-    { id: 'present', label: 'Present', labelSederhana: 'Tayangkan', icon: <Presentation size={12} /> },
+    { id: 'edit', label: 'Edit', labelSederhana: 'Sunting', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>edit</span> },
+    { id: 'preview', label: 'Preview', labelSederhana: 'Pratinjau', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>visibility</span> },
+    { id: 'present', label: 'Present', labelSederhana: 'Tayangkan', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>slideshow</span> },
   ];
 
   return (

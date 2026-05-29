@@ -23,7 +23,7 @@ export function ExportSuccessDialog({ open, onClose }: ExportSuccessDialogProps)
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-              <CheckCircle2 size={20} className="text-emerald-400" />
+              <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '20px' } }>check_circle</span>
             </div>
             <div>
               <DialogTitle className="text-emerald-400 text-base">Export Berhasil!</DialogTitle>
@@ -41,7 +41,7 @@ export function ExportSuccessDialog({ open, onClose }: ExportSuccessDialogProps)
           <div className="space-y-2.5">
             <div className="flex items-start gap-2.5">
               <div className="w-6 h-6 rounded-md bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Upload size={12} className="text-emerald-400" />
+                <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '12px' } }>upload</span>
               </div>
               <div>
                 <p className="text-xs text-app-secondary">Upload file HTML ke Google Drive / hosting</p>
@@ -50,7 +50,7 @@ export function ExportSuccessDialog({ open, onClose }: ExportSuccessDialogProps)
 
             <div className="flex items-start gap-2.5">
               <div className="w-6 h-6 rounded-md bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Share2 size={12} className="text-emerald-400" />
+                <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '12px' } }>share</span>
               </div>
               <div>
                 <p className="text-xs text-app-secondary">Bagikan link ke siswa via WhatsApp / Google Classroom</p>
@@ -59,7 +59,7 @@ export function ExportSuccessDialog({ open, onClose }: ExportSuccessDialogProps)
 
             <div className="flex items-start gap-2.5">
               <div className="w-6 h-6 rounded-md bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Smartphone size={12} className="text-emerald-400" />
+                <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '12px' } }>smartphone</span>
               </div>
               <div>
                 <p className="text-xs text-app-secondary">Siswa buka link di HP — langsung jalan!</p>
@@ -70,7 +70,7 @@ export function ExportSuccessDialog({ open, onClose }: ExportSuccessDialogProps)
 
         {/* Tip */}
         <div className="flex items-start gap-2 text-xs text-app-muted bg-app-elevated/50 rounded-lg p-3">
-          <ExternalLink size={12} className="text-emerald-400/60 flex-shrink-0 mt-0.5" />
+          <span className="material-symbols-outlined text-emerald-400/60 flex-shrink-0 mt-0.5" style={ { fontSize: '12px' } }>open_in_new</span>
           <span>File HTML ini sudah termasuk semua konten. Tidak perlu instalasi — cukup buka di browser.</span>
         </div>
 
@@ -86,7 +86,7 @@ export function ExportSuccessDialog({ open, onClose }: ExportSuccessDialogProps)
             onClick={onClose}
             className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
           >
-            <CheckCircle2 size={12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>check_circle</span>
             Selesai
           </Button>
         </DialogFooter>

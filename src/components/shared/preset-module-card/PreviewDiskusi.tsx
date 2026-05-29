@@ -38,9 +38,9 @@ export function PreviewDiskusi({ mod, variant, compact }: { mod: M; variant: Lay
           <div className="flex items-center gap-2 mb-2">
             <div className="min-w-[26px] h-[26px] rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: alpha(accent, 0.12), color: accent, border: `1px solid ${alpha(accent, 0.19)}` }}>{i + 1}</div>
             {str(p.label) ? (
-              <div className="text-[11px] font-extrabold tracking-wide" style={{ color: accent }}>{str(p.icon) ? <span>{str(p.icon)}</span> : <MessageCircle size={12} className="inline" />} {str(p.label)}</div>
+              <div className="text-[11px] font-extrabold tracking-wide" style={{ color: accent }}>{str(p.icon) ? <span>{str(p.icon)}</span> : <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>chat_bubble</span>} {str(p.label)}</div>
             ) : (
-              <div className="text-[11px] font-extrabold tracking-wide" style={{ color: accent }}>{str(p.icon) ? <span>{str(p.icon)}</span> : <MessageCircle size={12} className="inline" />} Pertanyaan {i + 1}</div>
+              <div className="text-[11px] font-extrabold tracking-wide" style={{ color: accent }}>{str(p.icon) ? <span>{str(p.icon)}</span> : <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>chat_bubble</span>} Pertanyaan {i + 1}</div>
             )}
           </div>
           <p className="text-xs font-bold leading-relaxed" style={{ color: T.text }}>{str(p.teks)}</p>

@@ -7,7 +7,7 @@
 // Selecting a preset applies it immediately via applyThemePreset().
 
 import { useState, useEffect, useCallback } from 'react';
-import { Palette, Check } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import {
   Popover,
   PopoverTrigger,
@@ -47,7 +47,7 @@ export function ThemePresetPicker() {
         className="flex items-center justify-center h-6 w-6 rounded-md text-silse-on-surface-variant opacity-50"
         disabled
       >
-        <Palette size={12} />
+        <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>palette</span>
       </button>
     );
   }
@@ -59,7 +59,7 @@ export function ThemePresetPicker() {
           className="flex items-center justify-center h-6 w-6 rounded-md text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-primary/10 transition-colors"
           title="Preset tema"
         >
-          <Palette size={12} />
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>palette</span>
         </button>
       </PopoverTrigger>
 
@@ -69,7 +69,7 @@ export function ThemePresetPicker() {
         className="w-60 p-1.5 bg-silse-surface-container-lowest border border-silse-outline-variant shadow-lg"
       >
         <div className="text-[9px] font-bold text-silse-on-surface-variant uppercase tracking-wider px-2 py-1.5 mb-1 flex items-center gap-1.5">
-          <Palette size={10} />
+          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>palette</span>
           Theme Presets
         </div>
 
@@ -116,7 +116,7 @@ export function ThemePresetPicker() {
 
                 {/* Active indicator */}
                 {isActive && (
-                  <Check size={12} className="text-silse-primary flex-shrink-0" />
+                  <span className="material-symbols-outlined text-silse-primary flex-shrink-0" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>check</span>
                 )}
               </button>
             );

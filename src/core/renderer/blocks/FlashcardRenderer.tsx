@@ -105,7 +105,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
                 border: '1px solid ' + tokens.colorAlpha('g', 0.3),
                 animation: `popSuccess 0.3s ease-out ${i * 0.1}s both`,
               }}>
-              <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check_circle</span>
             </div>
           ))}
         </div>
@@ -124,7 +124,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
               color: tokens.color('bg'),
               boxShadow: '0 4px 16px ' + tokens.colorAlpha('g', 0.35),
             }}>
-            <RotateCcw size={14} className="inline" /> Ulangi Kartu
+            <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi Kartu
           </button>
           </MicroInteraction>
         </div>
@@ -150,7 +150,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
           <span className="font-bold" style={{ ...edu.micro(), color: edu.mutedText(0.6) }}>
             {viewedCards.size}/{cards.length}
           </span>
-          {flipped ? <EyeOff size={12} style={{ color: tokens.color('g') }} /> : <Eye size={12} style={{ color: tokens.muted(0.5) }} />}
+          {flipped ? <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>visibility_off</span> : <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>visibility</span>}
         </div>
       </div>
 
@@ -217,7 +217,7 @@ export const FlashcardRenderer = React.memo(function FlashcardRenderer({ block, 
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center"
                 style={{ background: tokens.colorAlpha('g', 0.2) }}>
-                <CheckCircle2 size={10} className="inline" />
+                <span className="material-symbols-outlined inline" style={ { fontSize: '10px' } }>check_circle</span>
               </div>
               <div className="font-extrabold uppercase tracking-wider" style={{ ...edu.caption(), color: tokens.color('g') }}>Jawaban</div>
             </div>

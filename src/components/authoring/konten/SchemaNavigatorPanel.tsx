@@ -34,24 +34,7 @@ import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/sc
 import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
 import { getKontenTabForBlockType } from '@/hooks/use-schema-navigator';
 import type { SchemaBlock } from '@/core/schema/types';
-import {
-  ChevronRight,
-  Zap,
-  Layers,
-  BookOpen,
-  Search,
-  FileText,
-  Trash2,
-  Copy,
-  ArrowUp,
-  ArrowDown,
-  Pencil,
-  LayoutGrid,
-  List,
-  Check,
-  X,
-} from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 // ── Block Type Display Map ──────────────────────────────────────
 // Same map as SchemaBlockTree — single source of truth for icons/labels/colors
 
@@ -230,14 +213,14 @@ function InlineTitleEditor({
         className="flex-shrink-0 text-silse-primary hover:text-silse-primary/80 p-0.5"
         title="Simpan"
       >
-        <Check size={10} />
+        <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check</span>
       </button>
       <button
         onClick={onCancel}
         className="flex-shrink-0 text-silse-on-surface-variant hover:text-red-400 p-0.5"
         title="Batal"
       >
-        <X size={10} />
+        <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>close</span>
       </button>
     </div>
   );
@@ -316,10 +299,12 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
         >
           {/* Expand/collapse chevron */}
           {hasChildren ? (
-            <ChevronRight
-              size={12}
-              className={`flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
-            />
+            <span
+              className={`material-symbols-outlined flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+              style={{ fontSize: '12px' }}
+            >
+              chevron_right
+            </span>
           ) : (
             <span className="w-3 flex-shrink-0" />
           )}
@@ -348,35 +333,35 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
                 className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high transition-colors"
                 title="Edit judul"
               >
-                <Pencil size={9} />
+                <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>edit</span>
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); moveBlockUp(block.id || ''); }}
                 className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high transition-colors"
                 title="Pindah ke atas"
               >
-                <ArrowUp size={9} />
+                <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>arrow_upward</span>
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); moveBlockDown(block.id || ''); }}
                 className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high transition-colors"
                 title="Pindah ke bawah"
               >
-                <ArrowDown size={9} />
+                <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>arrow_downward</span>
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id || ''); }}
                 className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-primary-container/10 transition-colors"
                 title="Duplikat blok"
               >
-                <Copy size={9} />
+                <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>content_copy</span>
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); deleteBlock(block.id || ''); }}
                 className="p-0.5 rounded-lg text-silse-on-surface-variant hover:text-red-400 hover:bg-red-500/10 transition-colors"
                 title="Hapus blok"
               >
-                <Trash2 size={9} />
+                <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>delete</span>
               </button>
             </div>
           )}
@@ -400,12 +385,12 @@ function BlockRow({ block, pageId, pageIndex, depth, selectedBlockId, onNavigate
               className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
               title={`Edit di tab ${kontenTab}`}
             >
-              <FileText size={10} className="text-silse-primary/60" />
+              <span className="material-symbols-outlined text-silse-primary/60" style={ { fontSize: '10px' } }>description</span>
             </span>
           )}
 
           {/* Schema indicator */}
-          <Zap size={8} className="flex-shrink-0 text-silse-primary-container/40" />
+          <span className="material-symbols-outlined flex-shrink-0 text-silse-primary-container/40" style={ { fontSize: '8px' } }>bolt</span>
         </button>
       </div>
 
@@ -460,10 +445,12 @@ function PageSection({ data, isActive, selectedBlockId, onNavigate }: PageSectio
           isActive ? 'bg-silse-primary-container/10 text-silse-primary' : 'hover:bg-silse-surface-container-high text-silse-on-surface'
         }`}
       >
-        <ChevronRight
-          size={14}
-          className={`flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
-        />
+        <span
+          className={`material-symbols-outlined flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+          style={{ fontSize: '14px' }}
+        >
+          chevron_right
+        </span>
 
         {/* Page type icon */}
         <span className="text-base flex-shrink-0">{display.icon}</span>
@@ -531,10 +518,12 @@ function CategorySection({ data, selectedBlockId, onNavigate }: CategorySectionP
         onClick={() => setExpanded(prev => !prev)}
         className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-silse-surface-container-high transition-colors"
       >
-        <ChevronRight
-          size={14}
-          className={`flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
-        />
+        <span
+          className={`material-symbols-outlined flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+          style={{ fontSize: '14px' }}
+        >
+          chevron_right
+        </span>
         <span className="text-base flex-shrink-0">{meta.icon}</span>
         <span className="text-sm font-semibold truncate flex-1 text-silse-on-surface">
           {meta.label}
@@ -593,12 +582,12 @@ function SummaryBar({ totalPages, totalBlocks, categoryDistribution }: SummaryBa
       {/* Stats row */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
-          <Layers size={13} className="text-silse-primary/70" />
+          <span className="material-symbols-outlined text-silse-primary/70" style={ { fontSize: '13px' } }>layers</span>
           <span className="text-xs font-bold text-silse-on-surface">{totalPages}</span>
           <span className="text-[10px] text-silse-on-surface-variant">halaman</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Zap size={13} className="text-silse-primary-container/70" />
+          <span className="material-symbols-outlined text-silse-primary-container/70" style={ { fontSize: '13px' } }>bolt</span>
           <span className="text-xs font-bold text-silse-on-surface">{totalBlocks}</span>
           <span className="text-[10px] text-silse-on-surface-variant">blok</span>
         </div>
@@ -797,7 +786,7 @@ export function SchemaNavigatorPanel() {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6">
         <div className="w-16 h-16 rounded-2xl bg-silse-surface-container-high flex items-center justify-center mb-4">
-          <BookOpen size={28} className="text-silse-on-surface-variant/50" />
+          <span className="material-symbols-outlined text-silse-on-surface-variant/50" style={ { fontSize: '28px' } }>menu_book</span>
         </div>
         <p className="text-sm font-semibold text-silse-on-surface mb-1">
           Belum ada konten
@@ -814,7 +803,7 @@ export function SchemaNavigatorPanel() {
       {/* Header */}
       <div className="flex items-center gap-2">
         <div className="w-7 h-7 rounded-lg bg-silse-primary-container/15 flex items-center justify-center flex-shrink-0">
-          <Layers size={14} className="text-silse-primary" />
+          <span className="material-symbols-outlined text-silse-primary" style={ { fontSize: '14px' } }>layers</span>
         </div>
         <div className="min-w-0">
           <h3 className="text-[10px] uppercase tracking-widest font-bold text-silse-outline leading-tight">
@@ -836,7 +825,7 @@ export function SchemaNavigatorPanel() {
       {/* Search + view mode toggle */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-silse-on-surface-variant/50" />
+          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-silse-on-surface-variant/50" style={ { fontSize: '13px' } }>search</span>
           <input
             type="text"
             value={searchQuery}
@@ -855,7 +844,7 @@ export function SchemaNavigatorPanel() {
             }`}
             title="Kelompokkan per halaman"
           >
-            <List size={12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>list</span>
           </button>
           <button
             onClick={() => setViewMode('by-category')}
@@ -866,7 +855,7 @@ export function SchemaNavigatorPanel() {
             }`}
             title="Kelompokkan per kategori"
           >
-            <LayoutGrid size={12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>grid_view</span>
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Zap, ChevronDown, ChevronUp, X, Sparkles } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { Button } from '@/components/ui/button';
@@ -62,7 +62,7 @@ function ConfigPanel({
           className="h-6 w-6 rounded-md text-app-muted hover:text-app-secondary"
           aria-label="Tutup konfigurasi"
         >
-          <X size={12} />
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>close</span>
         </Button>
       </div>
 
@@ -88,12 +88,12 @@ function ConfigPanel({
       >
         {generating ? (
           <>
-            <Sparkles size={14} className="animate-spin" />
+            <span className="material-symbols-outlined animate-spin" style={{ fontSize: '14px' }}>auto_awesome</span>
             Generating...
           </>
         ) : (
           <>
-            <Zap size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>bolt</span>
             Generate {pageType.name}
           </>
         )}
@@ -294,7 +294,7 @@ export default function PageTypeCreator() {
         aria-label="Auto-Generate Halaman"
         className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
       >
-        <Zap size={14} />
+        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>bolt</span>
         Auto-Generate Halaman
       </Button>
     );
@@ -310,9 +310,9 @@ export default function PageTypeCreator() {
         aria-label="Tutup Auto-Generate Halaman"
         className="w-full py-2.5 justify-center text-[11px] gap-2 bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px"
       >
-        <Zap size={14} />
+        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>bolt</span>
         Auto-Generate Halaman
-        <ChevronUp size={12} className="ml-auto" />
+        <span className="material-symbols-outlined ml-auto" style={{ fontSize: '12px' }}>expand_less</span>
       </Button>
 
       {/* Category filter chips */}
@@ -372,10 +372,12 @@ export default function PageTypeCreator() {
                   <div className="text-[11px] font-bold text-app-primary truncate">{pt.name}</div>
                   <div className="text-[9px] text-app-muted truncate">{pt.description}</div>
                 </div>
-                <ChevronDown
-                  size={12}
-                  className={`text-app-muted transition-transform flex-shrink-0 ${isSelected ? 'rotate-180' : ''}`}
-                />
+                <span
+                  className={`material-symbols-outlined text-app-muted transition-transform flex-shrink-0 ${isSelected ? 'rotate-180' : ''}`}
+                  style={{ fontSize: '12px' }}
+                >
+                  expand_more
+                </span>
               </button>
 
               {/* Inline config — expands below the selected card */}

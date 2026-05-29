@@ -181,9 +181,9 @@ const AccordionView = React.memo(function AccordionView({
           )}
         </span>
         {isExpanded ? (
-          <ChevronUp size={isCompact ? 12 : 14} style={{ color: 'rgba(52, 211, 153, 0.6)' }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_less</span>
         ) : (
-          <ChevronDown size={isCompact ? 12 : 14} style={{ color: 'rgba(52, 211, 153, 0.6)' }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span>
         )}
       </button>
 
@@ -267,12 +267,12 @@ const RevealSetView = React.memo(function RevealSetView({
       >
         {isRevealed ? (
           <>
-            <EyeOff size={isCompact ? 10 : 12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>visibility_off</span>
             Sembunyikan
           </>
         ) : (
           <>
-            <Eye size={isCompact ? 10 : 12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>visibility</span>
             Lihat lainnya
           </>
         )}
@@ -336,12 +336,12 @@ const CollapsibleView = React.memo(function CollapsibleView({
       >
         {isExpanded ? (
           <>
-            <ChevronUp size={isCompact ? 10 : 12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_less</span>
             Ringkas
           </>
         ) : (
           <>
-            <ChevronDown size={isCompact ? 10 : 12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span>
             Selengkapnya
           </>
         )}
@@ -400,7 +400,7 @@ const StepRevealView = React.memo(function StepRevealView({
           className="flex items-center gap-0.5 transition-colors disabled:opacity-30"
           style={{ color: 'rgba(52, 211, 153, 0.8)', fontSize: isCompact ? 8 : 10, cursor: 'pointer' }}
         >
-          <ChevronLeft size={isCompact ? 10 : 12} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>chevron_left</span>
           Prev
         </button>
 
@@ -414,7 +414,7 @@ const StepRevealView = React.memo(function StepRevealView({
           style={{ color: 'rgba(52, 211, 153, 0.8)', fontSize: isCompact ? 8 : 10, cursor: 'pointer' }}
         >
           Next
-          <ChevronRight size={isCompact ? 10 : 12} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>chevron_right</span>
         </button>
       </div>
     </div>

@@ -6,8 +6,7 @@ import type { Module } from '@/store/authoring/types';
 import { MODULE_TYPES, GAME_TYPES, ALL_MODULE_TYPES, moduleTypeInfo } from './shared';
 import ModuleEditorModal from '../ModuleEditorModal';
 import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/components/shared/preset-module-card';
-import { Pencil, Trash2, Puzzle, Zap } from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 // ── Module Picker Modal ───────────────────────────────────────
 function ModulePickerModal({
   open,
@@ -170,14 +169,14 @@ function ModuleCard({
           className="p-1 text-app-muted hover:text-app-accent/80 rounded-md hover:bg-app-elevated transition-colors text-sm"
           title="Edit modul"
         >
-          <Pencil size={14} />
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>edit</span>
         </button>
         <button
           onClick={onRemove}
           className="p-1 text-app-muted hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors text-sm"
           title="Hapus modul"
         >
-          <Trash2 size={14} />
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>delete</span>
         </button>
       </div>
     </div>
@@ -225,7 +224,7 @@ export function ModulesTab() {
       {/* Empty state */}
       {modules.length === 0 ? (
         <div className="text-center py-12 bg-app-surface border border-app-border rounded-xl">
-          <Puzzle size={36} className="text-app-muted mb-3" />
+          <span className="material-symbols-outlined text-app-muted mb-3" style={ { fontSize: '36px' } }>extension</span>
           <p className="text-sm text-app-secondary font-medium">Belum ada modul atau game</p>
           <p className="text-xs text-app-muted mt-1">Klik tombol di atas untuk menambahkan modul pembelajaran atau game interaktif.</p>
         </div>
@@ -250,7 +249,7 @@ export function ModulesTab() {
 
       {/* Quick Add Grid */}
       <div className="bg-app-surface border border-app-border rounded-xl p-4">
-        <h4 className="text-sm font-semibold text-app-primary mb-3"><Zap size={16} className="inline" /> Tambah Cepat</h4>
+        <h4 className="text-sm font-semibold text-app-primary mb-3"><span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>bolt</span> Tambah Cepat</h4>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {ALL_MODULE_TYPES.map((t) => (
             <button

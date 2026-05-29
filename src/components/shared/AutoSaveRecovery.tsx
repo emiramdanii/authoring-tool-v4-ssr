@@ -202,7 +202,7 @@ export default function AutoSaveRecovery() {
         <div className="px-5 py-4 bg-amber-500/10 border-b border-amber-500/20">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-500/20">
-              <AlertTriangle size={20} className="text-amber-400" />
+              <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '20px' } }>warning</span>
             </div>
             <div>
               <h2 className="text-sm font-bold text-amber-300">Sesi Sebelumnya Ditemukan</h2>
@@ -239,7 +239,7 @@ export default function AutoSaveRecovery() {
               <>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-app-muted flex items-center gap-1">
-                    <FileText size={10} /> Halaman canva
+                    <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>description</span> Halaman canva
                   </span>
                   <span className="text-[10px] text-app-secondary font-semibold">{canva.pageCount} halaman</span>
                 </div>
@@ -252,7 +252,7 @@ export default function AutoSaveRecovery() {
                 {authoring.hasCp && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <BookOpen size={10} /> Capaian Pembelajaran
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>menu_book</span> Capaian Pembelajaran
                     </span>
                     <span className="text-[10px] text-emerald-400 font-semibold">✓</span>
                   </div>
@@ -260,7 +260,7 @@ export default function AutoSaveRecovery() {
                 {authoring.tpCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Target size={10} /> Tujuan Pembelajaran
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>target</span> Tujuan Pembelajaran
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.tpCount} TP</span>
                   </div>
@@ -268,7 +268,7 @@ export default function AutoSaveRecovery() {
                 {authoring.hasAtp && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Layers size={10} /> ATP
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>layers</span> ATP
                     </span>
                     <span className="text-[10px] text-emerald-400 font-semibold">✓</span>
                   </div>
@@ -276,7 +276,7 @@ export default function AutoSaveRecovery() {
                 {authoring.alurCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Layers size={10} /> Alur Pembelajaran
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>layers</span> Alur Pembelajaran
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.alurCount} alur</span>
                   </div>
@@ -284,7 +284,7 @@ export default function AutoSaveRecovery() {
                 {authoring.kuisCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <FileText size={10} /> Kuis
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>description</span> Kuis
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.kuisCount} kuis</span>
                   </div>
@@ -292,7 +292,7 @@ export default function AutoSaveRecovery() {
                 {authoring.moduleCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <BookOpen size={10} /> Modul Konten
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>menu_book</span> Modul Konten
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.moduleCount} modul</span>
                   </div>
@@ -300,7 +300,7 @@ export default function AutoSaveRecovery() {
                 {authoring.gameCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Gamepad2 size={10} /> Game Interaktif
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>sports_esports</span> Game Interaktif
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.gameCount} game</span>
                   </div>
@@ -324,7 +324,7 @@ export default function AutoSaveRecovery() {
             className="flex-1 gap-2 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-bold text-[11px]"
             variant="outline"
           >
-            <RotateCcw size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>refresh</span>
             Pulihkan Sesi
           </Button>
           <Button
@@ -332,7 +332,7 @@ export default function AutoSaveRecovery() {
             className="flex-1 gap-2 bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30 font-bold text-[11px]"
             variant="outline"
           >
-            <Trash2 size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>delete</span>
             Mulai Baru
           </Button>
         </div>

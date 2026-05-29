@@ -77,7 +77,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           ...edu.cardStyle(),
         }}>
         <div className="mb-3">
-          <CheckCircle2 size={28} style={{ color: tokens.color('g') }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '28px' } }>check_circle</span>
         </div>
         <div className="font-bold mb-2" style={{ ...edu.heading(), color: edu.textColor() }}>
           Refleksi Selesai
@@ -89,7 +89,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           {(block.questions || []).map((_, i) => (
             <div key={`refleksi-dot-${block.id || 'ref'}-${i}`} className="w-5 h-5 rounded-full flex items-center justify-center"
               style={{ background: tokens.accentBg('g', 0.1) }}>
-              <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check_circle</span>
             </div>
           ))}
         </div>
@@ -103,7 +103,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
               background: edu.accentAlpha(0.08),
               border: `1px solid ${edu.accentBorder()}`,
             }}>
-            <RotateCcw size={14} className="inline" /> Tulis Ulang
+            <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Tulis Ulang
           </button>
         </div>
       </div>
@@ -179,7 +179,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
                 />
                 {hasResponse && (
                   <div className="absolute top-2 right-2">
-                    <CheckCircle2 size={14} style={{ color: tokens.color('g') }} />
+                    <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>check_circle</span>
                   </div>
                 )}
               </div>

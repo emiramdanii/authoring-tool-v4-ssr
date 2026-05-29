@@ -497,9 +497,9 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  {/* Tiered icon */}
  <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
  {pct >= 80 ? (
- <Trophy size={28} className="inline" style={{ color: edu.accent() }} />
+ <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>emoji_events</span>
  ) : pct >= 50 ? (
- <Star size={28} className="inline" style={{ color: edu.accent() }} />
+ <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>star</span>
  ) : (
  <Dumbbell size={28} className="inline" style={{ color: edu.accent() }} />
  )}
@@ -540,7 +540,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}
  >
- <RotateCcw size={14} className="inline" /> Ulangi
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi
  </button>
  </MicroInteraction>
  )}

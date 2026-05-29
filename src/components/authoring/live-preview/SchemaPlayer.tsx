@@ -14,7 +14,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageTransition, type PageDirection } from '@/lib/transition';
-import { RotateCcw } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 
 // ── Transition Configurations ───────────────────────────────────
@@ -315,11 +315,7 @@ export default function SchemaPlayer({
                 isCompact ? 'w-5 h-5' : 'w-7 h-7'
               }`}
             >
-              <RotateCcw
-                className={`text-app-primary/50 hover:text-app-primary ${
-                  isCompact ? 'w-3 h-3' : 'w-4 h-4'
-                }`}
-              />
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>refresh</span>
             </button>
 
             {/* Next button / Replay when finished */}
@@ -341,7 +337,7 @@ export default function SchemaPlayer({
                 }`}
                 style={{ background: tokens.colors.y }}
               >
-                <RotateCcw className={isCompact ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} />
+                <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>refresh</span>
                 Mulai Ulang
               </button>
             )}

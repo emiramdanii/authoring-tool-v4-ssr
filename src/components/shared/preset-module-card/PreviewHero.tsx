@@ -20,7 +20,7 @@ export function PreviewHero({ mod, compact }: { mod: M; compact: boolean }) {
       style={{ background: bg, minHeight: compact ? 48 : 80 }}
     >
       <div className="relative z-10">
-        <div className={`${compact ? 'text-lg' : 'text-2xl'} mb-0.5`}>{str(mod.icon) ? <span>{str(mod.icon)}</span> : <Rocket size={12} />}</div>
+        <div className={`${compact ? 'text-lg' : 'text-2xl'} mb-0.5`}>{str(mod.icon) ? <span>{str(mod.icon)}</span> : <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>rocket_launch</span>}</div>
         <div className={`font-bold ${compact ? 'text-xs' : 'text-sm'} text-white`}>
           {str(mod.title) || 'Hero Banner'}
         </div>

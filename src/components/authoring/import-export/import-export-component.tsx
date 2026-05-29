@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { isEnabled } from '@/config/feature-flags';
-import { Upload, Download, FileSpreadsheet, CheckCircle2, Loader2, Rocket, Sparkles, Printer, ClipboardList, BarChart3, Lightbulb } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
@@ -50,7 +50,7 @@ export default function ImportExport() {
       {/* ── Export HTML Interaktif (Vite SSR) ──────────────────── */}
       <div className="bg-app-surface border border-emerald-800/50 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-emerald-300 mb-1 flex items-center gap-2">
-          <Rocket size={16} className="inline" /> Ekspor HTML Interaktif
+          <span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>rocket_launch</span> Ekspor HTML Interaktif
         </h3>
         <p className="text-xs text-app-secondary mb-4">
           Unduh HTML lengkap dengan <strong className="text-emerald-400">navbar + navigasi</strong> (sama persis dengan preview),
@@ -71,25 +71,25 @@ export default function ImportExport() {
         >
           {exportingSSR ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
+              <span className="material-symbols-outlined size-4 animate-spin" style={ { fontSize: '16px' } }>progress_activity</span>
               Mengekspor...
             </>
           ) : (
             <>
-              <Download className="size-4" />
+              <span className="material-symbols-outlined size-4" style={ { fontSize: '16px' } }>download</span>
               Export HTML Interaktif
             </>
           )}
         </button>
         <p className="text-[0.65rem] text-app-muted mt-2">
-          <Sparkles size={12} className="inline" /> SSR Export — hasil sama persis dengan preview (React components + Tailwind CSS)
+          <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>auto_awesome</span> SSR Export — hasil sama persis dengan preview (React components + Tailwind CSS)
         </p>
       </div>
 
       {/* ── Admin Print ───────────────────────────────────────── */}
       <div className="bg-app-surface border border-app-border rounded-xl p-5">
         <h3 className="text-sm font-semibold text-app-primary mb-1 flex items-center gap-2">
-          <Printer size={16} className="inline" /> Cetak Dokumen Admin
+          <span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>print</span> Cetak Dokumen Admin
         </h3>
         <p className="text-xs text-app-secondary mb-4">
           Buka jendela cetak dengan tabel CP, TP, ATP, dan Alur Pembelajaran untuk dokumentasi guru.
@@ -98,7 +98,7 @@ export default function ImportExport() {
           onClick={cetakDokumenAdmin}
           className="w-full px-4 py-2.5 bg-app-elevated hover:bg-app-elevated text-app-primary font-medium text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
         >
-          <Printer size={14} className="inline" /> Cetak Dokumen Admin
+          <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>print</span> Cetak Dokumen Admin
         </button>
       </div>
 
@@ -114,7 +114,7 @@ export default function ImportExport() {
             onClick={exportJSON}
             className="w-full px-4 py-2.5 bg-app-elevated hover:bg-app-elevated text-app-primary font-medium text-sm rounded-lg transition-colors"
           >
-            <ClipboardList size={14} className="inline" /> Ekspor JSON
+            <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>assignment</span> Ekspor JSON
           </button>
         </div>
 
@@ -139,8 +139,8 @@ export default function ImportExport() {
       {/* ── Excel Import / Export ────────────────────────────── */}
       <div className="bg-app-surface border border-app-border rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <FileSpreadsheet className="size-4 text-emerald-400" />
-          <h3 className="text-sm font-semibold text-app-primary"><BarChart3 size={16} className="inline" /> Impor / Ekspor Excel (.xlsx)</h3>
+          <span className="material-symbols-outlined size-4 text-emerald-400" style={ { fontSize: '16px' } }>table</span>
+          <h3 className="text-sm font-semibold text-app-primary"><span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>bar_chart</span> Impor / Ekspor Excel (.xlsx)</h3>
         </div>
         <p className="text-xs text-app-secondary">
           Impor data dari spreadsheet Excel atau unduh template yang sudah diisi dengan data saat ini.
@@ -153,13 +153,13 @@ export default function ImportExport() {
             onClick={downloadExcelTemplate}
             className="px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
           >
-            <Download className="size-4" />
+            <span className="material-symbols-outlined size-4" style={ { fontSize: '16px' } }>download</span>
             Unduh Template .xlsx
           </button>
 
           {/* Upload Excel */}
           <label className="flex items-center justify-center gap-2 px-4 py-3 bg-app-elevated hover:bg-app-elevated text-app-primary font-medium text-sm rounded-lg transition-colors cursor-pointer">
-            <Upload className="size-4" />
+            <span className="material-symbols-outlined size-4" style={ { fontSize: '16px' } }>upload</span>
             Pilih File .xlsx
             <input
               ref={fileInputRef}
@@ -187,14 +187,14 @@ export default function ImportExport() {
           <div className="flex flex-col items-center gap-2">
             {isDragOver ? (
               <>
-                <CheckCircle2 className="size-8 text-emerald-400" />
+                <span className="material-symbols-outlined size-8 text-emerald-400" style={ { fontSize: '16px' } }>check_circle</span>
                 <p className="text-sm font-medium text-emerald-300">
                   Lepaskan file di sini...
                 </p>
               </>
             ) : (
               <>
-                <FileSpreadsheet className="size-8 text-app-muted" />
+                <span className="material-symbols-outlined size-8 text-app-muted" style={ { fontSize: '16px' } }>table</span>
                 <p className="text-sm text-app-secondary">
                   <span className="font-medium text-app-secondary">Drag & drop</span> file .xlsx ke sini
                 </p>
@@ -220,7 +220,7 @@ export default function ImportExport() {
 
       {/* ── Info Section ─────────────────────────────────────── */}
       <div className="bg-app-surface/50 border border-app-border/50 rounded-xl p-4">
-        <h4 className="text-xs font-semibold text-app-secondary mb-2 uppercase tracking-wider flex items-center gap-1.5"><Lightbulb size={14} className="inline" /> Tips</h4>
+        <h4 className="text-xs font-semibold text-app-secondary mb-2 uppercase tracking-wider flex items-center gap-1.5"><span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>lightbulb</span> Tips</h4>
         <ul className="text-xs text-app-muted space-y-1.5">
           <li className="flex items-start gap-2">
             <span className="text-app-accent flex-shrink-0 mt-0.5">•</span>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCanvaStore } from '@/store/canva-store';
-import { Sparkles, ChevronDown, ChevronRight } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import dynamic from 'next/dynamic';
 
 const TemplateGalleryPanel = dynamic(() => import('./TemplateGalleryPanel'), {
@@ -29,10 +29,10 @@ export function TemplateSection({ galleryOpen, onToggle }: TemplateSectionProps)
         className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-app-accent uppercase tracking-wider bg-app-accent/5 hover:bg-app-accent/10 transition-colors"
       >
         <span className="flex items-center gap-1.5">
-          <Sparkles size={10} />
+          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>auto_awesome</span>
           {sectionLabel}
         </span>
-        {galleryOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        {galleryOpen ? <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>expand_more</span> : <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>chevron_right</span>}
       </button>
       {galleryOpen && (
         <div className="p-2 border-t border-app-border/20">

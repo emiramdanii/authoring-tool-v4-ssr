@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { logger } from '@/core/utils/logger';
 
 // ═══════════════════════════════════════════════════════════════
@@ -54,7 +54,7 @@ export class CanvasErrorBoundary extends React.Component<Props, State> {
 
       return (
         <div className="w-full h-full flex flex-col items-center justify-center bg-red-950/20 rounded-lg p-4 text-center">
-          <AlertTriangle size={24} className="mb-2 text-red-400" />
+          <span className="material-symbols-outlined mb-2 text-red-400" style={{ fontSize: '24px' }}>warning</span>
           <div className="text-xs text-red-400 font-semibold mb-1">
             {isSederhana ? 'Ada Masalah' : (this.props.name ? `${this.props.name} error` : 'Kesalahan komponen')}
           </div>

@@ -13,8 +13,7 @@ import { toast } from 'sonner';
 import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { promoteSceneSplitToPage } from '@/core/schema/schema-apply';
-import { AlertTriangle, X, ArrowRight, Minimize2, SplitSquareHorizontal } from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 export function KontenOverflowBanner() {
   const warning = useOverflowWarningStore(s => s.lastWarning);
   const bannerVisible = useOverflowWarningStore(s => s.bannerVisible);
@@ -74,7 +73,7 @@ export function KontenOverflowBanner() {
       <div className="px-3 py-2">
         {/* Header row */}
         <div className="flex items-center gap-2">
-          <AlertTriangle size={14} className="text-silse-tertiary flex-shrink-0" />
+          <span className="material-symbols-outlined text-silse-tertiary flex-shrink-0" style={ { fontSize: '14px' } }>warning</span>
           <div className="flex-1 min-w-0">
             <div className="text-[11px] font-semibold text-silse-tertiary">
               Konten melebihi kapasitas halaman
@@ -87,7 +86,7 @@ export function KontenOverflowBanner() {
             onClick={handleDismiss}
             className="flex-shrink-0 text-silse-on-surface-variant/50 hover:text-silse-on-surface-variant transition-colors"
           >
-            <X size={12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>close</span>
           </button>
         </div>
 
@@ -101,7 +100,7 @@ export function KontenOverflowBanner() {
                          hover:bg-silse-secondary-container/30 transition-colors
                          inline-flex items-center gap-1"
             >
-              <Minimize2 size={9} /> Kompakkan
+              <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>close_fullscreen</span> Kompakkan
             </button>
           )}
           {canSplit && (
@@ -112,7 +111,7 @@ export function KontenOverflowBanner() {
                          hover:bg-silse-primary-container/30 transition-colors
                          inline-flex items-center gap-1"
             >
-              <SplitSquareHorizontal size={9} /> Split Halaman
+              <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>vertical_split</span> Split Halaman
             </button>
           )}
           <button
@@ -122,7 +121,7 @@ export function KontenOverflowBanner() {
                        hover:bg-silse-tertiary-container/30 transition-colors
                        inline-flex items-center gap-1"
           >
-            Lihat <ArrowRight size={9} />
+            Lihat <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>arrow_forward</span>
           </button>
         </div>
       </div>

@@ -91,7 +91,7 @@ type CommandCategory = keyof typeof CATEGORY_CONFIG;
 function getBlockIcon(blockType: string, blockIcon: string): React.ReactNode {
   // Use capability registry as single source of truth for interactive blocks
   if (BlockCapabilityRegistry.get(blockType).derived.interactive) {
-    return <Gamepad2 size={16} className="text-emerald-400" />;
+    return <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '16px' } }>sports_esports</span>;
   }
 
   // Return emoji as text for known content blocks
@@ -237,7 +237,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-undo',
         label: 'Undo',
         description: 'Batalkan aksi terakhir',
-        icon: <Undo2 size={16} className="text-amber-400" />,
+        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>undo</span>,
         category: 'action',
         shortcut: 'Ctrl+Z',
         action: () => useCanvaStore.getState().undo(),
@@ -246,7 +246,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-redo',
         label: 'Redo',
         description: 'Ulangi aksi yang dibatalkan',
-        icon: <Redo2 size={16} className="text-amber-400" />,
+        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>redo</span>,
         category: 'action',
         shortcut: 'Ctrl+Y',
         action: () => useCanvaStore.getState().redo(),
@@ -255,7 +255,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-delete-block',
         label: 'Hapus Block Terpilih',
         description: 'Hapus block yang sedang dipilih',
-        icon: <Trash2 size={16} className="text-red-400" />,
+        icon: <span className="material-symbols-outlined text-red-400" style={ { fontSize: '16px' } }>delete</span>,
         category: 'action',
         shortcut: 'Delete',
         action: () => {
@@ -268,7 +268,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-duplicate-block',
         label: 'Duplikat Block Terpilih',
         description: 'Gandakan block yang sedang dipilih',
-        icon: <Copy size={16} className="text-amber-400" />,
+        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>content_copy</span>,
         category: 'action',
         shortcut: 'Ctrl+D',
         action: () => {
@@ -281,7 +281,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-toggle-left-panel',
         label: 'Toggle Panel Kiri',
         description: 'Buka/tutup panel kiri',
-        icon: <PanelLeft size={16} className="text-amber-400" />,
+        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>dock_to_left</span>,
         category: 'action',
         action: () => useCanvaStore.getState().toggleLeftPanel(),
       },
@@ -289,7 +289,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-toggle-right-panel',
         label: 'Toggle Panel Kanan',
         description: 'Buka/tutup panel kanan',
-        icon: <PanelRight size={16} className="text-amber-400" />,
+        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>dock_to_right</span>,
         category: 'action',
         action: () => useCanvaStore.getState().toggleRightPanel(),
       },
@@ -323,7 +323,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-zoom-reset',
         label: 'Zoom Fit ke Layar',
         description: 'Sesuaikan zoom agar muat di layar',
-        icon: <Maximize size={16} className="text-amber-400" />,
+        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>fullscreen</span>,
         category: 'action',
         shortcut: 'Ctrl+0',
         action: () => useCanvaStore.getState().zoomToFit(),
@@ -332,7 +332,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-play-preview',
         label: 'Play Preview',
         description: 'Jalankan preview interaktif',
-        icon: <Play size={16} className="text-emerald-400" />,
+        icon: <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '16px' } }>play_arrow</span>,
         category: 'action',
         action: () => useInteractiveStore.getState().openPlay(),
       },
@@ -354,7 +354,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-print',
         label: 'Cetak / Print',
         description: 'Cetak halaman MPI',
-        icon: <Printer size={16} className="text-amber-400" />,
+        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>print</span>,
         category: 'action',
         action: () => window.print(),
       },
@@ -362,7 +362,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-save-now',
         label: 'Simpan Sekarang',
         description: 'Simpan ke penyimpanan lokal',
-        icon: <Save size={16} className="text-amber-400" />,
+        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>save</span>,
         category: 'action',
         shortcut: 'Ctrl+S',
         action: () => {
@@ -379,7 +379,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-split-page',
         label: 'Pisah Halaman di Block Ini',
         description: 'Split halaman di block terpilih menjadi halaman baru',
-        icon: <Copy size={16} className="text-sky-400" />,
+        icon: <span className="material-symbols-outlined text-sky-400" style={ { fontSize: '16px' } }>content_copy</span>,
         category: 'action',
         shortcut: 'Ctrl+Shift+S',
         action: () => {
@@ -392,7 +392,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-merge-next-page',
         label: 'Gabung dengan Halaman Berikutnya',
         description: 'Merge halaman ini dengan halaman setelahnya',
-        icon: <Layout size={16} className="text-sky-400" />,
+        icon: <span className="material-symbols-outlined text-sky-400" style={ { fontSize: '16px' } }>dashboard</span>,
         category: 'action',
         shortcut: 'Ctrl+Shift+M',
         action: () => useCanvaStore.getState().mergeWithAdjacentPage('next'),
@@ -401,7 +401,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-merge-prev-page',
         label: 'Gabung dengan Halaman Sebelumnya',
         description: 'Merge halaman ini dengan halaman sebelumnya',
-        icon: <Layout size={16} className="text-sky-400" />,
+        icon: <span className="material-symbols-outlined text-sky-400" style={ { fontSize: '16px' } }>dashboard</span>,
         category: 'action',
         action: () => useCanvaStore.getState().mergeWithAdjacentPage('prev'),
       },
@@ -409,7 +409,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-rebalance-page',
         label: 'Optimalkan Tata Letak',
         description: 'Rebalance kompresi dan layout halaman saat ini',
-        icon: <Layout size={16} className="text-emerald-400" />,
+        icon: <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '16px' } }>dashboard</span>,
         category: 'action',
         shortcut: 'Ctrl+Shift+R',
         action: () => useCanvaStore.getState().rebalanceCurrentPage(),
@@ -418,7 +418,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'action-promote-scene',
         label: 'Promosi Scene ke Halaman',
         description: 'Konversi scene overflow menjadi halaman baru',
-        icon: <Layout size={16} className="text-emerald-400" />,
+        icon: <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '16px' } }>dashboard</span>,
         category: 'action',
         action: () => useCanvaStore.getState().promoteSceneSplit(1),
       },
@@ -432,7 +432,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'nav-dashboard',
         label: 'Buka Dashboard',
         description: 'Pilih preset, kelengkapan, quick actions',
-        icon: <Home size={16} className="text-purple-400" />,
+        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>home</span>,
         category: 'navigation',
         action: () => useCanvaStore.setState({ panelRequest: 'dashboard' }),
       },
@@ -440,7 +440,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'nav-dokumen',
         label: 'Buka Dokumen',
         description: 'Edit CP, TP, ATP, Alur Pembelajaran',
-        icon: <FileText size={16} className="text-purple-400" />,
+        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>description</span>,
         category: 'navigation',
         action: () => useCanvaStore.setState({ panelRequest: 'dokumen' }),
       },
@@ -448,7 +448,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'nav-konten',
         label: 'Buka Konten',
         description: 'Edit Kuis, Game, Materi, Skenario',
-        icon: <BookOpen size={16} className="text-purple-400" />,
+        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>menu_book</span>,
         category: 'navigation',
         action: () => useCanvaStore.setState({ panelRequest: 'konten' }),
       },
@@ -456,7 +456,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'nav-canva',
         label: 'Buka Canva Editor',
         description: 'Kembali ke editor visual',
-        icon: <Layout size={16} className="text-purple-400" />,
+        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>dashboard</span>,
         category: 'navigation',
         action: () => useCanvaStore.setState({ panelRequest: 'canva' }),
       },
@@ -464,7 +464,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'nav-sisipkan-tab',
         label: 'Buka Tab Tambah Block',
         description: 'Tambah block, modul, game ke halaman ini',
-        icon: <Layout size={16} className="text-teal-400" />,
+        icon: <span className="material-symbols-outlined text-teal-400" style={ { fontSize: '16px' } }>dashboard</span>,
         category: 'navigation',
         action: () => {
           useCanvaStore.setState({ panelRequest: 'canva' });
@@ -477,7 +477,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'nav-halaman-baru-tab',
         label: 'Buka Tab Halaman',
         description: 'Tambah halaman baru, preset, auto-generate',
-        icon: <Layout size={16} className="text-sky-400" />,
+        icon: <span className="material-symbols-outlined text-sky-400" style={ { fontSize: '16px' } }>dashboard</span>,
         category: 'navigation',
         action: () => {
           useCanvaStore.setState({ panelRequest: 'canva' });
@@ -514,7 +514,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'nav-preview',
         label: 'Buka Live Preview',
         description: 'Preview tampilan siswa lengkap',
-        icon: <MonitorPlay size={16} className="text-purple-400" />,
+        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>smart_display</span>,
         category: 'navigation',
         action: () => useCanvaStore.setState({ panelRequest: 'preview' }),
       },
@@ -522,7 +522,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: 'nav-import',
         label: 'Buka Import/Export',
         description: 'Import Excel/JSON, Export HTML',
-        icon: <Download size={16} className="text-purple-400" />,
+        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>download</span>,
         category: 'navigation',
         action: () => useCanvaStore.setState({ panelRequest: 'import' }),
       },
@@ -535,7 +535,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         id: `nav-page-${i}`,
         label: `Ke ${page!.label || `Halaman ${i + 1}`}`,
         description: `Pergi ke halaman ${i + 1}`,
-        icon: <Hash size={16} className="text-purple-400" />,
+        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>tag</span>,
         category: 'navigation',
         action: () => useCanvaStore.getState().goPage(i),
       });
@@ -682,7 +682,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
       >
         {/* Search Input */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-app-border">
-          <Search size={18} className="text-app-muted shrink-0" />
+          <span className="material-symbols-outlined text-app-muted shrink-0" style={ { fontSize: '18px' } }>search</span>
           <input
             ref={inputRef}
             type="text"
@@ -709,7 +709,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         >
           {flatItems.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-app-muted">
-              <Search size={24} className="mx-auto mb-2 opacity-30" />
+              <span className="material-symbols-outlined mx-auto mb-2 opacity-30" style={ { fontSize: '24px' } }>search</span>
               Tidak ditemukan untuk &ldquo;{query}&rdquo;
             </div>
           ) : (

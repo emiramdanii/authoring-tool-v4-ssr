@@ -16,7 +16,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { useAIRefine, getApplicableRefineModes, REFINE_MODES, type RefineMode } from './use-ai-refine';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
-import { Sparkles, Loader2, CheckCircle2, AlertCircle, RotateCcw, MessageSquare } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { toast } from 'sonner';
 
 export default function AIRefineSection() {
@@ -127,7 +127,7 @@ export default function AIRefineSection() {
     <div className="space-y-2 px-3 py-2 border-t border-app-border/30">
       {/* Header */}
       <div className="flex items-center gap-1.5">
-        <Sparkles size={11} className="text-amber-400" />
+        <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '11px' } }>auto_awesome</span>
         <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">
           {teacherMode ? 'Sempurnakan dengan AI' : 'AI Refine'}
         </span>
@@ -144,7 +144,7 @@ export default function AIRefineSection() {
             title={mode.description}
           >
             {loading && lastAppliedMode === null ? (
-              <Loader2 size={9} className="animate-spin" />
+              <span className="material-symbols-outlined animate-spin" style={ { fontSize: '9px' } }>progress_activity</span>
             ) : (
               <span>{mode.icon}</span>
             )}
@@ -157,7 +157,7 @@ export default function AIRefineSection() {
       {showCustom ? (
         <div className="space-y-1.5">
           <div className="flex items-center gap-1">
-            <MessageSquare size={9} className="text-pink-400" />
+            <span className="material-symbols-outlined text-pink-400" style={ { fontSize: '9px' } }>chat</span>
             <span className="text-[8px] text-app-muted font-bold uppercase tracking-wider">Instruksi Bebas</span>
           </div>
           <div className="flex gap-1.5">
@@ -175,7 +175,7 @@ export default function AIRefineSection() {
               disabled={loading || !customInstruction.trim()}
               className="px-2 py-1 text-[8px] font-bold rounded-lg bg-pink-500/10 border border-pink-500/20 text-pink-300 hover:bg-pink-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? <Loader2 size={9} className="animate-spin" /> : 'Kirim'}
+              {loading ? <span className="material-symbols-outlined animate-spin" style={ { fontSize: '9px' } }>progress_activity</span> : 'Kirim'}
             </button>
           </div>
         </div>
@@ -184,7 +184,7 @@ export default function AIRefineSection() {
           onClick={() => setShowCustom(true)}
           className="inline-flex items-center gap-1 text-[8px] text-app-muted hover:text-pink-300 transition-colors"
         >
-          <MessageSquare size={9} />
+          <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>chat</span>
           Tulis instruksi sendiri...
         </button>
       )}
@@ -192,7 +192,7 @@ export default function AIRefineSection() {
       {/* Error display */}
       {error && (
         <div className="flex items-start gap-1.5 p-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
-          <AlertCircle size={10} className="text-red-400 flex-shrink-0 mt-0.5" />
+          <span className="material-symbols-outlined text-red-400 flex-shrink-0 mt-0.5" style={ { fontSize: '10px' } }>error</span>
           <div className="text-[8px] text-red-300">{error}</div>
         </div>
       )}
@@ -201,7 +201,7 @@ export default function AIRefineSection() {
       {lastAppliedMode && (
         <div className="flex items-center justify-between p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
           <div className="flex items-center gap-1">
-            <CheckCircle2 size={10} className="text-emerald-400" />
+            <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '10px' } }>check_circle</span>
             <span className="text-[8px] text-emerald-300 font-semibold">
               {REFINE_MODES.find(m => m.id === lastAppliedMode)?.label} berhasil diterapkan
             </span>
@@ -210,7 +210,7 @@ export default function AIRefineSection() {
             onClick={handleUndo}
             className="inline-flex items-center gap-0.5 text-[8px] text-app-muted hover:text-amber-300 transition-colors"
           >
-            <RotateCcw size={9} />
+            <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>refresh</span>
             Undo
           </button>
         </div>
@@ -219,7 +219,7 @@ export default function AIRefineSection() {
       {/* Loading indicator */}
       {loading && (
         <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-          <Loader2 size={10} className="animate-spin text-amber-400" />
+          <span className="material-symbols-outlined animate-spin text-amber-400" style={ { fontSize: '10px' } }>progress_activity</span>
           <span className="text-[8px] text-amber-300">AI sedang menyempurnakan konten...</span>
         </div>
       )}

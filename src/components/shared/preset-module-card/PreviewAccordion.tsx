@@ -41,7 +41,7 @@ export function PreviewAccordion({ mod, variant, compact }: { mod: M; variant: L
             </div>
             {!compact && str(it.isi) && <div className="text-[10px] mt-0.5" style={{ color: T.muted }}>{str(it.isi).slice(0, 50)}</div>}
           </div>
-          <ChevronDown size={12} className="flex-shrink-0 mt-0.5" style={{ color: T.muted }} />
+          <span className="material-symbols-outlined flex-shrink-0 mt-0.5" style={ { fontSize: '12px' } }>expand_more</span>
         </div>
       ))}
       {items.length > maxItems && <div className="text-[10px]" style={{ color: T.muted }}>+{items.length - maxItems} lagi</div>}

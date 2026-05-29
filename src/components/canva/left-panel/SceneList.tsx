@@ -128,7 +128,7 @@ export function SceneList({ searchFilter = '' }: SceneListProps) {
 
             {/* Scene Label */}
             <div className="flex-1 min-w-0">
-              <span className={`text-[11px] font-medium truncate block ${
+              <span className={`text-[12px] font-medium truncate block ${
                 isActive ? 'font-bold' : ''
               }`}>
                 {isSchemaDriven && <span className="material-symbols-outlined inline mr-0.5" style={{ fontSize: '12px' }}>bolt</span>}
@@ -144,7 +144,7 @@ export function SceneList({ searchFilter = '' }: SceneListProps) {
 
       {pages.length > 0 && (
         <div className="flex gap-1 pt-1">
-          <Button variant="ghost" onClick={duplicatePage} className="flex-1 py-1.5 rounded-lg text-[10px] gap-1">
+          <Button variant="ghost" onClick={duplicatePage} className="flex-1 py-1.5 rounded-lg text-[11px] gap-1">
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>content_copy</span> Duplikat
           </Button>
           <Button
@@ -153,7 +153,7 @@ export function SceneList({ searchFilter = '' }: SceneListProps) {
               if (pages.length <= 1) return;
               if (confirm(`Hapus "${pages[currentPageIndex]!.label}"?`)) deletePage();
             }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-silse-error/70 hover:text-silse-error bg-silse-error-container/10"
+            className="flex-1 py-1.5 rounded-lg text-[11px] gap-1 text-silse-error/70 hover:text-silse-error bg-silse-error-container/10"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span> Hapus
           </Button>
@@ -163,14 +163,14 @@ export function SceneList({ searchFilter = '' }: SceneListProps) {
       {/* Add page button */}
       <button
         onClick={() => addPage()}
-        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[10px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
+        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[11px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
       >
         <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span> Tambah Halaman
       </button>
 
       {/* Drag hint */}
       {pages.length > 1 && (
-        <div className="text-[7px] text-silse-on-surface-variant/50 text-center pt-0.5">
+        <div className="text-[9px] text-silse-on-surface-variant/50 text-center pt-0.5">
           Drag halaman untuk mengubah urutan
         </div>
       )}

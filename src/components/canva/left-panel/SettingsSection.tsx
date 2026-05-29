@@ -2,7 +2,7 @@
 
 import { useCanvaStore } from '@/store/canva-store';
 import { RATIOS } from '@/components/canva/types';
-import { RefreshCw } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 
 // ═══════════════════════════════════════════════════════════════
 // SETTINGS SECTION — Ratio selector + Reset canvas
@@ -47,7 +47,7 @@ export function SettingsSection() {
         }}
         className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-app-elevated border border-app-border-subtle hover:border-app-error/30 text-app-secondary hover:text-app-error text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-95"
       >
-        <RefreshCw size={10} className="inline" />
+        <span className="material-symbols-outlined inline" style={{ fontSize: '10px' }}>refresh</span>
         Reset Canvas
       </button>
     </div>

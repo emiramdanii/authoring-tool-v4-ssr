@@ -144,7 +144,7 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
           }
           onSelect(pageId, block.id!, block.type);
         }}
-        className={`w-full flex items-center gap-1.5 px-1.5 py-1 rounded-lg text-left transition-[background-color,color] duration-150 text-[10px] group ${
+        className={`w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg text-left transition-[background-color,color] duration-150 text-[11px] group ${
           isSelected
             ? 'bg-silse-primary-container/20 text-silse-primary font-semibold'
             : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/50 hover:text-silse-on-surface'
@@ -156,14 +156,14 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
         {hasChildren ? (
           <span
             className={`material-symbols-outlined flex-shrink-0 text-silse-on-surface-variant/50 transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
-            style={{ fontSize: '12px' }}
+            style={{ fontSize: '14px' }}
           >chevron_right</span>
         ) : (
           <span className="w-[10px] flex-shrink-0" />
         )}
 
         {/* Block type icon — Material Symbol with SILSE color */}
-        <span className={`material-symbols-outlined flex-shrink-0 ${display.color}`} style={{ fontSize: '14px' }}>
+        <span className={`material-symbols-outlined flex-shrink-0 ${display.color}`} style={{ fontSize: '16px' }}>
           {display.icon}
         </span>
 
@@ -238,7 +238,7 @@ function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect
       {/* Toggle button */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className={`w-full flex items-center gap-1 px-2 py-0.5 text-[9px] transition-[background-color,color] duration-150 rounded-md ${
+        className={`w-full flex items-center gap-1 px-2 py-0.5 text-[10px] transition-[background-color,color] duration-150 rounded-md ${
           isActive ? 'text-silse-primary font-bold' : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high/40'
         }`}
       >
@@ -309,7 +309,7 @@ export function SchemaBlockTree() {
     <div className="space-y-0.5">
       <div className="flex items-center gap-1.5 px-1 py-1">
         <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>account_tree</span>
-        <span className="text-[10px] font-bold text-silse-outline uppercase tracking-widest">
+        <span className="text-[11px] font-bold text-silse-outline uppercase tracking-widest">
           Schema
         </span>
       </div>
@@ -361,7 +361,7 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
     <div className="ml-4">
       <button
         onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-        className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
+        className="flex items-center gap-1 text-[10px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
       >
         <span className={`material-symbols-outlined transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} style={{ fontSize: '9px' }}>chevron_right</span>
         <span className="material-symbols-outlined text-silse-primary-container/50" style={{ fontSize: '9px' }}>bolt</span>

@@ -87,7 +87,7 @@ export function CanvaOrientationTooltip() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-app-accent/20 flex items-center justify-center">
-                  <MousePointer2 size={20} className="text-app-accent" />
+                  <span className="material-symbols-outlined text-app-accent" style={ { fontSize: '20px' } }>arrow_selector_tool</span>
                 </div>
                 <div>
                   <div className="text-xs font-medium text-app-accent/70">
@@ -102,7 +102,7 @@ export function CanvaOrientationTooltip() {
                 onClick={handleDismiss}
                 className="p-1 rounded-lg text-app-muted hover:text-app-primary hover:bg-app-elevated/50 transition-colors"
               >
-                <X size={16} />
+                <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>close</span>
               </button>
             </div>
           </div>
@@ -117,7 +117,7 @@ export function CanvaOrientationTooltip() {
               {/* Left Panel */}
               <div className="flex items-start gap-3 p-2.5 rounded-xl bg-blue-500/5 border border-blue-500/15">
                 <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <ArrowLeft size={14} className="text-blue-400" />
+                  <span className="material-symbols-outlined text-blue-400" style={ { fontSize: '14px' } }>arrow_back</span>
                 </div>
                 <div>
                   <div className="text-xs font-bold text-blue-400">Panel Kiri</div>
@@ -130,7 +130,7 @@ export function CanvaOrientationTooltip() {
               {/* Center */}
               <div className="flex items-start gap-3 p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <MousePointer2 size={14} className="text-emerald-400" />
+                  <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '14px' } }>arrow_selector_tool</span>
                 </div>
                 <div>
                   <div className="text-xs font-bold text-emerald-400">Area Kerja (Tengah)</div>
@@ -143,7 +143,7 @@ export function CanvaOrientationTooltip() {
               {/* Right Panel */}
               <div className="flex items-start gap-3 p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/15">
                 <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <ArrowRight size={14} className="text-purple-400" />
+                  <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '14px' } }>arrow_forward</span>
                 </div>
                 <div>
                   <div className="text-xs font-bold text-purple-400">Panel Kanan</div>

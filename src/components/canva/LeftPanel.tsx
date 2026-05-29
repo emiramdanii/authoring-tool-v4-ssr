@@ -1,12 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  FilePlus2,
-  Sparkles,
-  ChevronDown,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import type { PageTemplateType } from './types';
 import { RATIOS } from './types';

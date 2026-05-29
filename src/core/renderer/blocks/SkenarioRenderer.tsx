@@ -125,7 +125,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
             🎭 <InlineTextEditor {...titleEditor} style={{ color: edu.accent(), fontFamily: tokens.fontFamily('display') }} />
           </span>
           <div className="flex gap-2">
-            <PremiumBadge tokens={tokens} accent="y" variant="solid"><Star size={14} className="inline" /> {totalPts}</PremiumBadge>
+            <PremiumBadge tokens={tokens} accent="y" variant="solid"><span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>star</span> {totalPts}</PremiumBadge>
             <span className="px-2.5 py-1 rounded-full font-extrabold"
               style={{ ...edu.micro(), background: edu.accentAlpha(0.15), color: edu.accent(), border: `1px solid ${edu.accentAlpha(0.3)}` }}>
               Babak {Math.min(chapter + 1, chapters.length)}/{chapters.length}
@@ -167,7 +167,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
                 color: tokens.color('bg'),
                 boxShadow: `0 4px 16px ${edu.accentAlpha(0.35)}`,
               }}>
-              <RotateCcw size={14} className="inline" /> Ulangi Skenario
+              <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi Skenario
             </button>
             </MicroInteraction>
           )}
@@ -185,7 +185,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
                 return (
                   <div key={`skenario-setup-${line.speaker?.slice(0,6)}-${i}`} className={`flex gap-2 ${isNarrator ? 'italic' : ''}`}>
                     <span className="font-bold flex-shrink-0 mt-0.5" style={{ ...edu.caption(), color: isNarrator ? tokens.textSubtle(0.65) : tokens.color('r') }}>
-                      {isNarrator ? <BookOpen size={14} className="inline" /> : line.speaker ? `${line.speaker}:` : ''}
+                      {isNarrator ? <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>menu_book</span> : line.speaker ? `${line.speaker}:` : ''}
                     </span>
                     <RichText content={line.text ?? ''} className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: isNarrator ? tokens.textSubtle(0.8) : tokens.textSecondary(0.85), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
                   </div>
@@ -203,7 +203,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}>
-              <MessageSquare size={14} className="inline" /> <RichText content={ch.choicePrompt} className={isCompact ? 'canvas-truncate-2' : ''} />
+              <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>chat</span> <RichText content={ch.choicePrompt} className={isCompact ? 'canvas-truncate-2' : ''} />
             </div>
           )}
 
@@ -253,7 +253,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
               border: '2px solid ' + (selectedChoice.choice.good ? tokens.colorAlpha('g', 0.4) : tokens.colorAlpha('r', 0.4)),
               boxShadow: selectedChoice.choice.good ? '0 0 16px ' + tokens.colorAlpha('g', 0.15) : '0 0 16px ' + tokens.colorAlpha('r', 0.15),
             }}>
-            <div className="text-lg mb-1">{selectedChoice.choice.resultTitle || (selectedChoice.choice.good ? <CheckCircle2 size={20} className="inline text-emerald-400" /> : <XCircle size={20} className="inline text-red-400" />)}</div>
+            <div className="text-lg mb-1">{selectedChoice.choice.resultTitle || (selectedChoice.choice.good ? <span className="material-symbols-outlined inline text-emerald-400" style={ { fontSize: '20px' } }>check_circle</span> : <span className="material-symbols-outlined inline text-red-400" style={ { fontSize: '20px' } }>cancel</span>)}</div>
             <div className="font-bold" style={{ ...edu.body(), color: selectedChoice.choice.good ? tokens.color('g') : tokens.color('r') }}>
               {selectedChoice.choice.good
                 ? (selectedChoice.choice.feedbackGood || 'Pilihan tepat!')
@@ -274,7 +274,7 @@ export const SkenarioRenderer = React.memo(function SkenarioRenderer({ block, to
           {selectedChoice.choice.norma && (
             <div className="p-3 rounded-xl"
               style={{ background: tokens.colorAlpha('y', 0.1), border: '1px solid ' + tokens.colorAlpha('y', 0.25) }}>
-              <div className="font-bold mb-1" style={{ ...edu.caption(), fontWeight: 600, color: edu.accent() }}><ScrollText size={14} className="inline" /> Kaitan Norma</div>
+              <div className="font-bold mb-1" style={{ ...edu.caption(), fontWeight: 600, color: edu.accent() }}><span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>scroll</span> Kaitan Norma</div>
               <RichText content={selectedChoice.choice.norma ?? ''} className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: tokens.textSecondary(0.85) }} />
             </div>
           )}

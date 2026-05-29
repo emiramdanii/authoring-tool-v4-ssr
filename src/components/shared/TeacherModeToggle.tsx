@@ -32,7 +32,7 @@ export default function TeacherModeToggle() {
       title={isSederhana ? 'Mode Guru — istilah sederhana' : 'Mode Lanjutan — istilah teknis'}
     >
       {isSederhana ? (
-        <GraduationCap size={14} className="flex-shrink-0" />
+        <span className="material-symbols-outlined flex-shrink-0" style={ { fontSize: '14px' } }>school</span>
       ) : (
         <Settings size={14} className="flex-shrink-0" />
       )}

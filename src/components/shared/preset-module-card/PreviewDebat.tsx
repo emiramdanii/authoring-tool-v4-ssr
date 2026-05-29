@@ -28,10 +28,10 @@ export function PreviewDebat({ mod, variant, compact }: { mod: M; variant: Layou
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-lg p-3" style={{ background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)' }}>
-          <div className="font-black text-xs" style={{ color: T.g }}><Check size={12} className="inline" /> {str(pA.label, 'Pro')}</div>
+          <div className="font-black text-xs" style={{ color: T.g }}><span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>check</span> {str(pA.label, 'Pro')}</div>
         </div>
         <div className="rounded-lg p-3" style={{ background: 'rgba(255,107,107,0.06)', border: '1px solid rgba(255,107,107,0.2)' }}>
-          <div className="font-black text-xs" style={{ color: T.r }}><X size={12} className="inline" /> {str(pB.label, 'Kontra')}</div>
+          <div className="font-black text-xs" style={{ color: T.r }}><span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>close</span> {str(pB.label, 'Kontra')}</div>
         </div>
       </div>
     </div>

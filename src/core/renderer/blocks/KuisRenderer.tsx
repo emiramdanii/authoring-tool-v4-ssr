@@ -171,7 +171,7 @@ function KuisVariantKartu({
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
-          {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" style={{ ...edu.emotionalMotion('checkDraw') }} /> : <XCircle size={14} className="inline mr-1" />}
+          {answers[current] === q.ans ? <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>check_circle</span> : <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>cancel</span>}
           <InlineTextEditor
             {...explanationEditor}
             className={`${isCompact ? 'canvas-truncate-2' : ''}`}
@@ -305,7 +305,7 @@ function KuisVariantRingkas({
             overflow: 'hidden',
             wordBreak: 'break-word',
           }}>
-          {answers[current] === q.ans ? <CheckCircle2 size={10} className="inline mr-0.5" style={{ ...edu.emotionalMotion('checkDraw') }} /> : <XCircle size={10} className="inline mr-0.5" />}
+          {answers[current] === q.ans ? <span className="material-symbols-outlined inline mr-0.5" style={ { fontSize: '10px' } }>check_circle</span> : <span className="material-symbols-outlined inline mr-0.5" style={ { fontSize: '10px' } }>cancel</span>}
           <InlineTextEditor
             {...explanationEditor}
             style={{ color: 'inherit', fontSize: 'inherit', overflowWrap: 'break-word' }}
@@ -463,10 +463,10 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
           {/* Score breakdown */}
           <div className="flex justify-center gap-4 mb-4">
             <div className="flex items-center gap-1.5" style={{ ...edu.caption(), color: tokens.color('g') }}>
-              <CheckCircle2 size={14} /> {totalCorrect} benar
+              <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>check_circle</span> {totalCorrect} benar
             </div>
             <div className="flex items-center gap-1.5" style={{ ...edu.caption(), color: tokens.color('r') }}>
-              <XCircle size={14} /> {questions.length - totalCorrect} salah
+              <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>cancel</span> {questions.length - totalCorrect} salah
             </div>
           </div>
 
@@ -488,7 +488,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                   color: tokens.color(tierColor),
                   border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`,
                 }}>
-                <RotateCcw size={14} className="inline" /> Ulangi
+                <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi
               </button>
           )}
         </div>
@@ -525,7 +525,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               background: tokens.accentBg('y', 0.08),
               border: `1px solid ${edu.accentAlpha(0.15)}`,
             }}>
-            <Gamepad2 size={14} style={{ color: edu.accent() }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>sports_esports</span>
           </div>
           <div className="font-extrabold min-w-0" style={{ ...edu.bodyLg(), fontWeight: 800, color: edu.accent() }}>
             <InlineTextEditor
@@ -639,7 +639,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
                 overflow: 'hidden',
                 wordBreak: 'break-word',
               }}>
-              {answers[current] === q.ans ? <CheckCircle2 size={14} className="inline mr-1" style={{ ...edu.emotionalMotion('checkDraw') }} /> : <XCircle size={14} className="inline mr-1" />}
+              {answers[current] === q.ans ? <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>check_circle</span> : <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>cancel</span>}
               <InlineTextEditor
                 {...explanationEditor}
                 className={`${isCompact ? 'canvas-truncate-2' : ''}`}

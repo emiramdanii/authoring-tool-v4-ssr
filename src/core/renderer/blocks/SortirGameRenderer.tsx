@@ -46,7 +46,7 @@ function SortirKolom({ kolomDef, kolomIndex, blockId, tokens, selected, kolomIte
  <div className="flex items-center gap-2 mb-2">
  <div className="w-7 h-7 rounded-full flex items-center justify-center"
  style={{ background: tokens.colorAlpha(kolomDef.color, 0.2) }}>
- <FolderOpen size={12} className="inline" />
+ <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>folder_open</span>
  </div>
  <div className="font-extrabold uppercase tracking-wider min-w-0"
  style={{ ...edu.caption(), color: tokens.color(kolomDef.color), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -249,7 +249,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  color: tokens.color('bg'),
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}>
- <RotateCcw size={14} className="inline" /> Ulangi Game
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi Game
  </button>
  </MicroInteraction>
  )}
@@ -277,7 +277,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  boxShadow: '0 4px 16px ' + tokens.colorAlpha('r', 0.15),
  animation: 'fadeIn 0.3s ease-out',
  }}>
- <XCircle size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color('r') }} />
+ <span className="material-symbols-outlined inline flex-shrink-0 mt-0.5" style={ { fontSize: '14px' } }>cancel</span>
  <div className="leading-relaxed" style={{ ...edu.caption(), color: tokens.color('r') }}>
  {wrongFeedback.message}
  </div>
@@ -291,7 +291,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  background: edu.accentAlpha(0.04),
  }}>
  <div className="w-full font-extrabold uppercase tracking-wider mb-2" style={{ ...edu.micro(), color: edu.accent() }}>
- <Package size={14} className="inline" /> Pilih Item <PremiumBadge tokens={tokens} accent="y" variant="glass">{totalPlaced}/{totalItems}</PremiumBadge>
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>inventory_2</span> Pilih Item <PremiumBadge tokens={tokens} accent="y" variant="glass">{totalPlaced}/{totalItems}</PremiumBadge>
  </div>
  {unplacedPoolItems.map(p => (
  <button key={p.id} onClick={() => handlePoolClick(p.id)}

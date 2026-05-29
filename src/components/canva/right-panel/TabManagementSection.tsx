@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { getTabIcon, TAB_ICON_MAP, BLOCK_TYPE_TAB_ICON } from '@/lib/canva-icon-maps';
-import { Plus, Trash2, Edit3, Check, X, Wand2, ChevronDown, ChevronRight } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import type { TabDefinition } from '@/core/schema/types';
 
 // ═══════════════════════════════════════════════════════════════
@@ -37,7 +37,7 @@ export default function TabManagementSection() {
   // ── Add new tab ────────────────────────────────────────────────
   const handleAddTab = () => {
     if (!newTabLabel.trim()) return;
-    addSceneTab(newTabLabel.trim(), 'LayoutGrid');
+    addSceneTab(newTabLabel.trim(), 'grid_view');
     setNewTabLabel('');
   };
 
@@ -76,7 +76,7 @@ export default function TabManagementSection() {
             className="flex items-center gap-1 px-2 py-1 rounded text-[9px] font-bold bg-app-accent/10 text-app-accent hover:bg-app-accent/20 transition-colors"
             title="Otomatis kelompokkan blok ke tab"
           >
-            <Wand2 size={10} />
+            <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>auto_fix</span>
             Auto
           </button>
         </div>
@@ -98,7 +98,7 @@ export default function TabManagementSection() {
           className="flex items-center justify-center w-7 h-7 rounded-md bg-app-accent/10 text-app-accent hover:bg-app-accent/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           title="Tambah tab"
         >
-          <Plus size={12} />
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>add</span>
         </button>
       </div>
 
@@ -110,7 +110,7 @@ export default function TabManagementSection() {
       ) : (
         <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
           {tabs.map((tab) => {
-            const IconComponent = getTabIcon(tab.icon);
+            const iconName = getTabIcon(tab.icon);
             const isEditing = editingTabId === tab.id;
             const isExpanded = expandedTabId === tab.id;
             const showIconPicker = iconPickerTabId === tab.id;
@@ -125,7 +125,7 @@ export default function TabManagementSection() {
                     className="flex items-center justify-center w-6 h-6 rounded hover:bg-app-elevated/50 transition-colors"
                     title="Ganti ikon"
                   >
-                    <IconComponent size={12} className="text-app-accent" />
+                    <span className="material-symbols-outlined text-app-accent" style={{ fontSize: '12px' }}>{iconName}</span>
                   </button>
 
                   {/* Label — inline rename */}
@@ -143,10 +143,10 @@ export default function TabManagementSection() {
                         className="flex-1 min-w-0 px-1.5 py-0.5 rounded border border-app-accent/50 bg-app-bg text-[10px] text-app-primary focus:outline-none"
                       />
                       <button onClick={confirmRename} className="text-emerald-400 hover:text-emerald-300">
-                        <Check size={10} />
+                        <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>check</span>
                       </button>
                       <button onClick={cancelRename} className="text-red-400 hover:text-red-300">
-                        <X size={10} />
+                        <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>close</span>
                       </button>
                     </div>
                   ) : (
@@ -170,7 +170,7 @@ export default function TabManagementSection() {
                     className="text-app-muted hover:text-app-secondary transition-colors"
                     title={isExpanded ? 'Tutup' : 'Lihat blok'}
                   >
-                    {isExpanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                    {isExpanded ? <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>expand_more</span> : <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>chevron_right</span>}
                   </button>
 
                   {/* Edit + Delete */}
@@ -181,14 +181,14 @@ export default function TabManagementSection() {
                         className="text-app-muted hover:text-app-accent transition-colors"
                         title="Ubah nama"
                       >
-                        <Edit3 size={9} />
+                        <span className="material-symbols-outlined" style={{ fontSize: '9px' }}>edit</span>
                       </button>
                       <button
                         onClick={() => removeSceneTab(tab.id)}
                         className="text-app-muted hover:text-red-400 transition-colors"
                         title="Hapus tab"
                       >
-                        <Trash2 size={9} />
+                        <span className="material-symbols-outlined" style={{ fontSize: '9px' }}>delete</span>
                       </button>
                     </>
                   )}
@@ -199,7 +199,7 @@ export default function TabManagementSection() {
                   <div className="px-2 py-1.5 bg-app-elevated/20 border-t border-app-border/30">
                     <div className="flex flex-wrap gap-1">
                       {iconNames.map((name) => {
-                        const Ic = TAB_ICON_MAP[name];
+                        const icName = TAB_ICON_MAP[name];
                         return (
                           <button
                             key={name}
@@ -214,7 +214,7 @@ export default function TabManagementSection() {
                             }`}
                             title={name}
                           >
-                            <Ic size={11} />
+                            <span className="material-symbols-outlined" style={{ fontSize: '11px' }}>{icName}</span>
                           </button>
                         );
                       })}

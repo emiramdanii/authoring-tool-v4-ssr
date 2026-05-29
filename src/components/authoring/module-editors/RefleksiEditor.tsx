@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { EdProps, FieldLabel, INPUT_CLS, TEXTAREA_CLS, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { regenerateRefleksi } from '../auto-generate/regenerate';
-import { Zap, Loader2, Lightbulb } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { canRegenerate } from '../auto-generate/regenerate';
 
 export function RefleksiEditor({ mod, uf, ai, ri, ui }: EdProps) {
@@ -47,7 +47,7 @@ export function RefleksiEditor({ mod, uf, ai, ri, ui }: EdProps) {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-app-elevated/70 border border-app-border/50 text-app-secondary hover:text-app-accent hover:border-app-accent/30 hover:bg-app-accent/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             title="Regenerate pertanyaan refleksi dari teks sumber"
           >
-            {regenerating ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+            {regenerating ? <span className="material-symbols-outlined animate-spin" style={ { fontSize: '13px' } }>progress_activity</span> : <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>bolt</span>}
             {regenerating ? 'Generating...' : 'Regenerate'}
           </button>
         </div>
@@ -62,7 +62,7 @@ export function RefleksiEditor({ mod, uf, ai, ri, ui }: EdProps) {
         {pertanyaan.length === 0 ? (
           <div className="text-center py-8 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-2.5">
-              <Lightbulb size={20} className="text-amber-400" />
+              <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '20px' } }>lightbulb</span>
             </div>
             <p className="text-sm font-medium text-app-primary mb-1">Belum ada pertanyaan refleksi</p>
             <p className="text-xs text-app-muted mb-3">Buat pertanyaan refleksi untuk penilaian diri</p>

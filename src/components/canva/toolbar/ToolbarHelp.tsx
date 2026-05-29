@@ -1,6 +1,6 @@
 'use client';
 
-import { LifeBuoy } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -28,7 +28,7 @@ export function ToolbarHelp() {
           title="Bantuan — Tur interaktif (?)"
           aria-label="Bantuan — Buka tur editor dan daftar shortcut"
         >
-          <LifeBuoy size={14} />
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>lifebuoy</span>
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="text-[10px]">

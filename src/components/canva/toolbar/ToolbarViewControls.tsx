@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { Minus, Plus, Maximize, ChevronDown } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -55,7 +55,7 @@ export function ToolbarViewControls() {
           title="Rasio canvas"
         >
           {ratioId}
-          <ChevronDown size={8} className={`transition-transform ${ratioOpen ? 'rotate-180' : ''}`} />
+          <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>expand_more</span>
         </button>
         {ratioOpen && (
           <div className="absolute top-full left-0 mt-1 w-36 rounded-xl bg-app-surface border border-app-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1">
@@ -79,7 +79,7 @@ export function ToolbarViewControls() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant="ghost" size="icon" onClick={zoomToFit} className="focus-ring h-7 w-7">
-            <Maximize size={12} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>fullscreen</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">
@@ -93,7 +93,7 @@ export function ToolbarViewControls() {
         className="focus-ring h-7 w-7"
         title="Zoom out (Ctrl+-)"
       >
-        <Minus size={12} />
+        <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>remove</span>
       </Button>
       <span
         className="text-[10px] font-mono text-app-secondary w-12 text-center select-none"
@@ -108,7 +108,7 @@ export function ToolbarViewControls() {
         className="focus-ring h-7 w-7"
         title="Zoom in (Ctrl++)"
       >
-        <Plus size={12} />
+        <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>add</span>
       </Button>
     </div>
   );

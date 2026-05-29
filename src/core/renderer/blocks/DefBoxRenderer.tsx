@@ -201,7 +201,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: tokens.colorAlpha(colorKey, 0.12) }}>
-                <BookOpen size={10} className="inline" style={{ color: tokens.accentText(colorKey) }} />
+                <span className="material-symbols-outlined inline" style={ { fontSize: '10px' } }>menu_book</span>
               </div>
               <span
                 style={{
@@ -271,7 +271,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                   ...tokens.iosHoverBgStyle(isExpandHovered, 0.04),
                 }}
               >
-                <ChevronDown size={isCompact ? 10 : 12} />
+                <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span>
                 Selengkapnya
               </button>
             )}
@@ -323,10 +323,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               pointerEvents: 'none',
             }}
           >
-            <Sparkles
-              size={isCompact ? 14 : 18}
-              style={{ color: tokens.accentText(colorKey), opacity: 0.5 }}
-            />
+            <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>auto_awesome</span>
           </div>
 
           {/* Content */}
@@ -338,7 +335,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                   background: tokens.colorAlpha(colorKey, 0.12),
                 }}
               >
-                <BookOpen size={12} style={{ color: tokens.accentText(colorKey) }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>menu_book</span>
               </div>
               <span
                 style={{
@@ -392,7 +389,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 onMouseLeave={() => setIsExpandHovered(false)}
                 className={`flex items-center justify-center gap-1 w-full py-1.5 mt-1 rounded-b-lg ${tokens.iosExpandTw()}`}
                 style={{ background: tokens.accentBg(colorKey, 0.06), ...edu.caption(), color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none', ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
-                <ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya
+                <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span> Selengkapnya
               </button>
             )}
           </div>
@@ -428,7 +425,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
           className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
           style={{ background: tokens.colorAlpha(colorKey, 0.12) }}
         >
-          <BookOpen size={9} style={{ color: tokens.accentText(colorKey) }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>menu_book</span>
         </div>
         <div className="min-w-0 flex-1">
           <span
@@ -470,7 +467,7 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
               onMouseLeave={() => setIsExpandHovered(false)}
               className={`flex items-center justify-center gap-0.5 w-full py-1 mt-0.5 rounded-b-lg ${tokens.iosExpandTw()}`}
               style={{ background: tokens.accentBg(colorKey, 0.06), ...edu.micro(), color: tokens.accentText(colorKey), cursor: 'pointer', border: 'none', ...tokens.iosHoverBgStyle(isExpandHovered, 0.04) }}>
-              <ChevronDown size={8} /> Selengkapnya
+              <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>expand_more</span> Selengkapnya
             </button>
           )}
         </div>

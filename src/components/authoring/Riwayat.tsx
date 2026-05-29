@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { toast } from 'sonner';
-import { Zap, Camera, FileEdit, RotateCcw, Trash2 } from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 // ── Types ──────────────────────────────────────────────────────────
 interface VersionEntry {
   name: string;
@@ -244,7 +243,7 @@ export default function Riwayat() {
             onClick={openSaveInput}
             className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
           >
-            <Camera size={14} className="inline" /> Simpan Snapshot Baru
+            <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>photo_camera</span> Simpan Snapshot Baru
           </button>
         )}
       </div>
@@ -305,7 +304,7 @@ function VersionCard({ entry, onRestore, onDelete, isRestoring }: VersionCardPro
     <div className="bg-app-surface border border-app-border rounded-lg p-4 flex items-start sm:items-center gap-4 flex-col sm:flex-row hover:border-app-border transition-colors group">
       {/* Icon */}
       <div className="flex-shrink-0 text-2xl w-10 h-10 rounded-lg bg-app-elevated flex items-center justify-center">
-        {entry.isAuto ? <Zap size={14} /> : <Camera size={14} />}
+        {entry.isAuto ? <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>bolt</span> : <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>photo_camera</span>}
       </div>
 
       {/* Info */}
@@ -331,7 +330,7 @@ function VersionCard({ entry, onRestore, onDelete, isRestoring }: VersionCardPro
           )}
           {entry.judul && (
             <span className="text-xs text-app-muted flex items-center gap-1">
-              <FileEdit size={12} className="inline" /> {entry.judul.length > 30 ? entry.judul.slice(0, 30) + '…' : entry.judul}
+              <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>edit_note</span> {entry.judul.length > 30 ? entry.judul.slice(0, 30) + '…' : entry.judul}
             </span>
           )}
         </div>
@@ -345,14 +344,14 @@ function VersionCard({ entry, onRestore, onDelete, isRestoring }: VersionCardPro
           className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated text-app-primary text-xs rounded-md transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Pulihkan versi ini"
         >
-          <RotateCcw size={14} className="inline" /> Pulihkan
+          <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Pulihkan
         </button>
         <button
           onClick={() => onDelete(entry)}
           className="px-3 py-1.5 bg-app-elevated hover:bg-red-900/60 text-app-primary hover:text-red-300 text-xs rounded-md transition-colors flex items-center gap-1.5"
           title="Hapus versi ini"
         >
-          <Trash2 size={14} className="inline" />
+          <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>delete</span>
         </button>
       </div>
     </div>

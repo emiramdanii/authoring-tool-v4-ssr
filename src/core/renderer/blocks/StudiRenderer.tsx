@@ -53,7 +53,7 @@ export const StudiRenderer = React.memo(function StudiRenderer({ block, tokens, 
                 className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: accentAlpha(0.2) }}
               >
-                <BookMarked size={10} style={{ color: accentColor }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>menu_book</span>
               </div>
             </MicroInteraction>
             <PremiumBadge tokens={tokens} accent={colorKey} variant="glass">

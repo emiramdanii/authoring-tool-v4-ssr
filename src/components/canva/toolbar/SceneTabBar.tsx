@@ -3,8 +3,7 @@
 import React from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { getTabIcon, TAB_ICON_MAP } from '@/lib/canva-icon-maps';
-import { LayoutGrid } from 'lucide-react';
-
+// All icons use Material Symbols Outlined
 // ═══════════════════════════════════════════════════════════════
 // SCENE TAB BAR — Horizontal pill bar showing tabs with icons
 // ═══════════════════════════════════════════════════════════════
@@ -31,7 +30,7 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
   // Don't render if no tabs or only 1 tab (nothing to filter)
   if (!tabs || tabs.length < 2) return null;
 
-  const AllIcon = LayoutGrid;
+  const allIconName = 'grid_view';
 
   return (
     <div
@@ -55,13 +54,13 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
         `}
         title="Tampilkan semua blok"
       >
-        <AllIcon size={isCompact ? 10 : 12} />
+        <span className="material-symbols-outlined" style={{ fontSize: isCompact ? '10px' : '12px' }}>{allIconName}</span>
         <span>Semua</span>
       </button>
 
       {/* User-defined tabs */}
       {tabs.map((tab) => {
-        const IconComponent = getTabIcon(tab.icon);
+        const iconName = getTabIcon(tab.icon);
         const isActive = activeTabId === tab.id;
 
         return (
@@ -81,7 +80,7 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
             `}
             title={tab.label}
           >
-            <IconComponent size={isCompact ? 10 : 12} />
+            <span className="material-symbols-outlined" style={{ fontSize: isCompact ? '10px' : '12px' }}>{iconName}</span>
             <span>{tab.label}</span>
           </button>
         );

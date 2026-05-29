@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { CheckCircle2, XCircle, Lightbulb } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { type KuisItem } from '@/store/authoring-store';
 import { useSchemaKuisProjection } from '@/hooks/use-schema-projection';
 import { resolveKuis } from '@/lib/module-resolver';
@@ -179,11 +179,11 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
             if (idx === q!.ans) {
               bg = 'bg-emerald-500/20 border-emerald-400/40';
               textCol = 'text-emerald-300';
-              icon = <CheckCircle2 size={12} className="inline ml-1" />;
+              icon = <span className="material-symbols-outlined inline ml-1 text-emerald-300" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>;
             } else if (idx === selectedOpt && idx !== q!.ans) {
               bg = 'bg-red-500/20 border-red-400/40';
               textCol = 'text-red-300';
-              icon = <XCircle size={12} className="inline ml-1" />;
+              icon = <span className="material-symbols-outlined inline ml-1 text-red-300" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>cancel</span>;
             } else {
               bg = 'bg-black/[.02] dark:bg-white/[.02] border-app-border/5';
               textCol = 'text-app-muted';
@@ -209,7 +209,7 @@ export default function QuizWidget({ dataIdx, kuisId, kuisIds, compact = false, 
         <div className="px-2 pb-1.5">
           <div className="bg-blue-500/10 border border-blue-400/20 rounded px-2 py-1">
             <span className={`font-bold text-blue-300 ${compact ? 'text-[8px]' : 'text-[9px]'}`}>
-              <Lightbulb size={12} className="inline" /> {q!.ex}
+              <span className="material-symbols-outlined inline text-amber-400" style={{ fontSize: '12px' }}>lightbulb</span> {q!.ex}
             </span>
           </div>
         </div>

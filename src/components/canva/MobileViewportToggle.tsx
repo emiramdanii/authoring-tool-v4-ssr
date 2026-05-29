@@ -1,6 +1,6 @@
 'use client';
 
-import { Monitor, Smartphone } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 
 // ═══════════════════════════════════════════════════════════════
@@ -25,7 +25,7 @@ export function MobileViewportToggle() {
         }`}
         title="Tampilan Desktop"
       >
-        <Monitor size={13} />
+        <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>monitor</span>
       </button>
       <button
         onClick={() => setPreviewViewport('mobile')}
@@ -36,7 +36,7 @@ export function MobileViewportToggle() {
         }`}
         title="Tampilan Mobile"
       >
-        <Smartphone size={13} />
+        <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>smartphone</span>
       </button>
     </div>
   );

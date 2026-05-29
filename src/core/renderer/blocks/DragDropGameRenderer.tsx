@@ -186,7 +186,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
  background: tokens.subtleBg(0.04),
  border: '2px dashed ' + tokens.subtleBorder(0.2),
  }}>
- <GripVertical size={24} className="inline mb-2" style={{ color: edu.mutedText(0.4) }} />
+ <span className="material-symbols-outlined inline mb-2" style={ { fontSize: '24px' } }>drag_indicator</span>
  <div className="font-bold" style={{ ...edu.caption(), color: edu.mutedText(0.6) }}>
  Seret & Letakkan Game
  </div>
@@ -217,9 +217,9 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
  {/* Animated icon */}
  <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
  {pct >= 80
- ? <Trophy size={28} className="inline" style={{ color: edu.accent() }} />
+ ? <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>emoji_events</span>
  : pct >= 50
- ? <Star size={28} className="inline" style={{ color: edu.accent() }} />
+ ? <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>star</span>
  : <Dumbbell size={28} className="inline" style={{ color: edu.accent() }} />}
  </div>
 
@@ -260,7 +260,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}
  >
- <RotateCcw size={14} className="inline" /> Ulangi
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi
  </button>
  </MicroInteraction>
  )}
@@ -327,7 +327,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
  <div className="flex items-center justify-between min-w-0">
  <div className="flex items-center gap-2 min-w-0">
  <div className="font-extrabold" style={{ ...edu.caption(), color: edu.accent() }}>
- <GripVertical size={14} className="inline" />{' '}
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>drag_indicator</span>{' '}
  <InlineTextEditor
  {...titleEditor}
  className="font-extrabold"
@@ -371,7 +371,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
  {/* Pool header */}
  <div className="w-full font-extrabold uppercase tracking-wider mb-2"
  style={{ ...edu.micro(), color: edu.accent() }}>
- <GripVertical size={14} className="inline" /> Pilih Item ({totalPlaced}/{totalItems})
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>drag_indicator</span> Pilih Item ({totalPlaced}/{totalItems})
  </div>
 
  {/* Pool items — only show items not yet placed */}
@@ -468,7 +468,7 @@ export const DragDropGameRenderer = React.memo(function DragDropGameRenderer({
  className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
  style={{ background: tokens.colorAlpha(targetColor, 0.2) }}
  >
- <GripVertical size={12} style={{ color: tokens.color(targetColor) }} />
+ <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>drag_indicator</span>
  </div>
  <div
  className="font-extrabold uppercase tracking-wider min-w-0"

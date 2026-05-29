@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LayoutTemplate, Zap, Square } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { LAYOUT_PRESETS } from '../types';
 import type { PageTemplateType } from '../types';
@@ -34,7 +34,7 @@ export default function PageSettingsSection() {
 
   return (
     <Section
-      icon={<LayoutTemplate size={12} />}
+      icon={<span className="material-symbols-outlined" style={{ fontSize: '12px' }}>dashboard_customize</span>}
       title="Pengaturan Halaman"
       collapsed={collapsed}
       onToggle={() => setCollapsed(c => !c)}
@@ -73,7 +73,7 @@ export default function PageSettingsSection() {
           <div className="flex gap-1.5">
             {(page.templateType === 'cover'
               ? [
-                  { id: 'A', label: 'Centered', icon: <Square size={12} /> },
+                  { id: 'A', label: 'Centered', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                   { id: 'B', label: 'Left Align', icon: '▐▌' },
                   { id: 'C', label: 'Split', icon: '◧◨' },
                 ]
@@ -84,56 +84,56 @@ export default function PageSettingsSection() {
                   ]
               : page.templateType === 'kuis'
                 ? [
-                    { id: 'A', label: 'Widget', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Widget', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Daftar Kartu', icon: '☵' },
                   ]
               : page.templateType === 'skenario'
                 ? [
-                    { id: 'A', label: 'Interaktif', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Interaktif', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Timeline', icon: '┃' },
                   ]
               : page.templateType === 'dokumen'
                 ? [
-                    { id: 'A', label: 'Tab', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Tab', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Side Nav', icon: '▐▌' },
                   ]
               : page.templateType === 'hasil'
                 ? [
-                    { id: 'A', label: 'Centered', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Centered', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Dashboard', icon: '▥' },
                   ]
               : page.templateType === 'penutup'
                 ? [
-                    { id: 'A', label: 'Kartu', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Kartu', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Checklist', icon: '☑' },
                   ]
               : page.templateType === 'hero'
                 ? [
-                    { id: 'A', label: 'Centered', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Centered', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Split', icon: '◧◨' },
                   ]
               : page.templateType === 'petunjuk'
                 ? [
-                    { id: 'A', label: 'Langkah', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Langkah', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Timeline', icon: '┃' },
                   ]
               : page.templateType === 'diskusi'
                 ? [
-                    { id: 'A', label: 'Satu-satu', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Satu-satu', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Semua', icon: '▥' },
                   ]
               : page.templateType === 'refleksi'
                 ? [
-                    { id: 'A', label: 'Satu-satu', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Satu-satu', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Jurnal', icon: '📓' },
                   ]
               : page.templateType === 'game'
                 ? [
-                    { id: 'A', label: 'Widget', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Widget', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Galeri', icon: '▦' },
                   ]
                 : [
-                    { id: 'A', label: 'Default', icon: <Square size={12} /> },
+                    { id: 'A', label: 'Default', icon: <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>crop_square</span> },
                     { id: 'B', label: 'Alt Layout', icon: '▥' },
                   ]
             ).map(v => (
@@ -275,7 +275,7 @@ export default function PageSettingsSection() {
             }}
             className="w-full justify-center py-2 mb-2 text-app-accent border-app-accent/20 bg-app-accent/10 hover:bg-app-accent/18 hover:border-app-accent/35"
           >
-            <Zap size={12} />
+            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>bolt</span>
             Refresh Data dari Authoring
           </Button>
 

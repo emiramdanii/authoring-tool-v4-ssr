@@ -110,7 +110,7 @@ function TujuanVariantA({
                 boxShadow: 'none',
               }}
             >
-              <Target size={16} style={{ color: edu.accent() }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>target</span>
             </div>
             <h2
               className="font-black leading-tight min-w-0"
@@ -133,7 +133,7 @@ function TujuanVariantA({
           {block.bsnpRequired && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold"
               style={{ ...edu.micro(), background: edu.accentBg(), color: edu.accent(), border: `1px solid ${edu.accentAlpha(0.2)}` }}>
-              <Shield size={isCompact ? 8 : 10} /> WAJIB
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>shield</span> WAJIB
             </span>
           )}
         </div>
@@ -246,8 +246,8 @@ function TujuanVariantA({
             }}
           >
             {isExpanded
-              ? <><EyeOff size={isCompact ? 10 : 12} /> Sembunyikan</>
-              : <><Eye size={isCompact ? 10 : 12} /> Lihat {hiddenCount} tujuan lainnya</>
+              ? <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>visibility_off</span> Sembunyikan</>
+              : <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>visibility</span> Lihat {hiddenCount} tujuan lainnya</>
             }
           </button>
         </div>
@@ -265,8 +265,8 @@ function TujuanVariantA({
             }}
           >
             {isExpanded
-              ? <><ChevronUp size={isCompact ? 10 : 12} /> Ringkas</>
-              : <><ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya</>
+              ? <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_less</span> Ringkas</>
+              : <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span> Selengkapnya</>
             }
           </button>
         </div>
@@ -296,7 +296,7 @@ function TujuanVariantA({
           }}
         >
           <div className="flex items-start gap-2">
-            <Link2 size={14} className="flex-shrink-0 mt-0.5" style={{ color: tokens.color(block.profilColor || 'g') }} />
+            <span className="material-symbols-outlined flex-shrink-0 mt-0.5" style={ { fontSize: '14px' } }>link</span>
             <div className="min-w-0">
               <strong
                 style={{
@@ -376,7 +376,7 @@ function TujuanVariantB({
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <CheckCircle2 size={edu.iconSize('sm')} style={{ color: edu.accent() }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>check_circle</span>
             <h2
               className="font-black leading-tight min-w-0"
               style={{
@@ -396,7 +396,7 @@ function TujuanVariantB({
           {block.bsnpRequired && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold"
               style={{ ...edu.micro(), background: edu.accentBg(), color: edu.accent(), border: `1px solid ${edu.accentAlpha(0.2)}` }}>
-              <Shield size={isCompact ? 8 : 10} /> WAJIB
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>shield</span> WAJIB
             </span>
           )}
         </div>
@@ -459,10 +459,7 @@ function TujuanVariantB({
                   }}
                 >
                   {isChecked && (
-                    <CheckCircle2
-                      size={isCompact ? 12 : 15}
-                      style={{ color: tokens.color(obj.color) }}
-                    />
+                    <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>check_circle</span>
                   )}
                 </div>
 
@@ -538,8 +535,8 @@ function TujuanVariantB({
             }}
           >
             {isExpanded
-              ? <><EyeOff size={isCompact ? 10 : 12} /> Sembunyikan</>
-              : <><Eye size={isCompact ? 10 : 12} /> Lihat {hiddenCount} tujuan lagi</>
+              ? <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>visibility_off</span> Sembunyikan</>
+              : <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>visibility</span> Lihat {hiddenCount} tujuan lagi</>
             }
           </button>
         )}
@@ -555,8 +552,8 @@ function TujuanVariantB({
             }}
           >
             {isExpanded
-              ? <><ChevronUp size={isCompact ? 10 : 12} /> Ringkas</>
-              : <><ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya</>
+              ? <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_less</span> Ringkas</>
+              : <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span> Selengkapnya</>
             }
           </button>
         )}
@@ -583,7 +580,7 @@ function TujuanVariantB({
           }}
         >
           <div className="flex items-center gap-2">
-            <Link2 size={12} style={{ color: tokens.color(block.profilColor || 'g') }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>link</span>
             <span
               style={{
                 ...edu.caption(),
@@ -703,7 +700,7 @@ function TujuanVariantC({
         <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 5 }}>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold"
               style={{ ...edu.micro(), background: edu.accentBg(), color: edu.accent(), border: `1px solid ${edu.accentAlpha(0.2)}` }}>
-            <Shield size={8} /> WAJIB
+            <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>shield</span> WAJIB
           </span>
         </div>
       )}
@@ -804,7 +801,7 @@ function TujuanVariantC({
               animation: 'breathe 4s ease-in-out infinite',
             }}
           >
-            <Target size={isCompact ? 18 : 22} style={{ color: tokens.color('bg') }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>target</span>
           </div>
           <h2
             className="font-black leading-tight text-center"
@@ -839,7 +836,7 @@ function TujuanVariantC({
             gap: '6px',
           }}
         >
-          <Link2 size={12} style={{ color: tokens.color(block.profilColor || 'g'), flexShrink: 0 }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>link</span>
           <span
             style={{
               ...edu.caption(),

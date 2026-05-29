@@ -25,7 +25,7 @@ import type { KuisItem } from '@/store/authoring-store';
 import { PRESETS_KUIS } from '@/store/authoring/presets/kuis-presets';
 import { useSchemaKuis, useSchemaContext } from '@/hooks/use-schema-navigator';
 import { useDragSort } from '@/hooks/use-drag-sort';
-import { Zap, HelpCircle, ClipboardList, Trash2 } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { RegenerateButton } from './RegenerateButton';
 import { ItemRegenerateButton } from './ItemRegenerateButton';
 import { regenerateKuis, regenerateKuisSchema, regenerateSingleKuisItem } from '../auto-generate/regenerate';
@@ -90,7 +90,7 @@ export function KuisTab() {
     return (
       <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
         <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-3">
-          <HelpCircle size={24} className="text-cyan-400" />
+          <span className="material-symbols-outlined text-cyan-400" style={ { fontSize: '24px' } }>help</span>
         </div>
         <p className="text-sm font-medium text-app-primary mb-1">Belum ada blok kuis</p>
         <p className="text-xs text-app-muted">Tambahkan halaman kuis di Canva untuk mengedit di sini.</p>
@@ -112,7 +112,7 @@ export function KuisTab() {
 
       {/* Preset Cards */}
       <div className="bg-app-surface border border-app-border rounded-xl p-4">
-        <h4 className="text-sm font-semibold text-app-primary mb-3"><Zap size={16} className="inline" /> Preset Kuis</h4>
+        <h4 className="text-sm font-semibold text-app-primary mb-3"><span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>bolt</span> Preset Kuis</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
           <button
             onClick={() => {
@@ -122,7 +122,7 @@ export function KuisTab() {
             }}
             className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-3 text-center hover:border-app-border transition-colors cursor-pointer"
           >
-            <div className="text-xl mb-1"><HelpCircle size={20} className="inline" /></div>
+            <div className="text-xl mb-1"><span className="material-symbols-outlined inline" style={ { fontSize: '20px' } }>help</span></div>
             <div className="text-xs font-semibold text-app-primary">Norma – 10 Soal</div>
             <div className="text-[0.65rem] text-app-muted">Siap pakai, bisa diedit</div>
           </button>
@@ -133,7 +133,7 @@ export function KuisTab() {
             }}
             className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-3 text-center hover:border-app-border transition-colors cursor-pointer"
           >
-            <div className="text-xl mb-1"><ClipboardList size={20} className="inline" /></div>
+            <div className="text-xl mb-1"><span className="material-symbols-outlined inline" style={ { fontSize: '20px' } }>assignment</span></div>
             <div className="text-xs font-semibold text-app-primary">Kosong</div>
             <div className="text-[0.65rem] text-app-muted">Buat dari nol</div>
           </button>
@@ -145,7 +145,7 @@ export function KuisTab() {
         {!kuis.length ? (
           <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
             <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-3">
-              <HelpCircle size={24} className="text-cyan-400" />
+              <span className="material-symbols-outlined text-cyan-400" style={ { fontSize: '24px' } }>help</span>
             </div>
             <p className="text-sm font-medium text-app-primary mb-1">Belum ada soal kuis</p>
             <p className="text-xs text-app-muted mb-4">Generate otomatis dari materi atau buat manual.</p>
@@ -154,7 +154,7 @@ export function KuisTab() {
                 onClick={handleRegenerateKuis}
                 className="px-3 py-1.5 bg-app-accent hover:bg-app-accent/90 text-app-inverse text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
               >
-                <Zap size={12} /> Auto-Generate
+                <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>bolt</span> Auto-Generate
               </button>
               <button
                 onClick={() => {
@@ -164,7 +164,7 @@ export function KuisTab() {
                 }}
                 className="px-3 py-1.5 bg-app-elevated hover:bg-app-elevated/80 border border-app-border text-app-secondary text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
               >
-                <Zap size={12} /> Preset 10 Soal
+                <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>bolt</span> Preset 10 Soal
               </button>
               <button
                 onClick={handleAdd}
@@ -214,7 +214,7 @@ export function KuisTab() {
                     onClick={() => deleteQuestion(i)}
                     className="inline-flex items-center justify-center w-7 h-7 rounded-md text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-all text-sm"
                   >
-                    <Trash2 size={14} />
+                    <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>delete</span>
                   </button>
                 </div>
               </div>

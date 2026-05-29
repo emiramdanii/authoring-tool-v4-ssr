@@ -4,18 +4,7 @@ import { useState } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useProjectManager } from '@/hooks/use-project-manager';
 import { toast } from 'sonner';
-import {
-  Sparkles,
-  Trash2,
-  FolderOpen,
-  Plus,
-  Upload,
-  Database,
-  Loader2,
-  Clock,
-  FileText,
-  Check,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 
 export default function Projects() {
@@ -101,7 +90,7 @@ export default function Projects() {
       {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
-          <Database size={22} /> Kelola Proyek
+          <span className="material-symbols-outlined" style={ { fontSize: '22px' } }>database</span> Kelola Proyek
         </h2>
         <p className="text-sm text-app-secondary mt-1">
           Simpan dan muat proyek dari database. Data tersimpan di server, aman dari kehilangan.
@@ -115,14 +104,14 @@ export default function Projects() {
           disabled={saving}
           className="bg-gradient-to-br from-app-accent to-app-accent/80 text-app-inverse shadow-sm hover:shadow-md hover:-translate-y-px disabled:opacity-60"
         >
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Database size={14} />}
+          {saving ? <span className="material-symbols-outlined animate-spin" style={ { fontSize: '14px' } }>progress_activity</span> : <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>database</span>}
           {currentProjectId ? (saving ? 'Menyimpan...' : 'Simpan ke Database') : 'Buat Proyek Baru'}
         </Button>
         <Button
           onClick={handleNewProject}
           variant="outline"
         >
-          <Sparkles size={14} /> Proyek Baru
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>auto_awesome</span> Proyek Baru
         </Button>
         {hasLocalData() && (
           <Button
@@ -130,7 +119,7 @@ export default function Projects() {
             variant="outline"
             className="text-amber-400 border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/18 hover:border-amber-500/35"
           >
-            <Upload size={14} /> Import dari Browser
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>upload</span> Import dari Browser
           </Button>
         )}
       </div>
@@ -139,7 +128,7 @@ export default function Projects() {
       {showMigrateDialog && (
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <Upload size={18} className="text-amber-400" />
+            <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '18px' } }>upload</span>
             <h3 className="text-sm font-semibold text-amber-300">Import Data Lokal</h3>
           </div>
           <p className="text-xs text-app-secondary">
@@ -151,7 +140,7 @@ export default function Projects() {
               size="sm"
               className="bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30"
             >
-              <Upload size={12} /> Import Sekarang
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>upload</span> Import Sekarang
             </Button>
             <Button
               onClick={() => setShowMigrateDialog(false)}
@@ -168,7 +157,7 @@ export default function Projects() {
       {/* Loading State */}
       {loading ? (
         <div className="bg-app-surface border border-app-border rounded-xl p-8 text-center">
-          <Loader2 size={24} className="mx-auto mb-3 text-app-accent animate-spin" />
+          <span className="material-symbols-outlined mx-auto mb-3 text-app-accent animate-spin" style={ { fontSize: '24px' } }>progress_activity</span>
           <p className="text-app-secondary text-sm">Memuat daftar proyek...</p>
         </div>
       ) : !projects.length ? (
@@ -215,7 +204,7 @@ export default function Projects() {
                       variant="ghost"
                       className="text-app-accent"
                     >
-                      <Check size={14} />
+                      <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>check</span>
                     </Button>
                   </div>
                 ) : (
@@ -232,12 +221,12 @@ export default function Projects() {
                     </div>
                     <div className="flex items-center gap-3 text-xs text-app-muted mt-0.5">
                       <span className="flex items-center gap-1">
-                        <Clock size={10} />
+                        <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>schedule</span>
                         {formatDate(p.updatedAt)}
                       </span>
                       {p._count?.pages !== undefined && (
                         <span className="flex items-center gap-1">
-                          <FileText size={10} />
+                          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>description</span>
                           {p._count.pages} halaman
                         </span>
                       )}
@@ -263,7 +252,7 @@ export default function Projects() {
                   disabled={currentProjectId === p.id}
                   className={currentProjectId === p.id ? 'text-xs' : 'text-xs'}
                 >
-                  <FolderOpen size={12} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>folder_open</span>
                   {currentProjectId === p.id ? 'Aktif' : 'Muat'}
                 </Button>
                 <Button
@@ -272,7 +261,7 @@ export default function Projects() {
                   variant="ghost"
                   className="text-app-secondary hover:text-red-400 hover:bg-red-900/30 text-xs"
                 >
-                  <Trash2 size={12} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>delete</span>
                 </Button>
               </div>
             </div>
@@ -283,7 +272,7 @@ export default function Projects() {
       {/* Auto-save info */}
       <div className="bg-app-elevated/50 rounded-lg p-3 text-xs text-app-muted space-y-1">
         <p className="flex items-center gap-1.5">
-          <Database size={10} />
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>database</span>
           <strong>Database:</strong> Proyek tersimpan otomatis setiap 2 detik saat proyek aktif.
         </p>
         <p className="flex items-center gap-1.5">

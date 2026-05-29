@@ -1,8 +1,7 @@
 'use client';
 
 import { navigateToBlock } from '@/hooks/use-schema-navigator';
-import { ExternalLink } from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 // ── Sub-tab type ─────────────────────────────────────────────────
 export type KontenTab = 'materi' | 'diskusi' | 'refleksi' | 'skenario' | 'modules' | 'kuis' | 'motivasi' | 'rangkuman';
 
@@ -243,7 +242,7 @@ export function LocateInCanvaButton({
       className="inline-flex items-center gap-1 px-2 py-1 text-xs text-app-muted hover:text-app-accent rounded-md hover:bg-app-accent/10 transition-colors"
       title="Buka halaman ini di editor Canva"
     >
-      <ExternalLink size={11} />
+      <span className="material-symbols-outlined" style={ { fontSize: '11px' } }>open_in_new</span>
       {label}
     </button>
   );

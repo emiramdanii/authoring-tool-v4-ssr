@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronRight } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 
 export default function Section({
   icon,
@@ -27,9 +27,9 @@ export default function Section({
           <span className="text-[10px] font-bold text-silse-on-surface-variant uppercase tracking-widest">{title}</span>
         </div>
         {isCollapsed ? (
-          <ChevronRight size={12} className="text-silse-on-surface-variant" />
+          <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '12px' }}>chevron_right</span>
         ) : (
-          <ChevronDown size={12} className="text-silse-on-surface-variant" />
+          <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '12px' }}>expand_more</span>
         )}
       </button>
       {!isCollapsed && (

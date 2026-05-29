@@ -12,7 +12,7 @@ import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import TabManagementSection from './TabManagementSection';
 import LayerPanel from '../left-panel/LayerPanel';
-import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand, SlidersHorizontal } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
@@ -191,11 +191,11 @@ export default function RightPanel() {
                       <span>Pilih {blockLabel.toLowerCase()}</span>
                     </div>
                     <div className="flex items-center gap-2 text-[9px] text-silse-on-surface-variant">
-                      <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/8 text-emerald-600 font-bold text-[8px]">2x Klik</span>
+                      <span className="px-1.5 py-0.5 rounded-md bg-silse-primary-container/15 text-silse-primary font-bold text-[8px]">2x Klik</span>
                       <span>Edit teks langsung</span>
                     </div>
                     <div className="flex items-center gap-2 text-[9px] text-silse-on-surface-variant">
-                      <span className="px-1.5 py-0.5 rounded-md bg-blue-500/8 text-blue-600 font-bold text-[8px]">Shift+Klik</span>
+                      <span className="px-1.5 py-0.5 rounded-md bg-silse-secondary-container/15 text-silse-secondary font-bold text-[8px]">Shift+Klik</span>
                       <span>Pilih banyak {blockLabel.toLowerCase()}</span>
                     </div>
                   </div>
