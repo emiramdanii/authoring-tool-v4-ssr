@@ -113,7 +113,7 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
   const sectionOrder = guidedSchema.sections?.map(s => s.key) ?? [];
 
   return (
-    <div className="space-y-5 p-6" role="region" aria-label={`Guided Editor: ${guidedSchema.displayName}`}>
+    <div className="space-y-4 p-4" role="region" aria-label={`Guided Editor: ${guidedSchema.displayName}`}>
       {/* ── Overflow warning banner ── */}
       {overflowDetails && overflowDetails.overflowDetected && (
         <OverflowWarningBanner
@@ -125,7 +125,8 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
 
       {/* ── Block description (teacher mode) ── */}
       {teacherMode && guidedSchema.description && (
-        <div className="px-4 py-2.5 rounded-xl bg-silse-primary-container/10 border border-silse-primary/15 text-sm text-silse-on-surface-variant leading-relaxed">
+        <div className="px-3 py-2 rounded-xl bg-silse-primary-container/8 border border-silse-primary/10 text-xs text-silse-on-surface-variant leading-relaxed">
+          <span className="material-symbols-outlined inline text-silse-primary mr-1" style={{ fontSize: '14px' }}>info</span>
           {guidedSchema.description}
         </div>
       )}

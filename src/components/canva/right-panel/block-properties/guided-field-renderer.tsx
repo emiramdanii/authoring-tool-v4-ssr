@@ -29,8 +29,8 @@ import type { GuidedFieldDef } from '@/core/schema/guided-patch';
 
 // ── Shared SILSE v4 Styles ──────────────────────────────────────
 
-const INPUT_BASE = 'w-full px-4 py-3 rounded-xl border border-silse-outline-variant bg-silse-surface-bright text-silse-on-surface text-sm focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200';
-const LABEL_BASE = 'text-sm font-bold text-silse-on-surface-variant mb-2 block';
+const INPUT_BASE = 'w-full px-3 py-2.5 rounded-xl border border-silse-outline-variant/60 bg-silse-surface-bright text-silse-on-surface text-sm focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200 placeholder:text-silse-on-surface-variant/40';
+const LABEL_BASE = 'text-xs font-bold text-silse-on-surface-variant mb-1.5 block tracking-wide';
 
 // ── Main Render Dispatch ──────────────────────────────────────
 

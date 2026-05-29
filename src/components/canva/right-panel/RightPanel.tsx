@@ -39,14 +39,18 @@ const AIRefineSection = dynamic(() => import('../ai-assistant/AIRefineSection'),
 });
 
 // ═══════════════════════════════════════════════════════════════
-// RIGHT PANEL v2 — SILSE v4 Stitch Reference Properties Panel
+// RIGHT PANEL v3 — SILSE v4 MD3 Properties Panel
 // ═══════════════════════════════════════════════════════════════
-// SILSE v4 Stitch spec:
-//   - w-80 (320px) width
-//   - Header: p-6, border-b, bg-silse-surface-container-lowest, tune icon + Properties + close
-//   - Tab bar: bold labels + underline indicator in secondary color
-//   - Content: p-6 space-y-6
-//   - Footer: p-6 bg-silse-surface-container-low with delete button (rounded-full)
+// SILSE v4 MD3 spec:
+//   - Full width (resizable via parent)
+//   - Header: px-4 py-3, border-b, bg-silse-surface-container-lowest, tune icon + Properties + close
+//   - Tab bar: MD3-style segmented buttons with pill indicator
+//   - Content: p-4 space-y-4
+//   - Footer: px-4 py-3 bg-silse-surface-container-low with delete button (rounded-full)
+//
+// Schema panel fix:
+//   - SchemaDrivenEditor now properly wired for schema blocks
+//   - BlockPropertiesPanel routes to GuidedFormEditor or SchemaDrivenEditor
 // ═══════════════════════════════════════════════════════════════
 
 type RightPanelTab = 'properties' | 'ai' | 'layer';
@@ -69,11 +73,11 @@ export default function RightPanel() {
   const isSchemaDriven = !!page?.schema;
 
   // Teacher-mode aware tab configuration
-  const TABS: { id: RightPanelTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'properties', label: 'Properti', icon: <Box size={14} /> },
-    ...(aiEnabled ? [{ id: 'ai' as RightPanelTab, label: 'AI', icon: <Sparkles size={14} /> }] : []),
+  const TABS: { id: RightPanelTab; label: string; icon: string }[] = [
+    { id: 'properties', label: 'Properti', icon: 'tune' },
+    ...(aiEnabled ? [{ id: 'ai' as RightPanelTab, label: 'AI', icon: 'auto_awesome' }] : []),
     // Layer tab only in advanced mode
-    ...(!isSederhana ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: <Layers size={14} /> }] : []),
+    ...(!isSederhana ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: 'layers' }] : []),
   ];
 
   // Auto-correct: if teacher mode is on and layer tab was active, switch to properties
@@ -93,13 +97,13 @@ export default function RightPanel() {
   if (!rightPanelOpen) return null;
 
   return (
-    <div className="w-80 bg-silse-surface-container-lowest border-l border-silse-outline-variant flex flex-col shrink-0 overflow-hidden">
-      {/* ── Properties Header — SILSE v4 reference style ── */}
-      <div className="p-6 border-b border-silse-outline-variant flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
+    <div className="w-full h-full bg-silse-surface-container-lowest border-l border-silse-outline-variant/60 flex flex-col shrink-0 overflow-hidden">
+      {/* ── Properties Header — SILSE v4 MD3 reference style ── */}
+      <div className="px-4 py-2.5 border-b border-silse-outline-variant/40 flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-silse-tertiary" style={{ fontSize: '20px' }}>tune</span>
           <h3
-            className="text-lg font-bold text-silse-on-surface"
+            className="text-sm font-bold text-silse-on-surface tracking-tight"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
             Properties
@@ -107,38 +111,38 @@ export default function RightPanel() {
         </div>
         <button
           onClick={toggleRightPanel}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-on-surface-variant hover:bg-silse-surface-container-high transition-colors"
+          className="w-6 h-6 flex items-center justify-center rounded-md text-silse-on-surface-variant hover:bg-silse-surface-container-high transition-colors"
           aria-label="Tutup panel"
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
         </button>
       </div>
 
-      {/* ── Tab Bar — SILSE v4 style ────────────────────────── */}
-      <div className="flex items-center border-b border-silse-outline-variant px-1 pt-1 shrink-0 bg-silse-surface-container-lowest">
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-[12px] font-bold transition-all relative ${
-                isActive
-                  ? 'text-silse-secondary'
-                  : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high/50'
-              }`}
-              aria-selected={isActive}
-              role="tab"
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-              {/* Active indicator — SILSE v4 underline */}
-              {isActive && (
-                <span className="absolute bottom-0 left-3 right-3 h-[2.5px] bg-silse-secondary rounded-t-full" />
-              )}
-            </button>
-          );
-        })}
+      {/* ── Tab Bar — MD3 Segmented Style ─────────────────────── */}
+      <div className="flex items-center gap-1 px-3 pt-2 pb-1.5 shrink-0 bg-silse-surface-container-lowest">
+        <div className="flex items-center gap-0.5 bg-silse-surface-container-high/50 rounded-lg p-0.5 w-full">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${
+                  isActive
+                    ? 'bg-silse-surface-container-lowest text-silse-primary shadow-sm'
+                    : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high/50'
+                }`}
+                aria-selected={isActive}
+                role="tab"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '14px', fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}>
+                  {tab.icon}
+                </span>
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Tab Content ──────────────────────────────────── */}
@@ -167,31 +171,31 @@ export default function RightPanel() {
                     <PageInfo />
                   </>
                 )}
-                {/* ── Empty state hint ── */}
-                <div className="mx-4 mt-4 mb-6 rounded-2xl border border-dashed border-silse-outline-variant bg-silse-surface-container-low overflow-hidden">
-                  <div className="px-5 pt-5 pb-4 text-center">
-                    <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-silse-secondary/10 border border-silse-secondary/20 flex items-center justify-center">
-                      <MousePointer2 size={22} className="text-silse-secondary/60" />
+                {/* ── Empty state hint — MD3 style ── */}
+                <div className="mx-3 mt-3 mb-4 rounded-2xl border border-dashed border-silse-outline-variant/60 bg-silse-surface-container-low/50 overflow-hidden">
+                  <div className="px-4 pt-4 pb-3 text-center">
+                    <div className="w-12 h-12 mx-auto mb-2.5 rounded-2xl bg-silse-secondary/8 border border-silse-secondary/15 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-silse-secondary/50" style={{ fontSize: '22px' }}>touch_app</span>
                     </div>
-                    <div className="text-[13px] font-bold text-silse-on-surface mb-1">
+                    <div className="text-[12px] font-bold text-silse-on-surface mb-0.5">
                       Pilih {blockLabel} untuk Edit
                     </div>
-                    <div className="text-[11px] text-silse-on-surface-variant leading-relaxed">
-                      Klik {blockLabel.toLowerCase()} di canvas untuk mengedit properti, teks, warna, dan kompresinya
+                    <div className="text-[10px] text-silse-on-surface-variant leading-relaxed">
+                      Klik {blockLabel.toLowerCase()} di canvas untuk mengedit properti dan konten
                     </div>
                   </div>
                   {/* Quick action hints */}
-                  <div className="border-t border-silse-outline-variant/20 px-4 py-3 space-y-2 bg-silse-surface-container-lowest">
-                    <div className="flex items-center gap-2.5 text-[10px] text-silse-on-surface-variant">
-                      <span className="px-1.5 py-0.5 rounded-md bg-silse-secondary/10 text-silse-secondary font-bold text-[9px]">1x Klik</span>
+                  <div className="border-t border-silse-outline-variant/15 px-3 py-2.5 space-y-1.5 bg-silse-surface-container-lowest/50">
+                    <div className="flex items-center gap-2 text-[9px] text-silse-on-surface-variant">
+                      <span className="px-1.5 py-0.5 rounded-md bg-silse-secondary/8 text-silse-secondary font-bold text-[8px]">1x Klik</span>
                       <span>Pilih {blockLabel.toLowerCase()}</span>
                     </div>
-                    <div className="flex items-center gap-2.5 text-[10px] text-silse-on-surface-variant">
-                      <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 font-bold text-[9px]">2x Klik</span>
+                    <div className="flex items-center gap-2 text-[9px] text-silse-on-surface-variant">
+                      <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/8 text-emerald-600 font-bold text-[8px]">2x Klik</span>
                       <span>Edit teks langsung</span>
                     </div>
-                    <div className="flex items-center gap-2.5 text-[10px] text-silse-on-surface-variant">
-                      <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 font-bold text-[9px]">Shift+Klik</span>
+                    <div className="flex items-center gap-2 text-[9px] text-silse-on-surface-variant">
+                      <span className="px-1.5 py-0.5 rounded-md bg-blue-500/8 text-blue-600 font-bold text-[8px]">Shift+Klik</span>
                       <span>Pilih banyak {blockLabel.toLowerCase()}</span>
                     </div>
                   </div>
@@ -231,18 +235,18 @@ export default function RightPanel() {
           </div>
         )}
       </div>
-      {/* ── Footer — SILSE v4 Stitch: delete button when block selected ── */}
+      {/* ── Footer — MD3: delete button when block selected ── */}
       {hasBlockSelection && (
-        <div className="p-6 bg-silse-surface-container-low border-t border-silse-outline-variant flex-shrink-0">
+        <div className="px-4 py-2.5 bg-silse-surface-container-low border-t border-silse-outline-variant/40 flex-shrink-0">
           <button
             onClick={() => {
               if (selectedBlockId && confirm(`Hapus ${blockLabel.toLowerCase()} ini?`)) {
                 deleteBlock(selectedBlockId);
               }
             }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-silse-error-container/15 text-silse-error text-sm font-bold hover:bg-silse-error-container/25 active:scale-95 transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-silse-error-container/12 text-silse-error text-xs font-bold hover:bg-silse-error-container/20 active:scale-[0.97] transition-all"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
             Hapus {blockLabel}
           </button>
         </div>

@@ -174,8 +174,8 @@ export default function StatusBar() {
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-1.5 bg-silse-surface-container-lowest border-t border-silse-outline-variant text-xs text-silse-on-surface-variant select-none"
-      style={{ height: 'var(--semantic-statusbar-height)' }}
+      className="flex items-center gap-3 px-4 py-1 bg-silse-surface-container-lowest border-t border-silse-outline-variant/40 text-xs text-silse-on-surface-variant select-none"
+      style={{ height: '26px' }}
     >
       {/* Ratio */}
       <span className="flex items-center gap-1.5">

@@ -61,13 +61,8 @@ export function SceneList() {
   }, [currentPageIndex]);
 
   return (
-    <div className="flex flex-col gap-2">
-      {/* Scenes uppercase label — SILSE v4 Stitch reference */}
-      {pages.length > 0 && (
-        <span className="text-xs uppercase tracking-wider text-silse-outline font-bold mb-1 block px-1">
-          Scenes
-        </span>
-      )}
+    <div className="flex flex-col gap-1">
+      {/* Scenes label — now handled by LeftPanel, but keep for standalone use */}
       {pages.map((p, i) => {
         const isActive = i === currentPageIndex;
         const badge = TEMPLATE_BADGE_MAP[p.templateType || 'custom'] || TEMPLATE_BADGE_MAP.custom;
@@ -97,7 +92,7 @@ export function SceneList() {
               setDragOverIdx(null);
             }}
             onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-            className={`w-full text-left flex items-center gap-3 rounded-xl px-3 py-2 transition-all ${
+            className={`w-full text-left flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
               dragIdx === i
                 ? 'opacity-40 scale-95'
                 : dragOverIdx === i
@@ -109,7 +104,7 @@ export function SceneList() {
           >
             {/* Scene Number Thumbnail — SILSE v4 reference style */}
             <div
-              className={`w-12 h-8 rounded flex items-center justify-center text-[10px] flex-shrink-0 ${
+              className={`w-10 h-7 rounded-md flex items-center justify-center text-[9px] flex-shrink-0 ${
                 isActive
                   ? 'bg-silse-on-surface/10'
                   : 'bg-silse-surface-container-highest'
@@ -121,7 +116,7 @@ export function SceneList() {
 
             {/* Scene Label */}
             <div className="flex-1 min-w-0">
-              <span className={`text-sm font-medium truncate block ${
+              <span className={`text-[11px] font-medium truncate block ${
                 isActive ? 'font-bold' : ''
               }`}>
                 {isSchemaDriven && <span className="material-symbols-outlined inline mr-0.5" style={{ fontSize: '12px' }}>bolt</span>}

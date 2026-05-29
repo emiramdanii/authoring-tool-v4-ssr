@@ -1,20 +1,20 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════
-// SCHEMA BLOCK TREE — Navigate schema blocks within each page
+// SCHEMA BLOCK TREE v2 — SILSE v4 MD3 Block Navigator
 // ═══════════════════════════════════════════════════════════════════
-// Phase 3 deliverable: Shows the block tree structure of each page's
-// schema, enabling navigation from a block to the canvas.
+// Navigate schema blocks within each page.
 //
 // Architecture:
 //   READ:  CanvaStore.pages[].schema.blocks → tree structure
 //   NAV:   goPage() + selectBlock() → navigate & edit
 //   CROSS: Click block → navigate to page + show in right panel
 //
-// SILSE v4 styling:
-//   - Selected block: bg-silse-primary-container text-silse-on-primary-container rounded-xl
-//   - Hover: hover:bg-silse-surface-container-high rounded-xl
-//   - Indent with left border: border-l-2 border-silse-outline-variant
+// v2 changes:
+//   - MD3 styling with rounded-xl items and active pill indicator
+//   - Material Symbols icons instead of emoji
+//   - Better depth indentation with subtle border-l
+//   - Integrated into LeftPanel pages tab
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback } from 'react';
@@ -26,55 +26,52 @@ import { getKontenTabForBlockType } from '@/hooks/use-schema-navigator';
 import type { SchemaBlock } from '@/core/schema/types';
 import type { CanvaPage } from '@/components/canva/types';
 
-// ── Block Type Display Map ──────────────────────────────────────
-// Maps schema block types to human-readable labels and icons.
-// Single source of truth for the tree view display.
-
+// ── Block Type Display Map — Material Symbols ──────────────────
 const BLOCK_DISPLAY: Record<string, { icon: string; label: string; color: string }> = {
-  'cover':             { icon: '🏠', label: 'Cover',             color: '#f9c82e' },
-  'hero':              { icon: '🚀', label: 'Hero',              color: '#fb923c' },
-  'petunjuk':          { icon: '📌', label: 'Petunjuk',          color: '#3ecfcf' },
-  'tp':                { icon: '🎯', label: 'Tujuan Pembelajaran', color: '#3ecfcf' },
-  'alur':              { icon: '🗺️', label: 'Alur Pembelajaran', color: '#a78bfa' },
-  'skenario':          { icon: '🎭', label: 'Skenario',          color: '#f472b6' },
-  'materi-section':    { icon: '📚', label: 'Materi',           color: '#a78bfa' },
-  'materi-blok':       { icon: '📝', label: 'Blok Materi',      color: '#a78bfa' },
-  'def-box':           { icon: '📌', label: 'Definisi',          color: '#f9c82e' },
-  'nc-grid':           { icon: '📊', label: 'Grid Konten',      color: '#3ecfcf' },
-  'flashcard-set':     { icon: '🃏', label: 'Flashcard',        color: '#a78bfa' },
-  'ftab':              { icon: '📑', label: 'Tab',              color: '#3ecfcf' },
-  'nk-card':           { icon: '📖', label: 'Kartu',            color: '#a78bfa' },
-  'diskusi':           { icon: '💬', label: 'Diskusi',           color: '#34d399' },
-  'kuis':              { icon: '❓', label: 'Kuis',             color: '#f5c842' },
-  'motivasi':          { icon: '💡', label: 'Motivasi',         color: '#fb923c' },
-  'refleksi':          { icon: '🪞', label: 'Refleksi',         color: '#a78bfa' },
-  'rangkuman':         { icon: '📋', label: 'Rangkuman',        color: '#3ecfcf' },
-  'penutup':           { icon: '🎓', label: 'Penutup',          color: '#fb923c' },
-  'hasil':             { icon: '🏆', label: 'Hasil',            color: '#34d399' },
-  'tabel':             { icon: '📊', label: 'Tabel',            color: '#a78bfa' },
-  'timeline':          { icon: '📅', label: 'Timeline',         color: '#3ecfcf' },
-  'compare':           { icon: '⚖️', label: 'Perbandingan',     color: '#a78bfa' },
-  'gambar':            { icon: '🖼️', label: 'Gambar',           color: '#fb923c' },
-  'reveal':            { icon: '✨', label: 'Reveal',           color: '#f9c82e' },
-  'checklist':         { icon: '✅', label: 'Checklist',        color: '#34d399' },
-  'statistik':         { icon: '📈', label: 'Statistik',        color: '#fb923c' },
-  'studi':             { icon: '📖', label: 'Studi Kasus',      color: '#f87171' },
-  'tabel-accord':      { icon: '🗂️', label: 'Accordion',       color: '#a78bfa' },
-  'tujuan-display':    { icon: '🎯', label: 'Tujuan',           color: '#3ecfcf' },
-  'sortir-game':       { icon: '🔢', label: 'Game Sortir',      color: '#3ecfcf' },
-  'roda-game':         { icon: '🎡', label: 'Roda Putar',       color: '#fb923c' },
-  'memory-game':       { icon: '🧠', label: 'Memory',           color: '#a78bfa' },
-  'matching-game':     { icon: '🔀', label: 'Pasangkan',        color: '#f9c82e' },
-  'fill-blank-game':   { icon: '✏️', label: 'Isian',            color: '#34d399' },
-  'word-search-game':  { icon: '🔍', label: 'Teka-Teki Kata',   color: '#60a5fa' },
-  'true-false-game':   { icon: '✅', label: 'Benar/Salah',      color: '#34d399' },
-  'drag-drop-game':    { icon: '🖐️', label: 'Seret & Letakkan', color: '#fb923c' },
-  'crossword-game':    { icon: '🔤', label: 'Teka Silang',      color: '#a78bfa' },
-  'team-buzzer-game':  { icon: '🏆', label: 'Kuis Tim',         color: '#f9c82e' },
+  'cover':             { icon: 'home', label: 'Cover', color: 'text-amber-500' },
+  'hero':              { icon: 'rocket_launch', label: 'Hero', color: 'text-orange-500' },
+  'petunjuk':          { icon: 'push_pin', label: 'Petunjuk', color: 'text-cyan-500' },
+  'tp':                { icon: 'target', label: 'Tujuan Pembelajaran', color: 'text-cyan-500' },
+  'alur':              { icon: 'map', label: 'Alur Pembelajaran', color: 'text-purple-400' },
+  'skenario':          { icon: 'theater_comedy', label: 'Skenario', color: 'text-pink-400' },
+  'materi-section':    { icon: 'auto_stories', label: 'Materi', color: 'text-purple-400' },
+  'materi-blok':       { icon: 'edit_note', label: 'Blok Materi', color: 'text-purple-400' },
+  'def-box':           { icon: 'push_pin', label: 'Definisi', color: 'text-amber-500' },
+  'nc-grid':           { icon: 'grid_view', label: 'Grid Konten', color: 'text-cyan-500' },
+  'flashcard-set':     { icon: 'style', label: 'Flashcard', color: 'text-purple-400' },
+  'ftab':              { icon: 'tab', label: 'Tab', color: 'text-cyan-500' },
+  'nk-card':           { icon: 'menu_book', label: 'Kartu', color: 'text-purple-400' },
+  'diskusi':           { icon: 'forum', label: 'Diskusi', color: 'text-emerald-400' },
+  'kuis':              { icon: 'quiz', label: 'Kuis', color: 'text-yellow-500' },
+  'motivasi':          { icon: 'lightbulb', label: 'Motivasi', color: 'text-orange-500' },
+  'refleksi':          { icon: 'self_improvement', label: 'Refleksi', color: 'text-purple-400' },
+  'rangkuman':         { icon: 'summarize', label: 'Rangkuman', color: 'text-cyan-500' },
+  'penutup':           { icon: 'school', label: 'Penutup', color: 'text-orange-500' },
+  'hasil':             { icon: 'emoji_events', label: 'Hasil', color: 'text-emerald-400' },
+  'tabel':             { icon: 'table_chart', label: 'Tabel', color: 'text-purple-400' },
+  'timeline':          { icon: 'timeline', label: 'Timeline', color: 'text-cyan-500' },
+  'compare':           { icon: 'compare', label: 'Perbandingan', color: 'text-purple-400' },
+  'gambar':            { icon: 'image', label: 'Gambar', color: 'text-orange-500' },
+  'reveal':            { icon: 'auto_awesome', label: 'Reveal', color: 'text-amber-500' },
+  'checklist':         { icon: 'checklist', label: 'Checklist', color: 'text-emerald-400' },
+  'statistik':         { icon: 'bar_chart', label: 'Statistik', color: 'text-orange-500' },
+  'studi':             { icon: 'case', label: 'Studi Kasus', color: 'text-red-400' },
+  'tabel-accord':      { icon: ' accordion', label: 'Accordion', color: 'text-purple-400' },
+  'tujuan-display':    { icon: 'target', label: 'Tujuan', color: 'text-cyan-500' },
+  'sortir-game':       { icon: 'sort', label: 'Game Sortir', color: 'text-cyan-500' },
+  'roda-game':         { icon: 'refresh', label: 'Roda Putar', color: 'text-orange-500' },
+  'memory-game':       { icon: 'psychology', label: 'Memory', color: 'text-purple-400' },
+  'matching-game':     { icon: 'compare_arrows', label: 'Pasangkan', color: 'text-amber-500' },
+  'fill-blank-game':   { icon: 'edit', label: 'Isian', color: 'text-emerald-400' },
+  'word-search-game':  { icon: 'search', label: 'Teka-Teki Kata', color: 'text-blue-400' },
+  'true-false-game':   { icon: 'check_circle', label: 'Benar/Salah', color: 'text-emerald-400' },
+  'drag-drop-game':    { icon: 'drag_pan', label: 'Seret & Letakkan', color: 'text-orange-500' },
+  'crossword-game':    { icon: 'crossword', label: 'Teka Silang', color: 'text-purple-400' },
+  'team-buzzer-game':  { icon: 'groups', label: 'Kuis Tim', color: 'text-amber-500' },
 };
 
 function getBlockDisplay(type: string): { icon: string; label: string; color: string } {
-  return BLOCK_DISPLAY[type] || { icon: '📦', label: type, color: '#71717a' };
+  return BLOCK_DISPLAY[type] || { icon: 'widgets', label: type, color: 'text-silse-on-surface-variant' };
 }
 
 // ── Get block title/label for the tree item ─────────────────────
@@ -143,31 +140,33 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
           }
           onSelect(pageId, block.id!, block.type);
         }}
-        className={`w-full flex items-center gap-1.5 px-1.5 py-1 rounded-xl text-left transition-colors text-[10px] group ${
+        className={`w-full flex items-center gap-1.5 px-1.5 py-1 rounded-lg text-left transition-all text-[10px] group ${
           isSelected
-            ? 'bg-silse-primary-container text-silse-on-primary-container'
-            : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:text-silse-on-surface'
+            ? 'bg-silse-primary-container/25 text-silse-primary font-semibold'
+            : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface'
         }`}
-        style={{ paddingLeft: `${depth * 12 + 6}px` }}
+        style={{ paddingLeft: `${depth * 10 + 6}px` }}
         title={title}
       >
         {/* Expand/collapse chevron */}
         {hasChildren ? (
           <span
-            className={`material-symbols-outlined flex-shrink-0 text-silse-on-surface-variant transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
+            className={`material-symbols-outlined flex-shrink-0 text-silse-on-surface-variant/60 transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`}
             style={{ fontSize: '12px' }}
           >chevron_right</span>
         ) : (
           <span className="w-[10px] flex-shrink-0" />
         )}
 
-        {/* Block type icon */}
-        <span className="text-xs flex-shrink-0">{display.icon}</span>
+        {/* Block type icon — Material Symbol */}
+        <span className={`material-symbols-outlined flex-shrink-0 ${display.color}`} style={{ fontSize: '14px' }}>
+          {display.icon}
+        </span>
 
         {/* Block title */}
         <span className="truncate flex-1 font-medium">{title}</span>
 
-        {/* Edit in Konten button — only for content blocks that have a Konten tab */}
+        {/* Edit in Konten button */}
         {getKontenTabForBlockType(block.type) && (
           <span
             onClick={(e) => {
@@ -184,13 +183,13 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
           </span>
         )}
 
-        {/* Schema badge for schema-driven blocks */}
-        <span className="material-symbols-outlined flex-shrink-0 text-silse-primary-container/40" style={{ fontSize: '10px' }}>bolt</span>
+        {/* Schema badge */}
+        <span className="material-symbols-outlined flex-shrink-0 text-silse-primary-container/30" style={{ fontSize: '10px' }}>bolt</span>
       </button>
 
       {/* Children */}
       {hasChildren && expanded && (
-        <div className="border-l-2 border-silse-outline-variant ml-3">
+        <div className="border-l border-silse-outline-variant/30 ml-3">
           {children.map((child, i) => (
             <TreeNode
               key={child.id || `${block.id}-child-${i}`}
@@ -227,22 +226,22 @@ function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect
   }
 
   return (
-    <div className="border-l-2 border-silse-outline-variant ml-2">
+    <div className="border-l border-silse-outline-variant/30 ml-2">
       {/* Toggle button */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className={`w-full flex items-center gap-1 px-2 py-0.5 text-[9px] transition-colors rounded-lg ${
-          isActive ? 'text-silse-primary font-bold' : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high'
+        className={`w-full flex items-center gap-1 px-2 py-0.5 text-[9px] transition-colors rounded-md ${
+          isActive ? 'text-silse-primary font-bold' : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high/40'
         }`}
       >
         <span className={`material-symbols-outlined transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} style={{ fontSize: '10px' }}>chevron_right</span>
-        <span className="material-symbols-outlined text-silse-primary-container/60" style={{ fontSize: '9px' }}>bolt</span>
+        <span className="material-symbols-outlined text-silse-primary-container/50" style={{ fontSize: '9px' }}>bolt</span>
         <span>{blocks.length} block{blocks.length !== 1 ? 's' : ''}</span>
       </button>
 
       {/* Block tree */}
       {expanded && (
-        <div className="pb-1">
+        <div className="pb-0.5">
           {blocks.map((block, i) => (
             <TreeNode
               key={block.id || `block-${i}`}
@@ -297,8 +296,11 @@ export function SchemaBlockTree() {
 
   return (
     <div className="space-y-0.5">
-      <div className="text-[8px] font-bold text-silse-on-surface-variant uppercase tracking-wider px-2 py-1">
-        Schema Navigator
+      <div className="flex items-center gap-1.5 px-1 py-1">
+        <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>account_tree</span>
+        <span className="text-[10px] font-bold text-silse-outline uppercase tracking-widest">
+          Schema
+        </span>
       </div>
       {schemaPages.map(({ page, index }) => (
         <PageBlockSection
@@ -343,18 +345,18 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
   if (!isSchemaDriven || blocks.length === 0) return null;
 
   return (
-    <div className="ml-5">
+    <div className="ml-4">
       <button
         onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
         className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
       >
         <span className={`material-symbols-outlined transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} style={{ fontSize: '9px' }}>chevron_right</span>
-        <span className="material-symbols-outlined text-silse-primary-container/60" style={{ fontSize: '9px' }}>bolt</span>
+        <span className="material-symbols-outlined text-silse-primary-container/50" style={{ fontSize: '9px' }}>bolt</span>
         <span>{blocks.length} block{blocks.length !== 1 ? 's' : ''}</span>
       </button>
 
       {expanded && (
-        <div className="space-y-0 border-l-2 border-silse-outline-variant">
+        <div className="space-y-0 border-l border-silse-outline-variant/30">
           {blocks.map((block, i) => (
             <TreeNode
               key={block.id || `block-${i}`}

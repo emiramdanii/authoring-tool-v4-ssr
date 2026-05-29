@@ -32,6 +32,7 @@ import { SceneList } from './left-panel/SceneList';
 import { AddBlockSection } from './left-panel/AddBlockSection';
 import { TemplateSection } from './left-panel/TemplateSection';
 import { SettingsSection } from './left-panel/SettingsSection';
+import { SchemaBlockTree } from './left-panel/SchemaBlockTree';
 
 import HistoryPanel from './left-panel/HistoryPanel';
 import AddBlockPanel from './left-panel/AddBlockPanel';
@@ -56,13 +57,17 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// LEFT PANEL v8 — SILSE v4 Stitch Reference Layout
+// LEFT PANEL v9 — SILSE v4 Integrated Workspace Navigator
 // ═══════════════════════════════════════════════════════════════
-// Structure (matches SILSE v4 workspace_editor Stitch reference):
-//   [Icon Rail w-16 (64px)] | [Content Panel flex-1 (~224px)]
-//   bg-silse-surface-bright  | Always visible, tab-switched content
-//   border-r outline-variant | p-4 overflow-y-auto
-// Reference: w-72 total = w-16 rail + flex-1 content
+// Structure (SILSE v4 workspace_editor reference):
+//   [Icon Rail w-16 (64px)] | [Content Panel flex-1]
+//   bg-silse-surface-bright | Tab-switched content with Schema integration
+//
+// v9 changes:
+//   - SchemaBlockTree integrated into Pages tab
+//   - Better section labels with Material Symbols
+//   - Collapsible schema block tree per page
+//   - Cleaner visual hierarchy
 // ═══════════════════════════════════════════════════════════════
 
 export default function LeftPanel() {
@@ -93,23 +98,23 @@ export default function LeftPanel() {
   };
 
   return (
-    <div className="flex h-full bg-silse-surface-container-low overflow-hidden border-r border-silse-outline-variant">
-      {/* ── Icon Rail — SILSE v4 Stitch: w-16, bg-surface-bright, border-r ── */}
+    <div className="flex h-full bg-silse-surface-container-low overflow-hidden">
+      {/* ── Icon Rail — SILSE v4: w-16, bg-surface-bright, border-r ── */}
       <IconRail activeTab={activeTab} onTabChange={handleTabChange} expanded />
 
-      {/* ── Content Panel — SILSE v4 Stitch: flex-1, p-4, overflow-y-auto ── */}
+      {/* ── Content Panel — flex-1, scrollable ── */}
       <div className="flex-1 flex flex-col overflow-hidden bg-silse-surface-container-low">
-        {/* Header — SILSE v4 Stitch: Workspace + add_circle button */}
-        <div className="px-4 py-3 flex items-center justify-between flex-shrink-0">
+        {/* Header — SILSE v4: Workspace + add_circle button */}
+        <div className="px-3 py-2.5 flex items-center justify-between flex-shrink-0 border-b border-silse-outline-variant/40">
           <h3
-            className="text-base font-bold text-silse-on-surface"
+            className="text-sm font-bold text-silse-on-surface tracking-tight"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
             Workspace
           </h3>
           <button
             onClick={() => handleTabChange('add-block')}
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-silse-primary hover:bg-silse-surface-container-high transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-primary hover:bg-silse-primary-container/20 transition-colors"
             aria-label="Tambah baru"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
@@ -118,53 +123,62 @@ export default function LeftPanel() {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="p-4 space-y-4">
-            {/* ── Pages tab: Scenes + Library Blocks (SILSE v4 reference layout) ── */}
-              {activeTab === 'pages' && (
+          <div className="p-3 space-y-3">
+            {/* ── Pages tab: Scenes + Schema Blocks + Library Blocks ── */}
+            {activeTab === 'pages' && (
               <>
                 {/* Scene Navigation Section */}
                 <div>
-                  <span className="text-xs uppercase tracking-wider text-silse-outline font-bold mb-2 block px-1">
-                    Scenes
-                  </span>
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-1.5 mb-2 px-1">
+                    <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>layers</span>
+                    <span className="text-[10px] uppercase tracking-widest text-silse-outline font-bold">
+                      Scenes
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
                     <SceneList />
                   </div>
                 </div>
 
-                {/* Library Blocks Section — 2x2 dashed grid matching SILSE v4 reference */}
-                <div className="pt-3 border-t border-silse-outline-variant">
-                  <span className="text-xs uppercase tracking-wider text-silse-outline font-bold mb-3 block px-1">
-                    Library Blocks
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
+                {/* Schema Block Tree — integrated per page */}
+                <SchemaBlockTree />
+
+                {/* Library Blocks Section — 2x2 dashed grid */}
+                <div className="pt-2 border-t border-silse-outline-variant/40">
+                  <div className="flex items-center gap-1.5 mb-2 px-1">
+                    <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>grid_view</span>
+                    <span className="text-[10px] uppercase tracking-widest text-silse-outline font-bold">
+                      Quick Add
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
                     <button
                       onClick={() => handleTabChange('add-block')}
-                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-silse-outline-variant hover:bg-white hover:border-silse-primary transition-all group"
+                      className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-primary/5 hover:border-silse-primary/30 transition-all group"
                     >
-                      <span className="material-symbols-outlined text-silse-primary mb-1" style={{ fontSize: '20px' }}>menu_book</span>
-                      <span className="text-[11px] font-bold text-silse-on-surface-variant group-hover:text-silse-primary">Materi</span>
+                      <span className="material-symbols-outlined text-silse-primary mb-0.5" style={{ fontSize: '18px' }}>menu_book</span>
+                      <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-primary">Materi</span>
                     </button>
                     <button
                       onClick={() => handleTabChange('add-block')}
-                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-silse-outline-variant hover:bg-white hover:border-silse-tertiary transition-all group"
+                      className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-tertiary/5 hover:border-silse-tertiary/30 transition-all group"
                     >
-                      <span className="material-symbols-outlined text-silse-tertiary mb-1" style={{ fontSize: '20px' }}>quiz</span>
-                      <span className="text-[11px] font-bold text-silse-on-surface-variant group-hover:text-silse-tertiary">Kuis</span>
+                      <span className="material-symbols-outlined text-silse-tertiary mb-0.5" style={{ fontSize: '18px' }}>quiz</span>
+                      <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-tertiary">Kuis</span>
                     </button>
                     <button
                       onClick={() => handleTabChange('add-block')}
-                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-silse-outline-variant hover:bg-white hover:border-silse-secondary transition-all group"
+                      className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-secondary/5 hover:border-silse-secondary/30 transition-all group"
                     >
-                      <span className="material-symbols-outlined text-silse-secondary mb-1" style={{ fontSize: '20px' }}>sports_esports</span>
-                      <span className="text-[11px] font-bold text-silse-on-surface-variant group-hover:text-silse-secondary">Game</span>
+                      <span className="material-symbols-outlined text-silse-secondary mb-0.5" style={{ fontSize: '18px' }}>sports_esports</span>
+                      <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-secondary">Game</span>
                     </button>
                     <button
                       onClick={() => handleTabChange('templates')}
-                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-silse-outline-variant hover:bg-white hover:border-silse-on-surface-variant transition-all group"
+                      className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-on-surface-variant/5 hover:border-silse-on-surface-variant/30 transition-all group"
                     >
-                      <span className="material-symbols-outlined text-silse-on-surface-variant mb-1" style={{ fontSize: '20px' }}>dashboard</span>
-                      <span className="text-[11px] font-bold text-silse-on-surface-variant">Custom</span>
+                      <span className="material-symbols-outlined text-silse-on-surface-variant mb-0.5" style={{ fontSize: '18px' }}>dashboard</span>
+                      <span className="text-[10px] font-semibold text-silse-on-surface-variant">Custom</span>
                     </button>
                   </div>
                 </div>
@@ -195,153 +209,6 @@ export default function LeftPanel() {
         {/* Template Wizard Modal */}
         <TemplateWizard open={wizardOpen} onOpenChange={setWizardOpen} />
       </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   ADD SCENE BUTTON — + Scene with template dropdown
-   ══════════════════════════════════════════════════════════════════ */
-
-function AddSceneButton({ onOpenWizard }: { onOpenWizard: () => void }) {
-  const addPage = useCanvaStore(s => s.addPage);
-  const addTemplatePage = useCanvaStore(s => s.addTemplatePage);
-  const loadSchemaPreset = useCanvaStore(s => s.loadSchemaPreset);
-  const resetCanvas = useCanvaStore(s => s.resetCanvas);
-
-  const availablePresets = getAvailablePresets();
-  const presetInfo: Record<string, { label: string; icon: string; desc: string; subject: string }> = {
-    // PPKn
-    'hakikat-norma': { label: 'Hakikat Norma', icon: '📜', desc: 'Pertemuan 1 — PPKn Kelas VII', subject: 'PPKn' },
-    'macam-norma': { label: 'Macam-Macam Norma', icon: '⚖️', desc: 'Pertemuan 2 — PPKn Kelas VII', subject: 'PPKn' },
-    'perilaku-patuh': { label: 'Perilaku Patuh Norma', icon: '🛡️', desc: 'Pertemuan 3 — PPKn Kelas VII', subject: 'PPKn' },
-    'nilai-pancasila': { label: 'Nilai-Nilai Pancasila', icon: '🏛️', desc: 'Pertemuan 4 — PPKn Kelas VII', subject: 'PPKn' },
-    'bhinneka-tunggal-ika': { label: 'Bhinneka Tunggal Ika', icon: '🤝', desc: 'Pertemuan 5 — PPKn Kelas VII', subject: 'PPKn' },
-    'ham-hak-kewajiban': { label: 'HAM & Kewajiban', icon: '✊', desc: 'Pertemuan 6 — PPKn Kelas VII', subject: 'PPKn' },
-    'demokrasi-pancasila': { label: 'Demokrasi Pancasila', icon: '🗳️', desc: 'Pertemuan 7 — PPKn Kelas VII', subject: 'PPKn' },
-    'globalisasi': { label: 'Globalisasi', icon: '🌍', desc: 'Pertemuan 8 — PPKn Kelas VII', subject: 'PPKn' },
-    'misi-penjelajah-pancasila': { label: 'Misi Penjelajah Pancasila', icon: '🚀', desc: 'Pertemuan 9 — PPKn Kelas VII', subject: 'PPKn' },
-    // IPA
-    'sistem-pernapasan': { label: 'Sistem Pernapasan', icon: '🫁', desc: 'IPA Kelas VIII', subject: 'IPA' },
-    // MTK
-    'persamaan-linear': { label: 'Persamaan Linear', icon: '📐', desc: 'MTK Kelas VIII', subject: 'MTK' },
-    // PJOK
-    'gerak-dasar-lokomotor': { label: 'Gerak Dasar Lokomotor', icon: '🏃', desc: 'PJOK Kelas VII', subject: 'PJOK' },
-    'permainan-bola-besar': { label: 'Permainan Bola Besar', icon: '⚽', desc: 'PJOK Kelas VII', subject: 'PJOK' },
-    'kebugaran-jasmani': { label: 'Kebugaran Jasmani', icon: '💪', desc: 'PJOK Kelas VII', subject: 'PJOK' },
-  };
-  const [loadingPreset, setLoadingPreset] = useState<string | null>(null);
-
-  const presetCategories = getPresetsGroupedByCategory();
-  const categoryLabels: Record<string, string> = {
-    utama: 'Halaman Utama',
-    konten: 'Konten',
-    interaktif: 'Interaktif',
-    penutup: 'Penutup',
-  };
-
-  return (
-    <div className="space-y-1.5">
-      <button
-        data-testid="add-blank-page-btn"
-        onClick={() => { useCanvaStore.getState().addPage(); }}
-        className="w-full py-2 rounded-xl border border-dashed border-silse-outline-variant hover:border-silse-primary/30 text-[11px] text-silse-on-surface-variant hover:text-silse-primary transition-colors flex items-center justify-center gap-1"
-      >
-        <Plus size={12} />
-        Halaman Kosong
-      </button>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full py-1.5 rounded-xl text-[10px] gap-1 h-8">
-            <FilePlus2 size={12} />
-            + Dari Template
-            <ChevronDown size={8} className="ml-auto" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="start"
-          className="w-60 border border-silse-outline-variant shadow-md rounded-xl p-0 overflow-hidden max-h-80 overflow-y-auto"
-        >
-          {availablePresets.length > 0 && (() => {
-            const subjectOrder = ['PPKn', 'IPA', 'MTK', 'PJOK'];
-            const subjectLabels: Record<string, string> = {
-              PPKn: 'PPKn — Pendidikan Pancasila',
-              IPA: 'IPA — Ilmu Pengetahuan Alam',
-              MTK: 'MTK — Matematika',
-              PJOK: 'PJOK — Pendidikan Jasmani',
-            };
-            const grouped = subjectOrder
-              .map(subj => ({
-                subject: subj,
-                presets: availablePresets.filter(id => (presetInfo[id]?.subject || 'Lainnya') === subj),
-              }))
-              .filter(g => g.presets.length > 0);
-            const ungrouped = availablePresets.filter(id => !presetInfo[id]?.subject || !subjectOrder.includes(presetInfo[id].subject));
-            if (ungrouped.length > 0) grouped.push({ subject: 'Lainnya', presets: ungrouped });
-
-            return grouped.map((group, gi) => (
-              <div key={group.subject}>
-                <DropdownMenuLabel className="px-3 py-1.5 bg-silse-secondary/10 border-b border-silse-secondary/20 text-[9px] font-bold text-silse-secondary uppercase tracking-wider">
-                  {subjectLabels[group.subject] || group.subject}
-                </DropdownMenuLabel>
-                {group.presets.map(presetId => {
-                  const info = presetInfo[presetId] || { label: presetId, icon: '📦', desc: 'Preset' };
-                  return (
-                    <DropdownMenuItem
-                      key={presetId}
-                      onClick={async () => {
-                        setLoadingPreset(presetId);
-                        await loadSchemaPreset(presetId);
-                        setLoadingPreset(null);
-                      }}
-                      disabled={loadingPreset === presetId}
-                      className="px-3 py-2 gap-2 cursor-pointer"
-                    >
-                      <span className="text-base">{info.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[10px] font-bold text-silse-primary truncate">{info.label}</div>
-                        <div className="text-[8px] text-silse-on-surface-variant">{info.desc}</div>
-                      </div>
-                    </DropdownMenuItem>
-                  );
-                })}
-                {gi < grouped.length - 1 && <DropdownMenuSeparator className="bg-silse-outline-variant/30" />}
-              </div>
-            ));
-          })()}
-
-          <DropdownMenuSeparator className="bg-silse-outline-variant/30" />
-          {presetCategories.map(cat => (
-            <div key={cat.category}>
-              <DropdownMenuLabel className="px-3 py-1 text-[8px] font-bold text-silse-on-surface-variant uppercase tracking-wider">
-                {categoryLabels[cat.category] || cat.category}
-              </DropdownMenuLabel>
-              {cat.presets.map(p => (
-                <DropdownMenuItem
-                  key={p.id}
-                  onClick={() => addTemplatePage(p.id as PageTemplateType)}
-                  className="px-3 py-2 gap-2 cursor-pointer"
-                >
-                  <span className="text-base">{p.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-bold text-silse-primary truncate">{p.label}</div>
-                    <div className="text-[8px] text-silse-on-surface-variant">{p.description}</div>
-                  </div>
-                </DropdownMenuItem>
-              ))}
-            </div>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <button
-        onClick={onOpenWizard}
-        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-silse-primary-container/10 border border-silse-primary-container/20 hover:border-silse-primary-container/40 hover:bg-silse-primary-container/20 text-silse-primary text-[10px] font-bold transition-[transform,box-shadow,background-color] active:scale-95"
-      >
-        <Sparkles size={10} className="inline" />
-        Buat dari Template Wizard
-      </button>
     </div>
   );
 }

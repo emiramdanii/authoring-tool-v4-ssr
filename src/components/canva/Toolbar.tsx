@@ -200,16 +200,16 @@ export default function Toolbar() {
     );
   }
 
-  // ── EDIT mode: Full toolbar — SILSE v4 Stitch TopAppBar (fixed) ──
+  // ── EDIT mode: Full toolbar — SILSE v4 TopAppBar (fixed, compact) ──
   return (
     <header
-      className="fixed top-0 left-0 w-full z-40 flex items-center justify-between px-6 bg-silse-surface-container-lowest border-b border-silse-outline-variant select-none"
-      style={{ height: '64px' }}
+      className="fixed top-0 left-0 w-full z-40 flex items-center justify-between px-5 bg-silse-surface-container-lowest/95 backdrop-blur-md border-b border-silse-outline-variant select-none"
+      style={{ height: '56px' }}
     >
       {/* LEFT: Brand + Project */}
       <ToolbarNav />
 
-      {/* CENTER: Navigation Tabs */}
+      {/* CENTER: Navigation Tabs — hidden on small screens */}
       <NavTabs />
 
       {/* RIGHT: Cloud + Help + Preview + Publish */}

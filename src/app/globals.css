@@ -943,8 +943,8 @@ select {
 
 /* ── SILSE v4 Canvas dot-grid background ── */
 .canvas-bg {
-  background-image: radial-gradient(var(--silse-outline-variant) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(var(--silse-outline-variant) 0.8px, transparent 0.8px);
+  background-size: 20px 20px;
 }
 
 /* ── SILSE v4 Material Symbols Outlined icon font ── */
@@ -968,6 +968,73 @@ select {
 /* ── SILSE v4 Liquid progress bar ── */
 .liquid-progress {
   transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── SILSE v4 MD3 Panel Surface ── */
+.panel-surface {
+  background: var(--silse-surface-container-lowest);
+  border-color: var(--silse-outline-variant);
+}
+
+/* ── SILSE v4 MD3 Segmented Button ── */
+.md3-segmented {
+  display: inline-flex;
+  border: 1px solid var(--silse-outline-variant);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.md3-segmented-btn {
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+  color: var(--silse-on-surface-variant);
+  cursor: pointer;
+}
+.md3-segmented-btn:hover {
+  background: var(--silse-surface-container-high);
+}
+.md3-segmented-btn.active {
+  background: var(--silse-secondary);
+  color: var(--silse-on-secondary);
+}
+
+/* ── SILSE v4 MD3 FAB (Floating Action Button) ── */
+.md3-fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 16px;
+  background: var(--silse-primary-container);
+  color: var(--silse-on-primary-container);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+.md3-fab:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1);
+  transform: scale(1.04);
+}
+.md3-fab:active {
+  transform: scale(0.96);
+}
+
+/* ── SILSE v4 Resize Handle ── */
+.resize-handle {
+  width: 1px;
+  background: var(--silse-outline-variant);
+  transition: background 0.2s ease, width 0.2s ease;
+  cursor: col-resize;
+}
+.resize-handle:hover,
+.resize-handle[data-resize-handle-active] {
+  background: var(--silse-primary);
+  width: 2px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════

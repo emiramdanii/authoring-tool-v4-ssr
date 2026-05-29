@@ -30,6 +30,7 @@ import { ProfilerWrapper } from '@/components/shared/PerformanceMonitor';
 import { CanvaOrientationTooltip } from '@/components/shared/CanvaOrientationTooltip';
 import { useHealthMonitor } from '@/hooks/use-health-monitor';
 import { SceneTabBar } from './toolbar/SceneTabBar';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY-LOADED HEAVY COMPONENTS
@@ -46,15 +47,16 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 });
 
 // ═══════════════════════════════════════════════════════════════
-// CANVA BUILDER v7 — SILSE v4 Stitch Reference Layout
+// CANVA BUILDER v8 — SILSE v4 Resizable Panel Layout
 // ═══════════════════════════════════════════════════════════════
 // Architecture:
 //   appMode === 'present'  → PresentMode (fullscreen stage only)
 //   appMode === 'preview'  → PreviewMode (stage + floating nav, no panels)
-//   appMode === 'edit'     → Fixed header (h-16) + 3-panel layout
-//     [Fixed Toolbar h-16]
-//     [Left w-72 | Stage flex-1 | Right w-80]
-//     [StatusBar]
+//   appMode === 'edit'     → Fixed header (h-14) + resizable 3-panel
+//     [Fixed Toolbar h-14]
+//     [Resizable: Left 20% | Stage auto | Right 25%]
+//     [SceneTabBar + StatusBar]
+// Panel persistence: sizes stored in canva-store for session continuity
 // ═══════════════════════════════════════════════════════════════
 
 export default function CanvaBuilder() {
@@ -146,28 +148,32 @@ export default function CanvaBuilder() {
     );
   }
 
-  // ── EDIT mode: Fixed header + 3-panel layout (SILSE v4 Stitch reference) ──
+  // ── EDIT mode: Fixed header + resizable 3-panel layout (SILSE v4) ──
   return (
     <MobileGuard>
-      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface focus-ring pt-16" id="main-content" data-testid="canva-builder">
+      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface focus-ring pt-14" id="main-content" data-testid="canva-builder">
         <UndoRedoToast />
         <CanvaAutoSaveSync />
 
         <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
 
-        {/* Fixed Top Toolbar — SILSE v4: h-16 fixed top-0 z-40 */}
+        {/* Fixed Top Toolbar — SILSE v4: h-14 fixed top-0 z-40 */}
         <div data-tour="toolbar" data-testid="toolbar" role="toolbar" aria-label="Toolbar editor">
           <ProfilerWrapper id="Toolbar">
             <Toolbar />
           </ProfilerWrapper>
         </div>
 
-        {/* Main builder row — 3-column layout below fixed header */}
-        <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-          {/* Left Panel — SILSE v4: w-72 (288px) = Icon Rail w-16 + Content flex-1 */}
-          <div
-            className="flex-shrink-0 overflow-hidden"
-            style={{ width: '288px' }}
+        {/* Main builder row — Resizable 3-panel layout */}
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="flex-1 min-h-0"
+        >
+          {/* Left Panel — Resizable, default 20%, min 220px */}
+          <ResizablePanel
+            defaultSize={20}
+            minSize={15}
+            maxSize={30}
             data-tour="left-panel"
             data-testid="left-panel"
             role="complementary"
@@ -176,37 +182,47 @@ export default function CanvaBuilder() {
             <ProfilerWrapper id="LeftPanel">
               <LeftPanel />
             </ProfilerWrapper>
-          </div>
+          </ResizablePanel>
 
-          {/* Stage Canvas Area — flex-1, dot-grid background */}
-          <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden bg-silse-surface-dim canvas-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
-            <ProfilerWrapper id="Stage">
-              <Stage />
-            </ProfilerWrapper>
-          </div>
+          {/* Resize handle between Left and Stage */}
+          <ResizableHandle className="bg-silse-outline-variant/40 hover:bg-silse-primary/40 transition-colors w-px" />
 
-          {/* Right Panel — w-80 (320px) Properties Panel */}
-          <div
-            className="flex-shrink-0 overflow-hidden transition-[width] duration-200 ease-in-out shadow-app-panel-left"
-            style={{
-              width: rightPanelOpen ? '320px' : '0px',
-            }}
-            data-tour="right-panel"
-            data-testid="right-panel"
-            role="complementary"
-            aria-label="Panel properti"
+          {/* Stage Canvas Area — auto flex, dot-grid background */}
+          <ResizablePanel
+            defaultSize={55}
+            minSize={30}
           >
-            <CanvasErrorBoundary name="RightPanel">
-              {rightPanelOpen && (
-                <ProfilerWrapper id="RightPanel">
-                  <RightPanel />
-                </ProfilerWrapper>
-              )}
-            </CanvasErrorBoundary>
-          </div>
-        </div>
+            <div className="flex flex-col h-full relative overflow-hidden bg-silse-surface-dim canvas-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
+              <ProfilerWrapper id="Stage">
+                <Stage />
+              </ProfilerWrapper>
+            </div>
+          </ResizablePanel>
 
-        {/* FASE 10: Scene Tab Bar — between builder row and status bar */}
+          {/* Right Panel — Resizable, shows/hides with animation */}
+          {rightPanelOpen && (
+            <>
+              <ResizableHandle className="bg-silse-outline-variant/40 hover:bg-silse-primary/40 transition-colors w-px" />
+              <ResizablePanel
+                defaultSize={25}
+                minSize={18}
+                maxSize={35}
+                data-tour="right-panel"
+                data-testid="right-panel"
+                role="complementary"
+                aria-label="Panel properti"
+              >
+                <CanvasErrorBoundary name="RightPanel">
+                  <ProfilerWrapper id="RightPanel">
+                    <RightPanel />
+                  </ProfilerWrapper>
+                </CanvasErrorBoundary>
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
+
+        {/* Scene Tab Bar — between builder row and status bar */}
         <SceneTabBar isCompact={true} />
 
         {/* Status Bar */}
