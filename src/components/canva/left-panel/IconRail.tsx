@@ -9,15 +9,16 @@ import {
 } from '@/components/ui/tooltip';
 
 // ═══════════════════════════════════════════════════════════════
-// ICON RAIL v6 — SILSE v4 MD3 Navigation Rail
+// ICON RAIL v7 — SILSE v4 MD3 Navigation Rail
 // ═══════════════════════════════════════════════════════════════
 // 56px always-visible vertical icon strip.
 // MD3 Navigation Rail spec:
 //   - bg-silse-surface-bright
-//   - Active: pill indicator (3px wide bar) + filled icon + bg-silse-primary-container
-//   - Inactive: text-silse-on-surface-variant hover:bg-silse-surface-container-high
+//   - Active: pill indicator (3px wide bar) + filled icon + bg-silse-primary-container/20
+//   - Inactive: text-silse-on-surface-variant hover:bg-silse-surface-container-high/60
 //   - Icons: Material Symbols Outlined with FILL variation
 //   - Active indicator: left-aligned vertical pill
+//   - Transition: smooth 150ms background-color + color
 // ═══════════════════════════════════════════════════════════════
 
 export type LeftPanelTab = 'pages' | 'add-block' | 'templates' | 'history' | 'settings' | 'sisipkan';
@@ -56,10 +57,10 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
         <TooltipTrigger asChild>
           <button
             onClick={() => onTabChange(item.id)}
-            className={`relative w-10 h-10 flex items-center justify-center rounded-xl transition-[background-color,color] duration-200 group ${
+            className={`relative w-10 h-10 flex items-center justify-center rounded-xl transition-[background-color,color] duration-150 group ${
               isActive
                 ? 'bg-silse-primary-container/20 text-silse-primary'
-                : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/60'
+                : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface'
             }`}
             aria-label={label}
             aria-pressed={isActive}

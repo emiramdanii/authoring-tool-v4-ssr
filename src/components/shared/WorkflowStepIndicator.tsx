@@ -112,10 +112,10 @@ export default function WorkflowStepIndicator() {
               <div
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold transition-all ${
                   isCompleted && !isCurrent
-                    ? 'bg-app-accent/20 text-app-accent border border-app-accent/30'
+                    ? 'bg-silse-primary-container/20 text-silse-primary border border-silse-primary-container/30'
                     : isCurrent
-                      ? 'bg-app-accent/10 text-app-accent border border-app-accent/30 ring-2 ring-app-accent/20'
-                      : 'bg-app-elevated/50 text-app-muted border border-app-border/40'
+                      ? 'bg-silse-primary/10 text-silse-primary border border-silse-primary/30 ring-2 ring-silse-primary/20'
+                      : 'bg-silse-surface-container-high/50 text-silse-on-surface-variant border border-silse-outline-variant/40'
                 }`}
               >
                 {isCompleted && !isCurrent ? (
@@ -126,7 +126,7 @@ export default function WorkflowStepIndicator() {
               </div>
               <span
                 className={`text-[10px] font-semibold hidden lg:inline ${
-                  isCurrent ? 'text-app-primary' : isPast ? 'text-app-secondary' : 'text-app-muted'
+                  isCurrent ? 'text-silse-on-surface' : isPast ? 'text-silse-on-surface-variant' : 'text-silse-on-surface-variant/60'
                 }`}
               >
                 {stepLabel}
@@ -138,8 +138,9 @@ export default function WorkflowStepIndicator() {
               <ArrowRight
                 size={10}
                 className={`mx-0.5 flex-shrink-0 ${
-                  isPast ? 'text-app-accent/40' : 'text-app-border/50'
-                }`}
+                  isPast ? 'text-silse-primary/40' : 'text-silse-outline-variant/50'
+                }`
+              }
               />
             )}
           </React.Fragment>
