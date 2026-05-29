@@ -1078,3 +1078,32 @@ Stage Summary:
 - Schema panel fix: SchemaBlockTree now re-renders reactively when schema changes
 - All existing functionality preserved
 - Dev server running, homepage returns 200
+---
+Task ID: dedicated-renderers
+Agent: Main Agent
+Task: Build dedicated renderers for tab-icons, accordion, infografis + fix font size floor violations
+
+Work Log:
+- Created TabIconsRenderer.tsx (280 lines): icon-based tabs with flat content (isi/poin/refleksi per tab), layout variants (horizontal/vertical/pills), animation variants (fade/slide-up/zoom/bounce), reading progress indicator, compression support
+- Created AccordionRenderer.tsx (244 lines): simple expandable sections with icon/judul/isi per item, compression support with ShowMoreButton, expand/collapse all button, first item open by default
+- Created InfografisRenderer.tsx (380 lines): visual info cards with layout variants (grid/list/timeline), compression support
+- Updated SceneRegistry.tsx: replaced temp renderer mappings — tab-icons: FtabRenderer→TabIconsRenderer, accordion: TabelAccordionRenderer→AccordionRenderer, infografis: NcGridRenderer→InfografisRenderer
+- Added lazy imports for 3 new renderers in SceneRegistry
+- Added exports to blocks/index.ts barrel
+- Added TabIconsBlock/AccordionBlock/InfografisBlock to schema/types.ts re-exports (was missing — caused TS2305)
+- Fixed font size floor violations:
+  - education-typography.ts: edu.micro() minPx:11→14, px:12→14, maxPx:13→15 (SILSE minimum 14px)
+  - education-typography.ts: edu.caption() minPx:14→16, px:14→16, maxPx:16→18 (SILSE minimum 16px)
+  - PremiumStepNavigator.tsx: fallback micro 12px→14px, caption 14px→16px
+  - CrosswordGameRenderer.tsx: cell number fontSize 5px→10px
+  - CrosswordGameRenderer.tsx: clue text edu.micro()→edu.caption() (reading content must use caption+)
+  - CrosswordGameRenderer.tsx: section headings edu.micro()→edu.caption()
+  - New renderers: block title badges use edu.caption() not edu.micro()
+- Build verified: npx tsc --noEmit — zero new errors
+- Committed: 896bd52
+
+Stage Summary:
+- **3 dedicated renderers replace temp/wrong-type renderers** — tab-icons, accordion, infografis now render their own schema types correctly
+- **Font size floor raised** — edu.micro() now 14px (was 11-12px), edu.caption() now 16px (was 14px) — systemic fix affecting ALL block renderers
+- **CrosswordGameRenderer most critical fix** — clue text was 11-12px (unreadable), now 16px via caption()
+- **TypeScript clean** — added missing type exports, all lambda params typed
