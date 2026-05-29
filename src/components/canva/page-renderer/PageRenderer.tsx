@@ -43,6 +43,10 @@ export interface PageRendererProps {
   totalPages: number;
   /** Whether template is selected in canvas (for editable fields) */
   isTemplateSelected?: boolean;
+  /** Whether inline editing is enabled (teacher learning mode) */
+  editable?: boolean;
+  /** Learning edit context value for providing to screen adapters */
+  editContext?: import('@/components/canva/LearningEditContext').LearningEditContextValue | null;
 }
 
 // Map PageRendererMode to the sub-component modes
@@ -64,6 +68,8 @@ export const PageRenderer = React.memo(function PageRenderer({
   currentPageIndex,
   totalPages,
   isTemplateSelected = false,
+  editable = false,
+  editContext = null,
 }: PageRendererProps) {
   // ═══ DUAL-RENDER INVARIANT (dev mode) ════════════════════════
   // Catch dual-data bug early in development.
@@ -332,6 +338,8 @@ export const PageRenderer = React.memo(function PageRenderer({
       pageIndex={currentPageIndex}
       sceneType={sceneType}
       totalPages={totalPages}
+      editable={editable}
+      editContext={editContext}
     />
   ) : null;
 

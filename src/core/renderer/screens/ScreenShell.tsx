@@ -43,6 +43,8 @@ export interface ScreenShellProps {
   pageIndex?: number;
   /** Total pages for progress display */
   totalPages?: number;
+  /** Whether inline editing is enabled for this screen (teacher mode) */
+  editable?: boolean;
   /** The rendered content (from SchemaScreenRenderer) */
   children: React.ReactNode;
 }
@@ -61,6 +63,7 @@ export const ScreenShell = React.memo(function ScreenShell({
   isCompact = false,
   pageIndex = 0,
   totalPages = 1,
+  editable = false,
   children,
 }: ScreenShellProps) {
   const config = externalConfig ?? getScreenConfig(screenType);
@@ -68,7 +71,28 @@ export const ScreenShell = React.memo(function ScreenShell({
   // ═══ FULL-PAGE SCREENS: No chrome at all ══════════════════════
   // Cover and penutup screens fill the entire scene — no header,
   // no footer, no badges. The content IS the screen.
+  // When editable, wrap with a subtle blue top border indicator.
   if (isFullPageScreen(screenType)) {
+    if (editable) {
+      return (
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          {/* Blue top border indicating edit mode */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 3,
+              zIndex: 50,
+              background: 'rgba(59,130,246,0.5)',
+              borderRadius: '0 0 2px 2px',
+            }}
+          />
+          {children}
+        </div>
+      );
+    }
     return <>{children}</>;
   }
 
@@ -84,6 +108,22 @@ export const ScreenShell = React.memo(function ScreenShell({
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      {/* ══ EDIT MODE INDICATOR — blue top border when editable ════ */}
+      {editable && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            zIndex: 51,
+            background: 'rgba(59,130,246,0.5)',
+            borderRadius: '0 0 2px 2px',
+          }}
+        />
+      )}
+
       {/* ══ PROGRESS BAR — top accent line ══════════════════════ */}
       <div
         style={{

@@ -8,6 +8,7 @@
 //   - Track completion via the interactive store
 //   - Show a "Selesaikan dulu" badge when no answers given
 //   - Support open-ended questions with hints
+//   - Support inline editing when editable=true (teacher mode)
 // STANDAR: max 2 questions per page
 // ═══════════════════════════════════════════════════════════════════
 
@@ -19,6 +20,7 @@ import { SchemaScreenRenderer, type TokenResolver, type SchemaRenderMode } from 
 import type { ScreenSchema } from '@/core/schema/types';
 import type { SceneResolution, SafeArea } from '@/core/scene/SceneLayoutEngine';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { LearningEditProvider, type LearningEditContextValue } from '@/components/canva/LearningEditContext';
 
 export interface DiskusiScreenProps {
   page: CanvaPage;
@@ -35,6 +37,10 @@ export interface DiskusiScreenProps {
   pageIndex?: number;
   sceneType?: import('@/core/edu/education-scene-types').SceneType;
   totalPages?: number;
+  /** Whether inline editing is enabled (teacher mode) */
+  editable?: boolean;
+  /** Learning edit context value for providing to block renderers */
+  editContext?: LearningEditContextValue | null;
 }
 
 export const DiskusiScreen = React.memo(function DiskusiScreen({
@@ -52,6 +58,8 @@ export const DiskusiScreen = React.memo(function DiskusiScreen({
   pageIndex = 0,
   sceneType,
   totalPages = 1,
+  editable = false,
+  editContext = null,
 }: DiskusiScreenProps) {
   const isCompact = mode === 'canvas';
 
@@ -75,6 +83,12 @@ export const DiskusiScreen = React.memo(function DiskusiScreen({
     />
   );
 
+  const contentWithEditContext = editContext ? (
+    <LearningEditProvider value={editContext}>
+      {screenContent}
+    </LearningEditProvider>
+  ) : screenContent;
+
   return (
     <ScreenShell
       screenType="diskusi"
@@ -86,8 +100,9 @@ export const DiskusiScreen = React.memo(function DiskusiScreen({
       isCompact={isCompact}
       pageIndex={pageIndex}
       totalPages={totalPages}
+      editable={editable}
     >
-      {screenContent}
+      {contentWithEditContext}
     </ScreenShell>
   );
 });

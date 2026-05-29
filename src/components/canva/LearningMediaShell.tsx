@@ -8,10 +8,19 @@
 // unified experience optimized for learners.
 //
 // Architecture:
-//   TopNavbar (48px) → back + title | progress | score
+//   TopNavbar (48px) → back + title | progress | score + edit toggle
+//   EditBanner (24px) → blue indicator when in edit mode
 //   Content (flex-1) → PageRenderer with slide transitions
 //   BottomNav (56px) ← prev | dots | next
 //   CompletionModal → overlay on "Selesai"
+//
+// Inline editing (teacher mode):
+//   When teacherMode is true, an "Edit" toggle appears in the navbar.
+//   When toggled on, the screen becomes editable:
+//   - Text can be clicked to edit inline
+//   - Quiz options can be edited inline
+//   - A subtle blue banner shows "Mode Edit" indicator
+//   - All changes go through applyGuidedSchemaPatch
 // ═══════════════════════════════════════════════════════════════
 
 import React, {
@@ -30,18 +39,57 @@ import {
   X,
   Lock,
   CheckCircle2,
+  Pencil,
+  PencilOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useLearningMediaStore } from '@/store/learning-media-store';
 import { useSchemaMetaProjection } from '@/hooks/use-schema-projection';
+import { useLearningEditor } from '@/hooks/use-learning-editor';
 import { PageRenderer } from './page-renderer/PageRenderer';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { PageTransition, type PageDirection } from '@/lib/transition';
 import { RATIOS } from './types';
 import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
 import { getScoreTier } from './page-renderer/PageFrame';
+
+// ═══════════════════════════════════════════════════════════════
+// LEARNING EDIT STATE — shared between navbar and content
+// ═══════════════════════════════════════════════════════════════
+// We lift the edit toggle state here so both the TopNavbar
+// (toggle button) and LearningContent (passes to PageRenderer)
+// can access it. Using a module-level ref for simplicity.
+
+const learningEditState = {
+  isEditMode: false,
+  listeners: new Set<() => void>(),
+  toggle() {
+    this.isEditMode = !this.isEditMode;
+    this.listeners.forEach((l) => l());
+  },
+  setMode(mode: boolean) {
+    this.isEditMode = mode;
+    this.listeners.forEach((l) => l());
+  },
+  subscribe(listener: () => void) {
+    this.listeners.add(listener);
+    return () => { this.listeners.delete(listener); };
+  },
+};
+
+function useLearningEditMode() {
+  const [isEditMode, setIsEditMode] = useState(learningEditState.isEditMode);
+
+  useEffect(() => {
+    return learningEditState.subscribe(() => {
+      setIsEditMode(learningEditState.isEditMode);
+    });
+  }, []);
+
+  return isEditMode;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // MAIN COMPONENT
@@ -76,6 +124,8 @@ function LearningTopNavbar() {
   const totalScreens = useLearningMediaStore((s) => s.totalScreens);
   const meta = useSchemaMetaProjection();
   const pages = useCanvaStore((s) => s.pages);
+  const teacherMode = useCanvaStore((s) => s.teacherMode);
+  const isEditMode = useLearningEditMode();
 
   // Score data from interactive store (reactive)
   const totalScore = useInteractiveStore((s) => s.totalScore());
@@ -153,9 +203,36 @@ function LearningTopNavbar() {
           </div>
         </div>
 
-        {/* Right: Score display */}
-        {hasScore && (
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+        {/* Right: Edit toggle (teacher only) + Score display */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Edit mode toggle — only visible in teacher mode */}
+          {teacherMode && (
+            <button
+              onClick={() => learningEditState.toggle()}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 active:scale-95 cursor-pointer ${
+                isEditMode
+                  ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              aria-label={isEditMode ? 'Matikan mode edit' : 'Aktifkan mode edit'}
+              title={isEditMode ? 'Mode Edit Aktif' : 'Mode Edit'}
+            >
+              {isEditMode ? (
+                <>
+                  <PencilOff className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Edit</span>
+                </>
+              ) : (
+                <>
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Edit</span>
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Score display */}
+          {hasScore && (
             <div
               className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all duration-300 ${
                 isPulsing ? 'scale-110 shadow-md' : 'scale-100'
@@ -168,24 +245,37 @@ function LearningTopNavbar() {
               <Trophy className="w-3 h-3" />
               <span className="font-mono">{displayScore}/{totalMax}</span>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Mobile progress (shown on small screens) */}
-        <div className="sm:hidden flex items-center gap-1.5 flex-shrink-0 ml-2">
-          <span className="text-[10px] font-medium text-gray-400">
-            {currentScreenIndex + 1}/{totalScreens}
-          </span>
+          {/* Mobile progress (shown on small screens) */}
+          <div className="sm:hidden flex items-center gap-1.5 flex-shrink-0">
+            <span className="text-[10px] font-medium text-gray-400">
+              {currentScreenIndex + 1}/{totalScreens}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Thin 2px accent progress bar below navbar */}
       <div className="h-0.5 bg-gray-100 w-full">
         <div
-          className="h-full bg-emerald-500 transition-all duration-300 ease-out"
+          className={`h-full transition-all duration-300 ease-out ${
+            isEditMode ? 'bg-blue-500' : 'bg-emerald-500'
+          }`}
           style={{ width: `${progressPct}%` }}
         />
       </div>
+
+      {/* Edit mode banner — shown when editing is active */}
+      {isEditMode && (
+        <div className="h-7 bg-blue-50 border-b border-blue-200 flex items-center justify-center px-3">
+          <div className="flex items-center gap-1.5 text-blue-700">
+            <Pencil className="w-3 h-3" />
+            <span className="text-xs font-semibold">Mode Edit</span>
+            <span className="text-xs text-blue-500">— klik teks untuk mengubah</span>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -205,6 +295,12 @@ function LearningContent() {
     const r = RATIOS.find((r) => r.id === s.ratioId);
     return r || RATIOS[0];
   });
+
+  // Inline editing state
+  const isEditMode = useLearningEditMode();
+  const teacherMode = useCanvaStore((s) => s.teacherMode);
+  const editable = isEditMode && teacherMode;
+  const editor = useLearningEditor(editable);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
@@ -374,6 +470,8 @@ function LearningContent() {
             page={page}
             currentPageIndex={currentScreenIndex}
             totalPages={totalPages}
+            editable={editable}
+            editContext={editable ? editor.contextValue : null}
           />
         </CanvasErrorBoundary>
       </PageTransition>

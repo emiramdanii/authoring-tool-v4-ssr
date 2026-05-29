@@ -8,6 +8,7 @@
 //   - Track scores via the interactive store
 //   - Show a "Selesaikan dulu" badge when incomplete
 //   - Display score feedback upon completion
+//   - Support inline editing when editable=true (teacher mode)
 // STANDAR: 1 question per page, max 4 options
 // ═══════════════════════════════════════════════════════════════════
 
@@ -19,6 +20,7 @@ import { SchemaScreenRenderer, type TokenResolver, type SchemaRenderMode } from 
 import type { ScreenSchema } from '@/core/schema/types';
 import type { SceneResolution, SafeArea } from '@/core/scene/SceneLayoutEngine';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { LearningEditProvider, type LearningEditContextValue } from '@/components/canva/LearningEditContext';
 
 export interface QuizScreenProps {
   page: CanvaPage;
@@ -35,6 +37,10 @@ export interface QuizScreenProps {
   pageIndex?: number;
   sceneType?: import('@/core/edu/education-scene-types').SceneType;
   totalPages?: number;
+  /** Whether inline editing is enabled (teacher mode) */
+  editable?: boolean;
+  /** Learning edit context value for providing to block renderers */
+  editContext?: LearningEditContextValue | null;
 }
 
 export const QuizScreen = React.memo(function QuizScreen({
@@ -52,6 +58,8 @@ export const QuizScreen = React.memo(function QuizScreen({
   pageIndex = 0,
   sceneType,
   totalPages = 1,
+  editable = false,
+  editContext = null,
 }: QuizScreenProps) {
   const isCompact = mode === 'canvas';
 
@@ -75,6 +83,12 @@ export const QuizScreen = React.memo(function QuizScreen({
     />
   );
 
+  const contentWithEditContext = editContext ? (
+    <LearningEditProvider value={editContext}>
+      {screenContent}
+    </LearningEditProvider>
+  ) : screenContent;
+
   return (
     <ScreenShell
       screenType="kuis"
@@ -86,8 +100,9 @@ export const QuizScreen = React.memo(function QuizScreen({
       isCompact={isCompact}
       pageIndex={pageIndex}
       totalPages={totalPages}
+      editable={editable}
     >
-      {screenContent}
+      {contentWithEditContext}
     </ScreenShell>
   );
 });
