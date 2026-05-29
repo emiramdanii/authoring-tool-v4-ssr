@@ -16,10 +16,10 @@ import type { SceneType } from '@/core/edu/education-scene-types';
 import { SCENE_PRIMARY_COLOR } from '@/core/edu/education-components';
 
 // ═══════════════════════════════════════════════════════════════
-// STATUS BAR v6 — Modernized & Clean
+// STATUS BAR v7 — SILSE v4 Stitch Reference Bottom Bar
 // ═══════════════════════════════════════════════════════════════
 // - Consistent text-xs typography
-// - Semantic tokens only (no hardcoded colors)
+// - SILSE v4 semantic tokens only (no hardcoded colors)
 // - Styled range slider
 // - saveIndicatorConfig as module-level constant
 // ═══════════════════════════════════════════════════════════════

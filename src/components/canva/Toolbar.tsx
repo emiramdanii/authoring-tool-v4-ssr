@@ -11,10 +11,11 @@ import { triggerCanvaOrientation } from '@/components/shared/CanvaOrientationToo
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 // ═══════════════════════════════════════════════════════════════
-// TOOLBAR v7 — SILSE v4 TopAppBar Design
+// TOOLBAR v8 — SILSE v4 Stitch Reference TopAppBar
 // ═══════════════════════════════════════════════════════════════
 // Layout (Left → Right):
 //   [← SILSE Authoring | Project Name] | [Dashboard] [Workspace] [Analytics] | [Cloud] [Help] [Preview] [Publish]
+// Edit mode: fixed top-0 left-0 w-full z-40 h-16
 // ═══════════════════════════════════════════════════════════════
 
 // ── Navigation Tabs ──────────────────────────────────────────
@@ -199,10 +200,10 @@ export default function Toolbar() {
     );
   }
 
-  // ── EDIT mode: Full toolbar — SILSE v4 TopAppBar ───────────
+  // ── EDIT mode: Full toolbar — SILSE v4 Stitch TopAppBar (fixed) ──
   return (
     <header
-      className="flex items-center justify-between px-6 bg-silse-surface-container-lowest border-b border-silse-outline-variant select-none"
+      className="fixed top-0 left-0 w-full z-40 flex items-center justify-between px-6 bg-silse-surface-container-lowest border-b border-silse-outline-variant select-none"
       style={{ height: '64px' }}
     >
       {/* LEFT: Brand + Project */}

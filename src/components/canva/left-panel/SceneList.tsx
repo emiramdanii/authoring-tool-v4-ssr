@@ -7,7 +7,14 @@ import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
-// SCENE LIST — Page navigator with thumbnails + drag reorder
+// SCENE LIST v2 — SILSE v4 Stitch Reference Page Navigator
+// ═══════════════════════════════════════════════════════════════
+// Stitch spec:
+//   - Active: bg-silse-primary-container text-silse-on-primary-container rounded-xl px-3 py-2 border border-silse-primary/20
+//   - Inactive: hover:bg-silse-surface-container-high rounded-xl px-3 py-2
+//   - Scene thumbnail: w-12 h-8 rounded with scene number
+//   - "Scenes" uppercase label above list
+//   - Drag reorder functionality
 // ═══════════════════════════════════════════════════════════════
 
 // Badge color map using semantic tokens instead of hardcoded Tailwind colors
@@ -55,6 +62,12 @@ export function SceneList() {
 
   return (
     <div className="flex flex-col gap-2">
+      {/* Scenes uppercase label — SILSE v4 Stitch reference */}
+      {pages.length > 0 && (
+        <span className="text-xs uppercase tracking-wider text-silse-outline font-bold mb-1 block px-1">
+          Scenes
+        </span>
+      )}
       {pages.map((p, i) => {
         const isActive = i === currentPageIndex;
         const badge = TEMPLATE_BADGE_MAP[p.templateType || 'custom'] || TEMPLATE_BADGE_MAP.custom;

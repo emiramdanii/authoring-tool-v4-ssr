@@ -827,3 +827,30 @@ Stage Summary:
 - **Error/destructive states** now properly use silse-error + silse-error-container
 - **Warning/tertiary states** use silse-tertiary + silse-tertiary-container
 - **Remaining hardcoded colors** are in: game components (intentional), AI assistant sub-panels (lower priority), import/export, BsnpCompliancePanel
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: SILSE v4 UI Overhaul — Full Canvas Builder Shell (Stitch Reference)
+
+Work Log:
+- Read worklog.md and all 7 target files before modifying
+- CanvaBuilder.tsx: Restructured edit mode layout — added pt-16 offset for fixed header, updated comments to v7 architecture
+- Toolbar.tsx: Changed edit mode header from static to fixed position (`fixed top-0 left-0 w-full z-40`) — matches Stitch reference exactly
+- LeftPanel.tsx: Updated to Stitch reference — border-r on outer container, add_circle Material Symbol button (replaced Plus lucide icon), compact header (px-4 py-3, text-base)
+- IconRail.tsx: Changed background from `bg-silse-surface-container-lowest` to `bg-silse-surface-bright` — matches Stitch reference for icon rail
+- SceneList.tsx: Added "Scenes" uppercase label above list (Stitch reference), updated comments to v2
+- RightPanel.tsx: Added footer section with delete button (Stitch reference: `p-6 bg-silse-surface-container-low` with rounded-full delete button), wired deleteBlock from canva store
+- StatusBar.tsx: Updated comments to v7, ensured SILSE v4 semantic tokens are used consistently
+- Build verified: npx next build ✓ (zero errors)
+- Lint check: No new errors introduced (pre-existing issues only)
+- TypeScript: No type errors in modified files
+
+Stage Summary:
+- **Fixed header**: Toolbar is now `fixed top-0 left-0 w-full z-40` with `pt-16` offset on main content — matches Stitch workspace_editor reference
+- **Icon Rail**: Background changed to `bg-silse-surface-bright` for visual separation from content panel
+- **Left Panel Header**: Compact styling with Material Symbols `add_circle` button
+- **Scene List**: "Scenes" uppercase label added above page list (Stitch reference)
+- **Right Panel Footer**: Delete block button with `rounded-full` style, only visible when block is selected
+- **All SILSE v4 tokens preserved** — no hardcoded colors introduced
+- **Zero new build/lint/type errors** introduced

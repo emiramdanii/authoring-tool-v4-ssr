@@ -46,12 +46,15 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 });
 
 // ═══════════════════════════════════════════════════════════════
-// CANVA BUILDER v6 — Modern & Clean 3-column layout
+// CANVA BUILDER v7 — SILSE v4 Stitch Reference Layout
 // ═══════════════════════════════════════════════════════════════
 // Architecture:
 //   appMode === 'present'  → PresentMode (fullscreen stage only)
 //   appMode === 'preview'  → PreviewMode (stage + floating nav, no panels)
-//   appMode === 'edit'     → Full 3-panel layout (ScenePanel | Stage | ContextPanel)
+//   appMode === 'edit'     → Fixed header (h-16) + 3-panel layout
+//     [Fixed Toolbar h-16]
+//     [Left w-72 | Stage flex-1 | Right w-80]
+//     [StatusBar]
 // ═══════════════════════════════════════════════════════════════
 
 export default function CanvaBuilder() {
@@ -143,27 +146,27 @@ export default function CanvaBuilder() {
     );
   }
 
-  // ── EDIT mode: Full 3-panel layout ───────────────────────────
+  // ── EDIT mode: Fixed header + 3-panel layout (SILSE v4 Stitch reference) ──
   return (
     <MobileGuard>
-      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface focus-ring" id="main-content" data-testid="canva-builder">
+      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface focus-ring pt-16" id="main-content" data-testid="canva-builder">
         <UndoRedoToast />
         <CanvaAutoSaveSync />
 
         <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
 
-        {/* Top Toolbar */}
+        {/* Fixed Top Toolbar — SILSE v4: h-16 fixed top-0 z-40 */}
         <div data-tour="toolbar" data-testid="toolbar" role="toolbar" aria-label="Toolbar editor">
           <ProfilerWrapper id="Toolbar">
             <Toolbar />
           </ProfilerWrapper>
         </div>
 
-        {/* Main builder row — 3-column Canva-style layout */}
+        {/* Main builder row — 3-column layout below fixed header */}
         <div className="flex flex-1 min-h-0 overflow-hidden relative" style={{ minHeight: 0 }}>
-          {/* Left Panel — SILSE v4: Always w-72 (Icon Rail + Content), no collapse */}
+          {/* Left Panel — SILSE v4: w-72 (288px) = Icon Rail w-16 + Content flex-1 */}
           <div
-            className="flex-shrink-0 overflow-hidden border-r border-silse-outline-variant"
+            className="flex-shrink-0 overflow-hidden"
             style={{ width: '288px' }}
             data-tour="left-panel"
             data-testid="left-panel"
@@ -175,14 +178,14 @@ export default function CanvaBuilder() {
             </ProfilerWrapper>
           </div>
 
-          {/* Stage Canvas Area — flex-1 zoom-to-fit */}
+          {/* Stage Canvas Area — flex-1, dot-grid background */}
           <div className="flex flex-col flex-1 min-w-0 relative overflow-hidden bg-silse-surface-dim canvas-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
             <ProfilerWrapper id="Stage">
               <Stage />
             </ProfilerWrapper>
           </div>
 
-          {/* Right Panel — Context Panel */}
+          {/* Right Panel — w-80 (320px) Properties Panel */}
           <div
             className="flex-shrink-0 overflow-hidden transition-[width] duration-200 ease-in-out shadow-app-panel-left"
             style={{

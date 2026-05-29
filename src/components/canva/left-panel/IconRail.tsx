@@ -9,14 +9,15 @@ import {
 } from '@/components/ui/tooltip';
 
 // ═══════════════════════════════════════════════════════════════
-// ICON RAIL v4 — SILSE v4 Material Design 3 Vertical Icon Strip
+// ICON RAIL v5 — SILSE v4 Stitch Reference Vertical Icon Strip
 // ═══════════════════════════════════════════════════════════════
 // 64px always-visible vertical icon strip.
-// SILSE v4 spec:
-//   - bg-silse-surface-container-lowest (white)
+// SILSE v4 Stitch spec:
+//   - bg-silse-surface-bright (slightly brighter than content panel)
 //   - border-r border-silse-outline-variant
 //   - Active: bg-silse-primary-container text-silse-on-primary-container rounded-xl
 //   - Inactive: text-silse-on-surface-variant hover:bg-silse-surface-container-high rounded-xl
+//   - Icons: layers, grid_view, category, perm_media (primary); settings (bottom)
 // ═══════════════════════════════════════════════════════════════
 
 export type LeftPanelTab = 'pages' | 'add-block' | 'templates' | 'history' | 'settings' | 'sisipkan';
@@ -80,7 +81,7 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
 
   return (
     <div
-      className="flex flex-col items-center py-6 gap-6 border-r border-silse-outline-variant bg-silse-surface-container-lowest flex-shrink-0"
+      className="flex flex-col items-center py-6 gap-6 border-r border-silse-outline-variant bg-silse-surface-bright flex-shrink-0"
       style={{ width: '64px' }}
     >
       {/* Primary tabs — always visible at top */}

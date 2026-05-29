@@ -39,14 +39,14 @@ const AIRefineSection = dynamic(() => import('../ai-assistant/AIRefineSection'),
 });
 
 // ═══════════════════════════════════════════════════════════════
-// RIGHT PANEL — SILSE v4 Properties Panel
+// RIGHT PANEL v2 — SILSE v4 Stitch Reference Properties Panel
 // ═══════════════════════════════════════════════════════════════
-// SILSE v4 spec:
+// SILSE v4 Stitch spec:
 //   - w-80 (320px) width
-//   - White bg (surface-container-lowest), border-l outline-variant
+//   - Header: p-6, border-b, bg-silse-surface-container-lowest, tune icon + Properties + close
 //   - Tab bar: bold labels + underline indicator in secondary color
-//   - Teacher mode: Properti + AI tabs
-//   - Advanced mode: Properti + AI + Layer tabs
+//   - Content: p-6 space-y-6
+//   - Footer: p-6 bg-silse-surface-container-low with delete button (rounded-full)
 // ═══════════════════════════════════════════════════════════════
 
 type RightPanelTab = 'properties' | 'ai' | 'layer';
@@ -88,6 +88,7 @@ export default function RightPanel() {
   const hasMultiBlockSelection = selectedBlockIds.length > 1;
   const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
   const toggleRightPanel = useCanvaStore(s => s.toggleRightPanel);
+  const deleteBlock = useCanvaStore(s => s.deleteBlock);
 
   if (!rightPanelOpen) return null;
 
@@ -230,6 +231,22 @@ export default function RightPanel() {
           </div>
         )}
       </div>
+      {/* ── Footer — SILSE v4 Stitch: delete button when block selected ── */}
+      {hasBlockSelection && (
+        <div className="p-6 bg-silse-surface-container-low border-t border-silse-outline-variant flex-shrink-0">
+          <button
+            onClick={() => {
+              if (selectedBlockId && confirm(`Hapus ${blockLabel.toLowerCase()} ini?`)) {
+                deleteBlock(selectedBlockId);
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-silse-error-container/15 text-silse-error text-sm font-bold hover:bg-silse-error-container/25 active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+            Hapus {blockLabel}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

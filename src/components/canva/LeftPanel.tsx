@@ -56,11 +56,12 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// LEFT PANEL v7 — SILSE v4 Layout: Icon Rail + Always-visible Content
+// LEFT PANEL v8 — SILSE v4 Stitch Reference Layout
 // ═══════════════════════════════════════════════════════════════
-// Structure (matches SILSE v4 workspace_editor reference):
-//   [Icon Rail 64px] | [Content Panel ~224px]
-//   Always visible    | Always visible, tab-switched content
+// Structure (matches SILSE v4 workspace_editor Stitch reference):
+//   [Icon Rail w-16 (64px)] | [Content Panel flex-1 (~224px)]
+//   bg-silse-surface-bright  | Always visible, tab-switched content
+//   border-r outline-variant | p-4 overflow-y-auto
 // Reference: w-72 total = w-16 rail + flex-1 content
 // ═══════════════════════════════════════════════════════════════
 
@@ -92,16 +93,16 @@ export default function LeftPanel() {
   };
 
   return (
-    <div className="flex h-full bg-silse-surface-container-low overflow-hidden">
-      {/* ── Icon Rail — Always visible, 64px ── */}
+    <div className="flex h-full bg-silse-surface-container-low overflow-hidden border-r border-silse-outline-variant">
+      {/* ── Icon Rail — SILSE v4 Stitch: w-16, bg-surface-bright, border-r ── */}
       <IconRail activeTab={activeTab} onTabChange={handleTabChange} expanded />
 
-      {/* ── Content Panel — Always visible, flex-1 (~224px) ── */}
-      <div className="flex-1 flex flex-col overflow-hidden border-r border-silse-outline-variant bg-silse-surface-container-low">
-        {/* Header — SILSE v4 Workspace style */}
-        <div className="px-6 py-4 flex items-center justify-between flex-shrink-0">
+      {/* ── Content Panel — SILSE v4 Stitch: flex-1, p-4, overflow-y-auto ── */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-silse-surface-container-low">
+        {/* Header — SILSE v4 Stitch: Workspace + add_circle button */}
+        <div className="px-4 py-3 flex items-center justify-between flex-shrink-0">
           <h3
-            className="text-xl font-bold text-silse-on-surface"
+            className="text-base font-bold text-silse-on-surface"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
             Workspace
@@ -111,7 +112,7 @@ export default function LeftPanel() {
             className="w-8 h-8 flex items-center justify-center rounded-xl text-silse-primary hover:bg-silse-surface-container-high transition-colors"
             aria-label="Tambah baru"
           >
-            <Plus size={18} />
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
           </button>
         </div>
 
