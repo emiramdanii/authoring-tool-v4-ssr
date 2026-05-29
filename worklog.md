@@ -942,3 +942,35 @@ Stage Summary:
 - **SchemaBlockTree typo fixed** — skenario blocks now show correct theater_comedy icon
 - **Store composition preserved** — all slices still export state + initial values for read-only projection
 - **Zero build errors, zero regressions**
+
+---
+Task ID: 3a/3b/3c/3d
+Agent: Main Agent
+Task: Phase 5 P1 — Schema migration for CP/TP/ATP/Alur (Dokumen panel)
+
+Work Log:
+- Audited all relevant files: blocks.ts, schema.ts, guided-patch.ts, SchemaBlockTree.tsx, use-schema-navigator.ts, Dokumen.tsx, authoring types
+- Found Steps 1-6 were ALREADY IMPLEMENTED by prior agents:
+  - CpBlock/AtpBlock types exist in blocks.ts (lines 80-112)
+  - SchemaBlock union includes CpBlock/AtpBlock (schema.ts lines 59-60)
+  - GUIDED_EDITOR_REGISTRY has cp, tp, alur, atp entries (guided-patch.ts lines 844-952)
+  - SchemaBlockTree BLOCK_DISPLAY has cp and atp entries
+  - useSchemaCp/Tp/Alur/Atp hooks exist in use-schema-navigator.ts (lines 1916-2462)
+  - Dokumen.tsx already uses useSchemaCp/Tp/Alur/Atp (imported line 16)
+  - FASE_TO_DOT/DOT_TO_FASE mappings exist (lines 1890-1899)
+  - Dual-write pattern: hooks write to both applyGuidedSchemaPatch() AND AuthoringStore for backward compat
+  - Fallback: hooks read from AuthoringStore when no schema block found
+- Fixed TypeScript error: 'dokumen-tab' source type missing
+  - Added 'dokumen-tab' to GuidedPatchArgs.source in guided-patch.ts
+  - Added 'dokumen-tab' to EditPatchEvent.source in editor/types.ts
+  - Added 'dokumen-tab' to PatchHistoryEntry.source in patch-history.ts
+  - Dokumen tab edits now default to 'warn' overflow policy (same as konten-tab)
+- Build verified: npx tsc --noEmit passes with zero new errors (remaining errors are pre-existing npm module issues)
+- Committed: c7174e7 "Phase 5 P1: Add 'dokumen-tab' source type for schema CP/TP/ATP/Alur hooks"
+
+Stage Summary:
+- **Phase 5 P1 is COMPLETE** — CP/TP/ATP/Alur sections in Dokumen panel are now schema-first
+- **useSchemaCp/Tp/Alur/Atp** provide dual-write: applyGuidedSchemaPatch() + AuthoringStore
+- **Fallback pattern** ensures backward compat with auto-generate and other consumers
+- **'dokumen-tab' source** added to 3 type definitions for edit bus audit trail
+- **Schema as Single Source of Truth** is now complete for all Dokumen sections except MetaSection (intentionally kept on AuthoringStore)

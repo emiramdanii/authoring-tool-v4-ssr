@@ -28,6 +28,7 @@
 //   SkenarioBlock    → SkenarioChapter[]
 //   MotivasiBlock    → MotivasiData
 //   RangkumanBlock   → RangkumanData
+//   GameBlock[*]     → Module[] (Phase 5 P2)
 // ═══════════════════════════════════════════════════════════════════
 
 import type { CanvaPage } from '@/components/canva/types';
@@ -46,6 +47,7 @@ import type {
   MotivasiData,
   RangkumanData,
   MetaState,
+  Module,
 } from '@/store/authoring/types';
 import { ensurePageSchema } from './ensure-schema';
 
@@ -62,6 +64,8 @@ export interface SchemaProjection {
   skenario?: SkenarioChapter[];
   motivasi?: MotivasiData;
   rangkuman?: RangkumanData;
+  /** Game/interactive modules derived from game-type schema blocks */
+  modules?: Module[];
 }
 
 // ── Main Derivation Function ────────────────────────────────────
@@ -112,6 +116,20 @@ export function deriveProjectionFromPages(pages: CanvaPage[]): SchemaProjection 
           break;
         case 'rangkuman':
           deriveRangkumanToProjection(block, projection);
+          break;
+        // Phase 5 P2: Game blocks → modules projection
+        case 'flashcard-set':
+        case 'roda-game':
+        case 'memory-game':
+        case 'matching-game':
+        case 'sortir-game':
+        case 'fill-blank-game':
+        case 'word-search-game':
+        case 'true-false-game':
+        case 'drag-drop-game':
+        case 'crossword-game':
+        case 'team-buzzer-game':
+          deriveGameBlockToModules(block, projection);
           break;
       }
     }
@@ -518,4 +536,57 @@ function deriveRangkumanToProjection(block: SchemaBlock, projection: SchemaProje
     tips: rangkuman.closingStatement || '',
     closingStatement: rangkuman.closingStatement,
   };
+}
+
+// ── Game Block → Modules Projection ────────────────────────────────
+// Phase 5 P2: Derive Module[] from game-type schema blocks.
+// This closes the projection gap so that when game blocks exist in
+// schema, they automatically sync to AuthoringStore.modules via
+// startProjectionSync(). This makes ModulesTab (which reads from
+// schema via useSchemaModules) and auto-generate (which reads from
+// AuthoringStore.modules) see the same data.
+
+/**
+ * Map schema block type to module type string.
+ * E.g., 'flashcard-set' → 'flashcard', 'roda-game' → 'roda'
+ */
+function gameBlockTypeToModuleType(blockType: string): string {
+  const MAP: Record<string, string> = {
+    'flashcard-set': 'flashcard',
+    'roda-game': 'roda',
+    'memory-game': 'memory',
+    'matching-game': 'matching',
+    'sortir-game': 'sorting',
+    'fill-blank-game': 'fillblank',
+    'word-search-game': 'wordsearch',
+    'true-false-game': 'truefalse',
+    'drag-drop-game': 'dragdrop',
+    'crossword-game': 'crossword',
+    'team-buzzer-game': 'teambuzzer',
+  };
+  return MAP[blockType] || blockType.replace('-game', '');
+}
+
+function deriveGameBlockToModules(block: SchemaBlock, projection: SchemaProjection): void {
+  const b = block as unknown as Record<string, unknown>;
+  if (!block.id) return;
+
+  const moduleType = gameBlockTypeToModuleType(block.type);
+
+  // Convert schema block → Module shape
+  const mod: Module = {
+    _id: block.id,
+    type: moduleType,
+    title: (b.title as string) || block.type,
+    layoutVariant: (b.layoutVariant as string) || 'A',
+    // Spread all game-specific fields (kartu, pasangan, soal, etc.)
+    ...Object.fromEntries(
+      Object.entries(b).filter(([k]) =>
+        !['type', 'id', 'title', 'layoutVariant', 'compression', 'semantic'].includes(k)
+      )
+    ),
+  };
+
+  if (!projection.modules) projection.modules = [];
+  projection.modules.push(mod);
 }
