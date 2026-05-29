@@ -14,7 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { TemplateThemeContract } from './TemplateThemeContract';
-import { registerContract } from './TemplateThemeContract';
+import { registerContract, MODERN_EDUCATOR_ACCENT_PALETTE } from './TemplateThemeContract';
 
 export const MODERN_EDUCATOR_CONTRACT: TemplateThemeContract = {
   id: 'modern-educator',
@@ -212,16 +212,8 @@ registerContract(MODERN_EDUCATOR_CONTRACT);
  * The Modern Educator accent color palette.
  * Three primary accent colors: Emerald, Blue, Amber.
  * These replace the GOLDEN_CONTRACT's y/c/g/p/o/r tokens.
+ * 
+ * This is now imported from TemplateThemeContract to avoid circular dependency.
+ * Re-exported here for backward compatibility.
  */
-export const MODERN_EDUCATOR_ACCENT_PALETTE: Record<string, string> = {
-  e: '#006c49',  // Emerald — primary identity, trust, growth
-  b: '#0058be',  // Royal Blue — logic, structure, assessment
-  a: '#e29100',  // Amber — energy, warmth, motivation
-  // Legacy compatibility tokens (mapped from golden contract palette)
-  y: '#e29100',  // Amber (maps to 'a')
-  c: '#0058be',  // Blue (maps to 'b')
-  g: '#10b981',  // Light emerald (success green)
-  p: '#7c3aed',  // Purple (compatibility)
-  o: '#ea580c',  // Orange (compatibility)
-  r: '#dc2626',  // Red (error/danger)
-};
+export { MODERN_EDUCATOR_ACCENT_PALETTE };
