@@ -15,6 +15,7 @@ import type { SceneType } from '@/core/edu/education-scene-types';
 import { isFullPageBlockType } from '@/core/schema/capability-registry';
 import { resolveContractStyle, type ContractResolvedStyle } from '@/core/template/contract';
 import { GoldenPageRenderer } from '@/core/renderer/GoldenPageRenderer';
+import { getScreenAdapter, getScreenConfig } from '@/core/renderer/screens';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -299,26 +300,71 @@ export const PageRenderer = React.memo(function PageRenderer({
     />
   ) : null;
 
+  // ═══ SCREEN ADAPTER SYSTEM ═════════════════════════════════
+  // In preview/export modes (student-facing), use the screen adapter
+  // system instead of raw SchemaScreenRenderer. Each page gets its
+  // ScreenAdapter from getScreenAdapter(sceneType), which wraps
+  // SchemaScreenRenderer with ScreenShell for consistent chrome.
+  // This ensures 1 screen = 1 page with proper structure.
+  //
+  // In canvas mode (teacher-facing), continue using the raw
+  // SchemaScreenRenderer with editing overlay functionality.
+  const useScreenAdapter = useSchemaRenderer && adaptedSchema && mode !== 'canvas';
+
+  // Resolve the screen adapter component and config for this page type
+  const ScreenAdapter = useScreenAdapter ? getScreenAdapter(templateType) : null;
+  const screenConfig = useScreenAdapter ? getScreenConfig(templateType) : null;
+
+  // ═══ SCREEN ADAPTER CONTENT — for preview/export modes ═══════
+  const screenAdapterContent = useScreenAdapter && ScreenAdapter && screenConfig && adaptedSchema ? (
+    <ScreenAdapter
+      page={page}
+      schema={adaptedSchema}
+      tokens={tokens}
+      mode={schemaModeMap[mode]}
+      config={screenConfig}
+      interactive={interactive}
+      sceneResolution={sceneResolution}
+      safeArea={safeArea}
+      ratioId={ratioId}
+      showTopNav={showTopNav}
+      showBottomNav={showBottomNav}
+      pageIndex={currentPageIndex}
+      sceneType={sceneType}
+      totalPages={totalPages}
+    />
+  ) : null;
+
   const content = (
     <>
-      {/* ═══ FIX 3: Golden Page Renderer — structural chrome ════════ */}
-      {/* When the golden contract is active, wrap the schema output with
-          GoldenPageRenderer to add progress bar, phase badge, nav dots.
-          Cover pages get NO chrome (full bleed). */}
-      {useSchemaRenderer && adaptedSchema && isGoldenContract && contractStyle ? (
-        <GoldenPageRenderer
-          contractStyle={contractStyle}
-          tokens={tokens}
-          sceneType={sceneType || 'concept'}
-          pageType={templateType}
-          pageIndex={currentPageIndex}
-          totalPages={totalPages}
-          isCoverPage={isPureCoverPage}
-        >
-          {schemaContent}
-        </GoldenPageRenderer>
+      {/* ═══ SCREEN ADAPTER PATH — preview/export mode ══════════════ */}
+      {/* When NOT in canvas mode, use the screen adapter system which
+          wraps SchemaScreenRenderer with ScreenShell for consistent chrome.
+          This enforces 1 screen = 1 page with proper structure. */}
+      {useScreenAdapter ? (
+        screenAdapterContent
       ) : (
-        schemaContent
+        <>
+          {/* ═══ FIX 3: Golden Page Renderer — structural chrome ════════ */}
+          {/* When the golden contract is active in canvas mode, wrap the
+              schema output with GoldenPageRenderer to add progress bar,
+              phase badge, nav dots. Cover pages get NO chrome (full bleed). */}
+          {useSchemaRenderer && adaptedSchema && isGoldenContract && contractStyle ? (
+            <GoldenPageRenderer
+              contractStyle={contractStyle}
+              tokens={tokens}
+              sceneType={sceneType || 'concept'}
+              pageType={templateType}
+              pageIndex={currentPageIndex}
+              totalPages={totalPages}
+              isCoverPage={isPureCoverPage}
+            >
+              {schemaContent}
+            </GoldenPageRenderer>
+          ) : (
+            schemaContent
+          )}
+        </>
       )}
 
       {/* Empty schema page hint — when page has schema but 0 blocks (canvas mode only) */}

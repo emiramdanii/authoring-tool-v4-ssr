@@ -45,10 +45,16 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
   loading: () => null,
 });
 
+const LearningMediaShell = dynamic(() => import('./LearningMediaShell'), {
+  ssr: false,
+  loading: () => null,
+});
+
 // ═══════════════════════════════════════════════════════════════
 // CANVA BUILDER v8 — SILSE v4 Resizable Panel Layout
 // ═══════════════════════════════════════════════════════════════
 // Architecture:
+//   appMode === 'learn'    → LearningMediaShell (student-facing unified shell)
 //   appMode === 'present'  → PresentMode (fullscreen stage only)
 //   appMode === 'preview'  → PreviewMode (stage + floating nav, no panels)
 //   appMode === 'edit'     → Fixed header (h-16) + resizable 3-panel
@@ -112,6 +118,21 @@ export default function CanvaBuilder() {
     }),
     [],
   );
+
+  // ── Learn mode: student-facing LearningMediaShell ────────────
+  if (appMode === 'learn') {
+    return (
+      <MobileGuard>
+        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-white text-gray-800">
+          <UndoRedoToast />
+          <CanvaAutoSaveSync />
+          <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
+          <LearningMediaShell />
+          <OfflineIndicator />
+        </div>
+      </MobileGuard>
+    );
+  }
 
   // ── Present mode: fullscreen stage only ──────────────────────
   if (appMode === 'present') {

@@ -206,12 +206,13 @@ export type ElementsCanvaPage = CanvaPage & {
   schema?: undefined;
 };
 
-// ── App Mode (4-mode architecture) ──────────────────────────────
+// ── App Mode (5-mode architecture) ──────────────────────────────
 // EDIT:    Full canvas editing — selection, overlays, drag, nudge
 // PREVIEW: Quick student-view — no editing chrome, no overlays
 // PRESENT: Fullscreen playback — PlayOverlay with interactive widgets
 // EXPORT:  Export pipeline — PDF/PPTX generation, no UI chrome
-export type AppMode = 'edit' | 'preview' | 'present' | 'export';
+// LEARN:   Student-facing LearningMediaShell — unified media player
+export type AppMode = 'edit' | 'preview' | 'present' | 'export' | 'learn';
 
 export type LeftTab = 'pages' | 'add-block' | 'templates' | 'history' | 'settings' | 'sisipkan';
 export type Tool = 'select' | 'text';
