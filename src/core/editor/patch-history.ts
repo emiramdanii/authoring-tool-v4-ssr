@@ -44,7 +44,7 @@ export interface PatchHistoryEntry {
   /** Optional description for debugging/UI */
   description?: string;
   /** Source of the edit */
-  source?: 'user' | 'ai' | 'sync' | 'auto' | 'guided-form' | 'konten-tab';
+  source?: 'user' | 'ai' | 'sync' | 'auto' | 'guided-form' | 'konten-tab' | 'dokumen-tab';
   /** Page index this patch applies to — CRITICAL for cross-page undo */
   pageIndex?: number;
   /** Block ID this patch targets — used for undo coalescing */

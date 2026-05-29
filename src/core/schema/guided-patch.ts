@@ -70,7 +70,7 @@ export interface GuidedPatchArgs {
   /** What to do if the patch causes content overflow */
   overflowPolicy?: OverflowPolicy;
   /** Source of the edit — for edit bus tracking */
-  source?: 'user' | 'ai' | 'sync' | 'guided-form' | 'konten-tab';
+  source?: 'user' | 'ai' | 'sync' | 'guided-form' | 'konten-tab' | 'dokumen-tab';
 }
 
 /** Rich overflow check result from SceneOverflowEngine */
@@ -142,7 +142,7 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
   // This ensures teachers see overflow warnings when adding content
   // that exceeds page capacity, without blocking the edit.
   const resolvedOverflowPolicy = args.overflowPolicy
-    ?? (args.source === 'konten-tab' ? 'warn' : 'none');
+    ?? (args.source === 'konten-tab' || args.source === 'dokumen-tab' ? 'warn' : 'none');
   const { pageId, blockId, patch, overflowPolicy = resolvedOverflowPolicy, source = 'user' } = args;
 
   const store = useCanvaStore.getState();
