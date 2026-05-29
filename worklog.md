@@ -974,3 +974,33 @@ Stage Summary:
 - **Fallback pattern** ensures backward compat with auto-generate and other consumers
 - **'dokumen-tab' source** added to 3 type definitions for edit bus audit trail
 - **Schema as Single Source of Truth** is now complete for all Dokumen sections except MetaSection (intentionally kept on AuthoringStore)
+
+---
+Task ID: 5
+Agent: main
+Task: BUG FIX — Cover invisible bug — zIndex:0 in SceneLayoutEngine
+
+Work Log:
+- Read worklog.md for full project context (9+ prior tasks)
+- Located SceneLayoutEngine at src/core/scene/SceneLayoutEngine.ts (NOT src/core/engine/SceneLayoutEngine.ts which is a different class)
+- Traced full rendering pipeline: PageRenderer → SchemaScreenRenderer → resolveSceneLayout() → getBlockPositionStyle() → CoverRenderer
+- Identified ROOT CAUSE: Cover/full-page blocks assigned zIndex:0 in THREE locations:
+  1. Cover isolation path (line 553): zIndex:0 for isolated full-page blocks
+  2. Phase 2 — Absolute blocks (line 777): `isFullPageBlockType(block.type) ? 0 : 10`
+  3. Phase 3 — Legacy full-page blocks (line 822): zIndex:0
+- The zIndex:0 was originally set to prevent cover from occluding flow blocks (zIndex:1), but it caused the cover to render BEHIND the page background in certain CSS stacking contexts
+- Cover isolation (FIX 1) already handles mixed layouts (cover + flow blocks), so the original reason for zIndex:0 is obsolete
+- Applied fix:
+  - Added COVER_Z_INDEX = 1 constant (with JSDoc explaining the fix)
+  - Changed all 3 locations from zIndex:0 → COVER_Z_INDEX (1)
+  - Updated comments in SceneLayoutEngine.ts and SchemaRenderer.tsx
+  - Updated STATUS.md Parking Lot P1 as FIXED
+- Build verified: npx next build ✓ (compiled successfully)
+- Committed: a186683 "fix: Cover invisible bug — zIndex correction in SceneLayoutEngine"
+
+Stage Summary:
+- **ROOT CAUSE**: Cover blocks at zIndex:0 rendered behind the page background in CSS stacking contexts where the parent element's background is at the base stacking level
+- **FIX**: Changed cover zIndex from 0 to 1 (COVER_Z_INDEX constant) in all 3 locations in resolveSceneLayout()
+- **Safety**: Cover isolation (always on by default) prevents any occlusion conflict between cover (zIndex:1) and flow blocks (zIndex:1) — when a cover exists with other blocks, only the cover is rendered
+- **Parking Lot P1**: Marked as FIXED in STATUS.md
+- **No other blocks affected**: Flow blocks stay at zIndex:1, absolute non-cover blocks stay at zIndex:10

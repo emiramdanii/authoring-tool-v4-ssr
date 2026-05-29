@@ -72,7 +72,7 @@
 
 | ID | Masalah | Ditemukan Saat |
 |---|---|---|
-| P1 | Cover invisible bug — zIndex:0 di SceneLayoutEngine | Audit sebelumnya |
+| P1 | ~~Cover invisible bug — zIndex:0 di SceneLayoutEngine~~ ✅ FIXED (Task 5) | Audit sebelumnya |
 | P2 | Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors | Diskusi STANDAR |
 | P3 | Font size violations di block renderers lainnya | Audit sebelumnya |
 | P4 | NcGridRenderer card body "Bagian dari materi" — placeholder text | Review norma-golden |
