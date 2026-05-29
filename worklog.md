@@ -1216,3 +1216,38 @@ Stage Summary:
 - **4 unused imports** removed (bundle size reduction)
 - **Parking lot P5 resolved** — syncMateriToSchema function deleted, MateriTab uses useSchemaMateri directly
 - All remaining work items are "Future Work": applyFullPreset schema-first, import/restore schema-first, activePanel extraction
+
+---
+Task ID: canvas-workspace-1
+Agent: Main Agent
+Task: Canvas Workspace screen-based — LearningMediaShell + Screen Adapters + Runtime Store
+
+Work Log:
+- Audited existing viewing modes: PreviewMode, PresentMode, PlayOverlay — all fragmented, teacher-oriented
+- Identified existing infrastructure: PageRenderer, SchemaScreenRenderer, interactive-store, GoldenPageRenderer
+- Created learning-media-store.ts (330 lines): navigation, completion tracking, score sync, navigation lock, session timing, star rating
+- Created LearningMediaShell.tsx (632+ lines): TopNavbar (48px) + Content (flex-1) + BottomNav (56px) + CompletionModal
+  - Animated score counter with pulse on change
+  - Thin 2px accent progress bar
+  - Touch swipe navigation (50px threshold)
+  - Keyboard shortcuts (Esc/←/→/Space)
+  - Page dots (active=emerald pill, complete=emerald-light, inactive=gray)
+  - Navigation lock on interactive screens (kuis/game/diskusi/refleksi/skenario)
+  - Completion modal with score/percentage/time/stars/replay
+- Created ScreenTypeRegistry.ts (284 lines): 13 screen types with config
+- Created ScreenShell.tsx (233 lines): consistent chrome wrapper
+- Created 13 screen adapters in adapters/ directory (each ~85-95 lines)
+- Created barrel export with getScreenAdapter() function
+- Modified PageRenderer: screen adapter system for preview/export modes (1 screen = 1 page)
+- Modified CanvaBuilder: wired LearningMediaShell as 'learn' mode
+- Modified types.ts: AppMode now includes 'learn'
+- Fixed: initSession not called on mount → added useEffect
+- Fixed: syncScores mutated Set directly → now creates new Set (immutable)
+- Build: Clean ✅, pushed to GitHub
+
+Stage Summary:
+- **LearningMediaShell** is the unified student-facing media player — replaces 3 fragmented modes
+- **13 screen adapters** enforce 1 screen = 1 page — no overlap, no free stacking
+- **learning-media-store** provides runtime state: navigation, scores, completion, lock
+- **Golden project** (norma-golden-schema.ts, 17 pages) fully compatible — all sceneTypes map to adapters
+- Commit: f051ddb (feature) + 393147b (fix)
