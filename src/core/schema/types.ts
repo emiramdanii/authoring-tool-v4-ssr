@@ -58,6 +58,9 @@ export type {
   MateriBlokBlock,
   MateriBlokTipe,
   MateriContentTab,
+  TabIconsBlock,
+  AccordionBlock,
+  InfografisBlock,
 } from './types/blocks';
 
 export type {

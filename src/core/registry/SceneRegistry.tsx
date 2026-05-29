@@ -157,6 +157,17 @@ const StudiRenderer = React.lazy(() =>
   import('../renderer/blocks/StudiRenderer').then(m => ({ default: m.StudiRenderer }))
 );
 
+// ── Presentation module renderers (Phase 5-G dedicated) ─────────
+const TabIconsRenderer = React.lazy(() =>
+  import('../renderer/blocks/TabIconsRenderer').then(m => ({ default: m.TabIconsRenderer }))
+);
+const AccordionRenderer = React.lazy(() =>
+  import('../renderer/blocks/AccordionRenderer').then(m => ({ default: m.AccordionRenderer }))
+);
+const InfografisRenderer = React.lazy(() =>
+  import('../renderer/blocks/InfografisRenderer').then(m => ({ default: m.InfografisRenderer }))
+);
+
 // ── Game renderers (heavy — lazy-loaded) ─────────────────────────
 const SortirGameRenderer = React.lazy(() =>
   import('../renderer/blocks/SortirGameRenderer').then(m => ({ default: m.SortirGameRenderer }))
@@ -236,9 +247,9 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'drag-drop-game': DragDropGameRenderer,
   'crossword-game': CrosswordGameRenderer,
   'team-buzzer-game': TeamBuzzerGameRenderer,
-  'tab-icons': FtabRenderer,
-  'accordion': TabelAccordionRenderer,
-  'infografis': NcGridRenderer,
+  'tab-icons': TabIconsRenderer,
+  'accordion': AccordionRenderer,
+  'infografis': InfografisRenderer,
 };
 
 // ═══════════════════════════════════════════════════════════════════
