@@ -310,40 +310,51 @@ function AuthoringToolInner() {
 
   return (
     <div className="h-screen w-screen flex bg-silse-surface-bright text-silse-on-surface overflow-hidden">
-      {/* ── SILSE v4 Sidebar — Fixed w-64, hidden in Canva mode ── */}
+      {/* ── SILSE v4 Sidebar — MD3 Navigation Drawer, hidden in Canva/Preview mode ── */}
       {!isCanva && !isPreview && (
       <aside
         role="navigation"
         aria-label="Menu utama"
-        className="w-64 flex-shrink-0 bg-silse-surface-bright border-r border-silse-outline-variant flex flex-col"
-        style={{ minHeight: '100vh' }}
+        className="w-[272px] flex-shrink-0 bg-silse-surface-container-lowest border-r border-silse-outline-variant/60 flex flex-col"
       >
-        {/* ── Brand / Logo ── */}
-        <div className="px-6 pt-6 pb-4">
-          <div
-            className="text-2xl font-bold text-silse-primary tracking-tight"
-            style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
-          >
-            Authoring Studio
-          </div>
-          <div className="text-sm font-bold text-silse-on-surface-variant mt-1">
-            SMP Education Portal
+        {/* ── Brand Header — SILSE v4 identity ── */}
+        <div className="px-5 pt-5 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-silse-primary-container/20 flex items-center justify-center border border-silse-primary-container/30">
+              <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '22px', fontVariationSettings: "'FILL' 1, 'wght' 500" }}>school</span>
+            </div>
+            <div>
+              <div
+                className="text-lg font-bold text-silse-on-surface tracking-tight leading-tight"
+                style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+              >
+                SILSE Studio
+              </div>
+              <div className="text-[11px] font-medium text-silse-on-surface-variant">
+                Media Pembelajaran Interaktif
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* ── New Project Button ── */}
-        <div className="px-4 pb-4">
+        {/* ── New Project CTA — MD3 FAB-style ── */}
+        <div className="px-4 pb-3">
           <button
             onClick={() => setWizardOpen(true)}
-            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-silse-primary-container text-silse-on-primary-container font-bold border-b-2 border-silse-primary hover:scale-95 transition-transform"
+            className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl bg-silse-primary-container text-silse-on-primary-container font-bold text-sm border-b-2 border-silse-primary/40 hover:bg-silse-primary-container/90 active:scale-[0.97] transition-[transform,background-color]"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add_circle</span>
-            New Project
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
+            Proyek Baru
           </button>
         </div>
 
-        {/* ── Navigation ── */}
-        <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto custom-scrollbar">
+        {/* ── Primary Navigation — MD3 Navigation Drawer spec ── */}
+        <nav className="flex-1 px-2.5 py-1 space-y-0.5 overflow-y-auto custom-scrollbar">
+          {/* Section label */}
+          <div className="px-3 pt-2 pb-1.5">
+            <span className="text-[10px] font-bold text-silse-outline uppercase tracking-widest">Workspace</span>
+          </div>
+
           {NAV_ITEMS.map((item) => {
             const isActive = getActiveNavId() === item.id;
             return (
@@ -352,21 +363,27 @@ function AuthoringToolInner() {
                 data-testid={`nav-${item.id}`}
                 onClick={() => setActivePanel(item.id)}
                 onMouseEnter={() => handleNavHover(item.id)}
-                className={`w-full flex items-center rounded-xl px-4 py-3 gap-3 text-sm font-medium transition-all focus-ring hover:translate-x-1 ${
+                className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-[13px] font-medium transition-[background-color,color] duration-150 focus-ring ${
                   isActive
-                    ? 'bg-silse-primary-container text-silse-on-primary-container'
-                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high'
+                    ? 'bg-silse-primary-container/25 text-silse-primary'
+                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface'
                 }`}
                 title={item.label}
               >
+                {/* MD3 Active indicator — left pill bar */}
+                {isActive && (
+                  <span className="absolute left-0 w-[3px] h-5 rounded-r-full bg-silse-primary" />
+                )}
                 <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '20px', fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}>{item.icon}</span>
                 <span style={{ fontFamily: 'var(--font-nunito), Nunito Sans, sans-serif' }}>{item.label}</span>
               </button>
             );
           })}
 
-          {/* ── Secondary nav items ── */}
-          <div className="section-divider my-3" />
+          {/* ── Secondary section ── */}
+          <div className="px-3 pt-4 pb-1.5">
+            <span className="text-[10px] font-bold text-silse-outline uppercase tracking-widest">Alat</span>
+          </div>
 
           {[
             { id: 'autogen' as PanelId, icon: 'auto_awesome', label: isSederhana ? 'Buat AI' : 'Auto-Generate' },
@@ -382,10 +399,10 @@ function AuthoringToolInner() {
                 data-testid={`nav-${item.id}`}
                 onClick={() => setActivePanel(item.id)}
                 onMouseEnter={() => handleNavHover(item.id)}
-                className={`w-full flex items-center rounded-xl px-4 py-2.5 gap-3 text-[13px] transition-all focus-ring hover:translate-x-1 ${
+                className={`w-full flex items-center rounded-xl px-3 py-2 gap-3 text-[12px] transition-[background-color,color] duration-150 focus-ring ${
                   isActive
-                    ? 'bg-silse-primary-container text-silse-on-primary-container font-medium'
-                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high'
+                    ? 'bg-silse-primary-container/25 text-silse-primary font-semibold'
+                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface'
                 }`}
                 title={item.label}
               >
@@ -396,45 +413,46 @@ function AuthoringToolInner() {
           })}
         </nav>
 
-        {/* ── Bottom Section ── */}
-        <div className="border-t border-silse-outline-variant px-3 py-3 space-y-1">
-          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1 transition-all">
+        {/* ── Bottom Actions — Settings, Support ── */}
+        <div className="px-2.5 py-2 space-y-0.5 border-t border-silse-outline-variant/40">
+          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150">
             <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px' }}>settings</span>
-            <span>Settings</span>
+            <span>Pengaturan</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1 transition-all">
+          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150">
             <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px' }}>contact_support</span>
-            <span>Support</span>
+            <span>Bantuan</span>
           </button>
-
-          {/* User profile */}
-          <div className="flex items-center gap-3 px-4 py-3 mt-2 rounded-xl">
-            <div className="w-9 h-9 rounded-full bg-silse-primary-container flex items-center justify-center flex-shrink-0">
-              <span className="material-symbols-outlined text-silse-on-primary-container" style={{ fontSize: '18px' }}>school</span>
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-semibold text-silse-on-surface truncate">Guru PPKn</div>
-              <div className="text-[0.65rem] text-silse-on-surface-variant">Mode {isSederhana ? 'Sederhana' : 'Lengkap'}</div>
-            </div>
-          </div>
         </div>
 
-        {/* ── Teacher Mode Toggle + Save/Export ── */}
-        <div className="px-3 py-3 space-y-2 border-t border-silse-outline-variant">
-          <TeacherModeToggle />
+        {/* ── User Profile + Save ── */}
+        <div className="px-3 py-3 space-y-2.5 border-t border-silse-outline-variant/40 bg-silse-surface-container-lowest">
+          {/* User profile card */}
+          <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-silse-surface-container-high/40 transition-colors">
+            <div className="w-9 h-9 rounded-full bg-silse-primary-container/20 flex items-center justify-center flex-shrink-0 border border-silse-primary-container/30">
+              <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '18px' }}>school</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[12px] font-semibold text-silse-on-surface truncate">Guru PPKn</div>
+              <div className="text-[10px] text-silse-on-surface-variant">Mode {isSederhana ? 'Sederhana' : 'Lengkap'}</div>
+            </div>
+            <TeacherModeToggle />
+          </div>
+
+          {/* Save + Export buttons */}
           <button
             onClick={saveAll}
             disabled={saving}
-            className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 w-full text-xs inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition-colors disabled:opacity-50"
+            className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 w-full text-[12px] inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition-[background-color,transform] active:scale-[0.97] disabled:opacity-50"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '14px', animation: saving ? 'spin 1s linear infinite' : 'none' }}>save</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px', animation: saving ? 'spin 1s linear infinite' : 'none' }}>save</span>
             {saving ? 'Menyimpan...' : 'Simpan Semua'}
           </button>
           <button
             onClick={exportJSON}
-            className="text-silse-on-surface-variant border border-silse-outline-variant hover:bg-silse-surface-container-high hover:text-silse-on-surface w-full text-xs inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium transition-colors"
+            className="text-silse-on-surface-variant border border-silse-outline-variant/60 hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface w-full text-[12px] inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium transition-[background-color,color] active:scale-[0.97]"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>download</span>
             Export JSON
           </button>
         </div>
@@ -448,9 +466,9 @@ function AuthoringToolInner() {
             variant="ghost"
             size="sm"
             onClick={() => setActivePanel('dashboard')}
-            className="bg-silse-surface-container-lowest/90 border border-silse-outline-variant shadow-sm text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-sm"
+            className="bg-silse-surface-container-lowest/95 border border-silse-outline-variant/60 shadow-md text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-md rounded-xl px-3 py-1.5 text-[12px] font-semibold"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_back</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
             {isSederhana ? 'Beranda' : 'Dashboard'}
           </Button>
         </div>
@@ -463,9 +481,9 @@ function AuthoringToolInner() {
             variant="ghost"
             size="sm"
             onClick={() => setActivePanel('dashboard')}
-            className="bg-silse-surface-container-lowest/90 border border-silse-outline-variant shadow-sm text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-sm"
+            className="bg-silse-surface-container-lowest/95 border border-silse-outline-variant/60 shadow-md text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-md rounded-xl px-3 py-1.5 text-[12px] font-semibold"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_back</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
             {isSederhana ? 'Beranda' : 'Dashboard'}
           </Button>
         </div>
@@ -473,12 +491,25 @@ function AuthoringToolInner() {
 
       {/* ── Main Area ───────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
-        {/* ── Thin Header Bar (breadcrumb + actions) ── */}
+        {/* ── Header Bar — SILSE v4 breadcrumb + actions ── */}
         {!isCanva && !isPreview && (
-          <header className="h-12 flex-shrink-0 bg-silse-surface-container-lowest border-b border-silse-outline-variant flex items-center gap-3 px-5">
-            <div className="text-sm font-medium text-silse-on-surface">
-              {panelTitles[activePanel]}
-              <span className="text-silse-on-surface-variant font-normal ml-1">/ {meta.judulPertemuan || 'Proyek Baru'}</span>
+          <header className="h-12 flex-shrink-0 bg-silse-surface-container-lowest border-b border-silse-outline-variant/60 flex items-center gap-3 px-5">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '16px' }}>{
+                activePanel === 'dashboard' ? 'space_dashboard' :
+                activePanel === 'dokumen' ? 'edit_note' :
+                activePanel === 'konten' ? 'folder_open' :
+                activePanel === 'autogen' ? 'auto_awesome' :
+                activePanel === 'projects' ? 'folder_open' :
+                activePanel === 'import' ? 'swap_horiz' :
+                activePanel === 'versions' ? 'schedule' :
+                'space_dashboard'
+              }</span>
+              <span className="text-[13px] font-semibold text-silse-on-surface">
+                {panelTitles[activePanel]}
+              </span>
+              <span className="text-silse-outline-variant mx-0.5">/</span>
+              <span className="text-[12px] text-silse-on-surface-variant">{meta.judulPertemuan || 'Proyek Baru'}</span>
             </div>
 
             {/* Dirty indicator */}
@@ -502,7 +533,7 @@ function AuthoringToolInner() {
                 variant="outline"
                 size="sm"
                 onClick={() => setActivePanel('preview')}
-                className="text-silse-primary border-silse-outline-variant hover:bg-silse-surface-container-high hover:text-silse-primary"
+                className="text-silse-primary border-silse-outline-variant/60 hover:bg-silse-primary/5 hover:text-silse-primary rounded-xl text-[12px] font-semibold gap-1.5"
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>visibility</span>
                 {isSederhana ? 'Pratinjau' : 'Preview'}
@@ -511,7 +542,7 @@ function AuthoringToolInner() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setActivePanel('canva')}
-                className="text-silse-on-surface-variant hover:text-silse-on-surface"
+                className="text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high/60 rounded-xl text-[12px] font-semibold gap-1.5"
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>palette</span>
                 {isSederhana ? 'Desain' : 'Canva'}
@@ -520,7 +551,7 @@ function AuthoringToolInner() {
                 size="sm"
                 onClick={saveAll}
                 disabled={saving}
-                className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 disabled:opacity-50 font-medium"
+                className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 disabled:opacity-50 font-semibold rounded-xl text-[12px] gap-1.5"
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '14px', animation: saving ? 'spin 1s linear infinite' : 'none' }}>save</span>
                 {saving ? '...' : 'Simpan'}
