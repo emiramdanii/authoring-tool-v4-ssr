@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pertemuan 2 – Macam-Macam Norma | PPKn Kelas VII</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1c2f;--bg2:#13243a;--card:#182d45;--border:rgba(255,255,255,.09);
+  --y:#f9c12e;--c:#3ecfcf;--r:#ff6b6b;--p:#a78bfa;--g:#34d399;--o:#fb923c;
+  --text:#e8f2ff;--muted:#6e90b5;--rad:16px;
+  --nagama:#f9c12e;--nkesusilaan:#ff6b6b;--nkesopanan:#3ecfcf;--nhukum:#a78bfa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.screen{display:none;min-height:100vh;animation:fadeIn .4s ease;}
+.screen.active{display:flex;flex-direction:column;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+/* NAVBAR */
+.navbar{background:rgba(14,28,47,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  padding:10px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:200;}
+.nav-logo{font-family:'Fredoka One',cursive;font-size:.95rem;color:var(--c);white-space:nowrap;}
+.nav-prog{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin:0 8px;}
+.nav-prog-fill{height:100%;background:linear-gradient(90deg,var(--c),var(--p));border-radius:99px;transition:width .5s;}
+.nav-score{font-size:.8rem;font-weight:800;color:var(--y);white-space:nowrap;}
+.nav-scene{font-size:.7rem;color:var(--muted);font-weight:700;white-space:nowrap;}
+.main{flex:1;padding:22px 16px;max-width:860px;width:100%;margin:0 auto;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:99px;
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:.9rem;border:none;cursor:pointer;transition:all .18s;}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3);}
+.btn:active{transform:translateY(0);}
+.btn-y{background:var(--y);color:#0e1c2f;}.btn-c{background:var(--c);color:#0e1c2f;}
+.btn-g{background:var(--g);color:#0e1c2f;}.btn-p{background:var(--p);color:#fff;}
+.btn-r{background:var(--r);color:#fff;}.btn-o{background:var(--o);color:#0e1c2f;}
+.btn-ghost{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--border);}
+.btn-sm{padding:7px 15px;font-size:.78rem;}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px;}
+.btn-center{justify-content:center;}
+
+/* TYPOGRAPHY */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:20px;}
+.h2{font-family:'Fredoka One',cursive;font-size:1.6rem;line-height:1.2;}
+.h3{font-weight:800;font-size:1rem;}
+.sub{color:var(--muted);font-size:.86rem;line-height:1.6;}
+.chip-sc{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:99px;font-size:.72rem;font-weight:800;margin-bottom:10px;}
+.hl{color:var(--c);}
+.mt8{margin-top:8px;}.mt14{margin-top:14px;}.mt20{margin-top:20px;}
+.def-box{border-left:4px solid var(--c);background:rgba(62,207,207,.07);border-radius:0 11px 11px 0;padding:13px 15px;margin:13px 0;font-size:.91rem;line-height:1.7;}
+
+/* ══ DISKUSI KELOMPOK BANNER ══ */
+.diskusi-kelompok{border-radius:13px;padding:13px 15px;margin:12px 0;display:flex;gap:12px;align-items:flex-start;}
+.diskusi-kelompok.tipe-1{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.25);}
+.diskusi-kelompok.tipe-2{background:rgba(249,193,46,.07);border:1px solid rgba(249,193,46,.25);}
+.diskusi-kelompok.tipe-3{background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.25);}
+.dk-ikon{font-size:1.8rem;flex-shrink:0;line-height:1;}
+.dk-body{}
+.dk-label{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.dk-label.hijau{color:var(--g);}
+.dk-label.kuning{color:var(--y);}
+.dk-label.ungu{color:var(--p);}
+.dk-judul{font-weight:800;font-size:.88rem;margin-bottom:4px;line-height:1.4;}
+.dk-isi{font-size:.8rem;color:var(--muted);line-height:1.6;}
+
+/* ══ TIMER DISKUSI ══ */
+.timer-box{display:flex;align-items:center;gap:10px;background:rgba(249,193,46,.08);border:1px solid rgba(249,193,46,.2);border-radius:10px;padding:8px 14px;margin-top:8px;}
+.timer-display{font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--y);min-width:42px;}
+.timer-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;}
+.timer-bar-fill{height:100%;border-radius:99px;transition:width .9s linear,background .3s;}
+.timer-btn{padding:5px 13px;border-radius:99px;font-size:.74rem;font-weight:800;border:none;cursor:pointer;background:var(--y);color:#0e1c2f;font-family:'Nunito',sans-serif;}
+
+/* ══ PANDUAN KELOMPOK di game ══ */
+.game-diskusi-hint{background:rgba(62,207,207,.06);border:1px dashed rgba(62,207,207,.3);border-radius:11px;padding:10px 13px;margin-bottom:12px;font-size:.8rem;line-height:1.6;}
+.game-diskusi-hint strong{color:var(--c);}
+
+/* ══ CP / TP / ATP ══ */
+.kurikulum-tabs{display:flex;gap:6px;margin:10px 0;}
+.ktab{padding:6px 14px;border-radius:99px;font-size:.79rem;font-weight:800;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);transition:all .2s;}
+.ktab.active{background:var(--y);color:#0e1c2f;border-color:transparent;}
+.ktab-content{display:none;animation:fadeIn .3s ease;}
+.ktab-content.active{display:block;}
+.cp-box{background:rgba(249,193,46,.06);border:1px solid rgba(249,193,46,.2);border-radius:13px;padding:16px;margin:10px 0;}
+.atp-row{display:flex;gap:0;margin:10px 0;overflow-x:auto;padding-bottom:4px;}
+.atp-step{flex:1;min-width:120px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;position:relative;}
+.atp-step:not(:last-child)::after{content:'→';position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:900;z-index:1;}
+.atp-num{font-family:'Fredoka One',cursive;font-size:.85rem;color:var(--y);margin-bottom:3px;}
+.atp-title{font-size:.75rem;font-weight:800;margin-bottom:2px;}
+.atp-jp{font-size:.68rem;color:var(--muted);}
+.tbl{width:100%;border-collapse:collapse;font-size:.79rem;}
+.tbl th{background:rgba(255,255,255,.06);padding:8px 10px;text-align:left;font-weight:800;font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+.tbl td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.5;vertical-align:top;}
+@media(max-width:540px){.atp-row{flex-direction:column;}.atp-step:not(:last-child)::after{content:'↓';right:auto;top:auto;bottom:-12px;left:50%;}}
+
+/* COVER */
+#s-cover{background:radial-gradient(ellipse 90% 60% at 50% 0%,rgba(62,207,207,.18),transparent 60%),linear-gradient(180deg,#0e1c2f,#09121f);}
+.cover-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 18px;}
+.cover-icon{font-size:4.5rem;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.cover-title{font-family:'Fredoka One',cursive;font-size:clamp(1.7rem,5.5vw,2.8rem);line-height:1.1;margin:10px 0 6px;}
+.cover-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 26px;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:99px;font-size:.74rem;font-weight:800;}
+
+/* TP */
+.tp-list{display:flex;flex-direction:column;gap:9px;margin-top:10px;}
+.tp-item{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.tp-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:900;flex-shrink:0;}
+.tp-verb{font-weight:900;font-size:.86rem;margin-bottom:2px;}
+.tp-desc{color:var(--muted);font-size:.79rem;line-height:1.5;}
+
+/* ALUR */
+.alur-steps{display:flex;flex-direction:column;gap:8px;margin:14px 0;}
+.alur-step{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);}
+.alur-dur{font-size:.78rem;font-weight:900;min-width:44px;flex-shrink:0;margin-top:2px;}
+.alur-txt{font-size:.82rem;line-height:1.5;}
+.alur-txt strong{color:var(--text);}
+.alur-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+
+/* KARTU NORMA */
+.norma-tabs{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap;}
+.ntab{padding:7px 14px;border-radius:99px;font-size:.78rem;font-weight:800;cursor:pointer;
+  border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);transition:all .2s;position:relative;}
+.ntab.active{color:#0e1c2f;border-color:transparent;}
+.ntab.read::after{content:'✓';position:absolute;top:-4px;right:-4px;width:14px;height:14px;
+  border-radius:50%;background:var(--g);color:#0e1c2f;font-size:.6rem;display:flex;align-items:center;justify-content:center;font-weight:900;}
+.nk-card{border-radius:16px;padding:18px;animation:fadeIn .3s ease;}
+.nk-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.nk-icon{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;}
+.nk-label{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;opacity:.7;}
+.nk-title{font-family:'Fredoka One',cursive;font-size:1.2rem;}
+.nk-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.nk-box{border-radius:11px;padding:11px 13px;border:1px solid rgba(255,255,255,.08);}
+.nk-box-label{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;opacity:.7;}
+.nk-box-val{font-size:.82rem;line-height:1.6;}
+.nk-sanksi{border-radius:11px;padding:12px 14px;margin-top:10px;border:1px solid rgba(255,255,255,.1);}
+.nk-sanksi-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;}
+.nk-sanksi-item{display:flex;align-items:flex-start;gap:9px;font-size:.82rem;margin-bottom:5px;line-height:1.4;}
+.nk-sanksi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.nk-contoh{font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:8px;padding:10px 13px;background:rgba(255,255,255,.04);border-radius:9px;}
+.nk-pelanggaran{border-radius:11px;padding:12px 14px;margin-top:10px;border:1px solid rgba(255,107,107,.2);background:rgba(255,107,107,.05);}
+.nk-pel-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--r);margin-bottom:7px;}
+.nk-pel-item{display:flex;gap:9px;font-size:.81rem;margin-bottom:6px;line-height:1.5;}
+
+/* TABEL ACCORDION */
+.tabel-accord{display:flex;flex-direction:column;gap:7px;margin:14px 0;}
+.tabel-row{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);transition:border-color .2s;}
+.tabel-row.hl{border-color:var(--y);}
+.tabel-row-head{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-weight:800;font-size:.86rem;user-select:none;}
+.tabel-row-head .arrow{margin-left:auto;font-size:.75rem;color:var(--muted);transition:transform .3s;}
+.tabel-row-head.open .arrow{transform:rotate(180deg);}
+.tabel-row-body{display:none;padding:0 14px 12px;}
+.tabel-detail{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.td-cell{background:rgba(255,255,255,.04);border-radius:9px;padding:9px 11px;}
+.td-cell-label{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px;}
+.td-cell-val{font-size:.79rem;line-height:1.5;}
+
+/* DISKUSI BOX */
+.diskusi-box{background:rgba(62,207,207,.07);border:1px solid rgba(62,207,207,.25);border-radius:13px;padding:16px;margin-top:12px;}
+.diskusi-box textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:9px;padding:9px;color:var(--text);font-family:'Nunito',sans-serif;font-size:.86rem;resize:vertical;min-height:70px;margin-top:8px;}
+.diskusi-box textarea:focus{outline:2px solid var(--c);}
+.saved-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:99px;font-size:.74rem;font-weight:800;background:rgba(52,211,153,.15);color:var(--g);border:1px solid rgba(52,211,153,.3);animation:fadeIn .3s ease;}
+
+/* GAME SORTIR */
+.sortir-kartu-pool{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:12px;background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.1);border-radius:13px;margin-bottom:14px;}
+.sortir-kartu{padding:8px 14px;border-radius:99px;font-size:.8rem;font-weight:800;cursor:pointer;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:var(--text);transition:all .25s;user-select:none;}
+.sortir-kartu:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.4);}
+.sortir-kartu.selected{outline:3px solid var(--y);outline-offset:2px;transform:scale(1.06);}
+@keyframes flyOut{0%{opacity:1;transform:scale(1);}60%{opacity:.8;transform:scale(1.15) translateY(-8px);}100%{opacity:0;transform:scale(.4) translateY(-20px);}}
+.sortir-kartu.flying{animation:flyOut .38s ease forwards;pointer-events:none;}
+.sortir-kolom-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sortir-kolom{border-radius:13px;padding:12px;min-height:80px;border:2px solid rgba(255,255,255,.1);cursor:pointer;transition:all .2s;}
+.sortir-kolom:hover{border-color:var(--c);}
+.sortir-kolom.highlight{border-color:var(--y);background:rgba(249,193,46,.05);transform:scale(1.01);}
+.sortir-kolom-title{font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.sortir-kolom-items{display:flex;flex-wrap:wrap;gap:5px;min-height:32px;}
+.sortir-item-placed{padding:5px 10px;border-radius:99px;font-size:.75rem;font-weight:700;animation:fadeIn .3s ease;}
+
+/* RODA NORMA */
+.roda-shell{background:#060d18;border:2px solid #1e3a5a;border-radius:16px;overflow:hidden;margin:12px 0;}
+.roda-hud{background:linear-gradient(90deg,#0d1b2f,#0f2340);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #1e3a5a;flex-wrap:wrap;gap:8px;}
+.roda-q-area{padding:16px;}
+.roda-q-text{font-size:.88rem;font-weight:700;line-height:1.6;margin-bottom:10px;}
+/* kotak diskusi per soal */
+.roda-diskusi{background:rgba(62,207,207,.06);border:1px dashed rgba(62,207,207,.3);border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:.8rem;line-height:1.6;}
+.roda-diskusi strong{color:var(--c);}
+.roda-opts{display:flex;flex-direction:column;gap:8px;}
+.roda-opt{padding:10px 14px;border-radius:11px;cursor:pointer;font-size:.84rem;font-weight:700;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.09);transition:all .2s;display:flex;align-items:center;gap:10px;}
+.roda-opt:hover:not(.dis){background:rgba(255,255,255,.1);border-color:var(--c);}
+.roda-opt.rok{background:rgba(52,211,153,.12);border-color:var(--g);color:var(--g);}
+.roda-opt.rno{background:rgba(255,107,107,.12);border-color:var(--r);color:var(--r);}
+.roda-opt.rhok{background:rgba(52,211,153,.08);border-color:var(--g);}
+.roda-opt.dis{pointer-events:none;cursor:default;}
+.roda-fb{padding:10px 14px;border-radius:10px;margin-top:10px;font-size:.81rem;font-weight:700;line-height:1.6;}
+.roda-fb.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--g);}
+.roda-fb.no{background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:var(--r);}
+
+/* FLASHCARD */
+.flash-wrap{margin:14px 0;perspective:900px;}
+.flash-card{width:100%;min-height:130px;border-radius:14px;cursor:pointer;transition:transform .6s;transform-style:preserve-3d;position:relative;}
+.flash-card.flipped{transform:rotateY(180deg);}
+.flash-front,.flash-back{position:absolute;inset:0;border-radius:14px;padding:16px 18px;backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center;}
+.flash-front{background:var(--card);border:1px solid var(--border);}
+.flash-back{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);transform:rotateY(180deg);}
+.flash-label{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px;}
+.flash-q{font-weight:800;font-size:.92rem;line-height:1.5;}
+.flash-a{font-size:.86rem;line-height:1.6;color:var(--g);}
+.flash-hint{font-size:.72rem;color:var(--muted);margin-top:10px;text-align:right;}
+.flash-nav{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.flash-dots{display:flex;gap:5px;}
+.flash-dot-f{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.12);}
+.flash-dot-f.cur{background:var(--y);}
+.flash-dot-f.done{background:var(--g);}
+
+/* HASIL */
+.hasil-circle{width:148px;height:148px;border-radius:50%;background:conic-gradient(var(--g) 0%,var(--g) var(--prog,0%),rgba(255,255,255,.06) var(--prog,0%) 100%);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;position:relative;}
+.hasil-circle::before{content:'';position:absolute;inset:10px;border-radius:50%;background:var(--bg2);}
+.hasil-num{position:relative;z-index:1;text-align:center;}
+.hasil-num .num{font-family:'Fredoka One',cursive;font-size:2.1rem;color:var(--g);}
+.level-badge{padding:10px 20px;border-radius:12px;text-align:center;font-weight:800;font-size:.92rem;margin:12px 0;}
+
+/* PORTO */
+.porto-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:9px;}
+.porto-label{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.porto-val{font-size:.85rem;line-height:1.6;color:var(--text);font-weight:600;font-style:italic;}
+
+/* REFLEKSI */
+.refl-item{border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,.08);margin-bottom:11px;}
+.refl-item label{font-size:.79rem;font-weight:800;display:block;margin-bottom:6px;}
+.refl-item textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-family:'Nunito',sans-serif;font-size:.82rem;resize:vertical;min-height:62px;}
+.refl-item textarea:focus{outline:2px solid var(--c);}
+
+/* MISC */
+.score-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--y);color:#0e1c2f;border-radius:16px;padding:14px 26px;font-family:'Fredoka One',cursive;font-size:1.6rem;animation:popIn .3s ease;z-index:999;pointer-events:none;}
+@keyframes popIn{from{transform:translate(-50%,-50%) scale(.4);opacity:0;}to{transform:translate(-50%,-50%) scale(1);opacity:1;}}
+.conf-wrap{position:fixed;inset:0;pointer-events:none;z-index:998;overflow:hidden;}
+.conf{position:absolute;border-radius:2px;animation:confFall linear both;}
+@keyframes confFall{0%{opacity:1;transform:translateY(-30px) rotate(0);}100%{opacity:0;transform:translateY(110vh) rotate(720deg);}}
+@media(max-width:540px){
+  .nk-row,.tabel-detail,.sortir-kolom-grid{grid-template-columns:1fr;}
+  .norma-tabs{gap:5px;}
+  .atp-row{flex-direction:column;}
+  .atp-step:not(:last-child)::after{content:'↓';right:auto;top:auto;bottom:-12px;left:50%;}
+}
+
+</style>
+</head>
+<body>
+<div class="conf-wrap" id="confWrap"></div>
+
+<nav class="navbar" id="navbar" style="display:none">
+  <span class="nav-logo">🗂️ Macam-Macam Norma</span>
+  <div class="nav-prog"><div class="nav-prog-fill" id="progFill" style="width:0%"></div></div>
+  <span class="nav-scene" id="navScene"></span>
+  <span class="nav-score">🌟 <span id="navScore">0</span></span>
+</nav>
+
+<!-- ══ COVER ══ -->
+<div class="screen active" id="s-cover">
+  <div class="cover-wrap">
+    <div class="cover-icon">🗂️</div>
+    <div style="color:var(--c);font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase">PPKn · Kelas VII · Kurikulum Merdeka</div>
+    <h1 class="cover-title"><span style="color:var(--c)">Bab 3 — Pertemuan 2</span><br>Macam-Macam Norma</h1>
+    <p class="sub" style="max-width:420px;margin:8px auto">Pelajari 4 jenis norma bersama kelompokmu! Diskusikan setiap pertanyaan, lalu jawab bersama.</p>
+    <div class="cover-chips">
+      <span class="chip" style="background:rgba(249,193,46,.15);color:var(--y)">🙏 Norma Agama</span>
+      <span class="chip" style="background:rgba(255,107,107,.15);color:var(--r)">❤️ Norma Kesusilaan</span>
+      <span class="chip" style="background:rgba(62,207,207,.15);color:var(--c)">🤝 Norma Kesopanan</span>
+      <span class="chip" style="background:rgba(167,139,250,.15);color:var(--p)">⚖️ Norma Hukum</span>
+    </div>
+    <div style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:12px 18px;margin-bottom:22px;font-size:.82rem;line-height:1.7;max-width:420px">
+      👥 <strong style="color:var(--g)">Pembelajaran Kelompok</strong><br>
+      Setiap aktivitas dilengkapi <strong>panduan diskusi</strong> dan <strong>pertanyaan pemantik</strong>. Diskusikan dulu sebelum menjawab!
+    </div>
+    <div style="margin-bottom:18px;padding:9px 16px;background:rgba(255,255,255,.05);border-radius:10px;font-size:.78rem;color:var(--muted)">
+      ⏱️ 80 Menit &nbsp;|&nbsp; 🎯 TP 2 &amp; TP 3 &nbsp;|&nbsp; 🎮 Game Sortir + Roda Norma
+    </div>
+    <button class="btn btn-c" onclick="goto('s-cp')">▶ Lihat CP · TP · ATP</button>
+  </div>
+</div>
+
+<!-- ══ CP / TP / ATP ══ -->
+<div class="screen" id="s-cp">
+  <div class="main">
+    <span class="chip-sc" style="background:rgba(167,139,250,.15);color:var(--p)">📋 Kurikulum Merdeka</span>
+    <h2 class="h2">CP · TP · ATP<br><span class="hl">Bab 3 Kelas VII</span></h2>
+
+    <div class="kurikulum-tabs" style="margin-top:14px">
+      <div class="ktab active" onclick="switchKtab('cp')">📌 CP</div>
+      <div class="ktab" onclick="switchKtab('tp')">🎯 TP</div>
+      <div class="ktab" onclick="switchKtab('atp')">🗓️ ATP</div>
+    </div>
+
+    <!-- CP -->
+    <div class="ktab-content active" id="kc-cp">
+      <div style="font-size:.74rem;color:var(--muted);font-weight:800;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Capaian Pembelajaran — Fase D (Kelas 7–9)</div>
+      <div class="cp-box">
+        <div style="font-size:.75rem;color:var(--y);font-weight:800;margin-bottom:6px">📌 ELEMEN: PANCASILA</div>
+        <div style="font-size:.86rem;line-height:1.75;font-weight:600">Peserta didik mampu <strong style="color:#fff">memahami dan melaksanakan norma dan aturan</strong> yang berlaku, menganalisis pentingnya kepatuhan terhadap norma dalam kehidupan bermasyarakat, berbangsa, dan bernegara demi terwujudnya kehidupan yang tertib, aman, dan harmonis.</div>
+      </div>
+      <div class="cp-box" style="border-color:rgba(62,207,207,.2);background:rgba(62,207,207,.06);">
+        <div style="font-size:.75rem;color:var(--c);font-weight:800;margin-bottom:6px">📌 ELEMEN: BHINNEKA TUNGGAL IKA</div>
+        <div style="font-size:.86rem;line-height:1.75;font-weight:600">Peserta didik mampu mengidentifikasi keberagaman norma yang berlaku di masyarakat sebagai wujud kekayaan budaya bangsa Indonesia dan menunjukkan sikap <strong style="color:#fff">toleran serta patuh terhadap norma bersama.</strong></div>
+      </div>
+      <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:11px;padding:12px;font-size:.8rem;line-height:1.6;margin-top:10px">
+        <strong style="color:var(--g)">📎 Koneksi dengan Profil Pelajar Pancasila:</strong><br>
+        Beriman &amp; Bertakwa · Berkebinekaan Global · Bergotong Royong · Bernalar Kritis
+      </div>
+    </div>
+
+    <!-- TP -->
+    <div class="ktab-content" id="kc-tp">
+      <div style="font-size:.74rem;color:var(--muted);font-weight:800;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Tujuan Pembelajaran — Bab 3</div>
+      <div class="tp-list">
+        <div class="tp-item" style="border-left:3px solid var(--y)">
+          <div class="tp-num" style="background:rgba(249,193,46,.2);color:var(--y)">1</div>
+          <div><div class="tp-verb" style="color:var(--y)">Menjelaskan</div><div class="tp-desc">pengertian norma sebagai aturan yang mengikat warga masyarakat dan berfungsi sebagai pedoman tingkah laku dalam kehidupan bersama</div></div>
+        </div>
+        <div class="tp-item" style="border-left:3px solid var(--c)">
+          <div class="tp-num" style="background:rgba(62,207,207,.2);color:var(--c)">2</div>
+          <div><div class="tp-verb" style="color:var(--c)">Mengidentifikasi</div><div class="tp-desc">macam-macam norma (agama, kesusilaan, kesopanan, dan hukum) beserta sumber, sanksi, dan sifatnya masing-masing</div></div>
+        </div>
+        <div class="tp-item" style="border-left:3px solid var(--r)">
+          <div class="tp-num" style="background:rgba(255,107,107,.2);color:var(--r)">3</div>
+          <div><div class="tp-verb" style="color:var(--r)">Menganalisis</div><div class="tp-desc">pentingnya patuh terhadap norma dan dampak pelanggaran norma bagi diri sendiri, masyarakat, serta kehidupan berbangsa dan bernegara</div></div>
+        </div>
+        <div class="tp-item" style="border-left:3px solid var(--p)">
+          <div class="tp-num" style="background:rgba(167,139,250,.2);color:var(--p)">4</div>
+          <div><div class="tp-verb" style="color:var(--p)">Memberikan contoh</div><div class="tp-desc">penerapan norma di lingkungan keluarga, sekolah, dan masyarakat dalam kehidupan sehari-hari</div></div>
+        </div>
+        <div class="tp-item" style="border-left:3px solid var(--g)">
+          <div class="tp-num" style="background:rgba(52,211,153,.2);color:var(--g)">5</div>
+          <div><div class="tp-verb" style="color:var(--g)">Menerapkan</div><div class="tp-desc">perilaku patuh terhadap norma sebagai wujud kesadaran hukum dan tanggung jawab sebagai warga negara yang baik</div></div>
+        </div>
+      </div>
+      <div style="background:rgba(62,207,207,.07);border:1px solid rgba(62,207,207,.2);border-radius:11px;padding:12px;font-size:.8rem;line-height:1.6;margin-top:12px">
+        🎯 <strong style="color:var(--c)">Fokus Pertemuan 2 ini:</strong> TP 2 (Mengidentifikasi 4 norma) &amp; TP 3 (Menganalisis dampak pelanggaran norma)
+      </div>
+    </div>
+
+    <!-- ATP -->
+    <div class="ktab-content" id="kc-atp">
+      <div style="font-size:.74rem;color:var(--muted);font-weight:800;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Alur Tujuan Pembelajaran — Bab 3 (3 Pertemuan × 2 JP × 40 Menit = 80 Menit)</div>
+      <div class="atp-row" style="gap:8px">
+        <div class="atp-step" style="border-color:rgba(249,193,46,.3)">
+          <div class="atp-num" style="color:var(--y)">P–1</div>
+          <div class="atp-title">Hakikat Norma</div>
+          <div class="atp-jp">TP 1</div>
+          <div style="font-size:.68rem;color:var(--muted);margin-top:5px;line-height:1.4">Manusia makhluk sosial, pengertian &amp; fungsi norma</div>
+        </div>
+        <div class="atp-step" style="border-color:rgba(62,207,207,.5);background:rgba(62,207,207,.06)">
+          <div class="atp-num" style="color:var(--c)">P–2</div>
+          <div class="atp-title" style="color:var(--c)">Macam-Macam Norma</div>
+          <div class="atp-jp" style="color:var(--c);font-weight:800">TP 2, TP 3</div>
+          <div style="font-size:.68rem;color:var(--muted);margin-top:5px;line-height:1.4">4 jenis norma, sumber, sanksi + Game Sortir</div>
+          <div style="font-size:.66rem;font-weight:800;color:var(--c);margin-top:4px">← Kamu di sini</div>
+        </div>
+        <div class="atp-step" style="border-color:rgba(52,211,153,.3)">
+          <div class="atp-num" style="color:var(--g)">P–3</div>
+          <div class="atp-title">Perilaku Patuh</div>
+          <div class="atp-jp">TP 4, TP 5</div>
+          <div style="font-size:.68rem;color:var(--muted);margin-top:5px;line-height:1.4">Penerapan di berbagai lingkungan + Kuis + Refleksi</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;margin-top:12px">
+        <table class="tbl">
+          <thead><tr><th>Pertemuan</th><th>Durasi</th><th>Kegiatan Utama</th><th>Penilaian</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--y);font-weight:800">Pertemuan 1</td><td style="color:var(--muted)">2 × 40'</td><td>Apersepsi skenario → Manusia makhluk sosial → Pengertian &amp; fungsi norma → Diskusi &amp; latihan</td><td>Observasi + Pemantik</td></tr>
+            <tr style="background:rgba(62,207,207,.04)"><td style="color:var(--c);font-weight:800">Pertemuan 2 ✦</td><td style="color:var(--muted)">2 × 40'</td><td>4 jenis norma &amp; sanksinya → Game Sortir Norma → Roda Norma → Diskusi kelompok</td><td>Game + Presentasi</td></tr>
+            <tr><td style="color:var(--g);font-weight:800">Pertemuan 3</td><td style="color:var(--muted)">2 × 40'</td><td>Perilaku patuh di 4 lingkungan → Budaya patuh → Kuis 10 soal → Refleksi &amp; portofolio</td><td>Kuis + Portofolio</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-cover')">← Kembali</button>
+      <button class="btn btn-c" onclick="goto('s-tp')">Tujuan Hari Ini →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TP ══ -->
+<div class="screen" id="s-tp">
+  <div class="main">
+    <span class="chip-sc" style="background:rgba(167,139,250,.15);color:var(--p)">🎯 Tujuan Pembelajaran</span>
+    <h2 class="h2">Yang Akan Kamu<br><span class="hl">Kuasai Hari Ini</span></h2>
+    <div class="tp-list" style="margin-top:14px">
+      <div class="tp-item" style="border-left:3px solid var(--c)">
+        <div class="tp-num" style="background:rgba(62,207,207,.2);color:var(--c)">TP 2</div>
+        <div><div class="tp-verb" style="color:var(--c)">Mengidentifikasi</div><div class="tp-desc">macam-macam norma (agama, kesusilaan, kesopanan, dan hukum) beserta sumber, sanksi, dan sifatnya masing-masing</div></div>
+      </div>
+      <div class="tp-item" style="border-left:3px solid var(--r)">
+        <div class="tp-num" style="background:rgba(255,107,107,.2);color:var(--r)">TP 3</div>
+        <div><div class="tp-verb" style="color:var(--r)">Menganalisis</div><div class="tp-desc">pentingnya patuh terhadap norma dan dampak pelanggaran norma bagi diri sendiri, masyarakat, serta kehidupan berbangsa dan bernegara</div></div>
+      </div>
+    </div>
+    <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:13px;margin-top:14px;font-size:.82rem;line-height:1.6">
+      <strong style="color:var(--g)">🔗 Profil Pelajar Pancasila:</strong> Beriman &amp; Bertakwa · Bernalar Kritis · Berkebinekaan Global · Bergotong Royong
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:12px;">
+      <div style="font-size:.74rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">⏱️ Alur Kegiatan 80 Menit</div>
+      <div class="alur-steps">
+        <div class="alur-step"><div class="alur-dot" style="background:var(--y)"></div><span class="alur-dur" style="color:var(--y)">±5'</span><span class="alur-txt"><strong>Review P1</strong> — Kumpulkan tugas, diskusi singkat norma keluarga</span></div>
+        <div class="alur-step"><div class="alur-dot" style="background:var(--c)"></div><span class="alur-dur" style="color:var(--c)">±25'</span><span class="alur-txt"><strong>Eksplorasi 4 Norma</strong> — Kartu detail + tabel accordion + diskusi berpasangan</span></div>
+        <div class="alur-step"><div class="alur-dot" style="background:var(--g)"></div><span class="alur-dur" style="color:var(--g)">±15'</span><span class="alur-txt"><strong>Game Sortir Norma</strong> — Diskusi kelompok, lalu sortir perilaku ke kolom yang tepat</span></div>
+        <div class="alur-step"><div class="alur-dot" style="background:var(--p)"></div><span class="alur-dur" style="color:var(--p)">±15'</span><span class="alur-txt"><strong>Hubungan Antarnorma</strong> — Analisis kasus + diskusi konflik nilai</span></div>
+        <div class="alur-step"><div class="alur-dot" style="background:var(--o)"></div><span class="alur-dur" style="color:var(--o)">±12'</span><span class="alur-txt"><strong>Game Roda Norma</strong> — Tiap soal ada pertanyaan pemantik kelompok sebelum dijawab</span></div>
+        <div class="alur-step"><div class="alur-dot" style="background:var(--r)"></div><span class="alur-dur" style="color:var(--r)">±8'</span><span class="alur-txt"><strong>Refleksi &amp; Penutup</strong> — Kartu kilat + portofolio + penugasan P3</span></div>
+      </div>
+    </div>
+    <div style="background:rgba(249,193,46,.07);border:1px solid rgba(249,193,46,.2);border-radius:12px;padding:13px;margin-top:12px;font-size:.83rem;line-height:1.6">
+      📋 <strong style="color:var(--y)">Tugas P1 dikumpulkan sekarang!</strong> Tabel norma keluargamu akan digunakan sebagai bahan diskusi di layar berikutnya.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-cp')">← Kembali</button>
+      <button class="btn btn-c" onclick="goto('s-review')">Mulai →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REVIEW P1 ══ -->
+<div class="screen" id="s-review">
+  <div class="main">
+    <span class="chip-sc" style="background:rgba(249,193,46,.15);color:var(--y)">🔄 Review &nbsp;·&nbsp; ±5 Menit</span>
+    <h2 class="h2">Ingat Kembali<br><span class="hl">Pertemuan 1</span></h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0">
+      <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.25);border-radius:13px;padding:14px">
+        <div style="font-size:1.4rem;margin-bottom:6px">✅</div>
+        <div style="font-weight:800;font-size:.88rem;margin-bottom:5px">Sudah dipelajari</div>
+        <div style="font-size:.8rem;color:var(--muted);line-height:1.7">• Manusia = makhluk sosial<br>• Norma = aturan mengikat<br>• 5 fungsi norma</div>
+      </div>
+      <div style="background:rgba(62,207,207,.07);border:1px solid rgba(62,207,207,.25);border-radius:13px;padding:14px">
+        <div style="font-size:1.4rem;margin-bottom:6px">🎯</div>
+        <div style="font-weight:800;font-size:.88rem;margin-bottom:5px">Hari ini</div>
+        <div style="font-size:.8rem;color:var(--muted);line-height:1.7">• 4 jenis norma &amp; sumbernya<br>• Sanksi tiap norma<br>• Hubungan antarnorma</div>
+      </div>
+    </div>
+
+    <!-- Diskusi kelompok 1 -->
+    <div class="diskusi-kelompok tipe-1">
+      <div class="dk-ikon">👥</div>
+      <div class="dk-body">
+        <div class="dk-label hijau">Diskusi Kelompok · ±3 Menit</div>
+        <div class="dk-judul">Bahas Tugas P1 Bersama!</div>
+        <div class="dk-isi">Tunjukkan tabel norma keluargamu kepada anggota kelompok. Bandingkan: <br>
+        ① Norma apa saja yang sama di setiap keluarga?<br>
+        ② Norma apa yang unik/berbeda?<br>
+        ③ Siapa yang sanksinya paling unik jika melanggar?</div>
+        <div id="timerReview" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div class="def-box" style="border-color:var(--y);background:rgba(249,193,46,.07)">
+      <strong style="color:var(--y)">💡 Sambungan dari P1:</strong> Norma tidak hanya satu macam — ada norma dari Tuhan, dari hati nurani, dari kebiasaan masyarakat, dan dari negara. Masing-masing punya <strong>kekuatan</strong> dan <strong>sanksi</strong> yang berbeda!
+    </div>
+
+    <div class="diskusi-box" style="margin-top:14px">
+      <div style="color:var(--y);font-weight:800;font-size:.86rem">📝 Catatan Hasil Diskusi Kelompok</div>
+      <p style="margin-top:7px;font-size:.86rem;line-height:1.6;font-weight:700">Tuliskan 1–2 temuan menarik dari perbandingan tabel norma keluarga kelompokmu:</p>
+      <textarea id="reviewAns" placeholder="Contoh: Semua anggota kelompok memiliki norma berdoa sebelum makan. Tapi cara sanksinya berbeda — ada yang ditegur, ada yang diminta mengulang doa..."></textarea>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;margin-top:9px;gap:8px">
+        <button class="btn btn-y btn-sm" onclick="saveDiskusi('reviewAns','r1','Diskusi Perbandingan Norma Keluarga')">💾 Simpan (+5 poin)</button>
+        <span id="badge-r1" style="display:none" class="saved-badge">✅ Tersimpan</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-tp')">← Kembali</button>
+      <button class="btn btn-c" onclick="goto('s-materi')">Eksplorasi 4 Norma →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MATERI — 4 NORMA ══ -->
+<div class="screen" id="s-materi">
+  <div class="main">
+    <span class="chip-sc" style="background:rgba(62,207,207,.15);color:var(--c)">📖 Eksplorasi &nbsp;·&nbsp; ±25 Menit</span>
+    <h2 class="h2">4 Jenis<br><span class="hl">Norma</span></h2>
+
+    <!-- Panduan baca kelompok -->
+    <div class="diskusi-kelompok tipe-2" style="margin-bottom:14px">
+      <div class="dk-ikon">📖</div>
+      <div class="dk-body">
+        <div class="dk-label kuning">Cara Belajar Kelompok</div>
+        <div class="dk-judul">Bagi Tugas Membaca!</div>
+        <div class="dk-isi">Bagi 4 kartu norma kepada anggota kelompok. Tiap orang/pasangan membaca 1 kartu secara mendalam, lalu <strong>jelaskan ke anggota lain</strong>. Setelah semua presentasi, diskusikan tabel perbandingan bersama!</div>
+      </div>
+    </div>
+
+    <p class="sub">Klik tiap kartu untuk melihat sumber, sifat, pelanggaran, dan sanksinya. Tandai ✓ setelah membaca!</p>
+
+    <div class="norma-tabs" id="normaTabs">
+      <div class="ntab active" onclick="switchNorma(0)">🙏 Agama</div>
+      <div class="ntab" onclick="switchNorma(1)">❤️ Kesusilaan</div>
+      <div class="ntab" onclick="switchNorma(2)">🤝 Kesopanan</div>
+      <div class="ntab" onclick="switchNorma(3)">⚖️ Hukum</div>
+    </div>
+    <div id="normaContent"></div>
+    <div id="normaProgress" style="margin-top:10px;font-size:.79rem;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:8px">
+      <span>Sudah dibaca:</span>
+      <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden">
+        <div id="normaBar" style="height:100%;background:var(--g);border-radius:99px;transition:width .4s;width:0%"></div>
+      </div>
+      <span id="normaCount">0/4</span>
+    </div>
+
+    <!-- Tabel Accordion -->
+    <h3 class="h3" style="margin-top:22px;margin-bottom:4px">📊 Perbandingan 4 Norma</h3>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:10px">Klik baris untuk lihat detail — terbuka otomatis saat kartu dipilih di atas</p>
+    <div class="tabel-accord" id="tabelAccord"></div>
+
+    <!-- Diskusi setelah membaca -->
+    <div class="diskusi-kelompok tipe-3" style="margin-top:18px">
+      <div class="dk-ikon">💬</div>
+      <div class="dk-body">
+        <div class="dk-label ungu">Diskusi Berpasangan · ±5 Menit</div>
+        <div class="dk-judul">Presentasi Mini!</div>
+        <div class="dk-isi">Setiap anggota menjelaskan kartu norma yang sudah dibacanya. Fokus pada: <strong>sumber</strong>, <strong>sanksi</strong>, dan <strong>1 contoh pelanggaran</strong> paling menarik menurutmu. Yang lain boleh bertanya!</div>
+        <div id="timerMateri" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div class="diskusi-box" style="margin-top:12px">
+      <div style="color:var(--c);font-weight:800;font-size:.86rem">📝 Catatan Diskusi Kelompok</div>
+      <p style="margin-top:7px;font-size:.86rem;line-height:1.6;font-weight:700">Setelah semua presentasi: Norma mana yang paling <em>berbeda</em> dari yang kamu bayangkan sebelumnya? Mengapa sanksinya berbeda antar norma?</p>
+      <textarea id="diskusi1Ans" placeholder="Tuliskan jawaban bersama kelompokmu..."></textarea>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;margin-top:9px;gap:8px">
+        <button class="btn btn-c btn-sm" onclick="saveDiskusi('diskusi1Ans','d1','Diskusi — Eksplorasi 4 Norma')">💾 Simpan (+5 poin)</button>
+        <span id="badge-d1" style="display:none" class="saved-badge">✅ Tersimpan</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-review')">← Kembali</button>
+      <button class="btn btn-g" onclick="goto('s-game1')">Game Sortir Norma 🎮</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GAME SORTIR ══ -->
+<div class="screen" id="s-game1">
+  <div class="main">
+    <span class="chip-sc" style="background:rgba(52,211,153,.15);color:var(--g)">🎮 Game Sortir &nbsp;·&nbsp; ±15 Menit</span>
+    <h2 class="h2">Sortir<br><span class="hl">Norma!</span></h2>
+
+    <!-- Panduan kelompok di game -->
+    <div class="game-diskusi-hint">
+      <strong>👥 Cara bermain kelompok:</strong> Baca kartu bersama → diskusikan termasuk norma apa → sepakati jawaban → baru klik kolom. <strong>Jangan terburu-buru!</strong> Nilai diskusi lebih penting dari kecepatan.
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:.78rem;font-weight:800;color:var(--muted)">Poin: <span id="sortirScore" style="color:var(--y)">0</span></div>
+      <div id="sortirStatus" style="font-size:.78rem;font-weight:700;color:var(--muted)"></div>
+      <button class="btn btn-ghost btn-sm" onclick="resetSortir()">🔄 Ulangi</button>
+    </div>
+    <div id="sortirArea"></div>
+
+    <!-- Refleksi sortir -->
+    <div id="sortirRefleksi" style="display:none;margin-top:14px">
+      <div class="diskusi-kelompok tipe-1">
+        <div class="dk-ikon">🤔</div>
+        <div class="dk-body">
+          <div class="dk-label hijau">Diskusi Pasca-Game · ±3 Menit</div>
+          <div class="dk-judul">Kartu mana yang paling membingungkan?</div>
+          <div class="dk-isi">Diskusikan bersama: ① Kartu apa yang sempat diperdebatkan kelompokmu? ② Mengapa satu perilaku bisa masuk beberapa norma sekaligus?</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row mt14">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-materi')">← Kembali</button>
+      <button class="btn btn-p" id="btnSortirNext" style="display:none" onclick="goto('s-hubungan')">Lanjut ke Hubungan Norma →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HUBUNGAN NORMA ══ -->
+<div class="screen" id="s-hubungan">
+  <div class="main">
+    <span class="chip-sc" style="background:rgba(167,139,250,.15);color:var(--p)">🔗 Materi &nbsp;·&nbsp; ±15 Menit</span>
+    <h2 class="h2">Hubungan<br><span class="hl">Antarnorma</span></h2>
+    <p class="sub mt8">Ikuti 3 langkah berikut bersama kelompokmu.</p>
+
+    <!-- LANGKAH 1: BACA -->
+    <div style="display:flex;align-items:center;gap:10px;margin:20px 0 10px">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--p);color:#fff;font-weight:900;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+      <div style="font-weight:800;font-size:.95rem">Baca &amp; Pahami — <span style="color:var(--p)">Norma Saling Berhubungan</span></div>
+    </div>
+    <p class="sub" style="margin-bottom:10px;padding-left:38px">Tiap norma tidak berdiri sendiri. Klik setiap baris untuk membaca penjelasannya.</p>
+
+    <div style="display:flex;flex-direction:column;gap:7px" id="hubunganList">
+      <!-- Dirender JS -->
+    </div>
+
+    <!-- LANGKAH 2: ANALISIS KASUS -->
+    <div style="display:flex;align-items:center;gap:10px;margin:24px 0 10px">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--o);color:#0e1c2f;font-weight:900;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+      <div style="font-weight:800;font-size:.95rem">Analisis Kasus — <span style="color:var(--o)">Norma Apa yang Dilanggar?</span></div>
+    </div>
+    <p class="sub" style="margin-bottom:10px;padding-left:38px">Baca kasus bersama kelompok → diskusikan → klik <strong style="color:var(--o)">Lihat Analisis</strong> untuk cek jawabanmu.</p>
+
+    <div style="background:rgba(251,146,60,.06);border:1px dashed rgba(251,146,60,.3);border-radius:11px;padding:10px 13px;margin-bottom:12px;font-size:.8rem;line-height:1.6">
+      👥 <strong style="color:var(--o)">Cara diskusi kelompok:</strong> Baca kasusnya keras-keras → masing-masing anggota tebak norma yang dilanggar → bandingkan jawaban → baru klik Lihat Analisis.
+    </div>
+    <div id="kasusArea" style="display:flex;flex-direction:column;gap:9px"></div>
+
+    <!-- LANGKAH 3: DISKUSI -->
+    <div style="display:flex;align-items:center;gap:10px;margin:24px 0 10px">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--g);color:#0e1c2f;font-weight:900;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+      <div style="font-weight:800;font-size:.95rem">Diskusi Kelompok — <span style="color:var(--g)">Konflik Nilai</span></div>
+    </div>
+    <p class="sub" style="margin-bottom:10px;padding-left:38px">Ini tidak ada jawaban benar/salah. Yang penting kelompokmu bisa <strong style="color:var(--text)">berargumen dengan alasan yang jelas</strong>.</p>
+
+    <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.25);border-radius:14px;padding:16px">
+
+      <!-- Skenario -->
+      <div style="background:rgba(255,255,255,.05);border-radius:11px;padding:13px;margin-bottom:14px">
+        <div style="font-size:.7rem;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">📖 Skenario</div>
+        <div style="font-size:.88rem;font-weight:700;line-height:1.7">
+          Deni tahu bahwa sahabatnya, Rian, menyontek saat ulangan. Guru bertanya kepada Deni: <em>"Apakah ada yang menyontek?"</em><br>
+          Jika Deni jujur → Rian bisa diskors dan kehilangan beasiswa.<br>
+          Jika Deni diam → Deni membohongi guru.
+        </div>
+      </div>
+
+      <!-- Norma yang bertentangan -->
+      <div style="font-size:.74rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">⚡ Norma yang saling tarik-menarik dalam kasus ini:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div style="background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);border-radius:10px;padding:10px">
+          <div style="font-size:.72rem;font-weight:800;color:var(--r);margin-bottom:4px">❤️ Norma Kesusilaan</div>
+          <div style="font-size:.79rem;line-height:1.5;color:var(--muted)">Hati nurani mengatakan: <strong style="color:var(--text)">jujur itu wajib</strong>, berbohong merusak integritas diri</div>
+        </div>
+        <div style="background:rgba(249,193,46,.08);border:1px solid rgba(249,193,46,.2);border-radius:10px;padding:10px">
+          <div style="font-size:.72rem;font-weight:800;color:var(--y);margin-bottom:4px">🙏 Norma Agama</div>
+          <div style="font-size:.79rem;line-height:1.5;color:var(--muted)">Ajaran agama: <strong style="color:var(--text)">amanah &amp; jujur</strong>, namun juga mengajarkan kasih sayang kepada sesama</div>
+        </div>
+        <div style="background:rgba(62,207,207,.08);border:1px solid rgba(62,207,207,.2);border-radius:10px;padding:10px">
+          <div style="font-size:.72rem;font-weight:800;color:var(--c);margin-bottom:4px">🤝 Norma Kesopanan</div>
+          <div style="font-size:.79rem;line-height:1.5;color:var(--muted)">Menjaga perasaan teman &amp; <strong style="color:var(--text)">tidak mempermalukan</strong> di depan umum</div>
+        </div>
+        <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:10px">
+          <div style="font-size:.72rem;font-weight:800;color:var(--p);margin-bottom:4px">⚖️ Norma Hukum</div>
+          <div style="font-size:.79rem;line-height:1.5;color:var(--muted)">Tata tertib sekolah: <strong style="color:var(--text)">wajib melaporkan</strong> kecurangan yang diketahui</div>
+        </div>
+      </div>
+
+      <!-- Giliran bicara interaktif -->
+      <div style="font-size:.8rem;font-weight:800;color:var(--g);margin-bottom:8px">🗣️ Giliran Bicara — Satu per Satu:</div>
+
+      <!-- Setup jumlah anggota -->
+      <div id="giliranSetup" style="background:rgba(255,255,255,.04);border-radius:11px;padding:13px;margin-bottom:10px">
+        <div style="font-size:.8rem;font-weight:800;margin-bottom:8px">Berapa anggota kelompokmu?</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="mulaiGiliran(2)">2 orang</button>
+          <button class="btn btn-ghost btn-sm" onclick="mulaiGiliran(3)">3 orang</button>
+          <button class="btn btn-ghost btn-sm" onclick="mulaiGiliran(4)">4 orang</button>
+          <button class="btn btn-ghost btn-sm" onclick="mulaiGiliran(5)">5 orang</button>
+          <button class="btn btn-ghost btn-sm" onclick="mulaiGiliran(6)">6 orang</button>
+        </div>
+      </div>
+
+      <!-- Area giliran -->
+      <div id="giliranArea" style="display:none">
+        <div id="giliranKartu" style="border-radius:13px;padding:16px;margin-bottom:10px"></div>
+        <div id="giliranProgress" style="display:flex;gap:5px;margin-bottom:12px"></div>
+        <div id="giliranBtn" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+
+      <!-- Kesimpulan — muncul setelah semua giliran selesai -->
+      <div id="giliranKesimpulan" style="display:none;margin-top:14px">
+        <div style="background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);border-radius:11px;padding:11px;margin-bottom:10px;font-size:.82rem;line-height:1.6">
+          ✅ <strong style="color:var(--g)">Semua anggota sudah berpendapat!</strong> Sekarang sepakati bersama: norma mana yang paling tepat diprioritaskan Deni?
+        </div>
+        <div style="font-size:.8rem;font-weight:800;color:var(--g);margin-bottom:6px">📝 Tulis Kesimpulan Bersama:</div>
+        <textarea id="diskusi2Ans" rows="4" style="width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:9px;padding:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:.84rem;resize:vertical" placeholder="Contoh: Menurut kelompok kami, Deni sebaiknya jujur karena norma kesusilaan mengajarkan bahwa kejujuran adalah dasar kepercayaan. Meskipun kami juga mempertimbangkan perasaan Rian, norma agama pun menegaskan bahwa amanah harus dijaga..."></textarea>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;margin-top:9px;gap:8px">
+          <button class="btn btn-g btn-sm" onclick="saveDiskusi('diskusi2Ans','d2','Diskusi Konflik Nilai — Kasus Deni &amp; Rian')">💾 Simpan (+5 poin)</button>
+          <span id="badge-d2" style="display:none" class="saved-badge">✅ Tersimpan</span>
+        </div>
+      </div>
+
+      <div id="timerHubungan" style="margin-top:10px"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-game1')">← Kembali</button>
+      <button class="btn btn-o" onclick="goto('s-game2')">Game Roda Norma 🎡</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GAME RODA NORMA ══ -->
+<div class="screen" id="s-game2">
+  <div class="main">
+    <span class="chip-sc" style="background:rgba(251,146,60,.15);color:var(--o)">🎡 Roda Norma &nbsp;·&nbsp; ±12 Menit</span>
+    <h2 class="h2">Roda<br><span class="hl">Norma!</span></h2>
+    <p class="sub mt8">8 kasus kehidupan siswa SMP. Setiap soal ada pertanyaan pemantik — diskusikan dulu sebelum menjawab!</p>
+
+    <!-- Panduan kelompok roda -->
+    <div class="game-diskusi-hint" style="margin-bottom:12px">
+      <strong>👥 Aturan kelompok:</strong> Baca soal &amp; pemantik → diskusi <em>singkat</em> (30–60 detik) → sepakati jawaban → klik! Boleh tunjuk juru bicara yang bergantian tiap soal.
+    </div>
+
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">
+      <div id="rodaProgDots" style="display:flex;gap:4px;flex:1"></div>
+      <div style="font-size:.78rem;font-weight:800;color:var(--y);white-space:nowrap">🌟 <span id="rodaScore">0</span></div>
+    </div>
+    <div id="rodaStreak" style="display:none;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:8px 14px;font-size:.8rem;font-weight:800;color:var(--g);margin-bottom:10px;text-align:center"></div>
+
+    <div class="roda-shell">
+      <div class="roda-hud">
+        <span style="font-family:'Fredoka One',cursive;font-size:.9rem;color:var(--o)">🎡 Roda Norma</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="chip" style="background:rgba(251,146,60,.15);color:var(--o);font-size:.7rem" id="rodaNum">Soal 1/8</span>
+          <span class="chip" style="background:rgba(249,193,46,.15);color:var(--y);font-size:.7rem">⭐ <span id="rodaScoreHud">0</span></span>
+        </div>
+      </div>
+      <div id="rodaBody" class="roda-q-area"></div>
+      <div style="display:flex;gap:4px;padding:8px 16px;background:#060d18;border-top:1px solid #1e3a5a" id="rodaProgBar"></div>
+    </div>
+
+    <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-hubungan')">← Kembali</button>
+      <button class="btn btn-ghost btn-sm" onclick="resetRoda()">🔄 Ulangi</button>
+      <button class="btn btn-g" id="btnRodaNext" style="display:none" onclick="goto('s-hasil')">Lihat Hasil 🏆</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HASIL ══ -->
+<div class="screen" id="s-hasil" style="background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(167,139,250,.15),transparent 60%)">
+  <div class="main" style="text-align:center">
+    <span class="chip-sc" style="background:rgba(167,139,250,.15);color:var(--p)">🏆 Hasil</span>
+    <h2 class="h2" style="margin-bottom:16px">Pertemuan 2<br><span style="color:var(--p)">Selesai! 🎉</span></h2>
+    <div class="hasil-circle" id="hasilCircle"><div class="hasil-num"><div class="num" id="hasilNum">0</div><div style="font-size:.75rem;color:var(--muted)">poin</div></div></div>
+    <div class="level-badge" id="levelBadge"></div>
+    <div id="hasilStars" style="font-size:1.9rem;margin:9px 0"></div>
+
+    <!-- Kartu kilat -->
+    <div class="card" style="text-align:left;margin-top:13px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <h3 class="h3">🃏 Kartu Kilat — Review Cepat</h3>
+        <span style="font-size:.74rem;color:var(--g);font-weight:800">👥 Jawab bergantian!</span>
+      </div>
+      <p style="font-size:.76rem;color:var(--muted);margin-bottom:10px">Satu anggota membaca pertanyaan, anggota lain menjawab sebelum kartu dibalik.</p>
+      <div class="flash-wrap" id="flashWrap"></div>
+      <div class="flash-nav">
+        <button class="btn btn-ghost btn-sm" onclick="prevFlash()" id="flashPrev">← Sebelumnya</button>
+        <div class="flash-dots" id="flashDots"></div>
+        <button class="btn btn-ghost btn-sm" onclick="nextFlash()" id="flashNext">Berikutnya →</button>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:left;margin-top:13px">
+      <h3 class="h3" style="margin-bottom:10px">📊 Rincian Poin</h3>
+      <div id="scoreBreakdown"></div>
+    </div>
+
+    <div class="btn-row btn-center mt20">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-game2')">← Kembali</button>
+      <button class="btn btn-p" onclick="goto('s-refleksi')">Refleksi 📝</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REFLEKSI ══ -->
+<div class="screen" id="s-refleksi">
+  <div class="main">
+    <span class="chip-sc" style="background:rgba(167,139,250,.15);color:var(--p)">📝 Refleksi &nbsp;·&nbsp; ±8 Menit</span>
+    <h2 class="h2">Refleksi<br><span class="hl">Diri</span></h2>
+    <p class="sub mt8">Jawaban jujur lebih berharga dari jawaban sempurna.</p>
+
+    <div style="margin-top:16px;background:rgba(62,207,207,.06);border:1px solid rgba(62,207,207,.2);border-radius:13px;padding:14px">
+      <div style="font-weight:800;font-size:.86rem;color:var(--c);margin-bottom:10px">📂 Portofolio Diskusi Kelompok Hari Ini</div>
+      <div id="portofolio"></div>
+    </div>
+
+    <div style="margin-top:18px;font-weight:800;font-size:.9rem;margin-bottom:12px">✍️ Refleksi Individu — Renungkan &amp; Jawab:</div>
+
+    <div class="refl-item" style="background:rgba(62,207,207,.06);border-color:rgba(62,207,207,.2)">
+      <label style="color:var(--c)">🗂️ Dari 4 jenis norma, mana yang paling sering kamu patuhi setiap hari? Beri 1 contoh konkret!</label>
+      <textarea placeholder="Contoh: Norma kesopanan — saya selalu menyapa guru saat bertemu di lorong sekolah..."></textarea>
+    </div>
+    <div class="refl-item" style="background:rgba(255,107,107,.06);border-color:rgba(255,107,107,.2)">
+      <label style="color:var(--r)">⚠️ Pernahkah kamu melihat pelanggaran norma di sekitarmu? Norma apa? Apa sanksi yang terjadi?</label>
+      <textarea placeholder="Ceritakan dengan jujur — tidak perlu menyebut nama orang..."></textarea>
+    </div>
+    <div class="refl-item" style="background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.2)">
+      <label style="color:var(--g)">💪 Komitmenmu: 1 tindakan nyata minggu ini berkaitan dengan salah satu dari 4 norma:</label>
+      <textarea placeholder="Contoh: Saya akan lebih berhati-hati menggunakan media sosial agar tidak melanggar norma kesusilaan..."></textarea>
+    </div>
+
+    <!-- Penugasan P3 dengan contoh konkret -->
+    <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:14px">
+      <div style="font-weight:800;margin-bottom:8px;font-size:.88rem">📋 Penugasan untuk Pertemuan 3:</div>
+      <div style="font-size:.83rem;line-height:1.8;color:var(--muted)">
+        Cari <strong style="color:var(--text)">1 kasus pelanggaran norma</strong> di sekitarmu atau dari berita. Analisis menggunakan panduan:
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:11px;margin-top:8px;font-size:.8rem;line-height:2">
+          📰 <strong style="color:var(--text)">Kasus:</strong> ______________________<br>
+          📌 <strong style="color:var(--text)">Norma yang dilanggar:</strong> Agama / Kesusilaan / Kesopanan / Hukum<br>
+          ⚠️ <strong style="color:var(--text)">Sanksi yang diterima:</strong> ______________________<br>
+          💡 <strong style="color:var(--text)">Pendapatmu:</strong> Apakah sanksinya sudah adil? Mengapa?
+        </div>
+        <div style="margin-top:10px;background:rgba(62,207,207,.07);border:1px solid rgba(62,207,207,.2);border-radius:9px;padding:10px">
+          <strong style="color:var(--c)">💡 Contoh kasus yang bisa dianalisis:</strong>
+          <div style="margin-top:6px;display:flex;flex-direction:column;gap:4px;font-size:.8rem">
+            <div style="display:flex;gap:8px">🔸<span>Teman yang menyontek saat ulangan → norma kesusilaan + tata tertib sekolah</span></div>
+            <div style="display:flex;gap:8px">🔸<span>Buang sampah sembarangan di jalan → norma kesopanan + perda setempat</span></div>
+            <div style="display:flex;gap:8px">🔸<span>Kasus bullying di media sosial → norma kesusilaan + UU ITE</span></div>
+            <div style="display:flex;gap:8px">🔸<span>Pengendara motor tanpa helm → norma hukum lalu lintas</span></div>
+          </div>
+        </div>
+        <div style="margin-top:7px">Dibawa di Pertemuan 3 untuk didiskusikan bersama 🙂</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-hasil')">← Kembali</button>
+      <button class="btn btn-g" onclick="goto('s-penutup')">Selesai ✅</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PENUTUP ══ -->
+<div class="screen" id="s-penutup" style="background:radial-gradient(ellipse 90% 60% at 50% 0%,rgba(167,139,250,.15),transparent 60%)">
+  <div class="main" style="text-align:center">
+    <div style="font-size:4rem;margin:20px 0;animation:float 3s ease-in-out infinite">🎊</div>
+    <h2 class="h2" style="margin-bottom:10px">Pertemuan 2<br><span style="color:var(--p)">Berhasil Diselesaikan!</span></h2>
+    <div id="finalScore" style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--y);margin:12px 0"></div>
+    <p class="sub" style="max-width:380px;margin:0 auto 20px">Kamu dan kelompokmu sudah menguasai 4 jenis norma! Pertemuan terakhir kita terapkan dalam kehidupan nyata.</p>
+    <div style="background:linear-gradient(135deg,rgba(52,211,153,.1),rgba(251,146,60,.1));border:1px solid rgba(52,211,153,.25);border-radius:16px;padding:18px;margin:16px 0;text-align:left">
+      <div style="font-weight:900;font-size:1rem;color:var(--g);margin-bottom:4px">🌟 Pertemuan 3 — Perilaku Patuh terhadap Norma</div>
+      <div style="font-size:.83rem;color:var(--muted);margin-bottom:14px;line-height:1.6">Kamu sudah tahu norma apa saja yang ada. Sekarang: <strong style="color:var(--text)">bagaimana caramu patuh pada norma di setiap lingkungan kehidupanmu?</strong></div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:9px">
+        <div style="background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:11px;padding:11px;text-align:center;font-size:.81rem;font-weight:800"><div style="font-size:1.4rem;margin-bottom:5px">🏠</div>Patuh di Keluarga</div>
+        <div style="background:rgba(249,193,46,.1);border:1px solid rgba(249,193,46,.25);border-radius:11px;padding:11px;text-align:center;font-size:.81rem;font-weight:800"><div style="font-size:1.4rem;margin-bottom:5px">🏫</div>Patuh di Sekolah</div>
+        <div style="background:rgba(62,207,207,.1);border:1px solid rgba(62,207,207,.25);border-radius:11px;padding:11px;text-align:center;font-size:.81rem;font-weight:800"><div style="font-size:1.4rem;margin-bottom:5px">🏘️</div>Patuh di Masyarakat</div>
+        <div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:11px;padding:11px;text-align:center;font-size:.81rem;font-weight:800"><div style="font-size:1.4rem;margin-bottom:5px">🇮🇩</div>Patuh sebagai Warga Negara</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0">
+      <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:13px;padding:13px"><div style="font-size:1.6rem;margin-bottom:6px">🧑‍🤝‍🧑</div><div style="font-weight:800;font-size:.81rem;margin-bottom:3px">Pertemuan 1</div><div style="font-size:.73rem;color:var(--g)">✅ Hakikat Norma</div></div>
+      <div style="background:rgba(62,207,207,.07);border:1px solid rgba(62,207,207,.2);border-radius:13px;padding:13px"><div style="font-size:1.6rem;margin-bottom:6px">🗂️</div><div style="font-weight:800;font-size:.81rem;margin-bottom:3px">Pertemuan 2</div><div style="font-size:.73rem;color:var(--p)">✅ Macam-Macam Norma</div></div>
+      <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:13px;padding:13px"><div style="font-size:1.6rem;margin-bottom:6px">🌟</div><div style="font-weight:800;font-size:.81rem;margin-bottom:3px">Pertemuan 3</div><div style="font-size:.73rem;color:var(--c)">→ Perilaku Patuh</div></div>
+    </div>
+    <div class="btn-row btn-center">
+      <button class="btn btn-ghost btn-sm" onclick="goto('s-refleksi')">← Kembali</button>
+      <button class="btn btn-c" onclick="resetAll();goto('s-cover')">🔄 Mulai Ulang</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SCRIPT ══════════ -->
+<script>
+// ══ STATE ══
+const S={score:0,diskusi:{},sortirScore:0,rodaScore:0};
+const PORTO={};
+const SCREENS=['s-cover','s-cp','s-tp','s-review','s-materi','s-game1','s-hubungan','s-game2','s-hasil','s-refleksi','s-penutup'];
+const LABELS={'s-cover':'Cover','s-cp':'CP · TP · ATP','s-tp':'Tujuan','s-review':'Review P1','s-materi':'4 Norma','s-game1':'Game Sortir','s-hubungan':'Hubungan Norma','s-game2':'Roda Norma','s-hasil':'Hasil','s-refleksi':'Refleksi','s-penutup':'Penutup'};
+
+// ══ SWITCH KTAB ══
+function switchKtab(tab){
+  document.querySelectorAll('.ktab').forEach((t,i)=>t.classList.toggle('active',['cp','tp','atp'][i]===tab));
+  document.querySelectorAll('.ktab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('kc-'+tab).classList.add('active');
+}
+
+// ══ TIMER ══
+let timerIntervals={};
+function buatTimer(containerId, detik, warna){
+  if(timerIntervals[containerId]){clearInterval(timerIntervals[containerId]);}
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  let sisa=detik;
+  function render(){
+    const pct=Math.round(sisa/detik*100);
+    const m=Math.floor(sisa/60);const s=sisa%60;
+    const display=m>0?`${m}:${s.toString().padStart(2,'0')}`:`${s}`;
+    const barColor=sisa>detik*.5?'var(--g)':sisa>detik*.25?'var(--y)':'var(--r)';
+    el.innerHTML=`<div class="timer-box">
+      <div class="timer-display">${display}</div>
+      <div class="timer-bar-wrap"><div class="timer-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <button class="timer-btn" onclick="resetTimer('${containerId}',${detik},'${warna}')" title="Ulangi timer">🔄</button>
+      <button class="timer-btn" onclick="stopTimer('${containerId}')" title="Stop">⏹</button>
+    </div>`;
+  }
+  render();
+  timerIntervals[containerId]=setInterval(()=>{
+    sisa--;render();
+    if(sisa<=0){clearInterval(timerIntervals[containerId]);
+      el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:8px 14px">
+        <span style="font-size:1.2rem">✅</span><span style="font-weight:800;color:var(--g);font-size:.85rem">Waktu habis! Simpulkan dan lanjut.</span>
+        <button class="timer-btn" onclick="resetTimer('${containerId}',${detik},'${warna}')" style="margin-left:auto">🔄</button>
+      </div>`;}
+  },1000);
+}
+function resetTimer(id,detik,warna){buatTimer(id,detik,warna);}
+function stopTimer(id){if(timerIntervals[id]){clearInterval(timerIntervals[id]);timerIntervals[id]=null;}}
+
+// ══ GOTO ══
+function goto(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('navbar').style.display=id==='s-cover'?'none':'flex';
+  const pct=Math.round((Math.max(0,SCREENS.indexOf(id)-1)/(SCREENS.length-2))*100);
+  document.getElementById('progFill').style.width=pct+'%';
+  const ns=document.getElementById('navScene');if(ns)ns.textContent=LABELS[id]||'';
+  if(id==='s-review'){
+    // init timer review
+    const tEl=document.getElementById('timerReview');
+    if(tEl)tEl.innerHTML=`<button class="timer-btn" style="background:var(--g);color:#0e1c2f;font-size:.78rem;padding:6px 14px" onclick="buatTimer('timerReview',180,'green')">▶ Mulai Timer 3 Menit</button>`;
+  }
+  if(id==='s-materi'){initNorma();initKasus();
+    const tEl=document.getElementById('timerMateri');
+    if(tEl)tEl.innerHTML=`<button class="timer-btn" style="background:var(--p);color:#fff;font-size:.78rem;padding:6px 14px" onclick="buatTimer('timerMateri',300,'purple')">▶ Mulai Timer 5 Menit</button>`;
+  }
+  if(id==='s-game1')initSortir();
+  if(id==='s-hubungan'){initHubungan();initKasus();
+    const tEl=document.getElementById('timerHubungan');
+    if(tEl)tEl.innerHTML=`<button class="timer-btn" style="background:var(--g);color:#0e1c2f;font-size:.78rem;padding:6px 14px" onclick="buatTimer('timerHubungan',300,'green')">▶ Mulai Timer Diskusi 5 Menit</button>`;
+  }
+  if(id==='s-game2')initRoda();
+  if(id==='s-hasil'){initFlash();showHasil();}
+  if(id==='s-refleksi')showPortofolio();
+  if(id==='s-penutup')showPenutup();
+}
+
+// ══ UTILS ══
+function scoreFlash(n){
+  S.score+=n;document.getElementById('navScore').textContent=S.score;
+  const el=document.createElement('div');el.className='score-popup';el.textContent='+'+n+' poin';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),850);
+}
+function saveDiskusi(tid,key,label){
+  const val=document.getElementById(tid).value.trim();
+  if(!val){alert('Tulis jawabanmu dulu ya!');return;}
+  if(!S.diskusi[key]){S.diskusi[key]=true;PORTO[key]={label,text:val};scoreFlash(5);const b=document.getElementById('badge-'+key);if(b)b.style.display='inline-flex';}
+  else{PORTO[key].text=val;alert('✅ Jawaban diperbarui!');}
+}
+function showPortofolio(){
+  const el=document.getElementById('portofolio');
+  const keys=Object.keys(PORTO);
+  if(!keys.length){el.innerHTML='<div style="font-size:.82rem;color:var(--muted);font-style:italic">Belum ada jawaban tersimpan. Kembali dan isi pertanyaan diskusi ya!</div>';return;}
+  el.innerHTML=keys.map(k=>`<div class="porto-card"><div class="porto-label">${PORTO[k].label}</div><div class="porto-val">"${PORTO[k].text}"</div></div>`).join('');
+}
+function launchConfetti(){
+  const w=document.getElementById('confWrap');
+  const cols=['#f9c12e','#3ecfcf','#ff6b6b','#a78bfa','#34d399','#fb923c'];
+  for(let i=0;i<80;i++){
+    const c=document.createElement('div');c.className='conf';const sz=5+Math.random()*8;
+    c.style.cssText=`left:${Math.random()*100}%;top:${-20-Math.random()*30}px;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${2+Math.random()*2}s;animation-delay:${Math.random()*.6}s;`;
+    w.appendChild(c);
+  }
+  setTimeout(()=>w.innerHTML='',4500);
+}
+function resetAll(){
+  Object.assign(S,{score:0,diskusi:{},sortirScore:0,rodaScore:0});
+  Object.keys(PORTO).forEach(k=>delete PORTO[k]);
+  Object.values(timerIntervals).forEach(t=>t&&clearInterval(t));
+  document.getElementById('navScore').textContent=0;
+  ['r1','d1','d2'].forEach(k=>{const b=document.getElementById('badge-'+k);if(b)b.style.display='none';});
+}
+
+// ══ DATA 4 NORMA ══
+const NORMA_DATA=[
+  {id:'agama',icon:'🙏',label:'Norma Agama',color:'var(--nagama)',bg:'rgba(249,193,46,.07)',bc:'rgba(249,193,46,.25)',bg2:'rgba(249,193,46,.04)',
+   sumber:'Tuhan Yang Maha Esa melalui kitab suci (Al-Qur\'an, Injil, Weda, Tripitaka, Kitab Suci Khonghucu)',
+   sifat:'Universal bagi pemeluknya; mengatur hubungan manusia dengan Tuhan (vertikal) dan sesama manusia (horizontal)',
+   tujuan:'Membentuk manusia beriman, berakhlak mulia, dan bertaqwa kepada Tuhan YME',
+   sanksiTipe:'Sanksi Akhirat & Internal',
+   sanksiItems:['Dosa yang dipertanggungjawabkan di akhirat','Rasa bersalah dan gelisah secara batin','Dalam beberapa komunitas: sanksi sosial keagamaan'],
+   contoh:'Seorang pelajar jujur dalam ujian karena yakin Tuhan Maha Melihat, meskipun tidak ada pengawas.',
+   pelanggaran:[
+     {ikon:'😒',teks:'Tidak salat meski sudah balig (bagi Muslim)','sanksi':'Dosa, rasa bersalah, ditegur keluarga'},
+     {ikon:'🤥',teks:'Bersumpah palsu menggunakan nama Tuhan','sanksi':'Dosa besar dalam semua agama'},
+     {ikon:'😤',teks:'Tidak menghormati orang tua (durhaka)','sanksi':'Dosa dan sanksi sosial keluarga'},
+   ]},
+  {id:'kesusilaan',icon:'❤️',label:'Norma Kesusilaan',color:'var(--nkesusilaan)',bg:'rgba(255,107,107,.07)',bc:'rgba(255,107,107,.25)',bg2:'rgba(255,107,107,.04)',
+   sumber:'Hati nurani manusia — nilai baik-buruk yang dirasakan setiap orang secara naluriah',
+   sifat:'Universal (berlaku di mana saja), tidak tertulis, tidak bisa dipaksakan dari luar diri',
+   tujuan:'Membentuk pribadi jujur, bertanggung jawab, dan menghargai sesama sebagai manusia',
+   sanksiTipe:'Sanksi Internal (dari diri sendiri)',
+   sanksiItems:['Rasa bersalah yang terus menghantui','Rasa malu yang mendalam kepada diri sendiri','Dikucilkan lingkungan sosial karena dinilai tidak bermoral'],
+   contoh:'Siswa yang menemukan dompet terjatuh mengembalikannya bukan karena takut hukum, tapi karena hati nurani.',
+   pelanggaran:[
+     {ikon:'📝',teks:'Menyontek saat ulangan meski tidak ketahuan','sanksi':'Rasa bersalah, tidak percaya diri'},
+     {ikon:'🤫',teks:'Membohongi orang tua tentang nilai rapor','sanksi':'Gelisah dan rasa bersalah berkepanjangan'},
+     {ikon:'📱',teks:'Menyebarkan foto teman tanpa izin di grup chat','sanksi':'Dikucilkan, reputasi rusak di lingkungan teman'},
+   ]},
+  {id:'kesopanan',icon:'🤝',label:'Norma Kesopanan',color:'var(--nkesopanan)',bg:'rgba(62,207,207,.07)',bc:'rgba(62,207,207,.25)',bg2:'rgba(62,207,207,.04)',
+   sumber:'Adat istiadat dan kebiasaan yang berlaku dalam masyarakat secara turun-temurun',
+   sifat:'Berbeda-beda antar daerah dan budaya, tidak tertulis, tapi sangat kuat pengaruhnya secara sosial',
+   tujuan:'Menciptakan kerukunan, kenyamanan, dan saling menghargai dalam pergaulan sehari-hari',
+   sanksiTipe:'Sanksi Sosial (dari lingkungan)',
+   sanksiItems:['Ditegur atau diingatkan orang di sekitar','Dicela, dipergunjingkan, atau dijauhi','Dalam kasus berat: dikucilkan dari komunitas'],
+   contoh:'Di Jawa, orang yang melewati orang lebih tua harus membungkuk sambil berkata "permisi".',
+   pelanggaran:[
+     {ikon:'🗣️',teks:'Memotong pembicaraan guru di kelas','sanksi':'Ditegur guru, dianggap tidak sopan'},
+     {ikon:'😒',teks:'Tidak menyapa tetangga yang sudah menyapa duluan','sanksi':'Dianggap sombong, hubungan merenggang'},
+     {ikon:'🎵',teks:'Memutar musik keras di perumahan tengah malam','sanksi':'Ditegur warga, diadukan ke ketua RT'},
+   ]},
+  {id:'hukum',icon:'⚖️',label:'Norma Hukum',color:'var(--nhukum)',bg:'rgba(167,139,250,.07)',bc:'rgba(167,139,250,.25)',bg2:'rgba(167,139,250,.04)',
+   sumber:'Negara / lembaga resmi berwenang (DPR, Presiden, Mahkamah Agung)',
+   sifat:'Tertulis, tegas, berlaku bagi seluruh warga negara tanpa pengecualian, dan ada aparat penegak hukum',
+   tujuan:'Menjamin keadilan, ketertiban, dan keamanan masyarakat secara formal dan mengikat',
+   sanksiTipe:'Sanksi Tegas dari Negara',
+   sanksiItems:['Denda sesuai ketentuan undang-undang','Hukuman penjara untuk pelanggaran serius','Pencabutan hak-hak tertentu oleh negara'],
+   contoh:'Siswa yang mencuri di toko dapat dilaporkan ke polisi dan diproses secara hukum.',
+   pelanggaran:[
+     {ikon:'🏍️',teks:'Siswa SMP mengendarai motor tanpa SIM ke sekolah','sanksi':'Ditilang, motor disita, orang tua dipanggil'},
+     {ikon:'💬',teks:'Menyebarkan berita bohong di media sosial','sanksi':'Bisa terjerat UU ITE, dipanggil polisi'},
+     {ikon:'🚫',teks:'Buang sampah di sungai (ada perda larangan)','sanksi':'Denda sesuai peraturan daerah'},
+   ]},
+];
+
+let curNorma=0;
+const normaRead=new Set();
+function initNorma(){curNorma=0;normaRead.clear();renderNorma();updateNormaProgress();renderTabelAccord();}
+function switchNorma(i){curNorma=i;normaRead.add(i);renderNorma();updateNormaProgress();highlightTabel(i);}
+function updateNormaProgress(){
+  document.getElementById('normaBar').style.width=(normaRead.size/4*100)+'%';
+  document.getElementById('normaCount').textContent=normaRead.size+'/4';
+}
+function renderNorma(){
+  document.querySelectorAll('.ntab').forEach((t,i)=>{
+    t.classList.toggle('active',i===curNorma);
+    t.classList.toggle('read',normaRead.has(i)&&i!==curNorma);
+    t.style.background=i===curNorma?NORMA_DATA[i].color:'';
+    t.style.color=i===curNorma?'#0e1c2f':'';
+  });
+  const d=NORMA_DATA[curNorma];
+  document.getElementById('normaContent').innerHTML=`
+    <div class="nk-card" style="background:${d.bg};border:1px solid ${d.bc}">
+      <div class="nk-header">
+        <div class="nk-icon" style="background:${d.bg2};border:2px solid ${d.bc}">${d.icon}</div>
+        <div><div class="nk-label" style="color:${d.color}">${d.label.toUpperCase()}</div><div class="nk-title" style="color:${d.color}">${d.label}</div></div>
+      </div>
+      <div class="nk-row">
+        <div class="nk-box" style="background:${d.bg2}"><div class="nk-box-label" style="color:${d.color}">📌 Sumber</div><div class="nk-box-val">${d.sumber}</div></div>
+        <div class="nk-box" style="background:${d.bg2}"><div class="nk-box-label" style="color:${d.color}">⚙️ Sifat</div><div class="nk-box-val">${d.sifat}</div></div>
+      </div>
+      <div class="nk-box" style="background:${d.bg2};margin-top:10px"><div class="nk-box-label" style="color:${d.color}">🎯 Tujuan</div><div class="nk-box-val">${d.tujuan}</div></div>
+      <div class="nk-sanksi" style="background:${d.bg2};border-color:${d.bc};margin-top:10px">
+        <div class="nk-sanksi-title" style="color:${d.color}">⚠️ ${d.sanksiTipe}</div>
+        ${d.sanksiItems.map(s=>`<div class="nk-sanksi-item"><div class="nk-sanksi-dot" style="background:${d.color}"></div><span>${s}</span></div>`).join('')}
+      </div>
+      <div class="nk-contoh"><strong style="color:${d.color}">💡 Contoh nyata:</strong> ${d.contoh}</div>
+      <div class="nk-pelanggaran">
+        <div class="nk-pel-title">🚨 Contoh Pelanggaran Pelajar &amp; Sanksinya</div>
+        ${d.pelanggaran.map(p=>`<div class="nk-pel-item"><span style="font-size:1.1rem;flex-shrink:0">${p.ikon}</span><div><div style="font-weight:700">${p.teks}</div><div style="font-size:.76rem;color:var(--muted);margin-top:2px">Sanksi: ${p.sanksi}</div></div></div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// Tabel Accordion
+function renderTabelAccord(){
+  document.getElementById('tabelAccord').innerHTML=NORMA_DATA.map((d,i)=>`
+    <div class="tabel-row" id="tabelRow${i}">
+      <div class="tabel-row-head" id="tabelHead${i}" onclick="toggleTabel(${i})">
+        <span style="font-size:1.3rem">${d.icon}</span>
+        <span style="color:${d.color};font-weight:800">${d.label}</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="tabel-row-body" id="tabelBody${i}" style="display:none">
+        <div class="tabel-detail">
+          <div class="td-cell"><div class="td-cell-label">Sumber</div><div class="td-cell-val">${d.sumber}</div></div>
+          <div class="td-cell"><div class="td-cell-label">Sifat Sanksi</div><div class="td-cell-val">${d.sanksiTipe}</div></div>
+          <div class="td-cell"><div class="td-cell-label">Sanksi Utama</div><div class="td-cell-val">${d.sanksiItems[0]}</div></div>
+          <div class="td-cell"><div class="td-cell-label">Contoh Pelanggaran</div><div class="td-cell-val">${d.pelanggaran[0].teks}</div></div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function highlightTabel(i){
+  NORMA_DATA.forEach((_,j)=>{
+    const row=document.getElementById('tabelRow'+j);
+    if(row)row.classList.toggle('hl',j===i);
+    const body=document.getElementById('tabelBody'+j);
+    const head=document.getElementById('tabelHead'+j);
+    if(j===i){if(body)body.style.display='block';if(head)head.classList.add('open');}
+    else{if(body)body.style.display='none';if(head)head.classList.remove('open');}
+  });
+}
+function toggleTabel(i){
+  const body=document.getElementById('tabelBody'+i);
+  const head=document.getElementById('tabelHead'+i);
+  const open=body.style.display==='none';
+  NORMA_DATA.forEach((_,j)=>{
+    document.getElementById('tabelBody'+j).style.display='none';
+    document.getElementById('tabelHead'+j).classList.remove('open');
+    document.getElementById('tabelRow'+j).classList.remove('hl');
+  });
+  if(open){body.style.display='block';head.classList.add('open');document.getElementById('tabelRow'+i).classList.add('hl');switchNorma(i);}
+}
+
+// ══ HUBUNGAN ANTARNORMA ══
+const HUBUNGAN_DATA=[
+  {ikon:'🙏➡️❤️',judul:'Agama → Kesusilaan',warna:'var(--nagama)',
+   isi:'Ajaran agama membentuk hati nurani seseorang. Seseorang yang taat beragama diajarkan untuk jujur, bertanggung jawab, dan menghormati sesama — semua itu adalah isi dari norma kesusilaan.',
+   contoh:'Ahmad rajin ibadah sejak kecil. Saat menemukan dompet di jalan, tanpa pikir panjang ia mengembalikannya — bukan karena takut hukum, tapi karena hati nuraninya terbentuk oleh ajaran agamanya.'},
+  {ikon:'❤️➡️🤝',judul:'Kesusilaan → Kesopanan',warna:'var(--nkesusilaan)',
+   isi:'Hati nurani yang baik secara alami mendorong seseorang untuk berlaku sopan. Orang yang peduli perasaan orang lain (kesusilaan) akan menunjukkan itu lewat tutur kata dan perilaku yang sopan (kesopanan).',
+   contoh:'Siti yang berempati tinggi selalu mengucap "permisi" saat melewati orang, tidak memotong pembicaraan, dan berbicara pelan di tempat umum — bukan karena ada aturan tertulis, tapi karena kepeduliannya.'},
+  {ikon:'🤝➡️⚖️',judul:'Kesopanan → Hukum',warna:'var(--nkesopanan)',
+   isi:'Banyak aturan hukum lahir dari kebiasaan sosial (norma kesopanan) yang sudah lama diakui masyarakat. Kebiasaan yang dipandang penting akhirnya dikodifikasi menjadi undang-undang.',
+   contoh:'Kebiasaan antre yang sudah lama berlaku di masyarakat akhirnya diperkuat dalam peraturan pelayanan publik. Larangan buang sampah sembarangan, awalnya norma kesopanan, kini jadi perda dengan sanksi denda.'},
+  {ikon:'🙏⬅️⚖️',judul:'Agama ↔ Hukum',warna:'var(--nhukum)',
+   isi:'Di Indonesia, hukum dan agama saling memengaruhi. Nilai-nilai agama menginspirasi banyak produk hukum, sementara hukum memberi sanksi tegas bagi pelanggaran yang juga dilarang agama.',
+   contoh:'Larangan korupsi ada dalam hukum pidana (UU Tipikor) sekaligus dilarang tegas dalam semua agama sebagai pengkhianatan amanah. UU Perlindungan Anak juga sejalan dengan kewajiban agama menjaga generasi muda.'},
+];
+let hubunganOpen=-1;
+function initHubungan(){
+  hubunganOpen=-1;
+  const el=document.getElementById('hubunganList');
+  if(!el)return;
+  el.innerHTML=HUBUNGAN_DATA.map((h,i)=>`
+    <div style="border-radius:13px;overflow:hidden;border:2px solid rgba(255,255,255,.08);transition:border-color .2s" id="hub${i}">
+      <div style="padding:12px 15px;cursor:pointer;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.03)" onclick="toggleHub(${i})">
+        <span style="font-size:1.4rem;flex-shrink:0">${h.ikon}</span>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:.88rem">${h.judul}</div>
+          <div style="font-size:.74rem;color:var(--muted);margin-top:2px">Klik untuk baca penjelasan</div>
+        </div>
+        <span id="hubArrow${i}" style="color:var(--muted);font-size:.8rem;transition:transform .3s;flex-shrink:0">▼</span>
+      </div>
+      <div id="hubBody${i}" style="display:none;padding:0 15px 14px;background:rgba(255,255,255,.02)">
+        <div style="font-size:.83rem;line-height:1.7;margin:10px 0 8px">${h.isi}</div>
+        <div style="background:rgba(255,255,255,.05);border-left:3px solid ${h.warna};border-radius:0 9px 9px 0;padding:10px 12px;font-size:.79rem;line-height:1.6;color:var(--muted)">
+          <strong style="color:var(--text)">💡 Contoh nyata:</strong> ${h.contoh}
+        </div>
+      </div>
+    </div>`).join('');
+}
+function toggleHub(i){
+  const body=document.getElementById('hubBody'+i);
+  const arrow=document.getElementById('hubArrow'+i);
+  const card=document.getElementById('hub'+i);
+  const isOpen=body.style.display==='block';
+  // tutup semua
+  HUBUNGAN_DATA.forEach((_,j)=>{
+    document.getElementById('hubBody'+j).style.display='none';
+    document.getElementById('hubArrow'+j).style.transform='';
+    document.getElementById('hub'+j).style.borderColor='rgba(255,255,255,.08)';
+  });
+  if(!isOpen){
+    body.style.display='block';
+    arrow.style.transform='rotate(180deg)';
+    card.style.borderColor=HUBUNGAN_DATA[i].warna;
+    hubunganOpen=i;
+  } else {hubunganOpen=-1;}
+}
+
+// ══ GILIRAN BICARA ══
+const STARTER_KALIMAT=[
+  'Menurut saya, Deni sebaiknya <strong>jujur</strong> kepada guru, karena norma <strong>kesusilaan</strong> mengajarkan bahwa kejujuran adalah dasar kepercayaan — meski menyakitkan.',
+  'Menurut saya, Deni sebaiknya <strong>diam dulu</strong> dan bicara langsung ke Rian, karena norma <strong>kesopanan</strong> mengajarkan kita menjaga perasaan teman dan tidak mempermalukan orang di depan umum.',
+  'Menurut saya, Deni sebaiknya <strong>jujur</strong> karena norma <strong>agama</strong> mengajarkan bahwa amanah dan kejujuran adalah kewajiban, dan membiarkan kecurangan juga dosa.',
+  'Menurut saya, Deni sebaiknya <strong>melapor ke guru</strong>, karena norma <strong>hukum</strong> (tata tertib sekolah) mengharuskan kita melaporkan kecurangan demi keadilan semua siswa.',
+  'Menurut saya, Deni perlu <strong>bicara ke Rian dulu</strong> secara pribadi agar Rian mengakui sendiri, karena norma <strong>kesusilaan</strong> mengajarkan memberi kesempatan orang memperbaiki diri.',
+  'Menurut saya, ini <strong>dilema sulit</strong> — norma agama dan kesusilaan sama-sama penting. Tapi saya memilih jujur karena <strong>norma hukum</strong> sekolah melindungi semua siswa dari ketidakadilan.',
+];
+let giliranState={jumlah:0,giliran:0,pendapat:[],selesai:false};
+
+function mulaiGiliran(n){
+  giliranState={jumlah:n,giliran:0,pendapat:[],selesai:false};
+  document.getElementById('giliranSetup').style.display='none';
+  document.getElementById('giliranArea').style.display='block';
+  renderGiliranKartu();
+}
+
+function renderGiliranKartu(){
+  const {jumlah,giliran,selesai}=giliranState;
+  const area=document.getElementById('giliranArea');
+  if(!area)return;
+
+  // progress dots
+  document.getElementById('giliranProgress').innerHTML=
+    Array.from({length:jumlah},(_,i)=>`
+      <div style="flex:1;height:6px;border-radius:99px;transition:background .3s;background:${
+        i<giliran?'var(--g)':i===giliran?'var(--y)':'rgba(255,255,255,.1)'
+      }"></div>`).join('');
+
+  if(giliran>=jumlah){
+    // semua selesai
+    document.getElementById('giliranKartu').innerHTML=`
+      <div style="text-align:center;padding:10px">
+        <div style="font-size:2rem;margin-bottom:8px">🎉</div>
+        <div style="font-weight:800;color:var(--g);font-size:.92rem;margin-bottom:4px">Semua anggota sudah berpendapat!</div>
+        <div style="font-size:.8rem;color:var(--muted)">Sekarang bandingkan pendapat tadi — ada yang sama? Ada yang berbeda?</div>
+      </div>`;
+    document.getElementById('giliranBtn').innerHTML=`
+      <button class="btn btn-g btn-sm" onclick="lihatRekapGiliran()">📋 Lihat Rekap Pendapat</button>
+      <button class="btn btn-ghost btn-sm" onclick="resetGiliran()">🔄 Ulangi</button>`;
+    document.getElementById('giliranKesimpulan').style.display='block';
+    return;
+  }
+
+  const starter=STARTER_KALIMAT[giliran % STARTER_KALIMAT.length];
+  const warnaDot=['var(--y)','var(--c)','var(--g)','var(--p)','var(--o)','var(--r)'];
+  const warna=warnaDot[giliran%warnaDot.length];
+
+  document.getElementById('giliranKartu').innerHTML=`
+    <div style="border:2px solid ${warna};border-radius:12px;padding:15px;background:rgba(255,255,255,.03)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:34px;height:34px;border-radius:50%;background:${warna};color:#0e1c2f;font-weight:900;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${giliran+1}
+        </div>
+        <div>
+          <div style="font-weight:800;font-size:.9rem">Giliran Anggota ke-${giliran+1}</div>
+          <div style="font-size:.72rem;color:var(--muted)">Orang lain: dengarkan dulu, jangan potong!</div>
+        </div>
+      </div>
+      <div style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">💡 Bisa pakai kalimat starter ini:</div>
+      <div style="background:rgba(255,255,255,.05);border-radius:9px;padding:11px;font-size:.83rem;line-height:1.7;margin-bottom:12px;font-style:italic">
+        "${starter}"
+      </div>
+      <div style="font-size:.78rem;font-weight:800;color:var(--muted);margin-bottom:6px">Atau tulis pendapatmu sendiri:</div>
+      <textarea id="inputGiliran${giliran}" rows="2"
+        style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px;color:var(--text);font-family:'Nunito',sans-serif;font-size:.83rem;resize:vertical"
+        placeholder="Tulis pendapatmu sendiri di sini..."></textarea>
+    </div>`;
+
+  document.getElementById('giliranBtn').innerHTML=`
+    <button class="btn btn-sm" style="background:${warna};color:#0e1c2f" onclick="nextGiliranBicara()">
+      ✅ Selesai — Giliran Anggota ${giliran+2<=jumlah?`ke-${giliran+2}`:'Terakhir'} →
+    </button>`;
+}
+
+function nextGiliranBicara(){
+  const ta=document.getElementById('inputGiliran'+giliranState.giliran);
+  const val=ta?ta.value.trim():'';
+  const starter=STARTER_KALIMAT[giliranState.giliran%STARTER_KALIMAT.length];
+  // simpan pendapat (custom atau starter)
+  giliranState.pendapat.push(val||starter.replace(/<[^>]+>/g,''));
+  giliranState.giliran++;
+  renderGiliranKartu();
+}
+
+function lihatRekapGiliran(){
+  const {pendapat}=giliranState;
+  const rekapEl=document.getElementById('giliranKartu');
+  rekapEl.innerHTML=`
+    <div style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">📋 Rekap Pendapat Semua Anggota</div>
+    ${pendapat.map((p,i)=>`
+      <div style="display:flex;gap:10px;margin-bottom:9px;font-size:.82rem;line-height:1.6;padding:10px;background:rgba(255,255,255,.04);border-radius:9px">
+        <div style="font-weight:900;color:var(--y);flex-shrink:0">Anggota ${i+1}:</div>
+        <div style="color:var(--muted)">"${p}"</div>
+      </div>`).join('')}
+    <div style="font-size:.8rem;font-weight:800;color:var(--g);margin-top:10px;padding:10px;background:rgba(52,211,153,.07);border-radius:9px">
+      💬 Diskusikan: Mana pendapat yang paling banyak disetujui? Gunakan sebagai dasar kesimpulan di bawah!
+    </div>`;
+  document.getElementById('giliranBtn').innerHTML=`
+    <button class="btn btn-ghost btn-sm" onclick="resetGiliran()">🔄 Ulangi Giliran</button>`;
+}
+
+function resetGiliran(){
+  giliranState={jumlah:0,giliran:0,pendapat:[],selesai:false};
+  document.getElementById('giliranSetup').style.display='block';
+  document.getElementById('giliranArea').style.display='none';
+  document.getElementById('giliranKesimpulan').style.display='none';
+  document.getElementById('giliranKartu').innerHTML='';
+  document.getElementById('giliranProgress').innerHTML='';
+  document.getElementById('giliranBtn').innerHTML='';
+}
+
+// Kasus
+const KASUS=[
+  {ikon:'😤',judul:'Pencurian di Kantin Sekolah',deskripsi:'Seorang siswa mengambil bekal temannya dari tas tanpa izin.',norma:['⚖️ Norma Hukum — pencurian adalah tindak pidana','❤️ Norma Kesusilaan — melanggar kejujuran dan hati nurani','🙏 Norma Agama — mencuri dilarang dalam semua agama'],color:'var(--r)'},
+  {ikon:'📱',judul:'Screenshot Chat Pribadi Disebarkan',deskripsi:'Seorang siswa menyebarkan tangkapan layar chat pribadi temannya ke seluruh kelas tanpa izin.',norma:['⚖️ Norma Hukum — pelanggaran privasi, bisa terjerat UU ITE','❤️ Norma Kesusilaan — tidak jujur, tidak bertanggung jawab','🤝 Norma Kesopanan — mempermalukan orang lain'],color:'var(--o)'},
+  {ikon:'🚌',judul:'Tidak Memberi Tempat di Angkot',deskripsi:'Siswa SMP memenuhi kursi depan angkot, padahal ada ibu hamil berdiri kelelahan.',norma:['🤝 Norma Kesopanan — tidak mengutamakan yang membutuhkan','❤️ Norma Kesusilaan — kurang empati dan kepedulian sosial'],color:'var(--y)'},
+];
+function initKasus(){
+  const el=document.getElementById('kasusArea');
+  if(!el)return;
+  el.innerHTML=KASUS.map((k,i)=>`
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:13px;overflow:hidden">
+      <div style="padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px" onclick="toggleKasus(${i})">
+        <span style="font-size:1.5rem">${k.ikon}</span>
+        <div style="flex:1"><div style="font-weight:800;font-size:.86rem">${k.judul}</div><div style="font-size:.78rem;color:var(--muted);margin-top:2px">${k.deskripsi}</div></div>
+        <span id="kasusArrow${i}" style="color:var(--muted);font-size:.8rem;transition:transform .3s">▼</span>
+      </div>
+      <div id="kasusBody${i}" style="display:none;padding:0 14px 14px">
+        <div style="font-size:.74rem;font-weight:800;color:${k.color};text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Norma yang dilanggar:</div>
+        ${k.norma.map(n=>`<div style="display:flex;gap:8px;font-size:.81rem;line-height:1.5;margin-bottom:4px"><span style="color:${k.color}">→</span><span>${n}</span></div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+function toggleKasus(i){
+  const b=document.getElementById('kasusBody'+i),a=document.getElementById('kasusArrow'+i);
+  const open=b.style.display==='none';
+  b.style.display=open?'block':'none';
+  a.style.transform=open?'rotate(180deg)':'';
+}
+
+// ══ SORTIR ══
+const SORTIR_ITEMS=[
+  {teks:'Berdoa sebelum memulai aktivitas',jawaban:'agama',pts:10},
+  {teks:'Mengembalikan uang kembalian lebih',jawaban:'kesusilaan',pts:10},
+  {teks:'Membungkuk saat lewat orang lebih tua',jawaban:'kesopanan',pts:10},
+  {teks:'Memakai helm saat berkendara motor',jawaban:'hukum',pts:10},
+  {teks:'Merasa malu setelah berbohong kepada orang tua',jawaban:'kesusilaan',pts:10},
+  {teks:'Mengucap salam saat masuk rumah orang lain',jawaban:'kesopanan',pts:10},
+  {teks:'Membayar pajak tepat waktu',jawaban:'hukum',pts:10},
+  {teks:'Berpuasa di bulan Ramadan',jawaban:'agama',pts:10},
+  {teks:'Tidak menyontek meski tidak ada pengawas',jawaban:'kesusilaan',pts:10},
+  {teks:'Antre tertib tanpa menyerobot',jawaban:'kesopanan',pts:10},
+  {teks:'Tidak membuang sampah sembarangan',jawaban:'hukum',pts:10},
+  {teks:'Membantu teman yang kesulitan tanpa pamrih',jawaban:'kesusilaan',pts:10},
+];
+const SORTIR_NORMA=[
+  {id:'agama',label:'🙏 Agama',color:'var(--nagama)',bg:'rgba(249,193,46,.07)',bc:'rgba(249,193,46,.25)'},
+  {id:'kesusilaan',label:'❤️ Kesusilaan',color:'var(--nkesusilaan)',bg:'rgba(255,107,107,.07)',bc:'rgba(255,107,107,.25)'},
+  {id:'kesopanan',label:'🤝 Kesopanan',color:'var(--nkesopanan)',bg:'rgba(62,207,207,.07)',bc:'rgba(62,207,207,.25)'},
+  {id:'hukum',label:'⚖️ Hukum',color:'var(--nhukum)',bg:'rgba(167,139,250,.07)',bc:'rgba(167,139,250,.25)'},
+];
+let sortirSelected=null,sortirPlaced={},sortirItems=[];
+function initSortir(){
+  sortirSelected=null;sortirPlaced={};
+  sortirItems=[...SORTIR_ITEMS].sort(()=>Math.random()-.5);
+  S.sortirScore=0;document.getElementById('sortirScore').textContent=0;
+  document.getElementById('btnSortirNext').style.display='none';
+  document.getElementById('sortirRefleksi').style.display='none';
+  renderSortir();
+}
+function resetSortir(){initSortir();}
+function kartuId(teks){return'k_'+encodeURIComponent(teks).replace(/%/g,'X');}
+function renderSortir(){
+  const remaining=sortirItems.filter(it=>!sortirPlaced[it.teks]);
+  const done=Object.keys(sortirPlaced).length;
+  document.getElementById('sortirStatus').textContent=`${done}/${sortirItems.length} disortir`;
+  const pool=`<div style="font-size:.74rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">① Diskusikan dulu → ② Pilih kartu → ③ Klik kolom norma:</div>
+  <div class="sortir-kartu-pool">
+    ${remaining.map(it=>`<div class="sortir-kartu${sortirSelected===it.teks?' selected':''}" id="${kartuId(it.teks)}" onclick="selectKartu('${encodeURIComponent(it.teks)}')">${it.teks}</div>`).join('')}
+    ${!remaining.length?'<div style="font-size:.82rem;color:var(--muted);padding:4px">✅ Semua kartu sudah disortir!</div>':''}
+  </div>`;
+  const cols=`<div class="sortir-kolom-grid">${SORTIR_NORMA.map(n=>`
+    <div class="sortir-kolom${sortirSelected?' highlight':''}" style="background:${n.bg};border-color:${sortirSelected?'var(--y)':n.bc}" onclick="dropToKolom('${n.id}')">
+      <div class="sortir-kolom-title" style="color:${n.color}">${n.label}</div>
+      <div class="sortir-kolom-items">
+        ${sortirItems.filter(it=>sortirPlaced[it.teks]===n.id).map(it=>`<div class="sortir-item-placed" style="background:${n.bg};border:1px solid ${n.bc};color:${n.color}">${it.teks}</div>`).join('')}
+      </div>
+    </div>`).join('')}</div>`;
+  document.getElementById('sortirArea').innerHTML=pool+cols;
+}
+function selectKartu(enc){
+  sortirSelected=sortirSelected===decodeURIComponent(enc)?null:decodeURIComponent(enc);
+  renderSortir();
+}
+function dropToKolom(normaId){
+  if(!sortirSelected)return;
+  const item=sortirItems.find(it=>it.teks===sortirSelected);
+  if(!item)return;
+  if(item.jawaban===normaId){
+    const el=document.getElementById(kartuId(sortirSelected));
+    if(el)el.classList.add('flying');
+    setTimeout(()=>{
+      sortirPlaced[sortirSelected]=normaId;
+      S.sortirScore+=item.pts;S.score+=item.pts;
+      document.getElementById('sortirScore').textContent=S.sortirScore;
+      document.getElementById('navScore').textContent=S.score;
+      const p=document.createElement('div');p.className='score-popup';p.textContent='+'+item.pts;
+      document.body.appendChild(p);setTimeout(()=>p.remove(),800);
+      sortirSelected=null;renderSortir();
+      const done=Object.keys(sortirPlaced).length;
+      if(done===sortirItems.length){
+        document.getElementById('btnSortirNext').style.display='inline-flex';
+        document.getElementById('sortirRefleksi').style.display='block';
+        if(S.sortirScore>=80)launchConfetti();
+      }
+    },370);
+  } else {
+    const p=document.createElement('div');
+    p.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--r);color:#fff;border-radius:16px;padding:12px 22px;font-family:\'Fredoka One\',cursive;font-size:1.1rem;z-index:999;animation:popIn .3s ease;pointer-events:none';
+    p.textContent='❌ Coba kolom lain!';document.body.appendChild(p);setTimeout(()=>p.remove(),900);
+    sortirSelected=null;renderSortir();
+  }
+}
+
+// ══ RODA NORMA ══
+const RODA_SOAL=[
+  {q:'Ahmad tidak berdoa sebelum berangkat ke sekolah meski sudah diingatkan orang tua. Norma apa yang dilanggar?',
+   pemantik:'💬 <strong>Diskusikan:</strong> Apakah tidak berdoa hanya masalah pribadi, atau mempengaruhi orang lain juga?',
+   opts:['Norma Agama','Norma Kesusilaan','Norma Kesopanan','Norma Hukum'],ans:0,
+   ex:'Berdoa sebelum berangkat adalah ajaran agama — sanksinya bersifat internal dan akhirat, bukan dari negara.'},
+  {q:'Dina menemukan bolpoin milik teman di lantai dan diam-diam menyimpannya. Sanksi yang paling mungkin ia rasakan?',
+   pemantik:'💬 <strong>Diskusikan:</strong> Apa bedanya "tidak ketahuan" dengan "tidak melanggar norma"?',
+   opts:['Dipanggil guru BK','Rasa bersalah dan gelisah','Dikucilkan warga','Ditilang polisi'],ans:1,
+   ex:'Norma kesusilaan berbasis hati nurani — pelanggarnya merasakan sanksi internal: rasa bersalah dan gelisah, bahkan jika tidak ketahuan.'},
+  {q:'Roni menerobos antrian di kantin sekolah karena buru-buru. Norma yang paling langsung dilanggar?',
+   pemantik:'💬 <strong>Diskusikan:</strong> Ada tidak peraturan tertulis tentang antrian? Kalau tidak ada, apakah itu bukan pelanggaran?',
+   opts:['Norma Hukum','Norma Agama','Norma Kesopanan','Norma Kesusilaan'],ans:2,
+   ex:'Antri adalah norma kesopanan dari kebiasaan sosial. Tidak ada undang-undang tentang antrian, tapi sanksi sosialnya nyata.'},
+  {q:'Siswa SMP mengendarai motor ke sekolah tanpa SIM dan ditilang polisi. Norma apa yang dilanggar?',
+   pemantik:'💬 <strong>Diskusikan:</strong> Kalau tidak ada polisi, apakah tetap melanggar norma? Norma mana?',
+   opts:['Norma Agama','Norma Kesusilaan','Norma Kesopanan','Norma Hukum'],ans:3,
+   ex:'Kewajiban SIM diatur UU No.22/2009 — norma hukum yang berlaku meski tidak ada yang melihat.'},
+  {q:'Bu Siti selalu mengajarkan anaknya jujur karena "Allah Maha Melihat". Ini menunjukkan hubungan antara...',
+   pemantik:'💬 <strong>Diskusikan:</strong> Apakah seseorang yang tidak beragama bisa jujur? Apa sumber kejujurannya kalau bukan agama?',
+   opts:['Norma Hukum membentuk perilaku','Norma Agama membentuk kesusilaan','Norma Kesopanan dari adat','Sanksi hukum yang menakutkan'],ans:1,
+   ex:'Keyakinan agama membentuk hati nurani dan kesusilaan — salah satu hubungan antarnorma yang paling kuat.'},
+  {q:'Tono tidak menyontek meski ada kesempatan — bukan karena takut ketahuan guru, tapi karena merasa tidak benar. Ini norma...',
+   pemantik:'💬 <strong>Diskusikan:</strong> Apa yang mendorong kalian tidak menyontek — takut ketahuan, atau ada alasan lain?',
+   opts:['Norma Hukum','Norma Agama','Norma Kesusilaan','Norma Kesopanan'],ans:2,
+   ex:'Ketika seseorang tidak melakukan kesalahan karena hati nurani (bukan takut sanksi luar) — itulah norma kesusilaan.'},
+  {q:'Di upacara bendera, semua siswa wajib berdiri tegak dan tidak boleh bermain HP. Norma yang berlaku?',
+   pemantik:'💬 <strong>Diskusikan:</strong> Kalau guru tidak melihat, apakah boleh main HP? Dari norma mana alasanmu?',
+   opts:['Norma Hukum (tata tertib sekolah)','Norma Agama Pancasila','Norma Kesusilaan pribadi','Norma Kesopanan adat Jawa'],ans:0,
+   ex:'Tata tertib sekolah adalah norma hukum dalam lingkup sekolah — tertulis, wajib, ada sanksi resmi dari pihak sekolah.'},
+  {q:'Siswa yang lolos dari sanksi tata tertib (tidak terbukti curang) tetap dijauhi teman-temannya. Ini menunjukkan...',
+   pemantik:'💬 <strong>Diskusikan:</strong> Apakah adil seseorang dihukum secara sosial padahal sudah "bebas" dari hukum formal?',
+   opts:['Norma hukum selalu berjalan sempurna','Sanksi sosial dan kesusilaan tetap berlaku','Norma agama tidak relevan','Teman-temannya salah menilai'],ans:1,
+   ex:'Meski lolos dari hukum sekolah, pelanggar norma kesusilaan tetap menerima sanksi sosial. Bukti norma saling melengkapi!'},
+];
+
+let rodaIdx=0,rodaAns=false,rodaStreak=0;
+const FB_OK=['Tepat! 🎯','Brilian! 🌟','Mantap! 💪','Jawaban sempurna! ✨','Hebat! 🏆'];
+const FB_NO=['Hampir! Perhatikan penjelasannya 💭','Belum tepat, tapi sudah belajar! 📚','Coba perhatikan kata kuncinya 🔍'];
+
+function initRoda(){
+  rodaIdx=0;rodaAns=false;rodaStreak=0;S.rodaScore=0;
+  document.getElementById('rodaScore').textContent=0;
+  document.getElementById('rodaScoreHud').textContent=0;
+  document.getElementById('btnRodaNext').style.display='none';
+  document.getElementById('rodaStreak').style.display='none';
+  renderRodaDots();renderRodaSoal();
+}
+function resetRoda(){initRoda();}
+function renderRodaDots(){
+  const dots=RODA_SOAL.map((_,i)=>`<div style="flex:1;height:5px;border-radius:99px;background:${i<rodaIdx?'var(--g)':i===rodaIdx?'var(--y)':'#1e3a5a'};box-shadow:${i===rodaIdx?'0 0 5px var(--y)':'none'};transition:background .3s"></div>`).join('');
+  document.getElementById('rodaProgDots').innerHTML=dots;
+  document.getElementById('rodaProgBar').innerHTML=dots;
+  document.getElementById('rodaNum').textContent=`Soal ${Math.min(rodaIdx+1,RODA_SOAL.length)}/${RODA_SOAL.length}`;
+}
+function renderRodaSoal(){
+  rodaAns=false;
+  const s=RODA_SOAL[rodaIdx];
+  document.getElementById('rodaBody').innerHTML=`
+    <div class="roda-diskusi">${s.pemantik}</div>
+    <div class="roda-q-text">${s.q}</div>
+    <div class="roda-opts">${s.opts.map((o,i)=>`
+      <div class="roda-opt" id="ro${i}" onclick="pickRoda(${i})">
+        <span style="font-weight:900;color:var(--muted)">${'ABCD'[i]}.</span>${o}
+      </div>`).join('')}
+    </div>
+    <div id="rodaFb"></div>`;
+}
+function pickRoda(i){
+  if(rodaAns)return;rodaAns=true;
+  const s=RODA_SOAL[rodaIdx];const ok=i===s.ans;
+  document.querySelectorAll('.roda-opt').forEach(o=>o.classList.add('dis'));
+  document.getElementById('ro'+i).classList.add(ok?'rok':'rno');
+  if(!ok)document.getElementById('ro'+s.ans).classList.add('rhok');
+  if(ok){
+    rodaStreak++;S.rodaScore+=10;S.score+=10;
+    document.getElementById('rodaScore').textContent=S.rodaScore;
+    document.getElementById('rodaScoreHud').textContent=S.rodaScore;
+    document.getElementById('navScore').textContent=S.score;
+    if(rodaStreak>=2){
+      const sb=document.getElementById('rodaStreak');sb.style.display='block';
+      sb.textContent=rodaStreak===2?'🔥 2 benar berturut-turut!':rodaStreak===3?'🔥🔥 3 berturut! Keren!':rodaStreak>=4?'🔥🔥🔥 Diskusi kalian tajam banget!':'';
+    }
+  } else {rodaStreak=0;document.getElementById('rodaStreak').style.display='none';}
+  const fb=document.getElementById('rodaFb');
+  fb.className='roda-fb '+(ok?'ok':'no');
+  fb.innerHTML=ok?`✅ ${FB_OK[Math.floor(Math.random()*FB_OK.length)]} — ${s.ex}`:`❌ ${FB_NO[Math.floor(Math.random()*FB_NO.length)]} Jawaban: <strong>${s.opts[s.ans]}</strong> — ${s.ex}`;
+  setTimeout(()=>{
+    rodaIdx++;
+    if(rodaIdx<RODA_SOAL.length){renderRodaDots();renderRodaSoal();}
+    else{
+      document.getElementById('btnRodaNext').style.display='inline-flex';
+      document.getElementById('rodaStreak').style.display='none';
+      renderRodaDots();
+      if(S.rodaScore>=60)launchConfetti();
+      document.getElementById('rodaBody').innerHTML=`
+        <div style="text-align:center;padding:14px">
+          <div style="font-size:2.5rem;margin-bottom:8px">${S.rodaScore>=70?'🏆':S.rodaScore>=50?'⭐':'📚'}</div>
+          <div style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:var(--o);margin-bottom:6px">Roda Norma Selesai!</div>
+          <div style="font-size:.86rem;color:var(--muted)">Skor kelompok: <strong style="color:var(--y)">${S.rodaScore} / ${RODA_SOAL.length*10} poin</strong></div>
+          <div style="font-size:.82rem;color:var(--muted);margin-top:6px;background:rgba(62,207,207,.06);border:1px dashed rgba(62,207,207,.3);border-radius:9px;padding:9px">
+            💬 <strong style="color:var(--c)">Diskusikan:</strong> Soal mana yang paling seru diperdebatkan kelompokmu? Apakah ada jawaban yang awalnya berbeda pendapat?
+          </div>
+        </div>`;
+    }
+  },2100);
+}
+
+// ══ FLASHCARD ══
+const FLASH_DATA=[
+  {q:'Sebutkan 4 jenis norma yang berlaku di masyarakat!',a:'Norma Agama (dari Tuhan), Norma Kesusilaan (hati nurani), Norma Kesopanan (adat istiadat), dan Norma Hukum (negara).'},
+  {q:'Apa perbedaan sanksi norma kesusilaan dan norma hukum?',a:'Sanksi kesusilaan bersifat internal — rasa bersalah dari diri sendiri. Sanksi hukum bersifat eksternal dan tegas — denda atau penjara dari negara.'},
+  {q:'Mengapa norma hukum dianggap paling kuat sanksinya?',a:'Karena tertulis, tegas, berlaku untuk semua tanpa pengecualian, dan ada aparat penegak hukum yang memastikan sanksinya diterapkan.'},
+  {q:'Bagaimana hubungan antara norma agama dan norma kesusilaan?',a:'Ajaran agama membentuk hati nurani. Orang taat beragama biasanya memiliki kesusilaan kuat karena keyakinannya mengajarkan nilai moral.'},
+  {q:'Bolehkah seseorang memilih norma mana yang diikuti?',a:'Tidak. Semua norma mengikat seluruh anggota masyarakat. Melanggar satu norma tetap ada konsekuensinya — internal, sosial, atau hukum.'},
+];
+const flashState={idx:0,flipped:false};
+function initFlash(){flashState.idx=0;flashState.flipped=false;renderFlash();}
+function renderFlash(){
+  const d=FLASH_DATA[flashState.idx];
+  document.getElementById('flashWrap').innerHTML=`
+    <div class="flash-card${flashState.flipped?' flipped':''}" onclick="flipFlash()">
+      <div class="flash-front"><div class="flash-label">❓ Kartu ${flashState.idx+1} dari ${FLASH_DATA.length}</div><div class="flash-q">${d.q}</div><div class="flash-hint">👆 Ketuk untuk lihat jawaban</div></div>
+      <div class="flash-back"><div class="flash-label">✅ Jawaban</div><div class="flash-a">${d.a}</div><div class="flash-hint">👆 Ketuk untuk balik</div></div>
+    </div>`;
+  document.getElementById('flashDots').innerHTML=FLASH_DATA.map((_,i)=>`<div class="flash-dot-f${i<flashState.idx?' done':i===flashState.idx?' cur':''}"></div>`).join('');
+  document.getElementById('flashPrev').style.opacity=flashState.idx===0?'.35':'1';
+  document.getElementById('flashNext').textContent=flashState.idx===FLASH_DATA.length-1?'Selesai ✓':'Berikutnya →';
+}
+function flipFlash(){flashState.flipped=!flashState.flipped;const c=document.querySelector('#flashWrap .flash-card');if(c)c.classList.toggle('flipped',flashState.flipped);}
+function nextFlash(){if(flashState.idx<FLASH_DATA.length-1){flashState.idx++;flashState.flipped=false;renderFlash();}}
+function prevFlash(){if(flashState.idx>0){flashState.idx--;flashState.flipped=false;renderFlash();}}
+
+// ══ HASIL ══
+function showHasil(){
+  const tot=S.score;
+  const maxTot=(SORTIR_ITEMS.length*10)+(RODA_SOAL.length*10)+(3*5);
+  document.getElementById('hasilCircle').style.setProperty('--prog',Math.min(100,Math.round(tot/maxTot*100))+'%');
+  document.getElementById('hasilNum').textContent=tot;
+  let lv,lc,lb;
+  if(tot>=150){lv='🏆 Ahli Norma!';lc='var(--g)';lb='rgba(52,211,153,.1)';}
+  else if(tot>=100){lv='⭐ Kelompok Berprestasi';lc='var(--y)';lb='rgba(249,193,46,.1)';}
+  else if(tot>=60){lv='📚 Terus Berkembang';lc='var(--c)';lb='rgba(62,207,207,.1)';}
+  else{lv='💪 Semangat Belajar!';lc='var(--r)';lb='rgba(255,107,107,.1)';}
+  const lbEl=document.getElementById('levelBadge');
+  lbEl.textContent=lv;lbEl.style.cssText=`color:${lc};background:${lb};border:1px solid ${lc};`;
+  const stars=Math.min(5,Math.round(tot/maxTot*5));
+  document.getElementById('hasilStars').textContent='⭐'.repeat(stars)+'☆'.repeat(5-stars);
+  document.getElementById('scoreBreakdown').innerHTML=`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.81rem"><span>🎮 Game Sortir Norma</span><span style="font-weight:800;color:var(--g)">${S.sortirScore} poin</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.81rem"><span>🎡 Game Roda Norma</span><span style="font-weight:800;color:var(--o)">${S.rodaScore} poin</span></div>
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.81rem"><span>💬 Catatan Diskusi</span><span style="font-weight:800;color:var(--c)">${Object.keys(S.diskusi).length*5} poin</span></div>
+    <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:.9rem;font-weight:800"><span>Total Poin Kelompok</span><span style="color:var(--g)">${tot} poin</span></div>`;
+}
+function showPenutup(){
+  const lv=S.score>=150?'🏆 Ahli Norma':S.score>=100?'⭐ Kelompok Berprestasi':S.score>=60?'📚 Terus Berkembang':'💪 Semangat!';
+  document.getElementById('finalScore').textContent=`${S.score} poin — ${lv}`;
+}
+window.addEventListener('load',()=>goto('s-cover'));
+</script>
+</body>
+</html>

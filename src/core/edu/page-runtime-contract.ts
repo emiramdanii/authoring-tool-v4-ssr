@@ -151,6 +151,20 @@ export const DEFAULT_CONTRACTS: Record<string, PageRuntimeContract> = {
     },
     requireCompletion: true,
   },
+  dokumen: {
+    templateType: 'dokumen',
+    completionType: 'scroll',
+    scoring: { enabled: false, maxPoints: 0 },
+    navigationLock: { enabled: false, message: '' },
+    requireCompletion: false,
+  },
+  hasil: {
+    templateType: 'hasil',
+    completionType: 'view',
+    scoring: { enabled: false, maxPoints: 0 },
+    navigationLock: { enabled: false, message: '' },
+    requireCompletion: false,
+  },
   rangkuman: {
     templateType: 'rangkuman',
     completionType: 'scroll',

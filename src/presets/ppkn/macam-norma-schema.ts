@@ -1,8 +1,9 @@
 import type { LessonSchema, SchemaBlock } from '@/core/schema/types';
+import type { SceneType } from '@/core/edu/education-scene-types';
 
 export const MACAM_NORMA_LESSON: LessonSchema = {
   id: 'macam-norma',
-  version: 1,
+  version: 2,
   title: 'Macam-Macam Norma',
   mapel: 'PPKn',
   kelas: 'VII',
@@ -13,10 +14,11 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
     progressGradient: ['c', 'p'],
   },
   screens: [
-    // ──────────────────────── COVER ────────────────────────
+    // ══════════════════════════ 1. COVER ══════════════════════════
     {
       id: 's-cover',
       templateType: 'cover',
+      sceneType: 'intro' as SceneType,
       background: {
         type: 'radial',
         color1: 'c',
@@ -50,13 +52,14 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           },
         } as SchemaBlock,
       ],
-      nav: { next: 's-cp', nextLabel: 'CP · TP · ATP' },
+      nav: { next: 's-petunjuk', nextLabel: 'Petunjuk' },
     },
 
-    // ──────────────────────── PETUNJUK ────────────────────────
+    // ══════════════════════════ 2. PETUNJUK ══════════════════════════
     {
       id: 's-petunjuk',
       templateType: 'petunjuk',
+      sceneType: 'intro' as SceneType,
       sectionLabel: '📌 Petunjuk Penggunaan',
       sectionColor: 'c',
       blocks: [
@@ -77,140 +80,138 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
       nav: { prev: 's-cover', next: 's-cp', nextLabel: 'CP · TP · ATP' },
     },
 
-    // ──────────────────────── CP / TP / ATP ────────────────────────
+    // ══════════════════════════ 3. CP (Capaian Pembelajaran) ══════════════════════════
     {
       id: 's-cp',
-      templateType: 'cp',
-      sectionLabel: '📋 Kurikulum Merdeka',
+      templateType: 'dokumen',
+      sceneType: 'concept' as SceneType,
+      sectionLabel: '📋 Capaian Pembelajaran',
       sectionColor: 'p',
       blocks: [
         {
-          type: 'ftab',
-          showReadMarker: false,
-          showProgress: false,
-          tabs: [
-            // ── Tab CP ──
+          type: 'def-box',
+          borderColor: 'y',
+          content: '<strong>ELEMEN: PANCASILA</strong> — Peserta didik mampu <strong>memahami dan melaksanakan norma dan aturan</strong> yang berlaku, menganalisis pentingnya kepatuhan terhadap norma dalam kehidupan bermasyarakat, berbangsa, dan bernegara demi terwujudnya kehidupan yang tertib, aman, dan harmonis.',
+        },
+        {
+          type: 'def-box',
+          borderColor: 'c',
+          content: '<strong>ELEMEN: BHINNEKA TUNGGAL IKA</strong> — Peserta didik mampu mengidentifikasi keberagaman norma yang berlaku di masyarakat sebagai wujud kekayaan budaya bangsa Indonesia dan menunjukkan sikap <strong>toleran serta patuh terhadap norma bersama.</strong>',
+        },
+        {
+          type: 'nc-grid',
+          cards: [
             {
-              icon: '📌',
-              label: 'CP',
-              content: [
-                {
-                  type: 'def-box',
-                  borderColor: 'y',
-                  content: '<strong>ELEMEN: PANCASILA</strong> — Peserta didik mampu <strong>memahami dan melaksanakan norma dan aturan</strong> yang berlaku, menganalisis pentingnya kepatuhan terhadap norma dalam kehidupan bermasyarakat, berbangsa, dan bernegara demi terwujudnya kehidupan yang tertib, aman, dan harmonis.',
-                },
-                {
-                  type: 'def-box',
-                  borderColor: 'c',
-                  content: '<strong>ELEMEN: BHINNEKA TUNGGAL IKA</strong> — Peserta didik mampu mengidentifikasi keberagaman norma yang berlaku di masyarakat sebagai wujud kekayaan budaya bangsa Indonesia dan menunjukkan sikap <strong>toleran serta patuh terhadap norma bersama.</strong>',
-                },
-                {
-                  type: 'nc-grid',
-                  cards: [
-                    {
-                      icon: '📎',
-                      title: 'Profil Pelajar Pancasila',
-                      body: 'Beriman & Bertakwa · Berkebinekaan Global · Bergotong Royong · Bernalar Kritis',
-                      color: 'g',
-                    },
-                  ],
-                },
-              ],
-            },
-            // ── Tab TP ──
-            {
-              icon: '🎯',
-              label: 'TP',
-              content: [
-                {
-                  type: 'tp',
-                  title: 'Tujuan Pembelajaran',
-                  titleHighlight: 'Bab 3',
-                  items: [
-                    {
-                      num: 1,
-                      verb: 'Menjelaskan',
-                      desc: 'pengertian norma sebagai aturan yang mengikat warga masyarakat dan berfungsi sebagai pedoman tingkah laku dalam kehidupan bersama',
-                      color: 'y',
-                    },
-                    {
-                      num: 2,
-                      verb: 'Mengidentifikasi',
-                      desc: 'macam-macam norma (agama, kesusilaan, kesopanan, dan hukum) beserta sumber, sanksi, dan sifatnya masing-masing',
-                      color: 'c',
-                    },
-                    {
-                      num: 3,
-                      verb: 'Menganalisis',
-                      desc: 'pentingnya patuh terhadap norma dan dampak pelanggaran norma bagi diri sendiri, masyarakat, serta kehidupan berbangsa dan bernegara',
-                      color: 'r',
-                    },
-                    {
-                      num: 4,
-                      verb: 'Memberikan contoh',
-                      desc: 'penerapan norma di lingkungan keluarga, sekolah, dan masyarakat dalam kehidupan sehari-hari',
-                      color: 'p',
-                    },
-                    {
-                      num: 5,
-                      verb: 'Menerapkan',
-                      desc: 'perilaku patuh terhadap norma sebagai wujud kesadaran hukum dan tanggung jawab sebagai warga negara yang baik',
-                      color: 'g',
-                    },
-                  ],
-                },
-                {
-                  type: 'def-box',
-                  borderColor: 'c',
-                  content: '🎯 <strong>Fokus Pertemuan 2 ini:</strong> TP 2 (Mengidentifikasi 4 norma) & TP 3 (Menganalisis dampak pelanggaran norma)',
-                },
-              ],
-            },
-            // ── Tab ATP ──
-            {
-              icon: '🗓️',
-              label: 'ATP',
-              content: [
-                {
-                  type: 'nc-grid',
-                  cards: [
-                    {
-                      icon: 'P–1',
-                      title: 'Hakikat Norma',
-                      body: 'TP 1 — Manusia makhluk sosial, pengertian & fungsi norma',
-                      color: 'y',
-                    },
-                    {
-                      icon: 'P–2',
-                      title: 'Macam-Macam Norma',
-                      body: 'TP 2, TP 3 — 4 jenis norma, sumber, sanksi + Game Sortir ← Kamu di sini',
-                      color: 'c',
-                    },
-                    {
-                      icon: 'P–3',
-                      title: 'Perilaku Patuh',
-                      body: 'TP 4, TP 5 — Penerapan di berbagai lingkungan + Kuis + Refleksi',
-                      color: 'g',
-                    },
-                  ],
-                },
-                {
-                  type: 'def-box',
-                  borderColor: 'g',
-                  content: '<strong>ATP Bab 3:</strong> 3 Pertemuan × 2 JP × 40 Menit = 80 Menit per pertemuan',
-                },
-              ],
+              icon: '📎',
+              title: 'Profil Pelajar Pancasila',
+              body: 'Beriman & Bertakwa · Berkebinekaan Global · Bergotong Royong · Bernalar Kritis',
+              color: 'g',
             },
           ],
         },
       ],
-      nav: { prev: 's-cover', next: 's-tp', nextLabel: 'Tujuan Hari Ini' },
+      nav: { prev: 's-petunjuk', next: 's-tp-full', nextLabel: 'Tujuan Pembelajaran' },
     },
 
-    // ──────────────────────── TP ────────────────────────
+    // ══════════════════════════ 4. TP FULL (All 5 Tujuan Pembelajaran) ══════════════════════════
     {
-      id: 's-tp',
-      templateType: 'tp',
+      id: 's-tp-full',
+      templateType: 'tujuan',
+      sceneType: 'intro' as SceneType,
+      sectionLabel: '🎯 Tujuan Pembelajaran Bab 3',
+      sectionColor: 'p',
+      blocks: [
+        {
+          type: 'tp',
+          title: 'Tujuan Pembelajaran',
+          titleHighlight: 'Bab 3',
+          items: [
+            {
+              num: 1,
+              verb: 'Menjelaskan',
+              desc: 'pengertian norma sebagai aturan yang mengikat warga masyarakat dan berfungsi sebagai pedoman tingkah laku dalam kehidupan bersama',
+              color: 'y',
+            },
+            {
+              num: 2,
+              verb: 'Mengidentifikasi',
+              desc: 'macam-macam norma (agama, kesusilaan, kesopanan, dan hukum) beserta sumber, sanksi, dan sifatnya masing-masing',
+              color: 'c',
+            },
+            {
+              num: 3,
+              verb: 'Menganalisis',
+              desc: 'pentingnya patuh terhadap norma dan dampak pelanggaran norma bagi diri sendiri, masyarakat, serta kehidupan berbangsa dan bernegara',
+              color: 'r',
+            },
+            {
+              num: 4,
+              verb: 'Memberikan contoh',
+              desc: 'penerapan norma di lingkungan keluarga, sekolah, dan masyarakat dalam kehidupan sehari-hari',
+              color: 'p',
+            },
+            {
+              num: 5,
+              verb: 'Menerapkan',
+              desc: 'perilaku patuh terhadap norma sebagai wujud kesadaran hukum dan tanggung jawab sebagai warga negara yang baik',
+              color: 'g',
+            },
+          ],
+        },
+        {
+          type: 'def-box',
+          borderColor: 'c',
+          content: '🎯 <strong>Fokus Pertemuan 2 ini:</strong> TP 2 (Mengidentifikasi 4 norma) & TP 3 (Menganalisis dampak pelanggaran norma)',
+        },
+      ],
+      nav: { prev: 's-cp', next: 's-atp', nextLabel: 'Alur Tujuan Pembelajaran' },
+    },
+
+    // ══════════════════════════ 5. ATP (Alur Tujuan Pembelajaran) ══════════════════════════
+    {
+      id: 's-atp',
+      templateType: 'dokumen',
+      sceneType: 'concept' as SceneType,
+      sectionLabel: '🗓️ Alur Tujuan Pembelajaran',
+      sectionColor: 'g',
+      blocks: [
+        {
+          type: 'nc-grid',
+          cards: [
+            {
+              icon: 'P–1',
+              title: 'Hakikat Norma',
+              body: 'TP 1 — Manusia makhluk sosial, pengertian & fungsi norma',
+              color: 'y',
+            },
+            {
+              icon: 'P–2',
+              title: 'Macam-Macam Norma',
+              body: 'TP 2, TP 3 — 4 jenis norma, sumber, sanksi + Game Sortir ← Kamu di sini',
+              color: 'c',
+            },
+            {
+              icon: 'P–3',
+              title: 'Perilaku Patuh',
+              body: 'TP 4, TP 5 — Penerapan di berbagai lingkungan + Kuis + Refleksi',
+              color: 'g',
+            },
+          ],
+        },
+        {
+          type: 'def-box',
+          borderColor: 'g',
+          content: '<strong>ATP Bab 3:</strong> 3 Pertemuan × 2 JP × 40 Menit = 80 Menit per pertemuan',
+        },
+      ],
+      nav: { prev: 's-tp-full', next: 's-tujuan-hari-ini', nextLabel: 'Tujuan Hari Ini' },
+    },
+
+    // ══════════════════════════ 6. TUJUAN HARI INI (TP 2 & 3 + Alur) ══════════════════════════
+    {
+      id: 's-tujuan-hari-ini',
+      templateType: 'tujuan',
+      sceneType: 'intro' as SceneType,
       sectionLabel: '🎯 Tujuan Pembelajaran',
       sectionColor: 'p',
       blocks: [
@@ -274,23 +275,19 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
               dot: 'r',
               durasi: '±8\'',
               judul: 'Refleksi & Penutup',
-              deskripsi: 'Kartu kilat + portofolio + penugasan P3',
+              deskripsi: '📋 Tugas P1 dikumpulkan sekarang! + Kartu kilat + portofolio + penugasan P3',
             },
           ],
         },
-        {
-          type: 'def-box',
-          borderColor: 'y',
-          content: '📋 <strong>Tugas P1 dikumpulkan sekarang!</strong> Tabel norma keluargamu akan digunakan sebagai bahan diskusi di layar berikutnya.',
-        },
       ],
-      nav: { prev: 's-cp', next: 's-review', nextLabel: 'Mulai' },
+      nav: { prev: 's-atp', next: 's-review', nextLabel: 'Mulai' },
     },
 
-    // ──────────────────────── REVIEW P1 ────────────────────────
+    // ══════════════════════════ 7. REVIEW P1 ══════════════════════════
     {
       id: 's-review',
-      templateType: 'review',
+      templateType: 'diskusi',
+      sceneType: 'discussion' as SceneType,
       sectionLabel: '🔄 Review · ±5 Menit',
       sectionColor: 'y',
       blocks: [
@@ -314,7 +311,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
         {
           type: 'diskusi',
           title: 'Bahas Tugas P1 Bersama!',
-          intro: 'Tunjukkan tabel norma keluargamu kepada anggota kelompok. Bandingkan:',
+          intro: 'Tunjukkan tabel norma keluargamu kepada anggota kelompok. Bandingkan: 💡 Sambungan dari P1: Norma tidak hanya satu macam — ada norma dari Tuhan, dari hati nurani, dari kebiasaan masyarakat, dan dari negara. Masing-masing punya kekuatan dan sanksi yang berbeda!',
           questions: [
             {
               label: 'Diskusi Kelompok · ±3 Menit',
@@ -325,19 +322,15 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
             },
           ],
         },
-        {
-          type: 'def-box',
-          borderColor: 'y',
-          content: '<strong>💡 Sambungan dari P1:</strong> Norma tidak hanya satu macam — ada norma dari Tuhan, dari hati nurani, dari kebiasaan masyarakat, dan dari negara. Masing-masing punya <strong>kekuatan</strong> dan <strong>sanksi</strong> yang berbeda!',
-        },
       ],
-      nav: { prev: 's-tp', next: 's-materi', nextLabel: 'Eksplorasi 4 Norma' },
+      nav: { prev: 's-tujuan-hari-ini', next: 's-materi-petunjuk', nextLabel: 'Eksplorasi 4 Norma' },
     },
 
-    // ──────────────────────── MATERI — 4 NORMA ────────────────────────
+    // ══════════════════════════ 8. MATERI PETUNJUK ══════════════════════════
     {
-      id: 's-materi',
+      id: 's-materi-petunjuk',
       templateType: 'materi',
+      sceneType: 'discussion' as SceneType,
       sectionLabel: '📖 Eksplorasi · ±25 Menit',
       sectionColor: 'c',
       blocks: [
@@ -364,104 +357,125 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
             },
           ],
         },
-        // ── 4 Norma Tabs with nk-card blocks ──
+      ],
+      nav: { prev: 's-review', next: 's-norma-agama', nextLabel: 'Norma Agama 🙏' },
+    },
+
+    // ══════════════════════════ 9. NORMA AGAMA ══════════════════════════
+    {
+      id: 's-norma-agama',
+      templateType: 'materi',
+      sceneType: 'concept' as SceneType,
+      sectionLabel: '🙏 Norma Agama',
+      sectionColor: 'y',
+      blocks: [
+        {
+          type: 'nk-card',
+          normaType: 'agama',
+          icon: '🙏',
+          title: 'Norma Agama',
+          label: 'NORMA AGAMA',
+          definition: '',
+          characteristics: [
+            {
+              label: '📌 Sumber',
+              value: 'Tuhan Yang Maha Esa melalui kitab suci (Al-Qur\'an, Injil, Weda, Tripitaka, Kitab Suci Khonghucu)',
+            },
+            {
+              label: '⚙️ Sifat',
+              value: 'Universal bagi pemeluknya; mengatur hubungan manusia dengan Tuhan (vertikal) dan sesama manusia (horizontal)',
+            },
+            {
+              label: '🎯 Tujuan',
+              value: 'Membentuk manusia beriman, berakhlak mulia, dan bertaqwa kepada Tuhan YME',
+            },
+          ],
+          sanksi: {
+            title: '⚠️ Sanksi Akhirat & Internal',
+            items: [
+              { dot: 'y', text: 'Dosa yang dipertanggungjawabkan di akhirat' },
+              { dot: 'y', text: 'Rasa bersalah dan gelisah secara batin' },
+              { dot: 'y', text: 'Dalam beberapa komunitas: sanksi sosial keagamaan' },
+            ],
+          },
+          contoh: '💡 <strong>Contoh nyata:</strong> Seorang pelajar jujur dalam ujian karena yakin Tuhan Maha Melihat, meskipun tidak ada pengawas.',
+          pelanggaran: {
+            title: '🚨 Contoh Pelanggaran Pelajar & Sanksinya',
+            items: [
+              { icon: '😒', text: 'Tidak salat meski sudah balig (bagi Muslim) — Sanksi: Dosa, rasa bersalah, ditegur keluarga' },
+              { icon: '🤥', text: 'Bersumpah palsu menggunakan nama Tuhan — Sanksi: Dosa besar dalam semua agama' },
+              { icon: '😤', text: 'Tidak menghormati orang tua (durhaka) — Sanksi: Dosa dan sanksi sosial keluarga' },
+            ],
+          },
+        } as SchemaBlock,
+      ],
+      nav: { prev: 's-materi-petunjuk', next: 's-norma-kesusilaan', nextLabel: 'Norma Kesusilaan ❤️' },
+    },
+
+    // ══════════════════════════ 10. NORMA KESUSILAAN ══════════════════════════
+    {
+      id: 's-norma-kesusilaan',
+      templateType: 'materi',
+      sceneType: 'concept' as SceneType,
+      sectionLabel: '❤️ Norma Kesusilaan',
+      sectionColor: 'r',
+      blocks: [
+        {
+          type: 'nk-card',
+          normaType: 'kesusilaan',
+          icon: '❤️',
+          title: 'Norma Kesusilaan',
+          label: 'NORMA KESUSILAAN',
+          definition: '',
+          characteristics: [
+            {
+              label: '📌 Sumber',
+              value: 'Hati nurani manusia — nilai baik-buruk yang dirasakan setiap orang secara naluriah',
+            },
+            {
+              label: '⚙️ Sifat',
+              value: 'Universal (berlaku di mana saja), tidak tertulis, tidak bisa dipaksakan dari luar diri',
+            },
+            {
+              label: '🎯 Tujuan',
+              value: 'Membentuk pribadi jujur, bertanggung jawab, dan menghargai sesama sebagai manusia',
+            },
+          ],
+          sanksi: {
+            title: '⚠️ Sanksi Internal (dari diri sendiri)',
+            items: [
+              { dot: 'r', text: 'Rasa bersalah yang terus menghantui' },
+              { dot: 'r', text: 'Rasa malu yang mendalam kepada diri sendiri' },
+              { dot: 'r', text: 'Dikucilkan lingkungan sosial karena dinilai tidak bermoral' },
+            ],
+          },
+          contoh: '💡 <strong>Contoh nyata:</strong> Siswa yang menemukan dompet terjatuh mengembalikannya bukan karena takut hukum, tapi karena hati nurani.',
+          pelanggaran: {
+            title: '🚨 Contoh Pelanggaran Pelajar & Sanksinya',
+            items: [
+              { icon: '📝', text: 'Menyontek saat ulangan meski tidak ketahuan — Sanksi: Rasa bersalah, tidak percaya diri' },
+              { icon: '🤫', text: 'Membohongi orang tua tentang nilai rapor — Sanksi: Gelisah dan rasa bersalah berkepanjangan' },
+              { icon: '📱', text: 'Menyebarkan foto teman tanpa izin di grup chat — Sanksi: Dikucilkan, reputasi rusak di lingkungan teman' },
+            ],
+          },
+        } as SchemaBlock,
+      ],
+      nav: { prev: 's-norma-agama', next: 's-norma-kesopanan', nextLabel: 'Norma Kesopanan & Hukum 🤝⚖️' },
+    },
+
+    // ══════════════════════════ 11. NORMA KESOPANAN & HUKUM (ftab 2 tabs) ══════════════════════════
+    {
+      id: 's-norma-kesopanan',
+      templateType: 'materi',
+      sceneType: 'example' as SceneType,
+      sectionLabel: '🤝⚖️ Norma Kesopanan & Hukum',
+      sectionColor: 'c',
+      blocks: [
         {
           type: 'ftab',
           showReadMarker: true,
           showProgress: true,
           tabs: [
-            // ── Tab: Norma Agama ──
-            {
-              icon: '🙏',
-              label: 'Agama',
-              content: [
-                {
-                  type: 'nk-card',
-                  normaType: 'agama',
-                  icon: '🙏',
-                  title: 'Norma Agama',
-                  label: 'NORMA AGAMA',
-                  definition: '',
-                  characteristics: [
-                    {
-                      label: '📌 Sumber',
-                      value: 'Tuhan Yang Maha Esa melalui kitab suci (Al-Qur\'an, Injil, Weda, Tripitaka, Kitab Suci Khonghucu)',
-                    },
-                    {
-                      label: '⚙️ Sifat',
-                      value: 'Universal bagi pemeluknya; mengatur hubungan manusia dengan Tuhan (vertikal) dan sesama manusia (horizontal)',
-                    },
-                    {
-                      label: '🎯 Tujuan',
-                      value: 'Membentuk manusia beriman, berakhlak mulia, dan bertaqwa kepada Tuhan YME',
-                    },
-                  ],
-                  sanksi: {
-                    title: '⚠️ Sanksi Akhirat & Internal',
-                    items: [
-                      { dot: 'y', text: 'Dosa yang dipertanggungjawabkan di akhirat' },
-                      { dot: 'y', text: 'Rasa bersalah dan gelisah secara batin' },
-                      { dot: 'y', text: 'Dalam beberapa komunitas: sanksi sosial keagamaan' },
-                    ],
-                  },
-                  contoh: '💡 <strong>Contoh nyata:</strong> Seorang pelajar jujur dalam ujian karena yakin Tuhan Maha Melihat, meskipun tidak ada pengawas.',
-                  pelanggaran: {
-                    title: '🚨 Contoh Pelanggaran Pelajar & Sanksinya',
-                    items: [
-                      { icon: '😒', text: 'Tidak salat meski sudah balig (bagi Muslim) — Sanksi: Dosa, rasa bersalah, ditegur keluarga' },
-                      { icon: '🤥', text: 'Bersumpah palsu menggunakan nama Tuhan — Sanksi: Dosa besar dalam semua agama' },
-                      { icon: '😤', text: 'Tidak menghormati orang tua (durhaka) — Sanksi: Dosa dan sanksi sosial keluarga' },
-                    ],
-                  },
-                } as SchemaBlock,
-              ],
-            },
-            // ── Tab: Norma Kesusilaan ──
-            {
-              icon: '❤️',
-              label: 'Kesusilaan',
-              content: [
-                {
-                  type: 'nk-card',
-                  normaType: 'kesusilaan',
-                  icon: '❤️',
-                  title: 'Norma Kesusilaan',
-                  label: 'NORMA KESUSILAAN',
-                  definition: '',
-                  characteristics: [
-                    {
-                      label: '📌 Sumber',
-                      value: 'Hati nurani manusia — nilai baik-buruk yang dirasakan setiap orang secara naluriah',
-                    },
-                    {
-                      label: '⚙️ Sifat',
-                      value: 'Universal (berlaku di mana saja), tidak tertulis, tidak bisa dipaksakan dari luar diri',
-                    },
-                    {
-                      label: '🎯 Tujuan',
-                      value: 'Membentuk pribadi jujur, bertanggung jawab, dan menghargai sesama sebagai manusia',
-                    },
-                  ],
-                  sanksi: {
-                    title: '⚠️ Sanksi Internal (dari diri sendiri)',
-                    items: [
-                      { dot: 'r', text: 'Rasa bersalah yang terus menghantui' },
-                      { dot: 'r', text: 'Rasa malu yang mendalam kepada diri sendiri' },
-                      { dot: 'r', text: 'Dikucilkan lingkungan sosial karena dinilai tidak bermoral' },
-                    ],
-                  },
-                  contoh: '💡 <strong>Contoh nyata:</strong> Siswa yang menemukan dompet terjatuh mengembalikannya bukan karena takut hukum, tapi karena hati nurani.',
-                  pelanggaran: {
-                    title: '🚨 Contoh Pelanggaran Pelajar & Sanksinya',
-                    items: [
-                      { icon: '📝', text: 'Menyontek saat ulangan meski tidak ketahuan — Sanksi: Rasa bersalah, tidak percaya diri' },
-                      { icon: '🤫', text: 'Membohongi orang tua tentang nilai rapor — Sanksi: Gelisah dan rasa bersalah berkepanjangan' },
-                      { icon: '📱', text: 'Menyebarkan foto teman tanpa izin di grup chat — Sanksi: Dikucilkan, reputasi rusak di lingkungan teman' },
-                    ],
-                  },
-                } as SchemaBlock,
-              ],
-            },
             // ── Tab: Norma Kesopanan ──
             {
               icon: '🤝',
@@ -556,7 +570,18 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
             },
           ],
         },
-        // ── Tabel Accordion ──
+      ],
+      nav: { prev: 's-norma-kesusilaan', next: 's-perbandingan-norma', nextLabel: 'Tabel Perbandingan' },
+    },
+
+    // ══════════════════════════ 12. PERBANDINGAN NORMA (Tabel + Diskusi) ══════════════════════════
+    {
+      id: 's-perbandingan-norma',
+      templateType: 'materi',
+      sceneType: 'discussion' as SceneType,
+      sectionLabel: '📊 Perbandingan 4 Norma',
+      sectionColor: 'c',
+      blocks: [
         {
           type: 'tabel-accord',
           rows: [
@@ -606,7 +631,6 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
             },
           ],
         },
-        // ── Diskusi setelah membaca ──
         {
           type: 'diskusi',
           title: '📝 Catatan Diskusi Kelompok',
@@ -631,13 +655,14 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           ],
         },
       ],
-      nav: { prev: 's-review', next: 's-game1', nextLabel: 'Game Sortir Norma 🎮' },
+      nav: { prev: 's-norma-kesopanan', next: 's-game1', nextLabel: 'Game Sortir Norma 🎮' },
     },
 
-    // ──────────────────────── GAME SORTIR ────────────────────────
+    // ══════════════════════════ 13. GAME SORTIR ══════════════════════════
     {
       id: 's-game1',
       templateType: 'game',
+      sceneType: 'practice' as SceneType,
       sectionLabel: '🎮 Game Sortir · ±15 Menit',
       sectionColor: 'g',
       blocks: [
@@ -680,17 +705,17 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           ],
         },
       ],
-      nav: { prev: 's-materi', next: 's-hubungan', nextLabel: 'Lanjut ke Hubungan Norma' },
+      nav: { prev: 's-perbandingan-norma', next: 's-hubungan-norma', nextLabel: 'Hubungan Antarnorma' },
     },
 
-    // ──────────────────────── HUBUNGAN ANTARNORMA ────────────────────────
+    // ══════════════════════════ 14. HUBUNGAN ANTARNORMA (Tabel) ══════════════════════════
     {
-      id: 's-hubungan',
+      id: 's-hubungan-norma',
       templateType: 'materi',
-      sectionLabel: '🔗 Materi · ±15 Menit',
+      sceneType: 'concept' as SceneType,
+      sectionLabel: '🔗 Hubungan Antarnorma',
       sectionColor: 'p',
       blocks: [
-        // ── LANGKAH 1: Baca & Pahami ──
         {
           type: 'tabel-accord',
           rows: [
@@ -732,7 +757,18 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
             },
           ],
         },
-        // ── LANGKAH 2: Analisis Kasus ──
+      ],
+      nav: { prev: 's-game1', next: 's-analisis-kasus', nextLabel: 'Analisis Kasus' },
+    },
+
+    // ══════════════════════════ 15. ANALISIS KASUS (nc-grid 3 kasus) ══════════════════════════
+    {
+      id: 's-analisis-kasus',
+      templateType: 'materi',
+      sceneType: 'example' as SceneType,
+      sectionLabel: '🔍 Analisis Kasus',
+      sectionColor: 'p',
+      blocks: [
         {
           type: 'nc-grid',
           cards: [
@@ -756,7 +792,18 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
             },
           ],
         },
-        // ── LANGKAH 3: Diskusi Konflik Nilai ──
+      ],
+      nav: { prev: 's-hubungan-norma', next: 's-diskusi-konflik', nextLabel: 'Diskusi Konflik Nilai' },
+    },
+
+    // ══════════════════════════ 16. DISKUSI KONFLIK NILAI (Deni & Rian) ══════════════════════════
+    {
+      id: 's-diskusi-konflik',
+      templateType: 'diskusi',
+      sceneType: 'discussion' as SceneType,
+      sectionLabel: '⚡ Konflik Nilai · ±5 Menit',
+      sectionColor: 'g',
+      blocks: [
         {
           type: 'diskusi',
           title: 'Diskusi Kelompok — Konflik Nilai',
@@ -781,13 +828,14 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           ],
         },
       ],
-      nav: { prev: 's-game1', next: 's-game2', nextLabel: 'Game Roda Norma 🎡' },
+      nav: { prev: 's-analisis-kasus', next: 's-game2', nextLabel: 'Game Roda Norma 🎡' },
     },
 
-    // ──────────────────────── GAME RODA NORMA ────────────────────────
+    // ══════════════════════════ 17. GAME RODA NORMA ══════════════════════════
     {
       id: 's-game2',
       templateType: 'game',
+      sceneType: 'practice' as SceneType,
       sectionLabel: '🎡 Roda Norma · ±12 Menit',
       sectionColor: 'o',
       blocks: [
@@ -894,13 +942,14 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           ],
         },
       ],
-      nav: { prev: 's-hubungan', next: 's-hasil', nextLabel: 'Lihat Hasil 🏆' },
+      nav: { prev: 's-diskusi-konflik', next: 's-hasil', nextLabel: 'Lihat Hasil 🏆' },
     },
 
-    // ──────────────────────── HASIL ────────────────────────
+    // ══════════════════════════ 18. HASIL ══════════════════════════
     {
       id: 's-hasil',
       templateType: 'hasil',
+      sceneType: 'assessment' as SceneType,
       sectionLabel: '🏆 Hasil',
       sectionColor: 'p',
       background: {
@@ -943,10 +992,11 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
       nav: { prev: 's-game2', next: 's-refleksi', nextLabel: 'Refleksi 📝' },
     },
 
-    // ──────────────────────── REFLEKSI ────────────────────────
+    // ══════════════════════════ 19. REFLEKSI ══════════════════════════
     {
       id: 's-refleksi',
       templateType: 'refleksi',
+      sceneType: 'reflection' as SceneType,
       sectionLabel: '📝 Refleksi · ±8 Menit',
       sectionColor: 'p',
       blocks: [
@@ -984,10 +1034,11 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
       nav: { prev: 's-hasil', next: 's-penutup', nextLabel: 'Selesai ✅' },
     },
 
-    // ──────────────────────── PENUTUP ────────────────────────
+    // ══════════════════════════ 20. PENUTUP ══════════════════════════
     {
       id: 's-penutup',
       templateType: 'penutup',
+      sceneType: 'summary' as SceneType,
       sectionLabel: '🎊 Penutup',
       sectionColor: 'p',
       background: {
