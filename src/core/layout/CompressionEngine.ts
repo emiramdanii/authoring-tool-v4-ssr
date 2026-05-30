@@ -155,8 +155,8 @@ export const COMPRESSION_PROFILES: Record<string, CompressionProfile> = {
     blockType: 'tp',
     strategies: ['reveal-set', 'collapsible'],
     defaultStrategy: 'reveal-set',
-    savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.6, 'step-reveal': 0.7 },
-    minItemsForCompression: 4,
+    savingsRatios: { accordion: 0.5, collapsible: 0.4, 'reveal-set': 0.35, 'step-reveal': 0.7 },
+    minItemsForCompression: 5,
     itemCounter: (b) => countField(b, 'items'),
   },
   'alur': {

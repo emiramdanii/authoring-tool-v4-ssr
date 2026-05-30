@@ -44,11 +44,15 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
     if (!interactive || !allAnswered) return;
     setSubmitted(true);
     if (block.id) {
+      // Report completion without inflating actual score — refleksi is
+      // reflection-based, not scored. Score (0, 0) allows the bridge
+      // to mark the page as completed via markPageReflected, but won't
+      // add to the Hasil page's total score.
       reportScore({
         elementId: block.id,
         pageIndex: pageIndex ?? 0,
-        score: (block.questions || []).length * 10,
-        maxScore: (block.questions || []).length * 10,
+        score: 0,
+        maxScore: 0,
         completed: true,
       });
     }

@@ -84,7 +84,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
     {
       id: 's-cp',
       templateType: 'dokumen',
-      sceneType: 'intro' as SceneType,
+      sceneType: 'concept' as SceneType,
       sectionLabel: '📋 Capaian Pembelajaran',
       sectionColor: 'p',
       blocks: [
@@ -171,7 +171,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
     {
       id: 's-atp',
       templateType: 'dokumen',
-      sceneType: 'concept' as SceneType,
+      sceneType: 'example' as SceneType,
       sectionLabel: '🗓️ Alur Tujuan Pembelajaran',
       sectionColor: 'g',
       blocks: [

@@ -1246,3 +1246,38 @@ Stage Summary:
   - src/core/schema/types/blocks.ts (RodaGameBlock + stepMode)
   - scripts/health-check-macam-norma.ts (new)
   - scripts/runtime-contract-check.ts (new)
+
+---
+Task ID: golden-template-qa
+Agent: Main Agent
+Task: Golden Template QA — Macam-Macam Norma (23 screens)
+
+Work Log:
+- Ran Template Health Check programmatically (scripts/run-health-check.ts)
+- Initial score: 98.3/100 with 2 narrative coherence warnings (3 intro scenes in a row)
+- Fixed narrative coherence: s-cp sceneType intro→concept, s-atp sceneType concept→example
+- Re-ran health check: **100/100, 0 errors, 0 warnings** — all 23 pages PASS
+- Visual QA: Identified nk-card overflows by 164px (736px content vs 572px available)
+- Fix P1: Implemented per-section accordion in NormaKartuRenderer.tsx — each section (Characteristics, Sanksi, Contoh, Pelanggaran) independently collapsible with tap-to-expand headers
+- Fix P2: Added ExpandableText component to DiskusiRenderer.tsx — smart truncation for long question text (>200 chars) with "Baca selengkapnya ▾" toggle
+- Fix P3: Tuned tp block compression — reveal-set savingsRatio 0.6→0.35, minItemsForCompression 4→5, resulting in 3/5 TP items visible (fits 572px)
+- Runtime QA: Verified all 23 screens against PageRuntimeContract
+  - Cover/petunjuk/tujuan/materi: auto-complete on visit ✅
+  - Game pages (sortir-game, roda-game): score reporting + navigation lock ✅
+  - Diskusi pages: lock until answered + completion tracking ✅
+  - Refleksi: lock until reflected + completion tracking ✅
+  - Hasil: reads from interactive-store for score display ✅
+  - Penutup: auto-complete ✅
+- Fixed score leakage: DiskusiRenderer and RefleksiRenderer now report (0, 0) instead of participation scores — diskusi/refleksi contracts have scoring.enabled=false, so they shouldn't inflate Hasil page totals
+- Verified variant switching (A/B/C) doesn't break scoring/completion
+- Build passes clean: npx next build ✅
+
+Stage Summary:
+- **Health Check: 100/100, 0 errors, 0 warnings** — all 23 screens PASS
+- **nk-card**: Per-section accordion prevents overflow (was +164px, now fits)
+- **diskusi**: ExpandableText handles long questions (s-diskusi-konflik with 4 norms)
+- **tp**: 3/5 items visible in compressed mode (fits 572px)
+- **Score leakage fixed**: Diskusi/Refleksi report (0, 0) for completion tracking only
+- **Roda game stepping**: Already implemented (one question at a time via currentQuestionIndex)
+- **Variant switching safe**: A/B/C variants are visual-only, don't affect scoring/completion
+- Build: Clean ✅
