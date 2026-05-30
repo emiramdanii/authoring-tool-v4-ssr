@@ -50,11 +50,6 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
   loading: () => null,
 });
 
-const LearningMediaShell = dynamic(() => import('./LearningMediaShell'), {
-  ssr: false,
-  loading: () => null,
-});
-
 // ═══════════════════════════════════════════════════════════════
 // CANVA BUILDER v8 — SILSE v4 Resizable Panel Layout
 // ═══════════════════════════════════════════════════════════════
