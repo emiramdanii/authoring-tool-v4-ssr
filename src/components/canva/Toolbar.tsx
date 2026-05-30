@@ -15,8 +15,9 @@ import { useTeacherMode } from '@/hooks/use-teacher-mode';
 // ═══════════════════════════════════════════════════════════════
 // Navigation is now handled by the Dashboard sidebar.
 // Layout (Left → Right):
-//   [← SILSE Studio | Project Name] | [Cloud] [Help] [Preview] [Publish]
+//   [← SILSE Studio | Project Name] | [Cloud] [Help] [Preview] [Main] [Publish]
 // Edit mode: fixed top-0 left-0 w-full z-40 h-16
+// Sprint 2: Added 'Main' button to enter learn mode (interactive student experience)
 // ═══════════════════════════════════════════════════════════════
 
 // ── Right Actions ────────────────────────────────────────────
@@ -51,13 +52,21 @@ function RightActions() {
         <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>help_outline</span>
       </button>
 
-      {/* Preview + Publish buttons */}
+      {/* Preview + Play + Publish buttons */}
       <div className="flex gap-2 ml-1">
         <button
           onClick={() => setAppMode('preview')}
-          className="px-5 py-2 rounded-xl border border-silse-outline-variant/60 text-silse-primary text-[12px] font-bold hover:bg-silse-primary/5 transition-[background-color,color] duration-150"
+          className="px-4 py-2 rounded-xl border border-silse-outline-variant/60 text-silse-primary text-[12px] font-bold hover:bg-silse-primary/5 transition-[background-color,color] duration-150"
         >
           Preview
+        </button>
+        <button
+          onClick={() => setAppMode('learn')}
+          className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-[12px] font-bold hover:bg-emerald-700 active:scale-[0.97] transition-all flex items-center gap-1.5"
+          title="Main sebagai Siswa — coba kuis, game, dan progress seperti siswa"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>play_circle</span>
+          Main
         </button>
         <button
           onClick={exportHtml}
@@ -147,6 +156,16 @@ export default function Toolbar() {
         <span className="material-symbols-outlined text-silse-secondary" style={{ fontSize: '14px' }}>visibility</span>
         <span className="text-[10px] font-semibold text-silse-secondary">Preview</span>
         <span className="text-[10px] text-silse-on-surface-variant ml-1">Esc → Edit</span>
+        <div className="h-5 w-px bg-silse-outline-variant mx-2" />
+        <Button
+          variant="ghost"
+          onClick={() => setAppMode('learn')}
+          className="focus-ring text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 h-7 px-2 gap-1"
+          title="Main sebagai Siswa (L)"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>play_circle</span>
+          <span className="text-[10px] font-semibold">Main</span>
+        </Button>
       </div>
     );
   }

@@ -18,6 +18,7 @@ import { SchemaScreenRenderer, type TokenResolver, type SchemaRenderMode } from 
 import type { ScreenSchema } from '@/core/schema/types';
 import type { SceneResolution, SafeArea } from '@/core/scene/SceneLayoutEngine';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { LearningEditProvider, type LearningEditContextValue } from '@/components/canva/LearningEditContext';
 
 export interface GameScreenProps {
   page: CanvaPage;
@@ -34,6 +35,16 @@ export interface GameScreenProps {
   pageIndex?: number;
   sceneType?: import('@/core/edu/education-scene-types').SceneType;
   totalPages?: number;
+  /** Whether inline editing is enabled (teacher mode) */
+  editable?: boolean;
+  /** Learning edit context value for providing to block renderers */
+  editContext?: LearningEditContextValue | null;
+  /** ID of the block currently being edited */
+  editingBlockId?: string | null;
+  /** Callback when a block edit is requested */
+  onBlockEdit?: (blockId: string, blockType: string) => void;
+  /** Callback when a block is selected */
+  onBlockSelect?: (blockId: string, blockType: string, addToSelection?: boolean) => void;
 }
 
 export const GameScreen = React.memo(function GameScreen({
@@ -51,6 +62,11 @@ export const GameScreen = React.memo(function GameScreen({
   pageIndex = 0,
   sceneType,
   totalPages = 1,
+  editable = false,
+  editContext = null,
+  editingBlockId,
+  onBlockEdit,
+  onBlockSelect,
 }: GameScreenProps) {
   const isCompact = mode === 'canvas';
 
@@ -71,8 +87,17 @@ export const GameScreen = React.memo(function GameScreen({
       showBottomNav={showBottomNav}
       pageIndex={pageIndex}
       sceneType={sceneType}
+      editingBlockId={editingBlockId}
+      onBlockEdit={onBlockEdit}
+      onBlockSelect={onBlockSelect}
     />
   );
+
+  const contentWithEditContext = editContext ? (
+    <LearningEditProvider value={editContext}>
+      {screenContent}
+    </LearningEditProvider>
+  ) : screenContent;
 
   return (
     <ScreenShell
@@ -85,8 +110,9 @@ export const GameScreen = React.memo(function GameScreen({
       isCompact={isCompact}
       pageIndex={pageIndex}
       totalPages={totalPages}
+      editable={editable}
     >
-      {screenContent}
+      {contentWithEditContext}
     </ScreenShell>
   );
 });

@@ -79,7 +79,7 @@ function CompletionIndicator({ status }: { status: PageCompletionStatus }) {
   }
 }
 
-export function SceneList() {
+export function SceneList({ searchFilter = '' }: { searchFilter?: string } = {}) {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const goPage = useCanvaStore(s => s.goPage);

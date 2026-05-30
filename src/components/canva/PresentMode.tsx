@@ -10,6 +10,7 @@ import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
 // All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import { SceneTabBar } from './toolbar/SceneTabBar';
+import { useInteractiveStore } from '@/store/interactive-store';
 
 // ═══════════════════════════════════════════════════════════════
 // PRESENT MODE — Fullscreen presentation playback
@@ -42,8 +43,25 @@ export default function PresentMode() {
   const activeTabId = useCanvaStore(s => s.activeTabId);
   const setActiveTabId = useCanvaStore(s => s.setActiveTabId);
 
+  // ── Interactive store (scores & completion) ──────────────────
+  const intScores = useInteractiveStore(s => s.scores);
+  const totalScore = useInteractiveStore(s => s.totalScore);
+  const totalMax = useInteractiveStore(s => s.totalMax);
+  const isPageComplete = useInteractiveStore(s => s.isPageComplete);
+  const replayAll = useInteractiveStore(s => s.replayAll);
+
+  // Subscribe to scores for reactivity (void to suppress unused warning)
+  void intScores;
+
   const page = pages[currentPageIndex];
   const totalPages = pages.length;
+
+  // ── Completion-based progress ────────────────────────────────
+  const completedPages = pages.filter((_, i) => isPageComplete(i)).length;
+  const completionPct = totalPages > 0 ? (completedPages / totalPages) * 100 : 0;
+  const earnedScore = totalScore();
+  const maxScore = totalMax();
+  const hasScoredContent = maxScore > 0;
 
   // Sync fullscreen state with browser (handles Esc key and other native exits)
   useEffect(() => {
@@ -256,17 +274,25 @@ export default function PresentMode() {
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_left</span>
           </Button>
 
-          {/* Page counter + progress bar */}
+          {/* Page counter + completion-based progress bar */}
           <div className="flex flex-col items-center gap-1 min-w-[80px]">
             <span className="text-[11px] font-bold text-white/90 whitespace-nowrap">
               {currentPageIndex + 1}/{totalPages}
             </span>
             <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
               <div
-                className="h-full rounded-full bg-white/60 transition-[width] duration-300 ease-out"
-                style={{ width: `${((currentPageIndex + 1) / totalPages) * 100}%` }}
+                className="h-full rounded-full transition-[width] duration-300 ease-out"
+                style={{
+                  width: `${completionPct}%`,
+                  backgroundColor: completedPages === totalPages && totalPages > 0 ? '#fbbf24' : 'rgba(255,255,255,0.6)',
+                }}
               />
             </div>
+            {completedPages > 0 && (
+              <span className="text-[9px] text-white/40 whitespace-nowrap">
+                {completedPages}/{totalPages} selesai
+              </span>
+            )}
           </div>
 
           {/* Next */}
@@ -279,6 +305,31 @@ export default function PresentMode() {
             aria-label="Halaman berikutnya"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_right</span>
+          </Button>
+
+          {/* Score display */}
+          {hasScoredContent && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5">
+              <span className="material-symbols-outlined text-amber-400" style={{ fontSize: '13px' }}>trophy</span>
+              <span className="text-[11px] font-bold text-amber-300">
+                {earnedScore}/{maxScore}
+              </span>
+            </div>
+          )}
+
+          <div className="w-px h-5 bg-white/10" />
+
+          {/* Ulangi (Replay) button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { replayAll(); goPage(0); }}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-white/50 hover:text-white/80 hover:bg-white/5"
+            aria-label="Ulangi presentasi"
+            title="Ulangi (reset semua)"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>refresh</span>
+            <span className="hidden sm:inline">Ulangi</span>
           </Button>
 
           <div className="w-px h-5 bg-white/10" />

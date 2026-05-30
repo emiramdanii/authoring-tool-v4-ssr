@@ -353,6 +353,10 @@ export default function Stage() {
 
     selectElement(null);
     selectBlock(null);
+    // FIX: Stop any active inline editing when clicking stage background.
+    // This ensures the blur→save pipeline fires before deselecting,
+    // so the pending text edit is not lost.
+    stopEditing();
   };
 
   // ── Derived state ─────────────────────────────────────────────
@@ -423,9 +427,8 @@ export default function Stage() {
           </CanvasErrorBoundary>
 
           {/* ══ Page Empty State — page exists but has no blocks ═════ */}
-          {/* Professional empty state with action buttons + keyboard hints */}
           {/* Shows for ANY page that has no blocks — not just custom pages */}
-          {/* FIX: Explicit boolean expression to avoid && / || precedence ambiguity */}
+          {/* NOTE: Auto-Generate button removed — AI Generator is a parked area (see PARKED_NOTES.md) */}
           {!canvasPreview && (
             isSchemaDriven
               ? (page.schema?.blocks?.length ?? 0) === 0
@@ -441,37 +444,18 @@ export default function Stage() {
                     Halaman Kosong
                   </p>
                   <p className="text-xs text-silse-on-surface-variant/70">
-                    Mulai tambahkan konten atau generate otomatis dengan AI
+                    Tambahkan konten dari panel kiri untuk memulai
                   </p>
                 </div>
-                <div className="flex items-center gap-2 w-full">
-                  <button
-                    onClick={() => {
-                      useCanvaStore.getState().setLeftTab('add-block');
-                      if (!useCanvaStore.getState().leftPanelOpen) useCanvaStore.getState().toggleLeftPanel();
-                    }}
-                    className="flex-1 px-3 py-2.5 bg-silse-primary/10 hover:bg-silse-primary/20 border border-silse-primary/25 text-silse-primary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>add</span> Tambah Block
-                  </button>
-                  <button
-                    onClick={() => useCanvaStore.setState({ panelRequest: 'autogen' })}
-                    className="flex-1 px-3 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/25 text-purple-400 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>auto_awesome</span> Auto-Generate
-                  </button>
-                </div>
-                {/* Keyboard shortcuts hint */}
-                <div className="w-full border-t border-silse-outline-variant/20 pt-3 space-y-1">
-                  <div className="flex items-center gap-2 text-[8px] text-silse-on-surface-variant">
-                    <kbd className="px-1.5 py-0.5 rounded bg-silse-surface-container-low/60 border border-silse-outline-variant/30 font-mono text-[7px] font-bold">Ctrl+Z</kbd>
-                    <span>Undo</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[8px] text-silse-on-surface-variant">
-                    <kbd className="px-1.5 py-0.5 rounded bg-silse-surface-container-low/60 border border-silse-outline-variant/30 font-mono text-[7px] font-bold">Del</kbd>
-                    <span>Hapus block terpilih</span>
-                  </div>
-                </div>
+                <button
+                  onClick={() => {
+                    useCanvaStore.getState().setLeftTab('add-block');
+                    if (!useCanvaStore.getState().leftPanelOpen) useCanvaStore.getState().toggleLeftPanel();
+                  }}
+                  className="w-full px-3 py-2.5 bg-silse-primary/10 hover:bg-silse-primary/20 border border-silse-primary/25 text-silse-primary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>add</span> Tambah Block
+                </button>
               </div>
             </div>
           )}

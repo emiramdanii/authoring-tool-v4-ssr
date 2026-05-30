@@ -55,7 +55,7 @@ const frameModeMap: Record<PageRendererMode, PageFrameMode> = {
   canvas: 'canvas',
   preview: 'preview',
   export: 'export',
-  learn: 'preview',
+  learn: 'learn',  // Sprint 4: was 'preview' — now 'learn' so PageFrame can distinguish
 };
 
 const blockModeMap: Record<PageRendererMode, BlockRendererMode> = {
@@ -343,7 +343,11 @@ export const PageRenderer = React.memo(function PageRenderer({
   const ScreenAdapter = useScreenAdapter ? getScreenAdapter(templateType) : null;
   const screenConfig = useScreenAdapter ? getScreenConfig(templateType) : null;
 
-  // ═══ SCREEN ADAPTER CONTENT — for preview/export modes ═══════
+  // ═══ SCREEN ADAPTER CONTENT — for preview/export/learn modes ═══════
+  // Sprint 4 (Engine): Forward editing state through ScreenAdapter path
+  // so that learn/edit mode can trigger inline editing via SchemaScreenRenderer.
+  // Without this, clicking blocks in learn/edit sub-mode does nothing because
+  // the editing props never reach SchemaBlockRenderer's onClick handler.
   const screenAdapterContent = useScreenAdapter && ScreenAdapter && screenConfig && adaptedSchema ? (
     <ScreenAdapter
       page={page}
@@ -362,15 +366,19 @@ export const PageRenderer = React.memo(function PageRenderer({
       totalPages={totalPages}
       editable={editable}
       editContext={editContext}
+      editingBlockId={isLearnEditMode ? editingBlockId : undefined}
+      onBlockEdit={isLearnEditMode ? handleBlockEdit : undefined}
+      onBlockSelect={isLearnEditMode ? handleBlockLearnSelect : undefined}
     />
   ) : null;
 
   const content = (
     <>
-      {/* ═══ SCREEN ADAPTER PATH — preview/export mode ══════════════ */}
+      {/* ═══ SCREEN ADAPTER PATH — preview/export/learn mode ════════════ */}
       {/* When NOT in canvas mode, use the screen adapter system which
           wraps SchemaScreenRenderer with ScreenShell for consistent chrome.
-          This enforces 1 screen = 1 page with proper structure. */}
+          This enforces 1 screen = 1 page with proper structure.
+          Sprint 4: Editing props are now forwarded for learn/edit sub-mode. */}
       {useScreenAdapter ? (
         screenAdapterContent
       ) : (
@@ -397,16 +405,9 @@ export const PageRenderer = React.memo(function PageRenderer({
         </>
       )}
 
-      {/* Empty schema page hint — when page has schema but 0 blocks (canvas mode only) */}
-      {useSchemaRenderer && adaptedSchema && adaptedSchema.blocks.length === 0 && mode === 'canvas' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ zIndex: 30 }}>
-          <div className="text-center px-6 py-4 rounded-xl bg-app-surface/80 backdrop-blur-sm border border-dashed border-app-accent/20 max-w-[240px]">
-            <div className="text-lg mb-1 opacity-60">📝</div>
-            <div className="text-[10px] font-medium text-app-primary/70 mb-1">Halaman ini kosong</div>
-            <div className="text-[8px] text-app-muted leading-relaxed">Tambah konten dari panel kiri — klik tab Tambah Konten</div>
-          </div>
-        </div>
-      )}
+      {/* Empty schema page hint — REMOVED: Stage already shows a better empty state with action buttons.
+          The duplicate empty state here was causing visual overlap with Stage's overlay.
+          Stage's empty state (in stage/index.tsx) is now the single source for empty state UI. */}
 
       {/* Template without schema data — user-friendly placeholder */}
       {isTemplate && !useSchemaRenderer && (
@@ -436,14 +437,6 @@ export const PageRenderer = React.memo(function PageRenderer({
           compact={false}
         />
       ))}
-      {/* Empty state for custom pages */}
-      {!isTemplate && page.elements.length === 0 && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <div className="text-app-secondary text-sm mb-2">
-            Halaman kosong
-          </div>
-        </div>
-      )}
     </div>
   ) : undefined;
 

@@ -67,10 +67,21 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
   const appMode = useCanvaStore((s) => s.appMode);
+  const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
+  const selectedElId = useCanvaStore((s) => s.selectedElId);
   const commandPalette = useCommandPalette();
 
   // ── Export success dialog ───────────────────────────────────
   const [showExportSuccess, setShowExportSuccess] = useState(false);
+
+  // ── Auto-open right panel when a block or element is selected ──
+  // If user selects something and the right panel is closed, open it
+  // so they can see the properties panel immediately.
+  useEffect(() => {
+    if ((selectedBlockId || selectedElId) && !rightPanelOpen) {
+      useCanvaStore.setState({ rightPanelOpen: true });
+    }
+  }, [selectedBlockId, selectedElId, rightPanelOpen]);
 
   useEffect(() => {
     const handler = () => setShowExportSuccess(true);
@@ -107,14 +118,7 @@ export default function CanvaBuilder() {
       getCanvaState: useCanvaStore.getState,
       setCanvaState: useCanvaStore.setState,
       getInteractiveState: useInteractiveStore.getState,
-      openAIAssistant: () => {
-        if (!isEnabled('aiAssistant')) return;
-        const store = useCanvaStore.getState();
-        if (!store.rightPanelOpen) {
-          useCanvaStore.setState({ rightPanelOpen: true });
-        }
-        window.dispatchEvent(new CustomEvent('open-ai-assistant'));
-      },
+      // AI Assistant shortcut removed — AI Generator is a parked area per CORE_SCOPE.md
     }),
     [],
   );

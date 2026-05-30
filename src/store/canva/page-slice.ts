@@ -29,6 +29,17 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
   goPage: (idx) => {
     const pages = get().pages;
     if (idx < 0 || idx >= pages.length) return;
+
+    // FIX: Save any pending inline edit before switching pages.
+    // When user is editing a contentEditable field and clicks another page,
+    // the blur event may not fire before we reset editingBlockId.
+    // Force-blur the active element to trigger save via InlineEditableText's
+    // onBlur handler. This ensures the text change is persisted.
+    const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+    if (activeEl && (activeEl as HTMLElement).contentEditable === 'true') {
+      (activeEl as HTMLElement).blur();
+    }
+
     // Clear patch history when switching pages to prevent cross-page
     // patch application (patches from page N must not leak into page M)
     patchHistory.clear();

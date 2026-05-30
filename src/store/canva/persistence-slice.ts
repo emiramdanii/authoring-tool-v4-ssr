@@ -11,7 +11,7 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
 import { CANVA_STORAGE_KEY } from './constants';
 import { hasCrashRecovery, loadCrashRecovery, clearCrashRecovery, safeBootFromStorage, repairSchema, validateAndRepairPages, computePagesHash } from '@/core/recovery';
-import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
+import { migrateAllPages } from '@/core/schema/ensure-schema';
 import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { assertDocumentPurity, clearCompressedHeightCache } from '@/core/schema/session-state';
 import { clearMeasurementCache } from '@/core/layout/BlockMeasurer';
@@ -104,7 +104,6 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       // Uses a path-based depth limiter to prevent stack overflow
       // on deeply nested or corrupted schema data.
       const seen = new WeakSet();
-      const MAX_PATH_DEPTH = 80; // Max nesting depth before truncating
       const safeStringify = (obj: unknown): string => {
         return JSON.stringify(obj, function(this: unknown, _key: string, value: unknown): unknown {
           if (typeof value === 'object' && value !== null) {
@@ -287,7 +286,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         }
         set({
           pages: cleanPages,
-          ratioId: data.ratioId || '9:16',
+          ratioId: data.ratioId || '16:9',
           currentPageIndex: 0,
           kontenTabRequest: null, // Phase 3: reset ephemeral nav
           kontenPanelRequest: false,
@@ -401,10 +400,14 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         const cleanPages = stripRuntimeFieldsFromPages(pages);
 
         // ── Purity Guard: Check loaded data for runtime state leakage ──
-        for (const page of cleanPages) {
-          if (page.schema) {
-            assertDocumentPurity(page.schema, `loadFromDB page=${page.id}`);
+        try {
+          for (const page of cleanPages) {
+            if (page.schema) {
+              assertDocumentPurity(page.schema, `loadFromDB page=${page.id}`);
+            }
           }
+        } catch (purityErr) {
+          logger.warn('CanvaStore', 'Purity check on DB load failed: ' + String(purityErr));
         }
 
         // ── Projection sync: Let reactive startProjectionSync() handle this ──
@@ -459,7 +462,6 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
     }
 
     // Reset store to default state (empty — user sees CanvasEmptyState)
-    const { createPage: makePage } = require('./constants');
     set({
       pages: [],
       currentPageIndex: -1,
@@ -480,8 +482,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
 
     // Import toast here to avoid circular deps at module level
     try {
-      const { toast } = require('sonner');
-      toast.success('Data direset ke default');
+      import('sonner').then(({ toast }) => toast.success('Data direset ke default')).catch(() => {});
     } catch {}
   },
 

@@ -318,7 +318,7 @@ function AuthoringToolInner() {
       <aside
         role="navigation"
         aria-label="Menu utama"
-        className="w-[272px] flex-shrink-0 bg-silse-surface-container-lowest border-r border-silse-outline-variant/60 flex flex-col"
+        className="w-[272px] flex-shrink-0 bg-silse-surface-container-lowest border-r border-silse-outline-variant/60 flex flex-col relative z-10"
       >
         {/* ── Brand Header — SILSE v4 identity ── */}
         <div className="px-5 pt-5 pb-3">
@@ -366,7 +366,7 @@ function AuthoringToolInner() {
                 data-testid={`nav-${item.id}`}
                 onClick={() => setActivePanel(item.id)}
                 onMouseEnter={() => handleNavHover(item.id)}
-                className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-[13px] font-medium transition-[background-color,color] duration-150 focus-ring ${
+                className={`relative w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-[13px] font-medium transition-[background-color,color] duration-150 focus-ring ${
                   isActive
                     ? 'bg-silse-primary-container/25 text-silse-primary'
                     : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface'

@@ -152,12 +152,14 @@ export default function RightPanel() {
         {activeTab === 'properties' && (
           <div role="tabpanel" aria-label="Properti" className="h-full flex flex-col">
             {hasMultiBlockSelection ? (
-              <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
                 <AlignmentTools />
                 <BlockPropertiesPanel />
               </div>
             ) : hasBlockSelection ? (
-              <BlockPropertiesPanel />
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
+                <BlockPropertiesPanel />
+              </div>
             ) : isSchemaDriven ? (
               <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <ValidationSection />

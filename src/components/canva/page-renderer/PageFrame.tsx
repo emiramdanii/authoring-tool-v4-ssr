@@ -354,9 +354,23 @@ export const PageFrame = React.memo(function PageFrame({
   const showPrevNext = navConfig.showPrevNext !== false;
   // Schema-driven cover pages don't show top nav — the CoverRenderer has its own background
   const isSchemaCover = isSchemaDriven && page.templateType === 'cover';
-  const showTopNav = !isSchemaCover && page.templateType !== 'cover' && showNavbar;
   const isCoverPage = page.templateType === 'cover';
-  const showBottomNav = showNavbar && !isCoverPage;
+
+  // ═══ Sprint 4 (Engine): Hide PageFrame navbars when external navigation exists ═══
+  // In learn mode: LearningMediaShell provides TopNavbar + BottomNav
+  // In preview mode: PreviewMode provides floating navigation bar
+  // In canvas mode: PageFrame navbars are needed for editing context
+  // In export mode: PageFrame navbars are the primary navigation (no external nav)
+  //
+  // When isSchemaDriven is true AND mode is 'learn'/'preview', the ScreenAdapter
+  // system provides page-level chrome (ScreenShell with progress bar, section label,
+  // page counter). PageFrame's navbars would be duplicate and should be hidden.
+  //
+  // For legacy (non-schema) pages, keep navbars in all modes since there's no
+  // ScreenAdapter chrome to replace them.
+  const externalNavigation = isSchemaDriven && (mode === 'learn' || mode === 'preview');
+  const showTopNav = !isSchemaCover && !isCoverPage && showNavbar && !externalNavigation;
+  const showBottomNav = showNavbar && !isCoverPage && !externalNavigation;
 
   // Use shared TokenResolver from PageRenderer (ensures palette overrides are consistent)
   const themeId = (page.templateData?.schemaThemeId as string) || undefined;
