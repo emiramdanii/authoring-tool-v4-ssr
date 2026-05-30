@@ -1281,3 +1281,45 @@ Stage Summary:
 - **Roda game stepping**: Already implemented (one question at a time via currentQuestionIndex)
 - **Variant switching safe**: A/B/C variants are visual-only, don't affect scoring/completion
 - Build: Clean ✅
+---
+Task ID: golden-template-qa
+Agent: Main Agent
+Task: Golden Template QA — Macam-Macam Norma (Health Check + Visual + Runtime)
+
+Work Log:
+- Verified build: npx next build passes ✅
+- Ran Template Health Check on Macam-Macam Norma: initial score 97.5/100
+  - Only 1 warning: navbar visibility (navConfig.showNavbar not set)
+  - All 23 screens pass with 0 errors
+- Fixed navConfig in schemaToCanvaPages: added showNavbar/showPrevNext/showScore/showProgress/navbarStyle
+  - Cover pages: showNavbar=false
+  - Game/kuis/hasil pages: showScore=true
+  - All other pages: showNavbar=true
+- Re-ran Health Check: score 100/100, 0 errors, 0 warnings
+- Visual QA: analyzed all 23 screens for density/font/overflow
+  - All screens pass 1-page-1-focus rule
+  - No font size violations
+  - No overflow issues
+  - No placeholder text
+  - No overlap
+- Runtime Contract QA: verified all 23 screens have correct contracts
+  - cover/petunjuk/penutup: view/auto complete, no lock
+  - materi/dokumen/tujuan: scroll complete, no lock
+  - diskusi (3 pages): reflection complete, locked until answered
+  - game (2 pages): game complete, scoring enabled, locked until complete
+  - refleksi: reflection complete, locked until answered
+  - hasil: view complete
+- Roda game: already has internal step mechanism (current state, "Soal Berikutnya" button)
+  - stepMode: 'single' in schema
+  - questionIndex tracking via React state
+  - Progress bar: totalAnswered/questions.length
+  - Score reporting on completion
+- Variant switching: Schema-driven system ensures variants don't break scoring/completion
+
+Stage Summary:
+- **HEALTH SCORE: 100/100** — perfect score, 0 errors, 0 warnings
+- **All 23 screens pass quality gate**
+- **navConfig fix**: schemaToCanvaPages now generates proper navConfig for all pages
+- **Roda game internal stepping**: already implemented ✅
+- **Macam-Macam Norma template is STABLE for Play Mode**
+- **Misi Penjelajah Pancasila template confirmed complete** (separate schema)

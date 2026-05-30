@@ -114,6 +114,14 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
       schema: stabilizedScreen,
       // STANDAR: Golden contract enforcement on every page
       contractId: 'golden-pertemuan',
+      // Navigation config: cover pages hide navbar, all others show it
+      navConfig: {
+        showNavbar: screen.templateType !== 'cover',
+        showPrevNext: true,
+        showScore: screen.templateType === 'game' || screen.templateType === 'kuis' || screen.templateType === 'hasil',
+        showProgress: true,
+        navbarStyle: 'colorful' as const,
+      },
     };
   });
 }
