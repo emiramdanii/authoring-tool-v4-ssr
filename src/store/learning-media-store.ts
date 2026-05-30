@@ -163,10 +163,17 @@ function computePageStatus(
   scoreEntries: Map<string, ScoreEntry>,
   pageInteractions: Map<number, PageInteraction>,
   screenIndex: number,
-  pageId: string,
 ): PageCompletionStatus {
   const hasBeenVisited = visitedScreens.has(screenIndex);
-  const hasScore = scoreEntries.has(pageId);
+
+  // Check score by screenIndex (not pageId) — interactive store scores
+  // use elementId (block ID) as key, but we also store screenIndex.
+  // So we check if any score entry has a matching screenIndex.
+  let hasScore = false;
+  scoreEntries.forEach((entry) => {
+    if (entry.screenIndex === screenIndex) hasScore = true;
+  });
+
   const interaction = pageInteractions.get(screenIndex);
   const hasInteraction = !!(interaction?.hasAnswered || interaction?.hasReflected);
 
@@ -410,9 +417,9 @@ export const useLearningMediaStore = create<LearningMediaState>((set, get) => ({
       // Fallback: derive contract from templateTypes
       const tt = templateTypes[screenIndex] || 'custom';
       const fallbackContract = getPageContract(tt);
-      return computePageStatus(fallbackContract, visitedScreens, scoreEntries, pageInteractions, screenIndex, `page-${screenIndex}`);
+      return computePageStatus(fallbackContract, visitedScreens, scoreEntries, pageInteractions, screenIndex);
     }
-    return computePageStatus(contract, visitedScreens, scoreEntries, pageInteractions, screenIndex, `page-${screenIndex}`);
+    return computePageStatus(contract, visitedScreens, scoreEntries, pageInteractions, screenIndex);
   },
 
   canGoNext: () => {

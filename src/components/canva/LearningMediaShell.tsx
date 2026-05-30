@@ -475,37 +475,77 @@ export default function LearningMediaShell() {
   }, [pages, initSession]);
 
   // ═══ Score sync bridge: interactive store → learning media store ═══
+  // When interactive widgets (kuis, game, diskusi, refleksi) report scores
+  // via the interactive store, we bridge them to the learning media store.
+  // This also triggers the appropriate completion action (markPageAnswered,
+  // markPageGameCompleted, markPageReflected) so the PageRuntimeContract
+  // system properly unlocks navigation and updates completion indicators.
   const syncScores = useLearningMediaStore(s => s.syncScores);
+  const markPageAnswered = useLearningMediaStore(s => s.markPageAnswered);
+  const markPageGameCompleted = useLearningMediaStore(s => s.markPageGameCompleted);
+  const markPageReflected = useLearningMediaStore(s => s.markPageReflected);
+
   useEffect(() => {
     const unsubscribe = useInteractiveStore.subscribe((state) => {
-      const entries = state.scores
-        .filter(s => s.completed)
-        .map((s: InteractiveScoreEntry) => ({
-          pageId: s.elementId,
-          screenIndex: s.pageIndex,
-          score: s.score,
-          maxScore: s.maxScore,
-          timestamp: Date.now(),
-        }));
-      if (entries.length > 0) {
-        syncScores(entries);
-      }
-    });
-    // Initial sync on mount
-    const initialScores = useInteractiveStore.getState().scores
-      .filter(s => s.completed)
-      .map((s: InteractiveScoreEntry) => ({
+      const completedScores = state.scores.filter(s => s.completed);
+      const entries = completedScores.map((s: InteractiveScoreEntry) => ({
         pageId: s.elementId,
         screenIndex: s.pageIndex,
         score: s.score,
         maxScore: s.maxScore,
         timestamp: Date.now(),
       }));
-    if (initialScores.length > 0) {
-      syncScores(initialScores);
+      if (entries.length > 0) {
+        syncScores(entries);
+
+        // Trigger completion actions based on page contract type
+        // This is the critical bridge that makes navigation locks work end-to-end:
+        //   KuisRenderer → reportScore() → interactive store → this bridge → markPageAnswered()
+        //   → pageCompletionStatus changes from 'locked' to 'completed' → BottomNav unlocks
+        const learnStore = useLearningMediaStore.getState();
+        for (const s of completedScores) {
+          const screenIndex = s.pageIndex;
+          const contract = learnStore.getContract(screenIndex);
+          if (contract) {
+            if (contract.completionType === 'answer') {
+              markPageAnswered(screenIndex);
+            } else if (contract.completionType === 'game') {
+              markPageGameCompleted(screenIndex);
+            } else if (contract.completionType === 'reflection') {
+              markPageReflected(screenIndex);
+            }
+          }
+        }
+      }
+    });
+
+    // Initial sync on mount
+    const initialScores = useInteractiveStore.getState().scores.filter(s => s.completed);
+    const initialEntries = initialScores.map((s: InteractiveScoreEntry) => ({
+      pageId: s.elementId,
+      screenIndex: s.pageIndex,
+      score: s.score,
+      maxScore: s.maxScore,
+      timestamp: Date.now(),
+    }));
+    if (initialEntries.length > 0) {
+      syncScores(initialEntries);
+
+      // Trigger completion actions for initial scores
+      const learnStore = useLearningMediaStore.getState();
+      for (const s of initialScores) {
+        const screenIndex = s.pageIndex;
+        const contract = learnStore.getContract(screenIndex);
+        if (contract) {
+          if (contract.completionType === 'answer') markPageAnswered(screenIndex);
+          else if (contract.completionType === 'game') markPageGameCompleted(screenIndex);
+          else if (contract.completionType === 'reflection') markPageReflected(screenIndex);
+        }
+      }
     }
+
     return () => unsubscribe();
-  }, [syncScores]);
+  }, [syncScores, markPageAnswered, markPageGameCompleted, markPageReflected]);
 
   // Sync canva-store's currentPageIndex with learning store
   useEffect(() => {

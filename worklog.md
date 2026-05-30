@@ -984,3 +984,27 @@ Stage Summary:
 - SceneList shows ✓/🔒/○ indicators per page
 - Edit vs Play sub-mode fully separated: Edit = click to edit, Play = click to interact
 - Build verified clean (next build passes)
+
+---
+Task ID: interaction-completion-wiring
+Agent: main
+Task: Wire interactive widget completion → learning-media-store → navigation unlock
+
+Work Log:
+- Analyzed all interactive renderers (KuisRenderer, DiskusiRenderer, RefleksiRenderer, GameWidget)
+- Found that all schema-based renderers already call useInteractiveStore.reportScore() directly
+- Fixed computePageStatus to use screenIndex-based score lookup instead of pageId
+  - Previous: scoreEntries.has(pageId) where pageId = "page-{index}" (never matched)
+  - Now: scoreEntries.forEach check screenIndex === entry.screenIndex (matches correctly)
+- Upgraded score sync bridge in LearningMediaShell to trigger completion actions:
+  - Kuis → markPageAnswered(screenIndex) → completionType 'answer' page unlocks
+  - Game → markPageGameCompleted(screenIndex) → completionType 'game' page unlocks
+  - Diskusi/Refleksi → markPageReflected(screenIndex) → completionType 'reflection' page unlocks
+- Initial sync also triggers completion actions for pre-existing scores
+
+Stage Summary:
+- End-to-end flow now complete:
+  KuisRenderer → reportScore() → interactive store → sync bridge → markPageAnswered()
+  → pageCompletionStatus: 'locked' → 'completed' → BottomNav unlocks → progress updates
+- 2 files changed: learning-media-store.ts (computePageStatus fix), LearningMediaShell.tsx (bridge upgrade)
+- Build verified clean
