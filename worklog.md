@@ -1210,3 +1210,39 @@ Stage Summary:
 - SceneType diversity: intro(4), concept(5), example(2), discussion(4), practice(2), assessment(1), reflection(1), summary(1)
 - No monotony streaks ≥ 3
 - Added 'dokumen' and 'hasil' contracts to DEFAULT_CONTRACTS
+---
+Task ID: golden-template-qa
+Agent: Main Agent
+Task: Golden Template QA for Macam-Macam Norma — Health Check + Schema Splits + Runtime Validation
+
+Work Log:
+- Read and analyzed full macam-norma-schema.ts (1109 lines, 20 screens)
+- Identified 3 critical splits needed based on Senior's feedback:
+  1. s-norma-kesopanan (ftab 2 tabs) → split into s-norma-kesopanan + s-norma-hukum (1 norma = 1 fokus)
+  2. s-tujuan-hari-ini (tp + alur) → split into s-tujuan-hari-ini + s-alur-kegiatan
+  3. s-game1 (sortir-game + diskusi) → split into s-game1 + s-diskusi-pasca-game1
+- Added stepMode and currentQuestionIndex to RodaGameBlock type definition
+- Added interactive: true to sortir-game and roda-game blocks
+- Fixed narrative coherence by varying sceneTypes (concept/example alternating)
+- Fixed color consistency by aligning CP page accent tokens (both def-box use 'y')
+- Fixed all nav links for new/changed screens (23 screens total now)
+- Ran Health Check: score 97.5/100, 0 errors, 2 minor warnings
+- Ran Runtime Contract Validation: ALL 23 screens valid, 0 errors, 0 warnings
+- Max score: 200pts (2 game screens × 100pts each)
+- Build passes with Next.js
+- Created health-check-macam-norma.ts and runtime-contract-check.ts scripts
+
+Stage Summary:
+- Template expanded from 20 → 23 screens (3 splits)
+- Health Score: 97.5/100 (Siap Pakai / ready)
+- Zero errors in both health check and runtime contract validation
+- 8 stable areas verified intact
+- Game blocks properly marked interactive with scoring enabled
+- Roda game supports single-question step mode
+- All navigation links verified correct
+Stage Summary:
+- Key files modified:
+  - src/presets/ppkn/macam-norma-schema.ts (23 screens, v3)
+  - src/core/schema/types/blocks.ts (RodaGameBlock + stepMode)
+  - scripts/health-check-macam-norma.ts (new)
+  - scripts/runtime-contract-check.ts (new)

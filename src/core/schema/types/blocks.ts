@@ -283,6 +283,10 @@ export interface SortirGameBlock extends BaseBlock {
 export interface RodaGameBlock extends BaseBlock {
   type: 'roda-game';
   title: string;
+  /** Whether to show one question at a time ('single') or all at once ('all') */
+  stepMode?: 'single' | 'all';
+  /** Starting question index (0-based). Runtime tracks progress via interactive store. */
+  currentQuestionIndex?: number;
   questions: Array<{
     q: string;
     diskusiHint?: string;

@@ -3,7 +3,7 @@ import type { SceneType } from '@/core/edu/education-scene-types';
 
 export const MACAM_NORMA_LESSON: LessonSchema = {
   id: 'macam-norma',
-  version: 2,
+  version: 3,
   title: 'Macam-Macam Norma',
   mapel: 'PPKn',
   kelas: 'VII',
@@ -84,7 +84,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
     {
       id: 's-cp',
       templateType: 'dokumen',
-      sceneType: 'concept' as SceneType,
+      sceneType: 'intro' as SceneType,
       sectionLabel: '📋 Capaian Pembelajaran',
       sectionColor: 'p',
       blocks: [
@@ -95,7 +95,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
         },
         {
           type: 'def-box',
-          borderColor: 'c',
+          borderColor: 'y',
           content: '<strong>ELEMEN: BHINNEKA TUNGGAL IKA</strong> — Peserta didik mampu mengidentifikasi keberagaman norma yang berlaku di masyarakat sebagai wujud kekayaan budaya bangsa Indonesia dan menunjukkan sikap <strong>toleran serta patuh terhadap norma bersama.</strong>',
         },
         {
@@ -117,7 +117,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
     {
       id: 's-tp-full',
       templateType: 'tujuan',
-      sceneType: 'intro' as SceneType,
+      sceneType: 'concept' as SceneType,
       sectionLabel: '🎯 Tujuan Pembelajaran Bab 3',
       sectionColor: 'p',
       blocks: [
@@ -207,7 +207,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
       nav: { prev: 's-tp-full', next: 's-tujuan-hari-ini', nextLabel: 'Tujuan Hari Ini' },
     },
 
-    // ══════════════════════════ 6. TUJUAN HARI INI (TP 2 & 3 + Alur) ══════════════════════════
+    // ══════════════════════════ 6. TUJUAN HARI INI (TP 2 & 3 only) ══════════════════════════
     {
       id: 's-tujuan-hari-ini',
       templateType: 'tujuan',
@@ -236,6 +236,18 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           profil: '🔗 Profil Pelajar Pancasila: Beriman & Bertakwa · Bernalar Kritis · Berkebinekaan Global · Bergotong Royong',
           profilColor: 'g',
         },
+      ],
+      nav: { prev: 's-atp', next: 's-alur-kegiatan', nextLabel: 'Alur Kegiatan' },
+    },
+
+    // ══════════════════════════ 7. ALUR KEGIATAN (separate screen) ══════════════════════════
+    {
+      id: 's-alur-kegiatan',
+      templateType: 'tujuan',
+      sceneType: 'intro' as SceneType,
+      sectionLabel: '⏱️ Alur Kegiatan',
+      sectionColor: 'g',
+      blocks: [
         {
           type: 'alur',
           title: '⏱️ Alur Kegiatan 80 Menit',
@@ -280,10 +292,10 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           ],
         },
       ],
-      nav: { prev: 's-atp', next: 's-review', nextLabel: 'Mulai' },
+      nav: { prev: 's-tujuan-hari-ini', next: 's-review', nextLabel: 'Mulai' },
     },
 
-    // ══════════════════════════ 7. REVIEW P1 ══════════════════════════
+    // ══════════════════════════ 8. REVIEW P1 ══════════════════════════
     {
       id: 's-review',
       templateType: 'diskusi',
@@ -323,7 +335,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           ],
         },
       ],
-      nav: { prev: 's-tujuan-hari-ini', next: 's-materi-petunjuk', nextLabel: 'Eksplorasi 4 Norma' },
+      nav: { prev: 's-alur-kegiatan', next: 's-materi-petunjuk', nextLabel: 'Eksplorasi 4 Norma' },
     },
 
     // ══════════════════════════ 8. MATERI PETUNJUK ══════════════════════════
@@ -416,7 +428,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
     {
       id: 's-norma-kesusilaan',
       templateType: 'materi',
-      sceneType: 'concept' as SceneType,
+      sceneType: 'example' as SceneType,
       sectionLabel: '❤️ Norma Kesusilaan',
       sectionColor: 'r',
       blocks: [
@@ -460,118 +472,109 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           },
         } as SchemaBlock,
       ],
-      nav: { prev: 's-norma-agama', next: 's-norma-kesopanan', nextLabel: 'Norma Kesopanan & Hukum 🤝⚖️' },
+      nav: { prev: 's-norma-agama', next: 's-norma-kesopanan', nextLabel: 'Norma Kesopanan 🤝' },
     },
 
-    // ══════════════════════════ 11. NORMA KESOPANAN & HUKUM (ftab 2 tabs) ══════════════════════════
+    // ══════════════════════════ 11. NORMA KESOPANAN (standalone) ══════════════════════════
     {
       id: 's-norma-kesopanan',
       templateType: 'materi',
-      sceneType: 'example' as SceneType,
-      sectionLabel: '🤝⚖️ Norma Kesopanan & Hukum',
+      sceneType: 'concept' as SceneType,
+      sectionLabel: '🤝 Norma Kesopanan',
       sectionColor: 'c',
       blocks: [
         {
-          type: 'ftab',
-          showReadMarker: true,
-          showProgress: true,
-          tabs: [
-            // ── Tab: Norma Kesopanan ──
+          type: 'nk-card',
+          normaType: 'kesopanan',
+          icon: '🤝',
+          title: 'Norma Kesopanan',
+          label: 'NORMA KESOPANAN',
+          definition: '',
+          characteristics: [
             {
-              icon: '🤝',
-              label: 'Kesopanan',
-              content: [
-                {
-                  type: 'nk-card',
-                  normaType: 'kesopanan',
-                  icon: '🤝',
-                  title: 'Norma Kesopanan',
-                  label: 'NORMA KESOPANAN',
-                  definition: '',
-                  characteristics: [
-                    {
-                      label: '📌 Sumber',
-                      value: 'Adat istiadat dan kebiasaan yang berlaku dalam masyarakat secara turun-temurun',
-                    },
-                    {
-                      label: '⚙️ Sifat',
-                      value: 'Berbeda-beda antar daerah dan budaya, tidak tertulis, tapi sangat kuat pengaruhnya secara sosial',
-                    },
-                    {
-                      label: '🎯 Tujuan',
-                      value: 'Menciptakan kerukunan, kenyamanan, dan saling menghargai dalam pergaulan sehari-hari',
-                    },
-                  ],
-                  sanksi: {
-                    title: '⚠️ Sanksi Sosial (dari lingkungan)',
-                    items: [
-                      { dot: 'c', text: 'Ditegur atau diingatkan orang di sekitar' },
-                      { dot: 'c', text: 'Dicela, dipergunjingkan, atau dijauhi' },
-                      { dot: 'c', text: 'Dalam kasus berat: dikucilkan dari komunitas' },
-                    ],
-                  },
-                  contoh: '💡 <strong>Contoh nyata:</strong> Di Jawa, orang yang melewati orang lebih tua harus membungkuk sambil berkata "permisi".',
-                  pelanggaran: {
-                    title: '🚨 Contoh Pelanggaran Pelajar & Sanksinya',
-                    items: [
-                      { icon: '🗣️', text: 'Memotong pembicaraan guru di kelas — Sanksi: Ditegur guru, dianggap tidak sopan' },
-                      { icon: '😒', text: 'Tidak menyapa tetangga yang sudah menyapa duluan — Sanksi: Dianggap sombong, hubungan merenggang' },
-                      { icon: '🎵', text: 'Memutar musik keras di perumahan tengah malam — Sanksi: Ditegur warga, diadukan ke ketua RT' },
-                    ],
-                  },
-                } as SchemaBlock,
-              ],
+              label: '📌 Sumber',
+              value: 'Adat istiadat dan kebiasaan yang berlaku dalam masyarakat secara turun-temurun',
             },
-            // ── Tab: Norma Hukum ──
             {
-              icon: '⚖️',
-              label: 'Hukum',
-              content: [
-                {
-                  type: 'nk-card',
-                  normaType: 'hukum',
-                  icon: '⚖️',
-                  title: 'Norma Hukum',
-                  label: 'NORMA HUKUM',
-                  definition: '',
-                  characteristics: [
-                    {
-                      label: '📌 Sumber',
-                      value: 'Negara / lembaga resmi berwenang (DPR, Presiden, Mahkamah Agung)',
-                    },
-                    {
-                      label: '⚙️ Sifat',
-                      value: 'Tertulis, tegas, berlaku bagi seluruh warga negara tanpa pengecualian, dan ada aparat penegak hukum',
-                    },
-                    {
-                      label: '🎯 Tujuan',
-                      value: 'Menjamin keadilan, ketertiban, dan keamanan masyarakat secara formal dan mengikat',
-                    },
-                  ],
-                  sanksi: {
-                    title: '⚠️ Sanksi Tegas dari Negara',
-                    items: [
-                      { dot: 'p', text: 'Denda sesuai ketentuan undang-undang' },
-                      { dot: 'p', text: 'Hukuman penjara untuk pelanggaran serius' },
-                      { dot: 'p', text: 'Pencabutan hak-hak tertentu oleh negara' },
-                    ],
-                  },
-                  contoh: '💡 <strong>Contoh nyata:</strong> Siswa yang mencuri di toko dapat dilaporkan ke polisi dan diproses secara hukum.',
-                  pelanggaran: {
-                    title: '🚨 Contoh Pelanggaran Pelajar & Sanksinya',
-                    items: [
-                      { icon: '🏍️', text: 'Siswa SMP mengendarai motor tanpa SIM ke sekolah — Sanksi: Ditilang, motor disita, orang tua dipanggil' },
-                      { icon: '💬', text: 'Menyebarkan berita bohong di media sosial — Sanksi: Bisa terjerat UU ITE, dipanggil polisi' },
-                      { icon: '🚫', text: 'Buang sampah di sungai (ada perda larangan) — Sanksi: Denda sesuai peraturan daerah' },
-                    ],
-                  },
-                } as SchemaBlock,
-              ],
+              label: '⚙️ Sifat',
+              value: 'Berbeda-beda antar daerah dan budaya, tidak tertulis, tapi sangat kuat pengaruhnya secara sosial',
+            },
+            {
+              label: '🎯 Tujuan',
+              value: 'Menciptakan kerukunan, kenyamanan, dan saling menghargai dalam pergaulan sehari-hari',
             },
           ],
-        },
+          sanksi: {
+            title: '⚠️ Sanksi Sosial (dari lingkungan)',
+            items: [
+              { dot: 'c', text: 'Ditegur atau diingatkan orang di sekitar' },
+              { dot: 'c', text: 'Dicela, dipergunjingkan, atau dijauhi' },
+              { dot: 'c', text: 'Dalam kasus berat: dikucilkan dari komunitas' },
+            ],
+          },
+          contoh: '💡 <strong>Contoh nyata:</strong> Di Jawa, orang yang melewati orang lebih tua harus membungkuk sambil berkata "permisi".',
+          pelanggaran: {
+            title: '🚨 Contoh Pelanggaran Pelajar & Sanksinya',
+            items: [
+              { icon: '🗣️', text: 'Memotong pembicaraan guru di kelas — Sanksi: Ditegur guru, dianggap tidak sopan' },
+              { icon: '😒', text: 'Tidak menyapa tetangga yang sudah menyapa duluan — Sanksi: Dianggap sombong, hubungan merenggang' },
+              { icon: '🎵', text: 'Memutar musik keras di perumahan tengah malam — Sanksi: Ditegur warga, diadukan ke ketua RT' },
+            ],
+          },
+        } as SchemaBlock,
       ],
-      nav: { prev: 's-norma-kesusilaan', next: 's-perbandingan-norma', nextLabel: 'Tabel Perbandingan' },
+      nav: { prev: 's-norma-kesusilaan', next: 's-norma-hukum', nextLabel: 'Norma Hukum ⚖️' },
+    },
+
+    // ══════════════════════════ 12. NORMA HUKUM (standalone) ══════════════════════════
+    {
+      id: 's-norma-hukum',
+      templateType: 'materi',
+      sceneType: 'example' as SceneType,
+      sectionLabel: '⚖️ Norma Hukum',
+      sectionColor: 'p',
+      blocks: [
+        {
+          type: 'nk-card',
+          normaType: 'hukum',
+          icon: '⚖️',
+          title: 'Norma Hukum',
+          label: 'NORMA HUKUM',
+          definition: '',
+          characteristics: [
+            {
+              label: '📌 Sumber',
+              value: 'Negara / lembaga resmi berwenang (DPR, Presiden, Mahkamah Agung)',
+            },
+            {
+              label: '⚙️ Sifat',
+              value: 'Tertulis, tegas, berlaku bagi seluruh warga negara tanpa pengecualian, dan ada aparat penegak hukum',
+            },
+            {
+              label: '🎯 Tujuan',
+              value: 'Menjamin keadilan, ketertiban, dan keamanan masyarakat secara formal dan mengikat',
+            },
+          ],
+          sanksi: {
+            title: '⚠️ Sanksi Tegas dari Negara',
+            items: [
+              { dot: 'p', text: 'Denda sesuai ketentuan undang-undang' },
+              { dot: 'p', text: 'Hukuman penjara untuk pelanggaran serius' },
+              { dot: 'p', text: 'Pencabutan hak-hak tertentu oleh negara' },
+            ],
+          },
+          contoh: '💡 <strong>Contoh nyata:</strong> Siswa yang mencuri di toko dapat dilaporkan ke polisi dan diproses secara hukum.',
+          pelanggaran: {
+            title: '🚨 Contoh Pelanggaran Pelajar & Sanksinya',
+            items: [
+              { icon: '🏍️', text: 'Siswa SMP mengendarai motor tanpa SIM ke sekolah — Sanksi: Ditilang, motor disita, orang tua dipanggil' },
+              { icon: '💬', text: 'Menyebarkan berita bohong di media sosial — Sanksi: Bisa terjerat UU ITE, dipanggil polisi' },
+              { icon: '🚫', text: 'Buang sampah di sungai (ada perda larangan) — Sanksi: Denda sesuai peraturan daerah' },
+            ],
+          },
+        } as SchemaBlock,
+      ],
+      nav: { prev: 's-norma-kesopanan', next: 's-perbandingan-norma', nextLabel: 'Tabel Perbandingan' },
     },
 
     // ══════════════════════════ 12. PERBANDINGAN NORMA (Tabel + Diskusi) ══════════════════════════
@@ -655,10 +658,10 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           ],
         },
       ],
-      nav: { prev: 's-norma-kesopanan', next: 's-game1', nextLabel: 'Game Sortir Norma 🎮' },
+      nav: { prev: 's-norma-hukum', next: 's-game1', nextLabel: 'Game Sortir Norma 🎮' },
     },
 
-    // ══════════════════════════ 13. GAME SORTIR ══════════════════════════
+    // ══════════════════════════ 15. GAME SORTIR ══════════════════════════
     {
       id: 's-game1',
       templateType: 'game',
@@ -669,6 +672,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
         {
           type: 'sortir-game',
           title: 'Sortir Norma!',
+          interactive: true,
           pool: [
             { id: 's1', text: 'Berdoa sebelum memulai aktivitas', category: 'agama' },
             { id: 's2', text: 'Mengembalikan uang kembalian lebih', category: 'kesusilaan' },
@@ -690,6 +694,18 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
             { id: 'hukum', label: '⚖️ Hukum', color: 'p' },
           ],
         },
+      ],
+      nav: { prev: 's-perbandingan-norma', next: 's-diskusi-pasca-game1', nextLabel: 'Diskusi Pasca-Game' },
+    },
+
+    // ══════════════════════════ 16. DISKUSI PASCA-GAME SORTIR ══════════════════════════
+    {
+      id: 's-diskusi-pasca-game1',
+      templateType: 'diskusi',
+      sceneType: 'discussion' as SceneType,
+      sectionLabel: '🤔 Diskusi Pasca-Game · ±3 Menit',
+      sectionColor: 'g',
+      blocks: [
         {
           type: 'diskusi',
           title: 'Kartu mana yang paling membingungkan?',
@@ -705,10 +721,10 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           ],
         },
       ],
-      nav: { prev: 's-perbandingan-norma', next: 's-hubungan-norma', nextLabel: 'Hubungan Antarnorma' },
+      nav: { prev: 's-game1', next: 's-hubungan-norma', nextLabel: 'Hubungan Antarnorma' },
     },
 
-    // ══════════════════════════ 14. HUBUNGAN ANTARNORMA (Tabel) ══════════════════════════
+    // ══════════════════════════ 17. HUBUNGAN ANTARNORMA (Tabel) ══════════════════════════
     {
       id: 's-hubungan-norma',
       templateType: 'materi',
@@ -758,7 +774,7 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
           ],
         },
       ],
-      nav: { prev: 's-game1', next: 's-analisis-kasus', nextLabel: 'Analisis Kasus' },
+      nav: { prev: 's-diskusi-pasca-game1', next: 's-analisis-kasus', nextLabel: 'Analisis Kasus' },
     },
 
     // ══════════════════════════ 15. ANALISIS KASUS (nc-grid 3 kasus) ══════════════════════════
@@ -842,6 +858,9 @@ export const MACAM_NORMA_LESSON: LessonSchema = {
         {
           type: 'roda-game',
           title: 'Roda Norma!',
+          interactive: true,
+          stepMode: 'single',
+          currentQuestionIndex: 0,
           questions: [
             {
               q: 'Ahmad tidak berdoa sebelum berangkat ke sekolah meski sudah diingatkan orang tua. Norma apa yang dilanggar?',
