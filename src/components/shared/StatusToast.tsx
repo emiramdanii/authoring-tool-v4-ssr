@@ -64,7 +64,7 @@ export const UndoRedoToast: React.FC = React.memo(function UndoRedoToast() {
           color: 'var(--semantic-accent, #f59e0b)',
           borderColor: 'var(--semantic-accent, #f59e0b)33',
         }}>
-        <RotateCcw size={12} />
+        <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>refresh</span>
         {toast.message}
       </div>
     </div>
@@ -79,7 +79,7 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
   const canvaStatus = useCanvaStore(s => s._saveStatus as SaveStatus | undefined);
   const authoringDirty = useDirtyStore(s => s.dirty);  // Phase 5: migrated from useAuthoringStore
   const lastSavedAt = useCanvaStore(s => s._lastSavedAt);
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
 
   // Combine status: if authoring is dirty and canva is saved, still show unsaved
   const status: SaveStatus = (() => {
@@ -134,30 +134,30 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
     unsaved: {
       icon: <span className="inline-block w-2 h-2 rounded-full bg-red-400 animate-pulse" />,
       label: isSederhana ? 'Belum simpan' : 'Belum tersimpan',
-      bgColor: 'rgba(248,113,113,0.08)',
-      textColor: '#f87171',
-      borderColor: 'rgba(248,113,113,0.2)',
+      bgColor: 'color-mix(in srgb, var(--silse-error) 8%, transparent)',
+      textColor: 'var(--silse-error)',
+      borderColor: 'color-mix(in srgb, var(--silse-error) 20%, transparent)',
     },
     saving: {
-      icon: <Loader2 size={12} className="animate-spin" />,
+      icon: <span className="material-symbols-outlined animate-spin" style={ { fontSize: '12px' } }>progress_activity</span>,
       label: 'Menyimpan...',
-      bgColor: 'rgba(251,191,36,0.08)',
-      textColor: '#fbbf24',
-      borderColor: 'rgba(251,191,36,0.2)',
+      bgColor: 'color-mix(in srgb, var(--silse-tertiary) 8%, transparent)',
+      textColor: 'var(--silse-tertiary)',
+      borderColor: 'color-mix(in srgb, var(--silse-tertiary) 20%, transparent)',
     },
     saved: {
-      icon: <Check size={12} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>check</span>,
       label: isSederhana ? 'Tersimpan' : 'Tersimpan',
-      bgColor: 'rgba(52,211,153,0.08)',
-      textColor: '#34d399',
-      borderColor: 'rgba(52,211,153,0.2)',
+      bgColor: 'color-mix(in srgb, var(--silse-primary) 8%, transparent)',
+      textColor: 'var(--silse-primary)',
+      borderColor: 'color-mix(in srgb, var(--silse-primary) 20%, transparent)',
     },
     error: {
-      icon: <AlertCircle size={12} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>error</span>,
       label: isSederhana ? 'Gagal simpan' : 'Gagal simpan',
-      bgColor: 'rgba(248,113,113,0.08)',
-      textColor: '#f87171',
-      borderColor: 'rgba(248,113,113,0.2)',
+      bgColor: 'color-mix(in srgb, var(--silse-error) 8%, transparent)',
+      textColor: 'var(--silse-error)',
+      borderColor: 'color-mix(in srgb, var(--silse-error) 20%, transparent)',
     },
   };
 
@@ -180,7 +180,7 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
       <span>{label}</span>
       {savedTime && status === 'saved' && (
         <span className="text-[8px] opacity-60 flex items-center gap-0.5 ml-0.5">
-          <Clock size={8} />
+          <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>schedule</span>
           {savedTime}
         </span>
       )}
@@ -190,7 +190,7 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
           className="ml-1 p-0.5 rounded hover:bg-red-500/20 transition-colors"
           title="Coba simpan lagi"
         >
-          <RotateCcw size={10} />
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>refresh</span>
         </button>
       )}
     </div>
@@ -222,9 +222,9 @@ export const SaveNowButton: React.FC = React.memo(function SaveNowButton() {
       title="Simpan Sekarang (Ctrl+S)"
     >
       {saving ? (
-        <Loader2 size={10} className="animate-spin" />
+        <span className="material-symbols-outlined animate-spin" style={ { fontSize: '10px' } }>progress_activity</span>
       ) : (
-        <Save size={10} />
+        <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>save</span>
       )}
       <span className="hidden sm:inline">Simpan</span>
     </button>
@@ -251,7 +251,7 @@ export const UndoRedoButtons: React.FC = React.memo(function UndoRedoButtons() {
         title="Kembalikan (Ctrl+Z)"
         aria-label="Kembalikan"
       >
-        <Undo2 size={14} />
+        <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>undo</span>
       </button>
       <button
         onClick={() => { if (canRedo()) redo(); }}
@@ -260,7 +260,7 @@ export const UndoRedoButtons: React.FC = React.memo(function UndoRedoButtons() {
         title="Ulangi (Ctrl+Shift+Z)"
         aria-label="Ulangi"
       >
-        <Redo2 size={14} />
+        <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>redo</span>
       </button>
     </div>
   );

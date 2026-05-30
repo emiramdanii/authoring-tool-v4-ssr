@@ -11,7 +11,7 @@ import {
 // ═══════════════════════════════════════════════════════════════
 // ICON RAIL v7 — SILSE v4 MD3 Navigation Rail
 // ═══════════════════════════════════════════════════════════════
-// 56px always-visible vertical icon strip.
+// 64px always-visible vertical icon strip.
 // MD3 Navigation Rail spec:
 //   - bg-silse-surface-bright
 //   - Active: pill indicator (3px wide bar) + filled icon + bg-silse-primary-container/20
@@ -86,8 +86,7 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
 
   return (
     <div
-      className="flex flex-col items-center py-4 gap-2 border-r border-silse-outline-variant/40 bg-silse-surface-bright flex-shrink-0"
-      style={{ width: '56px' }}
+      className="flex flex-col items-center py-6 gap-6 border-r border-silse-outline-variant bg-silse-surface-bright flex-shrink-0 w-16"
     >
       {/* Primary tabs — always visible at top */}
       {PRIMARY_RAIL_ITEMS.map(renderRailButton)}

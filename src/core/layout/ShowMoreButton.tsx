@@ -69,9 +69,9 @@ export const ShowMoreButton = React.memo(function ShowMoreButton({
         transform: isPressed ? 'scale(0.97)' : 'scale(1)',
       }}
     >
-      <Eye size={isCompact ? 10 : 12} />
+      <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>visibility</span>
       Lihat {hiddenCount} {itemLabel}
-      <ChevronDown size={isCompact ? 10 : 12} style={{ opacity: 0.6 }} />
+      <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span>
     </button>
   );
 });

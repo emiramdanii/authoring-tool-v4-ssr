@@ -7,6 +7,8 @@ import type {
   HeroBlock,
   PetunjukBlock,
   TpBlock,
+  CpBlock,
+  AtpBlock,
   AlurBlock,
   SkenarioBlock,
   DefBoxBlock,
@@ -43,6 +45,9 @@ import type {
   StatistikBlock,
   StudiBlock,
   MateriBlokBlock,
+  TabIconsBlock,
+  AccordionBlock,
+  InfografisBlock,
 } from './blocks';
 
 import type { BaseBlock } from './base';
@@ -54,6 +59,8 @@ export type SchemaBlock =
   | HeroBlock
   | PetunjukBlock
   | TpBlock
+  | CpBlock
+  | AtpBlock
   | AlurBlock
   | SkenarioBlock
   | DefBoxBlock
@@ -90,6 +97,9 @@ export type SchemaBlock =
   | StatistikBlock
   | StudiBlock
   | MateriBlokBlock
+  | TabIconsBlock
+  | AccordionBlock
+  | InfografisBlock
   | BaseBlock;
 
 // ── Tab Definition ──────────────────────────────────────────────

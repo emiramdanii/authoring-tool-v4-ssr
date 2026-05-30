@@ -6,8 +6,7 @@ import type { MateriBlok } from '@/store/authoring-store';
 import { FieldLabel, INPUT_CLS, TEXTAREA_CLS, CompareSideForm } from './shared';
 import { ImageUploader } from './ImageUploader';
 import { MediaLibrary } from './MediaLibrary';
-import { FolderOpen } from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK EDITORS — Schema-First (Phase 3)
 // ═══════════════════════════════════════════════════════════════════
@@ -234,7 +233,7 @@ function GambarEditor({ blok, idx }: { blok: MateriBlok; idx: number }) {
             className="flex items-center gap-1 text-xs text-app-accent hover:text-app-accent/80 transition-colors"
             title="Buka Pustaka Media"
           >
-            <FolderOpen size={12} /> Pustaka Media
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>folder_open</span> Pustaka Media
           </button>
         </div>
         <ImageUploader

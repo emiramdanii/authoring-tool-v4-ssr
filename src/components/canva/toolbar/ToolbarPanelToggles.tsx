@@ -1,7 +1,7 @@
 'use client';
 
 import { useCanvaStore } from '@/store/canva-store';
-import { PanelLeft, PanelRight } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -29,7 +29,7 @@ export function ToolbarPanelToggles() {
             onClick={toggleLeftPanel}
             className={`focus-ring h-7 w-7 ${leftPanelOpen ? 'text-app-accent' : ''}`}
           >
-            <PanelLeft size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>dock_to_left</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">
@@ -45,7 +45,7 @@ export function ToolbarPanelToggles() {
             onClick={toggleRightPanel}
             className={`focus-ring h-7 w-7 ${rightPanelOpen ? 'text-app-accent' : ''}`}
           >
-            <PanelRight size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>dock_to_right</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">

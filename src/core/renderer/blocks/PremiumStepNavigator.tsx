@@ -157,8 +157,8 @@ export function EduStepNavigator({
   const isAllComplete = activeStep === totalSteps - 1 && totalSteps > 1;
 
   // Typography from edu tokens
-  const microStyle = edu ? edu.micro() : { fontSize: '12px', fontWeight: 700, lineHeight: 1.3, letterSpacing: '0.03em' };
-  const captionStyle = edu ? edu.caption() : { fontSize: '14px', fontWeight: 500, lineHeight: 1.4 };
+  const microStyle = edu ? edu.micro() : { fontSize: '14px', fontWeight: 700, lineHeight: 1.3, letterSpacing: '0.03em' };
+  const captionStyle = edu ? edu.caption() : { fontSize: '16px', fontWeight: 500, lineHeight: 1.4 };
 
   // Colors from edu tokens (scene-aware)
   const accentColor = edu ? edu.accent() : '#fbbf24';

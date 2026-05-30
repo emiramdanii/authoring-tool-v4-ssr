@@ -76,7 +76,7 @@ export const OverflowIndicator = React.memo(function OverflowIndicator({
     },
     {
       key: 'compact',
-      icon: <LayoutGrid size={isCompact ? 9 : 10} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>grid_view</span>,
       label: 'Tata Letak Ringkas',
       disabled: !isCompactAllowed,
     },
@@ -97,7 +97,7 @@ export const OverflowIndicator = React.memo(function OverflowIndicator({
         variant="solid"
         isCompact={isCompact}
       >
-        <AlertTriangle size={isCompact ? 8 : 9} />
+        <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>warning</span>
         <span>Konten Meluap</span>
         <span style={{ opacity: 0.7, marginLeft: '2px' }}>
           +{overflowLabel}

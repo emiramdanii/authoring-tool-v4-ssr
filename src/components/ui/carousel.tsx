@@ -196,7 +196,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <ArrowLeft />
+      <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>arrow_back</span>
       <span className="sr-only">Previous slide</span>
     </Button>
   )
@@ -226,7 +226,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <ArrowRight />
+      <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>arrow_forward</span>
       <span className="sr-only">Next slide</span>
     </Button>
   )

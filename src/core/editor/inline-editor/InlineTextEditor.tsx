@@ -144,11 +144,7 @@ export function InlineTextEditor({
     const hasHtml = /<[a-z][\s\S]*>/i.test(value || '');
     if (allowHtml || hasHtml) {
       return (
-        <Tag
-          className={className}
-          style={style}
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(value || placeholder) }}
-        />
+        <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>label</span>
       );
     }
     return (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LayoutTemplate, Zap, Square } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { LAYOUT_PRESETS } from '../types';
 import { getVariantsForPageType, type PageVariant } from '@/core/template/health-check/page-variant-registry';
@@ -35,7 +35,7 @@ export default function PageSettingsSection() {
 
   return (
     <Section
-      icon={<LayoutTemplate size={12} />}
+      icon={<span className="material-symbols-outlined" style={{ fontSize: '12px' }}>dashboard_customize</span>}
       title="Pengaturan Halaman"
       collapsed={collapsed}
       onToggle={() => setCollapsed(c => !c)}
@@ -244,7 +244,7 @@ export default function PageSettingsSection() {
             }}
             className="w-full justify-center py-2 mb-2 text-app-accent border-app-accent/20 bg-app-accent/10 hover:bg-app-accent/18 hover:border-app-accent/35"
           >
-            <Zap size={12} />
+            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>bolt</span>
             Refresh Data dari Authoring
           </Button>
 

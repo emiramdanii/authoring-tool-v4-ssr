@@ -15,7 +15,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { useRef, useCallback } from 'react';
-import { ListChecks, BookMarked, Quote, Plus, Trash2 } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useSchemaRangkuman } from '@/hooks/use-schema-navigator';
 import { INPUT_CLS, TEXTAREA_CLS, FieldLabel, MAX_TITLE, MAX_BODY } from './shared';
 
@@ -48,7 +48,7 @@ export function RangkumanTab() {
     return (
       <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
         <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mx-auto mb-3">
-          <ListChecks size={24} className="text-teal-400" />
+          <span className="material-symbols-outlined text-teal-400" style={ { fontSize: '24px' } }>checklist</span>
         </div>
         <p className="text-sm font-medium text-app-primary mb-1">Belum ada blok rangkuman</p>
         <p className="text-xs text-app-muted">Tambahkan halaman rangkuman di Canva untuk mengedit di sini.</p>
@@ -95,7 +95,7 @@ export function RangkumanTab() {
       <div className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center">
-            <ListChecks size={16} className="text-teal-400" />
+            <span className="material-symbols-outlined text-teal-400" style={ { fontSize: '16px' } }>checklist</span>
           </div>
           <div>
             <h4 className="text-sm font-semibold text-app-primary">Poin-Poin Kunci</h4>
@@ -110,7 +110,7 @@ export function RangkumanTab() {
               onClick={handleAddPoin}
               className="px-3 py-1.5 bg-app-accent hover:bg-app-accent/90 text-app-inverse text-xs font-medium rounded-lg transition-colors inline-flex items-center gap-1.5"
             >
-              <Plus size={12} /> Tambah Poin
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>add</span> Tambah Poin
             </button>
           </div>
         ) : (
@@ -132,7 +132,7 @@ export function RangkumanTab() {
                   onClick={() => removePoin(i)}
                   className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-md text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-all mt-1.5"
                 >
-                  <Trash2 size={14} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>delete</span>
                 </button>
               </div>
             ))}
@@ -146,7 +146,7 @@ export function RangkumanTab() {
           onClick={handleAddPoin}
           className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors inline-flex items-center gap-1.5"
         >
-          <Plus size={14} /> Tambah Poin
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>add</span> Tambah Poin
         </button>
       )}
 
@@ -154,7 +154,7 @@ export function RangkumanTab() {
       <div className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <BookMarked size={16} className="text-amber-400" />
+            <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>menu_book</span>
           </div>
           <div>
             <h4 className="text-sm font-semibold text-app-primary">Tips Belajar</h4>
@@ -175,7 +175,7 @@ export function RangkumanTab() {
       <div className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
-            <Quote size={16} className="text-purple-400" />
+            <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>format_quote</span>
           </div>
           <div>
             <h4 className="text-sm font-semibold text-app-primary">Penutup</h4>

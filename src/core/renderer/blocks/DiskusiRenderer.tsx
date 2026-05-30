@@ -204,7 +204,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
                 boxShadow: 'none',
                 ...edu.emotionalMotion('reveal', i),
               }}>
-              <CheckCircle2 size={14} style={{ color: edu.accent() }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>check_circle</span>
             </div>
           ))}
         </div>
@@ -225,7 +225,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               color: tokens.color('bg'),
               boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
             }}>
-            <RotateCcw size={14} className="inline" /> Diskusi Ulang
+            <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Diskusi Ulang
           </button>
       </div>
       </PremiumBlockWrapper>
@@ -243,7 +243,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             border: `1px solid ${edu.accentAlpha(0.35)}`,
             boxShadow: `0 4px 12px ${edu.accentAlpha(0.25)}`,
           }}>
-          <MessageCircle size={16} style={{ color: edu.accent() }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>chat_bubble</span>
         </div>
         <div className="font-extrabold min-w-0" style={{ ...edu.bodyLg(), fontWeight: 800, color: edu.accent(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
@@ -306,7 +306,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             <span className="font-extrabold min-w-0 truncate" style={{ ...edu.body(), fontWeight: 800, color: tokens.color(qColor) }}>{q.label}</span>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
-                <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>check_circle</span>
               </div>
             )}
             {/* Question number badge */}
@@ -394,7 +394,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             border: `1px solid ${edu.accentAlpha(0.4)}`,
             boxShadow: `0 6px 16px ${edu.accentAlpha(0.3)}`,
           }}>
-          <MessageCircle size={22} style={{ color: edu.accent() }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '22px' } }>chat_bubble</span>
         </div>
         <div className="font-extrabold min-w-0" style={{ ...edu.heading(), fontWeight: 800, color: edu.accent(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
@@ -478,7 +478,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             </div>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
-                <CheckCircle2 size={16} style={{ color: tokens.color('g') }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>check_circle</span>
               </div>
             )}
           </div>
@@ -551,7 +551,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
       {/* ── Compact header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-1.5 mb-2">
-        <MessageCircle size={13} style={{ color: edu.accent() }} />
+        <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>chat_bubble</span>
         <span className="font-extrabold min-w-0" style={{ ...edu.caption(), fontWeight: 800, color: edu.accent(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
             {...titleEditor}
@@ -613,7 +613,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             <span className="font-bold min-w-0 truncate" style={{ ...edu.caption(), fontWeight: 700, color: tokens.color(qColor) }}>{q.label}</span>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
-                <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check_circle</span>
               </div>
             )}
             {/* Question number */}

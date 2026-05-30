@@ -4,13 +4,7 @@ import React, { useState } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { PanelId } from '@/store/authoring/types';
 import { useProjectManager } from '@/hooks/use-project-manager';
-import {
-  Target, ClipboardList, Puzzle, Gamepad2, FileEdit, Zap,
-  Rocket, FileText, Play, Layers, ArrowRight, Plus,
-  Users, ScrollText, Scale, Smartphone, Palette, Layout, BarChart3,
-  BookOpen, GraduationCap, Download, FolderOpen, Upload, Wand2, Save, Check,
-  Sparkles as AutoAwesome, TrendingUp,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import {
   Dialog,
   DialogContent,
@@ -27,6 +21,26 @@ import { deriveExportPayloadFromSchema } from '@/core/schema/export-projection';
 // COLORS import removed — using silse-* tokens instead
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
+
+// ── Sidebar Nav Item Config ────────────────────────────────────
+interface SidebarNavItem {
+  id: string;
+  label: string;
+  icon: string; // Material Symbols Outlined icon name
+  panelRequest: string; // maps to canva-store panelRequest
+}
+
+const SIDEBAR_NAV_ITEMS: SidebarNavItem[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'space_dashboard', panelRequest: 'dashboard' },
+  { id: 'workspace', label: 'Workspace', icon: 'edit_note', panelRequest: 'canva' },
+  { id: 'assets', label: 'Assets', icon: 'folder_open', panelRequest: 'konten' },
+  { id: 'analytics', label: 'Analytics', icon: 'analytics', panelRequest: 'preview' },
+];
+
+const SIDEBAR_SECONDARY_ITEMS: { id: string; label: string; icon: string; panelRequest: string | null }[] = [
+  { id: 'settings', label: 'Settings', icon: 'settings', panelRequest: 'settings' },
+  { id: 'support', label: 'Support', icon: 'help', panelRequest: null },
+];
 
 // Lazy-load TemplateWizard — it's a modal that's not always visible
 const TemplateWizard = dynamic(() => import('@/components/canva/TemplateWizard'), { ssr: false });
@@ -57,18 +71,18 @@ function getNextStep(
   setActivePanel: (panel: PanelId) => void,
 ): NextStep {
   if (!meta.judulPertemuan) {
-    return { step: 'Isi judul pertemuan di panel Dokumen', action: () => setActivePanel('dokumen'), icon: <FileText size={16} /> };
+    return { step: 'Isi judul pertemuan di panel Dokumen', action: () => setActivePanel('dokumen'), icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>description</span> };
   }
   if (tp.length === 0) {
-    return { step: 'Tambahkan Tujuan Pembelajaran (TP)', action: () => setActivePanel('konten'), icon: <Target size={16} /> };
+    return { step: 'Tambahkan Tujuan Pembelajaran (TP)', action: () => setActivePanel('konten'), icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>target</span> };
   }
   if (kuis.length === 0 && modules.length === 0 && games.length === 0) {
-    return { step: 'Buat konten interaktif — kuis, game, atau modul', action: () => setActivePanel('konten'), icon: <Gamepad2 size={16} /> };
+    return { step: 'Buat konten interaktif — kuis, game, atau modul', action: () => setActivePanel('konten'), icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>sports_esports</span> };
   }
   if (pagesLength <= 1) {
-    return { step: 'Tambahkan lebih banyak halaman di Canva', action: () => setActivePanel('canva'), icon: <Layers size={16} /> };
+    return { step: 'Tambahkan lebih banyak halaman di Canva', action: () => setActivePanel('canva'), icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>layers</span> };
   }
-  return { step: 'Preview media pembelajaran Anda!', action: () => setActivePanel('preview'), icon: <Play size={16} /> };
+  return { step: 'Preview media pembelajaran Anda!', action: () => setActivePanel('preview'), icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>play_arrow</span> };
 }
 
 export default function Dashboard() {
@@ -98,8 +112,8 @@ export default function Dashboard() {
       if (page.schema?.blocks) {
         for (const block of page.schema.blocks) {
           if (block.type === 'materi-section') {
-            const content = (block as any).content || [];
-            count += content.filter((b: any) => b.type === 'materi-blok').length;
+            const content = (block as { content?: import('@/core/schema/types').SchemaBlock[] }).content || [];
+            count += content.filter(b => b.type === 'materi-blok').length;
           }
         }
       }
@@ -115,6 +129,20 @@ export default function Dashboard() {
   const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
   const { saveProject, currentProjectId } = useProjectManager();
   const { isSederhana } = useTeacherMode();
+
+  // ── Sidebar: read activePanel to determine highlighted nav item ──
+  const activePanel = useAuthoringStore((s) => s.activePanel);
+
+  // Map activePanel to sidebar nav id for highlighting
+  const activeNavId = React.useMemo(() => {
+    if (activePanel === 'dashboard') return 'dashboard';
+    if (activePanel === 'canva') return 'workspace';
+    if (activePanel === 'konten') return 'assets';
+    if (activePanel === 'preview') return 'analytics';
+    if (activePanel === 'dokumen') return 'settings';
+    // For any other active panel, default to dashboard
+    return 'dashboard';
+  }, [activePanel]);
 
   // Get canva pages length for adaptive guidance
   const pagesLength = useCanvaStore((s) => s.pages.length);
@@ -202,25 +230,25 @@ export default function Dashboard() {
   // ── Template data with lucide icons ────────────────────────────
   const templates = [
     // PPKn
-    { key: 'hakikat-norma', icon: Users, label: 'Hakikat Norma', sub: 'PPKn VII · Bab 3 P1', color: 'emerald' },
-    { key: 'macam-norma', icon: ScrollText, label: 'Macam Norma', sub: 'PPKn VII · Bab 3 P2', color: 'emerald' },
-    { key: 'perilaku-patuh', icon: Scale, label: 'Perilaku Patuh', sub: 'PPKn VII · Bab 3 P3', color: 'emerald' },
-    { key: 'nilai-pancasila', icon: BookOpen, label: 'Nilai Pancasila', sub: 'PPKn VII · Bab 3 P4', color: 'amber' },
-    { key: 'bhinneka-tunggal-ika', icon: Users, label: 'Bhinneka Tunggal Ika', sub: 'PPKn VII · Bab 3 P5', color: 'emerald' },
-    { key: 'ham-hak-kewajiban', icon: Scale, label: 'HAM & Kewajiban', sub: 'PPKn VII · Bab 3 P6', color: 'emerald' },
-    { key: 'demokrasi-pancasila', icon: ScrollText, label: 'Demokrasi Pancasila', sub: 'PPKn VII · Bab 3 P7', color: 'amber' },
-    { key: 'globalisasi', icon: GraduationCap, label: 'Globalisasi', sub: 'PPKn VII · Bab 3 P8', color: 'emerald' },
-    { key: 'misi-penjelajah-pancasila', icon: Rocket, label: 'Misi Penjelajah', sub: 'PPKn VII · Bab 3 P9', color: 'emerald' },
+    { key: 'hakikat-norma', icon: 'groups', label: 'Hakikat Norma', sub: 'PPKn VII · Bab 3 P1', color: 'emerald' },
+    { key: 'macam-norma', icon: 'scroll', label: 'Macam Norma', sub: 'PPKn VII · Bab 3 P2', color: 'emerald' },
+    { key: 'perilaku-patuh', icon: 'balance', label: 'Perilaku Patuh', sub: 'PPKn VII · Bab 3 P3', color: 'emerald' },
+    { key: 'nilai-pancasila', icon: 'menu_book', label: 'Nilai Pancasila', sub: 'PPKn VII · Bab 3 P4', color: 'amber' },
+    { key: 'bhinneka-tunggal-ika', icon: 'groups', label: 'Bhinneka Tunggal Ika', sub: 'PPKn VII · Bab 3 P5', color: 'emerald' },
+    { key: 'ham-hak-kewajiban', icon: 'balance', label: 'HAM & Kewajiban', sub: 'PPKn VII · Bab 3 P6', color: 'emerald' },
+    { key: 'demokrasi-pancasila', icon: 'scroll', label: 'Demokrasi Pancasila', sub: 'PPKn VII · Bab 3 P7', color: 'amber' },
+    { key: 'globalisasi', icon: 'school', label: 'Globalisasi', sub: 'PPKn VII · Bab 3 P8', color: 'emerald' },
+    { key: 'misi-penjelajah-pancasila', icon: 'rocket_launch', label: 'Misi Penjelajah', sub: 'PPKn VII · Bab 3 P9', color: 'emerald' },
     // IPA
-    { key: 'sistem-pernapasan', icon: BookOpen, label: 'Sistem Pernapasan', sub: 'IPA VIII', color: 'emerald' },
+    { key: 'sistem-pernapasan', icon: 'menu_book', label: 'Sistem Pernapasan', sub: 'IPA VIII', color: 'emerald' },
     // MTK
-    { key: 'persamaan-linear', icon: ScrollText, label: 'Persamaan Linear', sub: 'MTK VIII', color: 'amber' },
+    { key: 'persamaan-linear', icon: 'scroll', label: 'Persamaan Linear', sub: 'MTK VIII', color: 'amber' },
     // PJOK
-    { key: 'gerak-dasar-lokomotor', icon: Rocket, label: 'Gerak Dasar Lokomotor', sub: 'PJOK VII', color: 'emerald' },
-    { key: 'permainan-bola-besar', icon: GraduationCap, label: 'Permainan Bola Besar', sub: 'PJOK VII', color: 'emerald' },
-    { key: 'kebugaran-jasmani', icon: Users, label: 'Kebugaran Jasmani', sub: 'PJOK VII', color: 'amber' },
+    { key: 'gerak-dasar-lokomotor', icon: 'rocket_launch', label: 'Gerak Dasar Lokomotor', sub: 'PJOK VII', color: 'emerald' },
+    { key: 'permainan-bola-besar', icon: 'school', label: 'Permainan Bola Besar', sub: 'PJOK VII', color: 'emerald' },
+    { key: 'kebugaran-jasmani', icon: 'groups', label: 'Kebugaran Jasmani', sub: 'PJOK VII', color: 'amber' },
     // Blank
-    { key: 'blank', icon: ClipboardList, label: 'Proyek Kosong', sub: 'Isi semua manual', color: 'slate' },
+    { key: 'blank', icon: 'assignment', label: 'Proyek Kosong', sub: 'Isi semua manual', color: 'slate' },
   ];
 
   const colorMap: Record<string, string> = {
@@ -241,11 +269,11 @@ export default function Dashboard() {
 
   // ── Flow Steps (mode-aware labels) ──────────────────────────
   const flowSteps = [
-    { num: 1, label: 'Pilih Template', icon: Layout, active: true },
-    { num: 2, label: isSederhana ? 'Isi RPP' : 'Isi Dokumen', icon: FileEdit, active: completeness >= 10 },
-    { num: 3, label: 'Tambah Materi', icon: Puzzle, active: completeness >= 40 },
-    { num: 4, label: isSederhana ? 'Desain Visual' : 'Desain Canva', icon: Palette, active: completeness >= 60 },
-    { num: 5, label: isSederhana ? 'Pratinjau' : 'Preview & Export', icon: Play, active: completeness >= 80 },
+    { num: 1, label: 'Pilih Template', icon: 'dashboard', active: true },
+    { num: 2, label: isSederhana ? 'Isi RPP' : 'Isi Dokumen', icon: 'edit_note', active: completeness >= 10 },
+    { num: 3, label: 'Tambah Materi', icon: 'extension', active: completeness >= 40 },
+    { num: 4, label: isSederhana ? 'Desain Visual' : 'Desain Canva', icon: 'palette', active: completeness >= 60 },
+    { num: 5, label: isSederhana ? 'Pratinjau' : 'Preview & Export', icon: 'play_arrow', active: completeness >= 80 },
   ];
 
   const currentStep = flowSteps.findIndex((s) => !s.active);
@@ -261,8 +289,122 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-full page-transition" style={{ minHeight: 0 }}>
+      {/* ══ SIDEBAR — SILSE v4 Fixed Navigation ══════════════════ */}
+      <aside className="fixed left-0 top-0 bottom-0 w-64 z-30 flex flex-col border-r border-silse-outline-variant bg-silse-surface-bright">
+        {/* Logo Area */}
+        <div className="p-4 pb-2">
+          <div className="flex items-center gap-2.5 mb-1">
+            <div className="w-9 h-9 rounded-xl bg-silse-primary-container/15 flex items-center justify-center border border-silse-primary-container/25">
+              <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '22px', fontVariationSettings: "'FILL' 1, 'wght' 500" }}>school</span>
+            </div>
+            <div>
+              <span
+                className="text-base font-extrabold text-silse-primary tracking-tight leading-none"
+                style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+              >
+                SILSE
+              </span>
+              <p className="text-[0.6rem] text-silse-on-surface-variant leading-tight mt-0.5">Smart Interactive Learning</p>
+            </div>
+          </div>
+        </div>
+
+        {/* New Project Button */}
+        <div className="px-4 pb-3">
+          <button
+            onClick={() => {
+              if (hasData) {
+                showConfirm('Buat Proyek Baru?', 'Data yang belum disimpan akan hilang.', () => newProject());
+              } else {
+                newProject();
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-silse-primary-container text-silse-on-primary-container font-bold border-b-2 border-silse-primary hover:scale-95 transition-transform"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
+            Proyek Baru
+          </button>
+        </div>
+
+        {/* Primary Nav Items — scrollable */}
+        <nav className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1">
+          {SIDEBAR_NAV_ITEMS.map((item) => {
+            const isActive = activeNavId === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActivePanel(item.panelRequest)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? 'bg-silse-primary-container text-silse-on-primary-container'
+                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1'
+                }`}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: '20px',
+                    fontVariationSettings: isActive ? "'FILL' 1, 'wght' 500" : "'FILL' 0, 'wght' 400",
+                  }}
+                >
+                  {item.icon}
+                </span>
+                {item.label}
+              </button>
+            );
+          })}
+
+          {/* Divider */}
+          <div className="my-3 h-px bg-silse-outline-variant/50" />
+
+          {/* Secondary Nav Items */}
+          {SIDEBAR_SECONDARY_ITEMS.map((item) => {
+            const isActive = item.panelRequest !== null && activeNavId === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  if (item.panelRequest) {
+                    setActivePanel(item.panelRequest);
+                  }
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? 'bg-silse-primary-container text-silse-on-primary-container'
+                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high hover:translate-x-1'
+                }`}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: '20px',
+                    fontVariationSettings: isActive ? "'FILL' 1, 'wght' 500" : "'FILL' 0, 'wght' 400",
+                  }}
+                >
+                  {item.icon}
+                </span>
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Bottom: Avatar + Teacher Name */}
+        <div className="p-4 border-t border-silse-outline-variant/50">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-silse-primary-container/20 border border-silse-primary-container/40 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-bold text-silse-primary">G</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-silse-on-surface truncate">Guru</p>
+              <p className="text-[0.6rem] text-silse-on-surface-variant truncate">Pengajar Aktif</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
       {/* ══ MAIN CONTENT AREA — SILSE v4 Bento Grid ════════════ */}
-      <main className="flex-1 min-w-0 overflow-y-auto bg-silse-surface-bright custom-scrollbar">
+      <main className="flex-1 min-w-0 overflow-y-auto bg-silse-surface-bright custom-scrollbar ml-64">
         <div className="p-6 sm:p-8 space-y-16 max-w-5xl">
 
           {/* ══ WELCOME HEADER — SILSE v4 ═══════════════════════ */}
@@ -271,11 +413,11 @@ export default function Dashboard() {
               <div>
                 <h1
                   className="text-[40px] font-bold text-silse-primary tracking-tight leading-tight"
-                  style={{ fontFamily: 'var(--font-fredoka), Fredoka, cursive' }}
+                  style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
                 >
                   {getGreeting()}, Guru! Siap buat materi seru hari ini?
                 </h1>
-                <p className="text-sm text-silse-on-surface-variant mt-2">
+                <p className="text-base text-silse-on-surface-variant mt-2" style={{ fontFamily: 'var(--font-nunito), Nunito Sans, sans-serif' }}>
                   {isSederhana
                     ? 'Buat media pembelajaran interaktif dengan mudah.'
                     : 'Kelola proyek media pembelajaran interaktif Anda.'}
@@ -285,9 +427,9 @@ export default function Dashboard() {
                 {/* AI Content Button */}
                 <button
                   onClick={() => setActivePanel('autogen')}
-                  className="flex items-center gap-2 px-8 py-5 rounded-full bg-silse-primary-container text-silse-on-primary-container text-sm font-bold border-b-[3px] border-silse-primary hover:-translate-y-0.5 hover:shadow-sm transition-[transform,box-shadow]"
+                  className="flex items-center gap-2 px-8 py-5 rounded-full bg-silse-primary-container text-silse-on-primary-container text-sm font-bold border-b-[3px] border-silse-primary shadow-sm hover:-translate-y-0.5 hover:shadow-sm transition-[transform,box-shadow]"
                 >
-                  <AutoAwesome size={18} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '18px' } }>auto_awesome</span>
                   Buat Konten Baru dengan AI
                 </button>
                 {isPresetMode && (
@@ -310,7 +452,7 @@ export default function Dashboard() {
                 <span className="text-sm font-bold text-silse-primary">{completeness}%</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-silse-surface-container border border-silse-outline-variant">
-                <TrendingUp size={14} className="text-silse-primary" />
+                <span className="material-symbols-outlined text-silse-primary" style={ { fontSize: '14px' } }>trending_up</span>
                 <span className="text-xs font-semibold text-silse-on-surface">
                   Kesiapan Kurikulum Merdeka
                 </span>
@@ -364,22 +506,26 @@ export default function Dashboard() {
             </div>
 
             {/* Views/Status Card — 1-col */}
-            <div className="bg-silse-secondary-container/10 rounded-[24px] p-6 flex flex-col items-center justify-center text-center">
-              <div className="w-14 h-14 rounded-2xl bg-silse-secondary-container/20 flex items-center justify-center mb-3">
-                <span className="material-symbols-outlined text-silse-secondary-container" style={{ fontSize: '32px' }}>visibility</span>
-              </div>
+            <div className="bg-silse-secondary-container rounded-[24px] p-6 text-silse-on-secondary-container flex flex-col items-center justify-center text-center shadow-lg">
+              <span className="material-symbols-outlined text-5xl mb-4">visibility</span>
               <div className="flex items-center gap-2 mb-1">
-                <span className={`w-2 h-2 rounded-full ${isPresetMode ? 'bg-silse-primary' : hasData ? 'bg-silse-primary' : 'bg-silse-on-surface-variant'}`} />
-                <span className="text-sm font-semibold text-silse-on-surface">
+                <span className={`w-2 h-2 rounded-full ${isPresetMode ? 'bg-white/80' : hasData ? 'bg-white/80' : 'bg-white/40'}`} />
+                <span className="text-sm font-semibold">
                   {isPresetMode ? 'Preset Aktif' : hasData ? 'Proyek Aktif' : 'Belum Ada'}
                 </span>
               </div>
-              <div className="text-2xl font-bold text-silse-on-surface" style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}>
+              <div className="text-3xl font-extrabold" style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}>
                 {isPresetMode ? (presetLabels[activePreset || ''] || activePreset || '—') : hasData ? completeness + '%' : '—'}
               </div>
-              <div className="text-xs text-silse-on-surface-variant mt-1">
+              <div className="text-xs opacity-80 mt-1">
                 {isPresetMode ? 'Template aktif' : hasData ? 'Kelengkapan proyek' : 'Mulai proyek baru'}
               </div>
+              {hasData && (
+                <div className="mt-3 flex items-center gap-1 text-silse-primary-fixed-dim">
+                  <span className="material-symbols-outlined text-sm">trending_up</span>
+                  <span className="text-sm font-bold">+{completeness}% minggu ini</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -397,7 +543,7 @@ export default function Dashboard() {
                 onClick={nextStep.action}
                 className="flex-shrink-0 flex items-center gap-1 px-4 py-2 bg-silse-secondary-container text-white text-xs font-semibold rounded-xl hover:bg-silse-secondary-container/90 transition-colors"
               >
-                Mulai <ArrowRight size={12} />
+                Mulai <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>arrow_forward</span>
               </button>
             </div>
           )}
@@ -418,9 +564,9 @@ export default function Dashboard() {
                 Lihat Semua →
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {templates.map((p) => {
-                const Icon = p.icon;
+                // icon is now a string
                 const isCurrentPreset = isPresetMode && activePreset === p.key;
                 return (
                   <button
@@ -434,7 +580,7 @@ export default function Dashboard() {
                   >
                     {/* Cover image placeholder */}
                     <div className={`w-full h-20 rounded-2xl mb-3 flex items-center justify-center ${iconColorMap[p.color]}`}>
-                      <Icon size={28} />
+                      <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>{p.icon}</span>
                     </div>
                     <div className="text-xs font-semibold text-silse-on-surface">{p.label}</div>
                     <div className="text-[0.65rem] text-silse-on-surface-variant mt-0.5">{p.sub}</div>
@@ -446,7 +592,7 @@ export default function Dashboard() {
                     )}
                     {SCHEMA_DRIVEN_PRESETS.has(p.key) && !isCurrentPreset && (
                       <div className="text-[0.6rem] text-silse-primary/70 font-medium mt-1.5 flex items-center justify-center gap-0.5">
-                        <Zap size={9} /> {isSederhana ? 'Siap Pakai' : 'Schema'}
+                        <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>bolt</span> {isSederhana ? 'Siap Pakai' : 'Schema'}
                       </div>
                     )}
                     {isCurrentPreset && (
@@ -461,7 +607,7 @@ export default function Dashboard() {
                 className="rounded-[24px] p-4 text-center border-2 border-dashed border-silse-outline-variant bg-transparent hover:border-silse-primary/30 hover:bg-silse-primary/5 group transition-colors cursor-pointer"
               >
                 <div className="w-16 h-16 rounded-full mb-3 mx-auto flex items-center justify-center bg-silse-primary/5 text-silse-primary group-hover:bg-silse-primary-container transition-colors">
-                  <Plus size={28} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '28px' } }>add</span>
                 </div>
                 <div className="text-xs font-semibold text-silse-on-surface-variant">Mulai dari Template</div>
                 <div className="text-[0.65rem] text-silse-on-surface-variant mt-0.5">Pilih & kustomisasi</div>
@@ -481,7 +627,7 @@ export default function Dashboard() {
               {flowSteps.map((step, i) => {
                 const isActive = step.active;
                 const isCurrent = i === Math.max(0, currentStep);
-                const StepIcon = step.icon;
+                // step.icon is now a string
                 return (
                   <div key={step.num} className="flex-1 flex flex-col items-center relative">
                     {i > 0 && (
@@ -494,7 +640,7 @@ export default function Dashboard() {
                         ? 'bg-silse-primary-container/15 text-silse-primary border border-silse-primary/30'
                         : 'bg-silse-surface-container text-silse-on-surface-variant border border-silse-outline-variant'
                     } ${isCurrent ? 'ring-2 ring-silse-primary/25 ring-offset-1 ring-offset-silse-surface-container-lowest' : ''}`}>
-                      {isActive ? <Check size={14} strokeWidth={2.5} /> : <StepIcon size={14} />}
+                      {isActive ? <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>check</span> : <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>{step.icon}</span>}
                     </div>
                     <div className="mt-2.5 text-center">
                       <div className={`text-[0.7rem] font-medium ${isActive ? 'text-silse-on-surface' : 'text-silse-on-surface-variant'}`}>
@@ -523,28 +669,28 @@ export default function Dashboard() {
                 {
                   label: isSederhana ? 'Isi RPP' : 'Isi Dokumen',
                   desc: isSederhana ? 'Identitas, Capaian, Tujuan' : 'CP, TP, ATP, Alur Pembelajaran',
-                  icon: FileEdit,
+                  icon: 'edit_note',
                   accentClass: 'bg-silse-primary-container/10 text-silse-primary',
                   action: () => setActivePanel('dokumen'),
                 },
                 {
                   label: isSederhana ? 'Tambah Materi' : 'Tambah Konten',
                   desc: isSederhana ? 'Materi, game, kuis' : 'Kuis, modul interaktif, materi',
-                  icon: Puzzle,
+                  icon: 'extension',
                   accentClass: 'bg-silse-secondary-container/10 text-silse-secondary-container',
                   action: () => setActivePanel('konten'),
                 },
                 {
                   label: isSederhana ? 'Lihat Hasil' : 'Preview Siswa',
                   desc: isSederhana ? 'Pratinjau tampilan siswa' : 'Lihat tampilan lengkap siswa',
-                  icon: Smartphone,
+                  icon: 'smartphone',
                   accentClass: 'bg-silse-primary/10 text-silse-primary',
                   action: () => setActivePanel('preview'),
                 },
                 ...(!isSederhana ? [{
                   label: 'Desain Canva',
                   desc: 'Layout & visual slide',
-                  icon: Palette,
+                  icon: 'palette',
                   accentClass: 'bg-silse-tertiary-container/10 text-silse-tertiary-container',
                   action: () => {
                     const currentPreset = useAuthoringStore.getState().activePreset;
@@ -557,7 +703,7 @@ export default function Dashboard() {
                   },
                 }] : []),
               ].map((action) => {
-                const Icon = action.icon;
+                // action.icon is now a string
                 return (
                   <button
                     key={action.label}
@@ -565,7 +711,7 @@ export default function Dashboard() {
                     className="flex items-center gap-3.5 glass-card rounded-[24px] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all cursor-pointer text-left border border-silse-outline-variant"
                   >
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${action.accentClass}`}>
-                      <Icon size={16} />
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>{action.icon}</span>
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-silse-on-surface">{action.label}</div>
@@ -581,7 +727,7 @@ export default function Dashboard() {
                   className="flex items-center gap-3.5 bg-silse-tertiary-container/3 border border-silse-tertiary-container/12 rounded-[24px] p-4 hover:border-silse-tertiary-container/25 hover:bg-silse-tertiary-container/5 hover:-translate-y-1 transition-all cursor-pointer text-left"
                 >
                   <div className="w-10 h-10 rounded-2xl bg-silse-tertiary-container/10 flex items-center justify-center text-silse-tertiary-container flex-shrink-0">
-                    <Zap size={16} />
+                    <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>bolt</span>
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-silse-on-surface">{isSederhana ? 'Pratinjau Interaktif' : 'Schema Preview'}</div>
@@ -598,14 +744,14 @@ export default function Dashboard() {
               onClick={() => setActivePanel('dokumen')}
               className="px-4 py-2 text-xs text-silse-on-primary bg-silse-primary hover:bg-silse-primary/90 rounded-xl font-semibold transition-colors flex items-center gap-1.5 border-b-2 border-silse-primary"
             >
-              <Plus size={12} />
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>add</span>
               {isSederhana ? 'Isi RPP' : 'Buat Baru'}
             </button>
             <button
               onClick={() => setActivePanel('autogen')}
               className="px-4 py-2 text-xs text-silse-primary hover:text-silse-primary/80 bg-silse-primary/5 hover:bg-silse-primary/10 rounded-xl border border-silse-primary/15 transition-colors flex items-center gap-1.5 font-medium"
             >
-              <Wand2 size={12} />
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>auto_fix</span>
               {isSederhana ? 'Buat AI' : 'Auto-Generate'}
             </button>
 
@@ -623,28 +769,28 @@ export default function Dashboard() {
                   className="p-1.5 text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-lg transition-colors"
                   title="Proyek Baru"
                 >
-                  <FileText size={15} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '15px' } }>description</span>
                 </button>
                 <button
                   onClick={() => setActivePanel('projects')}
                   className="p-1.5 text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-lg transition-colors"
                   title="Buka Proyek"
                 >
-                  <FolderOpen size={15} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '15px' } }>folder_open</span>
                 </button>
                 <button
                   onClick={() => setActivePanel('import')}
                   className="p-1.5 text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-lg transition-colors"
                   title="Import"
                 >
-                  <Upload size={15} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '15px' } }>upload</span>
                 </button>
                 <button
                   onClick={exportJSON}
                   className="p-1.5 text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-lg transition-colors"
                   title="Export JSON"
                 >
-                  <Download size={15} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '15px' } }>download</span>
                 </button>
               </>
             )}
@@ -655,7 +801,7 @@ export default function Dashboard() {
               onClick={() => currentProjectId ? saveProject() : saveToStorage()}
               className="px-4 py-2 text-xs text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-xl transition-colors flex items-center gap-1.5"
             >
-              <Save size={13} />
+              <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>save</span>
               Simpan
             </button>
           </div>

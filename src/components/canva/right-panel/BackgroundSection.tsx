@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Image as ImageIcon, Upload, Link, X } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { GRADIENT_PRESETS } from '../types';
 import Section from './Section';
@@ -80,7 +80,7 @@ export default function BackgroundSection() {
   if (isSchemaDriven) {
     return (
       <Section
-        icon={<ImageIcon size={12} />}
+        icon={<span className="material-symbols-outlined" style={{ fontSize: '12px' }}>image</span>}
         title="Background"
         collapsed={collapsed}
         onToggle={() => setCollapsed(c => !c)}
@@ -165,7 +165,7 @@ export default function BackgroundSection() {
           <label className="text-[10px] text-silse-on-surface-variant block mb-1">Gambar URL</label>
           <div className="flex gap-1">
             <div className="flex-1 flex items-center gap-1 bg-silse-surface-container-low border border-silse-outline-variant rounded-lg px-2 h-7">
-              <Link size={10} className="text-silse-on-surface-variant flex-shrink-0" />
+              <span className="material-symbols-outlined text-silse-on-surface-variant flex-shrink-0" style={{ fontSize: '10px' }}>link</span>
               <input
                 type="url"
                 value={imageUrlInput}
@@ -194,7 +194,7 @@ export default function BackgroundSection() {
                 className="p-1 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"
                 title="Hapus gambar"
               >
-                <X size={10} />
+                <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>close</span>
               </button>
             </div>
           )}
@@ -223,7 +223,7 @@ export default function BackgroundSection() {
   // ── Non-schema (legacy) page: show original controls ──
   return (
     <Section
-      icon={<ImageIcon size={12} />}
+      icon={<span className="material-symbols-outlined" style={{ fontSize: '12px' }}>image</span>}
       title="Background"
       collapsed={collapsed}
       onToggle={() => setCollapsed(c => !c)}
@@ -240,7 +240,7 @@ export default function BackgroundSection() {
         onClick={() => fileInputRef.current?.click()}
         className="w-full py-2.5 rounded-xl border border-dashed border-silse-outline-variant hover:border-amber-500/30 bg-silse-surface-container-low hover:bg-silse-surface-container-lowest transition-colors flex flex-col items-center gap-1"
       >
-        <Upload size={16} className="text-silse-on-surface-variant" />
+        <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '16px' }}>upload</span>
         <span className="text-[9px] font-bold text-silse-on-surface-variant">Upload PNG Canva</span>
         <span className="text-[7px] text-silse-on-surface-variant">Warna otomatis dari gambar</span>
       </button>

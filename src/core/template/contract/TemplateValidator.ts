@@ -39,6 +39,7 @@
 import type { TemplateThemeContract, PageLayoutContract } from './TemplateThemeContract';
 import { getContractOrGolden } from './TemplateThemeContract';
 import type { SchemaBlock } from '@/core/schema/types';
+import { isSpatialLayout } from '@/core/schema/types';
 import { isFullPageBlockType } from '@/core/schema/capability-registry';
 
 // Re-export for internal use — same as isFullPageBlockType
@@ -195,7 +196,7 @@ export function validatePage(
 
   // ── Rule 6: Check absolute blocks ──────────────────────────
   for (const block of blocks) {
-    if (block.layout?.position === 'absolute') {
+    if (isSpatialLayout(block.layout) && block.layout.position === 'absolute') {
       const { x, y, width, height } = block.layout;
       if ((x !== undefined && (x < 0 || x > 100)) ||
           (y !== undefined && (y < 0 || y > 100)) ||

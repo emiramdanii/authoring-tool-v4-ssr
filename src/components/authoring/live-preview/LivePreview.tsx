@@ -4,22 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { useDirtyStore } from '@/store/dirty-store';
-import {
-  RefreshCw,
-  Loader2,
-  ChevronDown,
-  Eye,
-  ExternalLink,
-  Download,
-  Home,
-  FileText,
-  BookOpen,
-  Palette,
-  ArrowLeft,
-  ArrowRight,
-  ChevronRight,
-  Settings2,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import type { PreviewMode, DeviceMode, LayoutTheme } from './types';
 import { DEVICE_MODES, LAYOUT_THEMES, SCREEN_OPTIONS, MODE_META } from './constants';
 import { usePreviewBuilder } from './use-preview-builder';
@@ -190,7 +175,7 @@ export default function LivePreview() {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 transition-colors"
           title="Kembali ke Editor (Esc)"
         >
-          <Palette size={14} />
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>palette</span>
           <span>Kembali ke Editor</span>
         </button>
 
@@ -202,21 +187,21 @@ export default function LivePreview() {
           className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
           title="Dashboard"
         >
-          <Home size={13} />
+          <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>home</span>
         </button>
         <button
           onClick={() => useCanvaStore.setState({ panelRequest: 'dokumen' })}
           className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
           title="Edit Dokumen (CP/TP/ATP)"
         >
-          <FileText size={13} />
+          <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>description</span>
         </button>
         <button
           onClick={() => useCanvaStore.setState({ panelRequest: 'konten' })}
           className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
           title="Edit Konten (Kuis/Game/Materi)"
         >
-          <BookOpen size={13} />
+          <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>menu_book</span>
         </button>
 
         <div className="w-px h-5 bg-app-elevated/50" />
@@ -229,7 +214,7 @@ export default function LivePreview() {
           >
             <span>{currentModeMeta.icon}</span>
             <span>{currentModeMeta.simplifiedLabel}</span>
-            <ChevronDown size={10} className={`transition-transform ${modeOpen ? 'rotate-180' : ''}`} />
+            <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>expand_more</span>
           </button>
           {modeOpen && (
             <div className="absolute top-full left-0 mt-1 w-56 rounded-xl bg-app-surface border border-app-border/50 shadow-xl z-50 overflow-hidden">
@@ -273,9 +258,9 @@ export default function LivePreview() {
                   onClick={() => setAdvancedOpen(!advancedOpen)}
                   className="w-full px-3 py-2 flex items-center gap-2 text-left hover:bg-app-elevated/30 transition-colors"
                 >
-                  <Settings2 size={12} className="text-app-muted" />
+                  <span className="material-symbols-outlined text-app-muted" style={ { fontSize: '12px' } }>settings</span>
                   <span className="text-[10px] text-app-muted font-medium">Advanced</span>
-                  <ChevronRight size={10} className={`text-app-muted ml-auto transition-transform ${advancedOpen ? 'rotate-90' : ''}`} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>chevron_right</span>
                 </button>
                 {advancedOpen && (
                   <div className="pb-1">
@@ -343,7 +328,7 @@ export default function LivePreview() {
             >
               {LAYOUT_THEMES.find((t) => t.id === layoutTheme)?.icon}{' '}
               {LAYOUT_THEMES.find((t) => t.id === layoutTheme)?.label}
-              <ChevronDown size={10} className={`transition-transform ${themeOpen ? 'rotate-180' : ''}`} />
+              <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>expand_more</span>
             </button>
             {themeOpen && (
               <div className="absolute top-full left-0 mt-1 w-44 rounded-xl bg-app-surface border border-app-border/50 shadow-xl z-50 overflow-hidden">
@@ -379,7 +364,7 @@ export default function LivePreview() {
         {/* ── Device mode buttons ─────────────────────────────── */}
         <div className="flex items-center gap-0.5 bg-app-elevated rounded-lg p-0.5">
           {DEVICE_MODES.map((mode) => {
-            const Icon = mode.icon;
+            const iconName = mode.icon;
             return (
               <button
                 key={mode.id}
@@ -391,7 +376,7 @@ export default function LivePreview() {
                 }`}
                 title={mode.label}
               >
-                <Icon size={13} />
+                <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>{iconName}</span>
                 {mode.width > 0 && (
                   <span className="text-[0.6rem] opacity-60">{mode.width}px</span>
                 )}
@@ -457,7 +442,7 @@ export default function LivePreview() {
             }`}
             title="Export HTML — download file siap pakai"
           >
-            <Download size={11} />
+            <span className="material-symbols-outlined" style={ { fontSize: '11px' } }>download</span>
             <span className="hidden md:inline">Export HTML</span>
           </button>
 
@@ -472,7 +457,7 @@ export default function LivePreview() {
             }`}
             title="Buka di tab baru"
           >
-            <ExternalLink size={11} />
+            <span className="material-symbols-outlined" style={ { fontSize: '11px' } }>open_in_new</span>
             <span className="hidden md:inline">Tab Baru</span>
           </button>
 
@@ -487,14 +472,14 @@ export default function LivePreview() {
             }`}
             title="Force rebuild preview"
           >
-            <RefreshCw size={11} className={building ? 'animate-spin' : ''} />
+            <span className="material-symbols-outlined" style={ { fontSize: '11px' } }>refresh</span>
             Rebuild
           </button>
 
           {/* Building indicator */}
           {building && (
             <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-app-accent/10 text-app-accent">
-              <Loader2 size={11} className="animate-spin" />
+              <span className="material-symbols-outlined animate-spin" style={ { fontSize: '11px' } }>progress_activity</span>
               <span className="text-[10px] font-semibold">Building...</span>
             </div>
           )}
@@ -526,7 +511,7 @@ export default function LivePreview() {
         <div className="flex-shrink-0 w-full bg-gradient-to-r from-emerald-600/90 to-cyan-600/90 text-app-primary text-xs font-bold px-4 py-1.5 flex items-center gap-2 z-10">
           <span className="flex items-center gap-1.5">
             <span className="bg-app-elevated/20 rounded px-1.5 py-0.5 text-[0.6rem]">
-              <Eye size={10} className="inline -mt-0.5" />
+              <span className="material-symbols-outlined inline -mt-0.5" style={ { fontSize: '10px' } }>visibility</span>
             </span>
             <span>LIVE PREVIEW</span>
           </span>
@@ -540,7 +525,7 @@ export default function LivePreview() {
             </span>
             {deviceMode !== 'desktop' && (
               <span className="bg-app-elevated/20 rounded px-2 py-0.5 text-[0.6rem]">
-                {currentDevice!.icon && <currentDevice.icon size={10} className="inline -mt-0.5" />} {currentDevice!.width}px
+                {currentDevice!.icon && <span className="material-symbols-outlined inline -mt-0.5" style={{ fontSize: '10px' }}>{currentDevice!.icon}</span>} {currentDevice!.width}px
               </span>
             )}
             <span className="bg-app-elevated/20 rounded px-2 py-0.5 text-[0.6rem]">
@@ -633,7 +618,7 @@ export default function LivePreview() {
                 }`}
                 title="Halaman sebelumnya (←)"
               >
-                <ArrowLeft size={14} />
+                <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>arrow_back</span>
               </button>
 
               {/* Thumbnail strip */}
@@ -680,7 +665,7 @@ export default function LivePreview() {
                 }`}
                 title="Halaman berikutnya (→)"
               >
-                <ArrowRight size={14} />
+                <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>arrow_forward</span>
               </button>
 
               {/* Page counter */}

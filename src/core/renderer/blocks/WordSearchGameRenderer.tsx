@@ -376,7 +376,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
  }}
  >
  <div className="text-2xl mb-2">
- <Search size={24} className="inline" style={{ color: edu.accent() }} />
+ <span className="material-symbols-outlined inline" style={ { fontSize: '24px' } }>search</span>
  </div>
  <div className="font-extrabold mb-1" style={{ ...edu.caption(), color: edu.accent() }}>
  <InlineTextEditor
@@ -412,9 +412,9 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
  style={{ animation: 'float 3s ease-in-out infinite' }}
  >
  {pct >= 80 ? (
- <Trophy size={28} className="inline text-app-accent" />
+ <span className="material-symbols-outlined inline text-app-accent" style={ { fontSize: '28px' } }>emoji_events</span>
  ) : pct >= 50 ? (
- <Star size={28} className="inline text-app-accent" />
+ <span className="material-symbols-outlined inline text-app-accent" style={ { fontSize: '28px' } }>star</span>
  ) : (
  <Dumbbell size={28} className="inline text-app-accent" />
  )}
@@ -464,7 +464,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}
  >
- <RotateCcw size={14} className="inline" /> Ulangi
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi
  </button>
  </MicroInteraction>
  )}
@@ -486,7 +486,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
  <div className="flex items-center justify-between min-w-0">
  <div className="flex items-center gap-2 min-w-0">
  <div className="font-extrabold" style={{ ...edu.caption(), color: edu.accent() }}>
- <Search size={14} className="inline" />{' '}
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>search</span>{' '}
  <InlineTextEditor
  {...titleEditor}
  className="font-extrabold"
@@ -722,7 +722,7 @@ export const WordSearchGameRenderer = React.memo(function WordSearchGameRenderer
  animation: 'pulse 1.5s ease-in-out infinite',
  }}
  >
- <Search size={12} className="inline flex-shrink-0" />
+ <span className="material-symbols-outlined inline flex-shrink-0" style={ { fontSize: '12px' } }>search</span>
  Pilih huruf terakhir...
  </div>
  )}

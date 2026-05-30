@@ -90,7 +90,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
           zIndex: 2,
         }}>
         <span style={{ ...edu.micro(), color: tokens.color('bg'), display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Info size={11} /> Petunjuk
+          <span className="material-symbols-outlined" style={ { fontSize: '11px' } }>info</span> Petunjuk
         </span>
       </div>
 
@@ -98,7 +98,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
       <div className="absolute top-0 right-0" style={{ zIndex: 2, borderRadius: '0 0 0 10px', overflow: 'hidden' }}>
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full font-bold"
           style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
-          <Shield size={9} /> BSNP Wajib
+          <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>shield</span> BSNP Wajib
         </span>
       </div>
 
@@ -133,7 +133,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
             <div className="flex items-center gap-2 mb-2.5">
               <div className="w-7 h-7 rounded-full flex items-center justify-center"
                 style={{ background: tokens.colorAlpha('g', 0.2), boxShadow: '0 2px 8px ' + tokens.colorAlpha('g', 0.2) }}>
-                <GraduationCap size={14} style={{ color: tokens.color('g') }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>school</span>
               </div>
               <span className="font-extrabold min-w-0" style={{ ...edu.caption(), color: tokens.color('g') }}>
                 Tujuan Pembelajaran
@@ -219,8 +219,8 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
                       textAlign: 'center',
                     }}>{i + 1}</span>
                     {isExpanded
-                      ? <ChevronUp size={isCompact ? 12 : 14} style={{ color: tokens.colorAlpha!(itemColor, 0.5) }} />
-                      : <ChevronDown size={isCompact ? 12 : 14} style={{ color: tokens.colorAlpha!(itemColor, 0.5) }} />
+                      ? <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_less</span>
+                      : <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span>
                     }
                   </button>
                   {/* Accordion content — expandable */}
@@ -305,7 +305,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
               borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('p')}`,
             }}>
             <div className="flex items-center gap-2 mb-2">
-              <Compass size={14} style={{ color: tokens.color('p') }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>explore</span>
               <span className="font-extrabold" style={{ ...edu.caption(), color: tokens.color('p') }}>
                 Navigasi
               </span>
@@ -346,7 +346,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
             <div className="flex items-start gap-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: tokens.accentBg(accentKey, 0.15) }}>
-                <Lightbulb size={12} className="inline" />
+                <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>lightbulb</span>
               </div>
               <div className="min-w-0" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                 <strong style={{ color: tokens.color(accentKey) }}>Tips:</strong> <InlineTextEditor
@@ -367,7 +367,7 @@ export const PetunjukRenderer = React.memo(function PetunjukRenderer({ block, to
           style={{ ...edu.caption(), color: tokens.muted(0.85) }}>
           {['Petunjuk', 'KD/TP', 'Materi', 'Evaluasi', 'Profil'].map(comp => (
             <span key={`bsnp-${comp}`} className="flex items-center gap-0.5">
-              <BookOpen size={8} /> {comp}
+              <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>menu_book</span> {comp}
             </span>
           ))}
         </div>

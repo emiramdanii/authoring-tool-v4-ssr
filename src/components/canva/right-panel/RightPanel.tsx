@@ -13,7 +13,7 @@ import PageInfo from './PageInfo';
 import TabManagementSection from './TabManagementSection';
 import ValidationSection from './ValidationSection';
 import LayerPanel from '../left-panel/LayerPanel';
-import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand, SlidersHorizontal } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
@@ -100,7 +100,7 @@ export default function RightPanel() {
   return (
     <div className="w-full h-full bg-silse-surface-container-lowest border-l border-silse-outline-variant/40 flex flex-col shrink-0 overflow-hidden">
       {/* ── Properties Header — SILSE v4 MD3 reference style ── */}
-      <div className="px-4 py-2.5 border-b border-silse-outline-variant/40 flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
+      <div className="px-4 py-2.5 border-b border-silse-outline-variant/50 flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-silse-tertiary" style={{ fontSize: '20px' }}>tune</span>
           <h3
@@ -174,7 +174,7 @@ export default function RightPanel() {
                   </>
                 )}
                 {/* ── Empty state hint — MD3 style ── */}
-                <div className="mx-3 mt-3 mb-4 rounded-2xl border border-dashed border-silse-outline-variant/60 bg-silse-surface-container-low/50 overflow-hidden">
+                <div className="mx-3 mt-3 mb-4 rounded-2xl border border-dashed border-silse-outline-variant/60 bg-silse-surface-container-low/50 overflow-hidden anim-enter-fade">
                   <div className="px-4 pt-4 pb-3 text-center">
                     <div className="w-12 h-12 mx-auto mb-2.5 rounded-2xl bg-silse-secondary/8 border border-silse-secondary/15 flex items-center justify-center">
                       <span className="material-symbols-outlined text-silse-secondary/50" style={{ fontSize: '22px' }}>touch_app</span>
@@ -193,11 +193,11 @@ export default function RightPanel() {
                       <span>Pilih {blockLabel.toLowerCase()}</span>
                     </div>
                     <div className="flex items-center gap-2 text-[9px] text-silse-on-surface-variant">
-                      <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/8 text-emerald-600 font-bold text-[8px]">2x Klik</span>
+                      <span className="px-1.5 py-0.5 rounded-md bg-silse-primary-container/15 text-silse-primary font-bold text-[8px]">2x Klik</span>
                       <span>Edit teks langsung</span>
                     </div>
                     <div className="flex items-center gap-2 text-[9px] text-silse-on-surface-variant">
-                      <span className="px-1.5 py-0.5 rounded-md bg-blue-500/8 text-blue-600 font-bold text-[8px]">Shift+Klik</span>
+                      <span className="px-1.5 py-0.5 rounded-md bg-silse-secondary-container/15 text-silse-secondary font-bold text-[8px]">Shift+Klik</span>
                       <span>Pilih banyak {blockLabel.toLowerCase()}</span>
                     </div>
                   </div>
@@ -239,7 +239,7 @@ export default function RightPanel() {
       </div>
       {/* ── Footer — MD3: delete button when block selected ── */}
       {hasBlockSelection && (
-        <div className="px-4 py-2.5 bg-silse-surface-container-low border-t border-silse-outline-variant/40 flex-shrink-0">
+        <div className="px-4 py-2.5 bg-silse-surface-container-low border-t border-silse-outline-variant/50 flex-shrink-0">
           <button
             onClick={() => {
               if (selectedBlockId && confirm(`Hapus ${blockLabel.toLowerCase()} ini?`)) {

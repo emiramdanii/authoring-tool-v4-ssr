@@ -33,7 +33,7 @@ export function MobileGuard({ children }: { children: React.ReactNode }) {
       <div className="max-w-md">
         <div className="mb-6 flex justify-center">
           <div className="rounded-full bg-sky-100 dark:bg-sky-900/50 p-6">
-            <Monitor className="h-12 w-12 text-sky-600 dark:text-sky-400" />
+            <span className="material-symbols-outlined h-12 w-12 text-sky-600 dark:text-sky-400" style={ { fontSize: '16px' } }>monitor</span>
           </div>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
@@ -44,7 +44,7 @@ export function MobileGuard({ children }: { children: React.ReactNode }) {
           Silakan buka aplikasi ini di komputer atau laptop Anda.
         </p>
         <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-500">
-          <Smartphone className="h-4 w-4" />
+          <span className="material-symbols-outlined h-4 w-4" style={ { fontSize: '16px' } }>smartphone</span>
           <span>Mode mobile untuk siswa akan segera hadir</span>
         </div>
       </div>

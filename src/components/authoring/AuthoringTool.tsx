@@ -133,10 +133,13 @@ function AuthoringToolInner() {
   // Mode-aware panel titles
   const panelTitles = isSederhana ? PANEL_TITLES_SEDERHANA : PANEL_TITLES_LENGKAP;
 
-  // Load from storage on mount (authoring + canva)
+  // Load from storage on mount (authoring only — canva is loaded by StoreInit)
+  // Phase 5-F: Removed duplicate CanvaStore.loadFromStorage() call.
+  // StoreInit.tsx (sibling component) already calls CanvaStore.loadFromStorage()
+  // which derives projection from schema and writes to AuthoringStore.
+  // Calling it here would cause a double-load race condition.
   useEffect(() => {
     loadFromStorage();
-    useCanvaStore.getState().loadFromStorage();
     clearDirtyExitFlag();
   }, [loadFromStorage]);
 

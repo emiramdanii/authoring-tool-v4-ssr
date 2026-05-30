@@ -127,11 +127,19 @@ export function SceneList() {
     }
   }, [currentPageIndex]);
 
+  const filteredPages = useMemo(() => {
+    if (!searchFilter) return pages;
+    const lower = searchFilter.toLowerCase();
+    return pages.filter(p => p.label.toLowerCase().includes(lower));
+  }, [pages, searchFilter]);
+
   return (
     <div className="flex flex-col gap-1">
       {/* Scenes label — now handled by LeftPanel, but keep for standalone use */}
-      {pages.map((p, i) => {
-        const isActive = i === currentPageIndex;
+      {filteredPages.map((p, i) => {
+        // Find the original index in the full pages array
+        const originalIndex = pages.indexOf(p);
+        const isActive = originalIndex === currentPageIndex;
         const badge = TEMPLATE_BADGE_MAP[p.templateType || 'custom'] || TEMPLATE_BADGE_MAP.custom;
         const bgStyle = p.bgDataUrl
           ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -147,22 +155,22 @@ export function SceneList() {
             key={p.id}
             ref={isActive ? activeRef : undefined}
             data-testid={`page-tab-${i}`}
-            onClick={() => goPage(i)}
+            onClick={() => goPage(originalIndex)}
             draggable
-            onDragStart={() => setDragIdx(i)}
-            onDragOver={(e) => { e.preventDefault(); setDragOverIdx(i); }}
+            onDragStart={() => setDragIdx(originalIndex)}
+            onDragOver={(e) => { e.preventDefault(); setDragOverIdx(originalIndex); }}
             onDragLeave={() => setDragOverIdx(null)}
             onDrop={(e) => {
               e.preventDefault();
-              if (dragIdx !== null && dragIdx !== i) { reorderPage(dragIdx, i); }
+              if (dragIdx !== null && dragIdx !== originalIndex) { reorderPage(dragIdx, originalIndex); }
               setDragIdx(null);
               setDragOverIdx(null);
             }}
             onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-            className={`w-full text-left flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
-              dragIdx === i
+            className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+              dragIdx === originalIndex
                 ? 'opacity-40 scale-95'
-                : dragOverIdx === i
+                : dragOverIdx === originalIndex
                   ? 'ring-2 ring-silse-primary/40 bg-silse-surface-container-high'
                   : isActive
                     ? 'bg-silse-primary-container text-silse-on-primary-container border border-silse-primary/20'
@@ -171,23 +179,23 @@ export function SceneList() {
           >
             {/* Scene Number Thumbnail — SILSE v4 reference style */}
             <div
-              className={`w-10 h-7 rounded-md flex items-center justify-center text-[9px] flex-shrink-0 ${
+              className={`w-12 h-8 rounded flex items-center justify-center text-[10px] flex-shrink-0 ${
                 isActive
-                  ? 'bg-silse-on-surface/10'
+                  ? 'bg-black/10'
                   : 'bg-silse-surface-container-highest'
               }`}
               style={isActive ? {} : bgStyle}
             >
-              {isActive ? <span className="font-bold">{i + 1}</span> : <span className="text-silse-on-surface-variant font-medium">{i + 1}</span>}
+              {isActive ? <span className="font-bold">{originalIndex + 1}</span> : <span className="text-silse-on-surface-variant font-medium">{originalIndex + 1}</span>}
             </div>
 
             {/* Scene Label + Completion Indicator */}
             <div className="flex-1 min-w-0">
-              <span className={`text-[11px] font-medium truncate block ${
+              <span className={`text-[12px] font-medium truncate block ${
                 isActive ? 'font-bold' : ''
               }`}>
                 {isSchemaDriven && <span className="material-symbols-outlined inline mr-0.5" style={{ fontSize: '12px' }}>bolt</span>}
-                Scene {i + 1}: {p.label}
+                Scene {originalIndex + 1}: {p.label}
                 {pageOverflowStatus[p.id]?.hasOverflow && (
                   <span className="material-symbols-outlined inline ml-1 text-silse-tertiary" style={{ fontSize: '12px' }} aria-label="Konten melebihi kapasitas">warning</span>
                 )}
@@ -212,7 +220,7 @@ export function SceneList() {
 
       {pages.length > 0 && (
         <div className="flex gap-1 pt-1">
-          <Button variant="ghost" onClick={duplicatePage} className="flex-1 py-1.5 rounded-lg text-[10px] gap-1">
+          <Button variant="ghost" onClick={duplicatePage} className="flex-1 py-1.5 rounded-lg text-[11px] gap-1">
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>content_copy</span> Duplikat
           </Button>
           <Button
@@ -221,7 +229,7 @@ export function SceneList() {
               if (pages.length <= 1) return;
               if (confirm(`Hapus "${pages[currentPageIndex]!.label}"?`)) deletePage();
             }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-silse-error/70 hover:text-silse-error bg-silse-error-container/10"
+            className="flex-1 py-1.5 rounded-lg text-[11px] gap-1 text-silse-error/70 hover:text-silse-error bg-silse-error-container/10"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span> Hapus
           </Button>
@@ -231,14 +239,14 @@ export function SceneList() {
       {/* Add page button */}
       <button
         onClick={() => addPage()}
-        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[10px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
+        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[11px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
       >
         <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span> Tambah Halaman
       </button>
 
       {/* Drag hint */}
       {pages.length > 1 && (
-        <div className="text-[7px] text-silse-on-surface-variant/50 text-center pt-0.5">
+        <div className="text-[9px] text-silse-on-surface-variant/50 text-center pt-0.5">
           Drag halaman untuk mengubah urutan
         </div>
       )}

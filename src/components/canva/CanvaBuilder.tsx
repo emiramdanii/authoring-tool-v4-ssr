@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { useDirtyStore } from '@/store/dirty-store';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -51,6 +50,11 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
   loading: () => null,
 });
 
+const LearningMediaShell = dynamic(() => import('./LearningMediaShell'), {
+  ssr: false,
+  loading: () => null,
+});
+
 // ═══════════════════════════════════════════════════════════════
 // CANVA BUILDER v8 — SILSE v4 Resizable Panel Layout
 // ═══════════════════════════════════════════════════════════════
@@ -58,8 +62,8 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 //   appMode === 'learn'    → LearningMediaShell (student-facing, screen nav, score)
 //   appMode === 'present'  → PresentMode (fullscreen stage only)
 //   appMode === 'preview'  → PreviewMode (stage + floating nav, no panels)
-//   appMode === 'edit'     → Fixed header (h-14) + resizable 3-panel
-//     [Fixed Toolbar h-14]
+//   appMode === 'edit'     → Fixed header (h-16) + resizable 3-panel
+//     [Fixed Toolbar h-16]
 //     [Resizable: Left 20% | Stage auto | Right 25%]
 //     [SceneTabBar + StatusBar]
 // Panel persistence: sizes stored in canva-store for session continuity
@@ -172,13 +176,13 @@ export default function CanvaBuilder() {
   // ── EDIT mode: Fixed header + resizable 3-panel layout (SILSE v4) ──
   return (
     <MobileGuard>
-      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface focus-ring pt-14" id="main-content" data-testid="canva-builder">
+      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface focus-ring pt-16" id="main-content" data-testid="canva-builder">
         <UndoRedoToast />
         <CanvaAutoSaveSync />
 
         <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
 
-        {/* Fixed Top Toolbar — SILSE v4: h-14 fixed top-0 z-40 */}
+        {/* Fixed Top Toolbar — SILSE v4: h-16 fixed top-0 z-40 */}
         <div data-tour="toolbar" data-testid="toolbar" role="toolbar" aria-label="Toolbar editor">
           <ProfilerWrapper id="Toolbar">
             <Toolbar />
@@ -187,7 +191,7 @@ export default function CanvaBuilder() {
 
         {/* Main builder row — Resizable 3-panel layout */}
         <ResizablePanelGroup
-          direction="horizontal"
+          orientation="horizontal"
           className="flex-1 min-h-0"
         >
           {/* Left Panel — Resizable, default 20%, min 220px */}

@@ -15,7 +15,8 @@ import { useCanvaStore } from '@/store/canva-store';
 import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import type { ScreenSchema } from '@/core/schema/types';
-import { MousePointer2, GripVertical, ChevronUp, ChevronDown, CheckSquare, Square } from 'lucide-react';
+import { isSpatialLayout } from '@/core/schema/types';
+// All icons migrated to Material Symbols Outlined
 import { announceToScreenReader } from '@/lib/a11y';
 import BatchActionsBar from './BatchActionsBar';
 
@@ -60,7 +61,7 @@ export default function LayerPanel() {
   return (
     <div className="space-y-1">
       <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-        <MousePointer2 size={10} />
+        <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>arrow_selector_tool</span>
         Block Layer
         <span className="text-app-muted">({schema.blocks.length})</span>
       </div>
@@ -262,7 +263,7 @@ function LayerList({
         const isInMultiSelect = selectedBlockIds?.includes(blockId) ?? false;
         const isHovered = hoveredBlockId === blockId;
         const isEditing = editingBlockId === blockId;
-        const layout = block.layout?.position === 'absolute' ? 'absolute' : 'flow';
+        const layout = (block.layout && isSpatialLayout(block.layout) && block.layout.position === 'absolute') ? 'absolute' : 'flow';
         const isDragging = dragIndex === idx;
         const isDragOver = overIndex === idx && dragIndex !== null && dragIndex !== idx;
         const blockName = definition?.name || block.type;
@@ -300,9 +301,9 @@ function LayerList({
               aria-label={isInMultiSelect ? 'Hapus dari pilihan' : 'Tambah ke pilihan'}
             >
               {isInMultiSelect ? (
-                <CheckSquare size={12} className="text-blue-400" />
+                <span className="material-symbols-outlined text-blue-400" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>check_box</span>
               ) : (
-                <Square size={12} className="text-app-muted/40 hover:text-app-muted" />
+                <span className="material-symbols-outlined text-app-muted/40 hover:text-app-muted" style={{ fontSize: '12px' }}>check_box_outline_blank</span>
               )}
             </button>
 
@@ -313,7 +314,7 @@ function LayerList({
               title="Drag untuk reorder"
               aria-label="Pegang untuk menggeser urutan block"
             >
-              <GripVertical size={12} />
+              <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>drag_indicator</span>
             </button>
 
             {/* Main clickable area */}
@@ -381,7 +382,7 @@ function LayerList({
                   title="Pindah atas (Alt+↑)"
                   aria-label="Pindah block ke atas"
                 >
-                  <ChevronUp size={12} />
+                  <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>expand_less</span>
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); moveBlockDown(blockId); }}
@@ -389,7 +390,7 @@ function LayerList({
                   title="Pindah bawah (Alt+↓)"
                   aria-label="Pindah block ke bawah"
                 >
-                  <ChevronDown size={12} />
+                  <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>expand_more</span>
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); duplicateBlock(blockId); }}

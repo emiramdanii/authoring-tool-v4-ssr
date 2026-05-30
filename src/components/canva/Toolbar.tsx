@@ -11,62 +11,13 @@ import { triggerCanvaOrientation } from '@/components/shared/CanvaOrientationToo
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 // ═══════════════════════════════════════════════════════════════
-// TOOLBAR v8 — SILSE v4 Stitch Reference TopAppBar
+// TOOLBAR v9 — SILSE v4 Simplified TopAppBar
 // ═══════════════════════════════════════════════════════════════
+// Navigation is now handled by the Dashboard sidebar.
 // Layout (Left → Right):
-//   [← SILSE Authoring | Project Name] | [Dashboard] [Workspace] [Analytics] | [Cloud] [Help] [Preview] [Publish]
+//   [← SILSE Studio | Project Name] | [Cloud] [Help] [Preview] [Publish]
 // Edit mode: fixed top-0 left-0 w-full z-40 h-16
 // ═══════════════════════════════════════════════════════════════
-
-// ── Navigation Tabs ──────────────────────────────────────────
-
-type NavTab = 'dashboard' | 'workspace' | 'analytics';
-
-function NavTabs() {
-  const panelRequest = useCanvaStore((s) => s.panelRequest);
-
-  // Determine active tab from current state
-  const activeTab: NavTab = panelRequest === 'dashboard'
-    ? 'dashboard'
-    : panelRequest === 'analytics'
-      ? 'analytics'
-      : 'workspace'; // default
-
-  const handleTabClick = (tab: NavTab) => {
-    if (tab === 'dashboard') {
-      useCanvaStore.setState({ panelRequest: 'dashboard' });
-    } else if (tab === 'analytics') {
-      useCanvaStore.setState({ panelRequest: 'analytics' });
-    } else {
-      // Workspace = stay in editor view
-      useCanvaStore.setState({ panelRequest: null });
-    }
-  };
-
-  const tabs: { id: NavTab; label: string }[] = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'workspace', label: 'Workspace' },
-    { id: 'analytics', label: 'Analytics' },
-  ];
-
-  return (
-    <nav className="hidden md:flex gap-8 items-center">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => handleTabClick(tab.id)}
-          className={`text-sm transition-colors ${
-            activeTab === tab.id
-              ? 'text-silse-primary border-b-2 border-silse-primary pb-1 font-bold'
-              : 'text-silse-on-surface-variant hover:text-silse-primary'
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </nav>
-  );
-}
 
 // ── Right Actions ────────────────────────────────────────────
 
@@ -209,8 +160,8 @@ export default function Toolbar() {
       {/* LEFT: Brand + Project */}
       <ToolbarNav />
 
-      {/* CENTER: Navigation Tabs — hidden on small screens */}
-      <NavTabs />
+      {/* Spacer */}
+      <div className="flex-1" />
 
       {/* RIGHT: Cloud + Help + Preview + Publish */}
       <RightActions />

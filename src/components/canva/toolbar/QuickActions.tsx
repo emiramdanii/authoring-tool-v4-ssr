@@ -5,7 +5,7 @@ import { useExportActions } from './use-export-actions';
 import { AutoSaveIndicator, SaveNowButton } from '@/components/shared/StatusToast';
 import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
 import { ToolbarExport } from './ToolbarExport';
-import { Download, Loader2, PanelRightOpen, PanelRightClose, Undo2, Redo2, HelpCircle } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 import { triggerCanvaTour } from '@/components/shared/CanvaTour';
@@ -35,7 +35,7 @@ export function QuickActions() {
         }`}
         title="Undo (Ctrl+Z)"
       >
-        <Undo2 size={14} />
+        <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>undo</span>
       </button>
       <button
         onClick={redo}
@@ -47,7 +47,7 @@ export function QuickActions() {
         }`}
         title="Redo (Ctrl+Y)"
       >
-        <Redo2 size={14} />
+        <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>redo</span>
       </button>
 
       <div className="h-5 w-px bg-silse-outline-variant mx-0.5" />
@@ -71,7 +71,7 @@ export function QuickActions() {
         }`}
         title={rightPanelOpen ? 'Tutup panel properti' : 'Buka panel properti'}
       >
-        {rightPanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+        {rightPanelOpen ? <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>dock_to_right</span> : <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>dock_to_right</span>}
       </button>
 
       {/* Help */}
@@ -86,7 +86,7 @@ export function QuickActions() {
         className="flex items-center justify-center h-7 w-7 rounded-lg text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-primary-container/10 transition-colors"
         title={isSederhana ? 'Bantuan — tampilkan panduan' : 'Help — restart tour'}
       >
-        <HelpCircle size={14} />
+        <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>help</span>
       </button>
 
       {/* Export HTML */}
@@ -96,7 +96,7 @@ export function QuickActions() {
         className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-silse-primary-container text-silse-on-primary-container text-[10px] font-bold transition-all hover:opacity-90 active:scale-95 shadow-sm disabled:opacity-50"
         title="Unduh HTML — siap dibagikan ke siswa"
       >
-        {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+        {isExporting ? <span className="material-symbols-outlined animate-spin" style={ { fontSize: '13px' } }>progress_activity</span> : <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>download</span>}
         <span className="hidden sm:inline">Ekspor</span>
       </button>
 

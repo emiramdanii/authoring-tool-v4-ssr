@@ -13,7 +13,6 @@ import { CANVA_STORAGE_KEY } from './constants';
 import { hasCrashRecovery, loadCrashRecovery, clearCrashRecovery, safeBootFromStorage, repairSchema, validateAndRepairPages, computePagesHash } from '@/core/recovery';
 import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
 import { migrateAllSchemas } from '@/core/schema/schema-migration';
-import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
 import { assertDocumentPurity, clearCompressedHeightCache } from '@/core/schema/session-state';
 import { clearMeasurementCache } from '@/core/layout/BlockMeasurer';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -274,33 +273,12 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           }
         }
 
-        // Derive EditorProjectionStore from schema (write-through)
-        // After loading pages, the projection store auto-syncs from schema
-        try {
-          const projection = deriveProjectionFromPages(cleanPages);
-          if (Object.keys(projection).length > 0) {
-            // Spread only defined fields to satisfy AuthoringState type
-            const patch: Record<string, unknown> = { dirty: false };
-            if (projection.tp) patch.tp = projection.tp;
-            if (projection.alur) patch.alur = projection.alur;
-            if (projection.kuis) patch.kuis = projection.kuis;
-            if (projection.materi) patch.materi = projection.materi;
-            if (projection.diskusi) patch.diskusi = projection.diskusi;
-            if (projection.refleksi) patch.refleksi = projection.refleksi;
-            if (projection.skenario) patch.skenario = projection.skenario;
-            if (projection.motivasi) patch.motivasi = projection.motivasi;
-            if (projection.rangkuman) patch.rangkuman = projection.rangkuman;
-            if (projection.meta) {
-              // Merge partial meta into existing meta (keep defaults for missing fields)
-              const currentMeta = useAuthoringStore.getState().meta;
-              patch.meta = { ...currentMeta, ...projection.meta };
-            }
-            useAuthoringStore.setState(patch as Partial<import('@/store/authoring/types').AuthoringState>);
-          }
-        } catch (err) {
-          // Projection derivation is best-effort — don't break load on error
-          logger.warn('Persistence', 'Failed to derive projection from schema: ' + String(err));
-        }
+        // ── Projection sync: Let reactive startProjectionSync() handle this ──
+        // Previously we derived projection manually here AND the reactive subscription
+        // also fires when pages change → double-write. Now we only set dirty:false
+        // and let the 300ms-debounced reactive sync handle the actual projection fields.
+        // This eliminates redundant work and potential race conditions on load.
+        useAuthoringStore.setState({ dirty: false });
 
         // Migrate legacy leftTab names
         let leftTab: LeftTab = 'pages';
@@ -429,29 +407,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           }
         }
 
-        // Derive EditorProjectionStore from schema (write-through)
-        try {
-          const projection = deriveProjectionFromPages(cleanPages);
-          if (Object.keys(projection).length > 0) {
-            const patch: Record<string, unknown> = { dirty: false };
-            if (projection.tp) patch.tp = projection.tp;
-            if (projection.alur) patch.alur = projection.alur;
-            if (projection.kuis) patch.kuis = projection.kuis;
-            if (projection.materi) patch.materi = projection.materi;
-            if (projection.diskusi) patch.diskusi = projection.diskusi;
-            if (projection.refleksi) patch.refleksi = projection.refleksi;
-            if (projection.skenario) patch.skenario = projection.skenario;
-            if (projection.motivasi) patch.motivasi = projection.motivasi;
-            if (projection.rangkuman) patch.rangkuman = projection.rangkuman;
-            if (projection.meta) {
-              const currentMeta = useAuthoringStore.getState().meta;
-              patch.meta = { ...currentMeta, ...projection.meta };
-            }
-            useAuthoringStore.setState(patch as Partial<import('@/store/authoring/types').AuthoringState>);
-          }
-        } catch (err) {
-          logger.warn('Persistence:DB', 'Failed to derive projection from schema: ' + String(err));
-        }
+        // ── Projection sync: Let reactive startProjectionSync() handle this ──
+        // Same as loadFromStorage — only set dirty:false, let reactive sync handle projection
+        useAuthoringStore.setState({ dirty: false });
 
         set({
           pages: cleanPages,

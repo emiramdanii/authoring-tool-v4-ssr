@@ -199,9 +199,9 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   // cover block is rendered; other blocks are hidden with overflow.
   //
   // This prevents the "cover invisible" bug where:
-  //   - Cover gets zIndex:0 (background), flow blocks get zIndex:1
-  //   - Flow blocks render ON TOP of cover → cover invisible
-  //   - Safe area pushes cover down → gap at top
+  //   - Cover was assigned zIndex:0 (background) → rendered behind page bg
+  //   - Fixed: Cover now uses zIndex:1 (COVER_Z_INDEX) — above page bg
+  //   - Cover isolation prevents occlusion of flow blocks (also zIndex:1)
   //
   // Cover is NOT a block flow — it's a page-level layout.
   const hasCoverBlock = screen.blocks.some(b => isFullPageBlockType(b.type));
@@ -483,7 +483,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     if (bg) {
       if (bg.type === 'radial') {
         // Radial backgrounds (cover/hero) keep their design intent
-        style.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${tokens.color('bg2')})`;
+        style.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${modeBg.bg2})`;
       } else if (bg.type === 'gradient') {
         // Gradient backgrounds keep their design intent
         style.background = `linear-gradient(180deg, ${tokens.color(bg.color1 || 'y')}, ${tokens.color(bg.color2 || 'bg')})`;
@@ -515,7 +515,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       ref={setSceneRefCombined}
       // FIX: Pure cover pages use absolute inset-0 (fills entire scene).
       // Mixed layouts (cover + flow blocks) use relative positioning so flow
-      // blocks are visible above the cover background layer (zIndex: 0).
+      // blocks are visible above the cover background layer (zIndex: COVER_Z_INDEX).
       className={isPureCoverPage ? 'absolute inset-0' : 'relative h-full w-full'}
       style={{
         fontFamily: tokens.fontFamily('body'),

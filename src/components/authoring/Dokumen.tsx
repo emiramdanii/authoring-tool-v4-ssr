@@ -1,31 +1,24 @@
 'use client';
 
+// DOKUMEN PANEL — Project metadata editor
 // ═══════════════════════════════════════════════════════════════════
-// DOKUMEN PANEL — Project metadata editor (NOT canvas content)
-// ═══════════════════════════════════════════════════════════════════
-// DESIGN NOTE (Phase 5):
-//   Unlike Konten tabs (diskusi, kuis, materi, etc.) which write to
-//   schema via applyGuidedSchemaPatch(), Dokumen writes to the
-//   authoring store directly. This is INTENTIONAL because:
+// Phase 5 P1: CP, TP, ATP, Alur sections now use schema-first hooks.
+//   READ:  useSchemaXxx() ← CanvaStore.pages[].schema.blocks (fallback: AuthoringStore)
+//   WRITE: applyGuidedSchemaPatch() + AuthoringStore (dual-write for backward compat)
 //
-//   - meta, cp, tp, atp, alur are PROJECT METADATA, not canvas content
-//   - They describe the lesson plan structure, not what renders on pages
-//   - Auto-generate reads them as context for content generation
-//   - They don't correspond 1:1 to schema blocks on specific pages
-//
-//   Future: When CpBlock/AtpBlock schema types are added, some of
-//   these writes can migrate to schema patches. But tp and alur are
-//   planning data that gets PROJECTED into pages during generation,
-//   not directly rendered.
+//   Meta section still uses AuthoringStore directly — meta is project-level
+//   config (judulPertemuan, mapel, kelas) that doesn't map to a schema block.
+//   It will be migrated to a dedicated ProjectStore later.
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthoringStore, VERB_OPTIONS, COLOR_OPTIONS } from '@/store/authoring-store';
+import { useSchemaCp, useSchemaTp, useSchemaAlur, useSchemaAtp } from '@/hooks/use-schema-navigator';
 import { useCanvaStore } from '@/store/canva-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
-import { Target, ClipboardList, Trash2, Tag, Map, Ruler, Calendar, GripVertical, ChevronDown } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Collapse } from '@/lib/transition';
 import { COLORS } from '@/lib/color-palette';
 
@@ -44,22 +37,24 @@ function AccordionSection({
   const [open, setOpen] = useState(defaultOpen ?? false);
 
   return (
-    <div className="border border-app-border rounded-lg overflow-hidden">
+    <div className="rounded-2xl border border-silse-outline-variant bg-silse-surface-container-lowest overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-app-surface hover:bg-app-elevated/80 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-silse-surface-container-lowest hover:bg-silse-surface-container/50 transition-colors"
       >
         <div className="flex items-center gap-2.5">
-          <span className="text-app-secondary">{icon}</span>
-          <span className="text-sm font-semibold text-app-primary">{title}</span>
+          <span className="text-silse-on-surface-variant">{icon}</span>
+          <span className="text-[10px] uppercase tracking-widest font-bold text-silse-outline">{title}</span>
         </div>
-        <ChevronDown
-          size={16}
-          className={`text-app-muted transition-transform duration-300 ease-in-out ${open ? 'rotate-180' : ''}`}
-        />
+        <span
+          className={`material-symbols-outlined text-silse-on-surface-variant/60 transition-transform duration-300 ease-in-out ${open ? 'rotate-180' : ''}`}
+          style={{ fontSize: '16px' }}
+        >
+          expand_more
+        </span>
       </button>
-      <Collapse open={open} className="border-t border-app-border" duration={0.25}>
-        <div className="p-4 bg-app-surface/80 space-y-4">
+      <Collapse open={open} className="border-t border-silse-outline-variant/30" duration={0.25}>
+        <div className="p-4 bg-silse-surface-container-lowest/80 space-y-4">
           {children}
         </div>
       </Collapse>
@@ -68,9 +63,9 @@ function AccordionSection({
 }
 
 // ── Shared field styles ──────────────────────────────────────────
-const fieldLabel = 'block text-xs font-medium text-app-secondary mb-1.5';
-const fieldInput = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/40 focus:border-app-accent/60 focus:shadow-[0_0_0_3px_rgba(var(--accent-rgb,59,130,246),0.08)] transition-all duration-200';
-const fieldTextarea = 'w-full bg-app-elevated border border-app-border rounded-lg px-3 py-2 text-sm text-app-primary placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent/40 focus:border-app-accent/60 focus:shadow-[0_0_0_3px_rgba(var(--accent-rgb,59,130,246),0.08)] transition-all duration-200 resize-none';
+const fieldLabel = 'block text-[12px] font-bold text-silse-on-surface mb-1.5';
+const fieldInput = 'w-full bg-silse-surface-container-low border border-silse-outline-variant/40 rounded-xl px-3 py-2 text-sm text-silse-on-surface placeholder:text-silse-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-silse-secondary/20 focus:border-silse-secondary/60 transition-all duration-200';
+const fieldTextarea = 'w-full bg-silse-surface-container-low border border-silse-outline-variant/40 rounded-xl px-3 py-2 text-sm text-silse-on-surface placeholder:text-silse-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-silse-secondary/20 focus:border-silse-secondary/60 transition-all duration-200 resize-none';
 
 // ── Identitas Media ─────────────────────────────────────────────
 function MetaSection() {
@@ -103,7 +98,7 @@ function MetaSection() {
           <div key={f.key}>
             <label className={fieldLabel}>
               {f.label}
-              {f.required && <span className="text-red-400 ml-0.5">*</span>}
+              {f.required && <span className="text-silse-error ml-0.5">*</span>}
             </label>
             <input
               type={f.type || 'text'}
@@ -122,10 +117,7 @@ function MetaSection() {
 
 // ── Capaian Pembelajaran ─────────────────────────────────────────
 function CpSection() {
-  const cp = useAuthoringStore((s) => s.cp);
-  const updateCp = useAuthoringStore((s) => s.updateCp);
-  const addProfil = useAuthoringStore((s) => s.addProfil);
-  const removeProfil = useAuthoringStore((s) => s.removeProfil);
+  const { data: cp, updateField: updateCp, addProfil, removeProfil } = useSchemaCp();
   const [profilInput, setProfilInput] = useState('');
 
   const handleProfilKeyDown = (e: React.KeyboardEvent) => {
@@ -173,25 +165,25 @@ function CpSection() {
       <div>
         <label className={fieldLabel}>
           Profil Pelajar Pancasila{' '}
-          <span className="text-app-muted font-normal">(ketik + Enter)</span>
+          <span className="text-silse-on-surface-variant font-normal">(ketik + Enter)</span>
         </label>
-        <div className="flex flex-wrap gap-2 p-2 bg-app-elevated border border-app-border rounded-lg min-h-[42px]">
+        <div className="flex flex-wrap gap-2 p-2 bg-silse-surface-container-low border border-silse-outline-variant/40 rounded-xl min-h-[42px]">
           {cp.profil.map((p, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1 bg-app-elevated text-app-primary text-xs px-2.5 py-1 rounded-md"
+              className="inline-flex items-center gap-1 bg-silse-surface-container text-silse-on-surface text-xs px-2.5 py-1 rounded-xl"
             >
               {p}
               <button
                 onClick={() => removeProfil(i)}
-                className="text-app-secondary hover:text-red-400 ml-0.5"
+                className="text-silse-on-surface-variant hover:text-silse-error ml-0.5"
               >
                 ×
               </button>
             </span>
           ))}
           <input
-            className="bg-transparent text-sm text-app-primary placeholder:text-app-muted outline-none flex-1 min-w-[120px]"
+            className="bg-transparent text-sm text-silse-on-surface placeholder:text-silse-on-surface-variant/40 outline-none flex-1 min-w-[120px]"
             placeholder="Tambah profil…"
             value={profilInput}
             onChange={(e) => setProfilInput(e.target.value)}
@@ -217,21 +209,17 @@ function DragHandle({ onPointerDown, index }: { onPointerDown: (e: React.Pointer
   return (
     <span
       onPointerDown={(e) => onPointerDown(e, index)}
-      className="text-app-muted hover:text-app-secondary cursor-grab active:cursor-grabbing select-none text-lg leading-none px-1"
+      className="text-silse-on-surface-variant/50 hover:text-silse-on-surface-variant cursor-grab active:cursor-grabbing select-none text-lg leading-none px-1"
       aria-label="Drag to reorder"
     >
-      <GripVertical size={16} />
+      <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>drag_indicator</span>
     </span>
   );
 }
 
 // ── Tujuan Pembelajaran ─────────────────────────────────────────
 function TpSection() {
-  const tp = useAuthoringStore((s) => s.tp);
-  const addTp = useAuthoringStore((s) => s.addTp);
-  const deleteTp = useAuthoringStore((s) => s.deleteTp);
-  const updateTp = useAuthoringStore((s) => s.updateTp);
-  const reorderTp = useAuthoringStore((s) => s.reorderTp);
+  const { data: tp, addTp, deleteTp, updateTp, reorderTp } = useSchemaTp();
   const { isSederhana } = useTeacherMode();
 
   const handleReorder = useCallback((newItems: typeof tp) => {
@@ -244,15 +232,15 @@ function TpSection() {
 
   if (!tp.length) {
     return (
-      <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
-        <div className="w-12 h-12 rounded-xl bg-app-accent/10 flex items-center justify-center mx-auto mb-3">
-          <Target size={24} className="text-app-accent/70" />
+      <div className="text-center py-8 px-4 bg-silse-surface-container-low/30 border border-dashed border-silse-outline-variant/40 rounded-2xl">
+        <div className="w-12 h-12 rounded-xl bg-silse-primary/10 flex items-center justify-center mx-auto mb-3">
+          <span className="material-symbols-outlined text-silse-primary/70" style={ { fontSize: '24px' } }>target</span>
         </div>
-        <p className="text-sm font-medium text-app-primary mb-1">Belum ada Tujuan Pembelajaran</p>
-        <p className="text-xs text-app-muted mb-4">Tambahkan TP untuk mendefinisikan tujuan setiap pertemuan.</p>
+        <p className="text-sm font-medium text-silse-on-surface mb-1">Belum ada Tujuan Pembelajaran</p>
+        <p className="text-xs text-silse-on-surface-variant mb-4">Tambahkan TP untuk mendefinisikan tujuan setiap pertemuan.</p>
         <button
           onClick={addTp}
-          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+          className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
         >
           ＋ Tambah TP
         </button>
@@ -265,25 +253,25 @@ function TpSection() {
       {tp.map((item, i) => (
         <div
           key={i}
-          className={`bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
+          className={`bg-silse-surface-container-low/50 border border-silse-outline-variant/30 rounded-2xl p-4 space-y-3 transition-all duration-200 ${
             dragHandlers.getIsDragged(i) ? 'opacity-50 scale-[0.98]' : ''
-          } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-app-accent' : ''}`}
+          } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-silse-primary' : ''}`}
         >
           {/* Header */}
           <div className="flex items-center gap-2">
             <DragHandle onPointerDown={dragHandlers.onPointerDown} index={i} />
             <div
-              className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0"
+              className="w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: `${item.color}22`, color: item.color }}
             >
               {i + 1}
             </div>
-            <span className="text-sm font-medium text-app-primary">Tujuan Pembelajaran {i + 1}</span>
+            <span className="text-sm font-medium text-silse-on-surface">Tujuan Pembelajaran {i + 1}</span>
             <button
               onClick={() => deleteTp(i)}
-              className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
+              className="ml-auto text-silse-on-surface-variant/60 hover:text-silse-error transition-colors text-sm"
             >
-              <Trash2 size={14} className="inline" />
+              <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>delete</span>
             </button>
           </div>
 
@@ -350,7 +338,7 @@ function TpSection() {
 
       <button
         onClick={addTp}
-        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
       >
         ＋ Tambah TP
       </button>
@@ -360,11 +348,7 @@ function TpSection() {
 
 // ── Alur Tujuan Pembelajaran ────────────────────────────────────
 function AtpSection() {
-  const atp = useAuthoringStore((s) => s.atp);
-  const updateAtpNamaBab = useAuthoringStore((s) => s.updateAtpNamaBab);
-  const addAtpPertemuan = useAuthoringStore((s) => s.addAtpPertemuan);
-  const deleteAtpPertemuan = useAuthoringStore((s) => s.deleteAtpPertemuan);
-  const updateAtpPertemuan = useAuthoringStore((s) => s.updateAtpPertemuan);
+  const { data: atp, updateNamaBab: updateAtpNamaBab, addPertemuan: addAtpPertemuan, deletePertemuan: deleteAtpPertemuan, updatePertemuan: updateAtpPertemuan } = useSchemaAtp();
 
   return (
     <div className="space-y-3">
@@ -379,15 +363,15 @@ function AtpSection() {
       </div>
 
       {!atp.pertemuan.length ? (
-        <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
-            <Calendar size={24} className="text-amber-400/70" />
+        <div className="text-center py-8 px-4 bg-silse-surface-container-low/30 border border-dashed border-silse-outline-variant/40 rounded-2xl">
+          <div className="w-12 h-12 rounded-xl bg-silse-secondary/10 flex items-center justify-center mx-auto mb-3">
+            <span className="material-symbols-outlined text-silse-secondary/70" style={ { fontSize: '24px' } }>calendar_today</span>
           </div>
-          <p className="text-sm font-medium text-app-primary mb-1">Belum ada pertemuan</p>
-          <p className="text-xs text-app-muted mb-4">Tambahkan pertemuan untuk menyusun Alur Tujuan Pembelajaran.</p>
+          <p className="text-sm font-medium text-silse-on-surface mb-1">Belum ada pertemuan</p>
+          <p className="text-xs text-silse-on-surface-variant mb-4">Tambahkan pertemuan untuk menyusun Alur Tujuan Pembelajaran.</p>
           <button
             onClick={addAtpPertemuan}
-            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+            className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
           >
             ＋ Tambah Pertemuan
           </button>
@@ -395,17 +379,17 @@ function AtpSection() {
       ) : (
         <div className="space-y-3">
           {atp.pertemuan.map((p, i) => (
-            <div key={i} className="bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3">
+            <div key={i} className="bg-silse-surface-container-low/50 border border-silse-outline-variant/30 rounded-2xl p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-md bg-app-accent/15 text-app-accent flex items-center justify-center text-xs font-bold flex-shrink-0">
+                <div className="w-7 h-7 rounded-xl bg-silse-secondary/15 text-silse-secondary flex items-center justify-center text-xs font-bold flex-shrink-0">
                   P{i + 1}
                 </div>
-                <span className="text-sm font-medium text-app-primary">Pertemuan {i + 1}</span>
+                <span className="text-sm font-medium text-silse-on-surface">Pertemuan {i + 1}</span>
                 <button
                   onClick={() => deleteAtpPertemuan(i)}
-                  className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
+                  className="ml-auto text-silse-on-surface-variant/60 hover:text-silse-error transition-colors text-sm"
                 >
-                  <Trash2 size={14} className="inline" />
+                  <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>delete</span>
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -463,7 +447,7 @@ function AtpSection() {
 
       <button
         onClick={addAtpPertemuan}
-        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
       >
         ＋ Tambah Pertemuan
       </button>
@@ -473,11 +457,7 @@ function AtpSection() {
 
 // ── Alur Kegiatan ───────────────────────────────────────────────
 function AlurSection() {
-  const alur = useAuthoringStore((s) => s.alur);
-  const addAlur = useAuthoringStore((s) => s.addAlur);
-  const deleteAlur = useAuthoringStore((s) => s.deleteAlur);
-  const updateAlur = useAuthoringStore((s) => s.updateAlur);
-  const reorderAlur = useAuthoringStore((s) => s.reorderAlur);
+  const { data: alur, addAlur, deleteAlur, updateAlur, reorderAlur } = useSchemaAlur();
 
   const handleReorder = useCallback((newItems: typeof alur) => {
     const fromIndex = alur.findIndex((item, i) => newItems[i] !== item);
@@ -496,15 +476,15 @@ function AlurSection() {
   return (
     <div className="space-y-4">
       {!alur.length ? (
-        <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
+        <div className="text-center py-8 px-4 bg-silse-surface-container-low/30 border border-dashed border-silse-outline-variant/40 rounded-2xl">
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
-            <Map size={24} className="text-emerald-400/70" />
+            <span className="material-symbols-outlined text-emerald-400/70" style={ { fontSize: '24px' } }>map</span>
           </div>
-          <p className="text-sm font-medium text-app-primary mb-1">Belum ada langkah kegiatan</p>
-          <p className="text-xs text-app-muted mb-4">Tambahkan langkah Pendahuluan, Inti, dan Penutup untuk menyusun alur pembelajaran.</p>
+          <p className="text-sm font-medium text-silse-on-surface mb-1">Belum ada langkah kegiatan</p>
+          <p className="text-xs text-silse-on-surface-variant mb-4">Tambahkan langkah Pendahuluan, Inti, dan Penutup untuk menyusun alur pembelajaran.</p>
           <button
             onClick={addAlur}
-            className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+            className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
           >
             ＋ Tambah Langkah
           </button>
@@ -515,9 +495,9 @@ function AlurSection() {
           return (
             <div
               key={i}
-              className={`bg-app-elevated/50 border border-app-border/50 rounded-lg p-4 space-y-3 transition-all duration-200 ${
+              className={`bg-silse-surface-container-low/50 border border-silse-outline-variant/30 rounded-2xl p-4 space-y-3 transition-all duration-200 ${
                 dragHandlers.getIsDragged(i) ? 'opacity-50 scale-[0.98]' : ''
-              } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-app-accent' : ''}`}
+              } ${dragHandlers.getIsOver(i) ? 'border-t-2 border-t-silse-primary' : ''}`}
             >
               <div className="flex items-center gap-2">
                 <DragHandle onPointerDown={dragHandlers.onPointerDown} index={i} />
@@ -527,12 +507,12 @@ function AlurSection() {
                 >
                   {i + 1}
                 </div>
-                <span className="text-sm font-medium text-app-primary">{step.judul || `Langkah ${i + 1}`}</span>
+                <span className="text-sm font-medium text-silse-on-surface">{step.judul || `Langkah ${i + 1}`}</span>
                 <button
                   onClick={() => deleteAlur(i)}
-                  className="ml-auto text-app-muted hover:text-red-400 transition-colors text-sm"
+                  className="ml-auto text-silse-on-surface-variant/60 hover:text-silse-error transition-colors text-sm"
                 >
-                  <Trash2 size={14} className="inline" />
+                  <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>delete</span>
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -584,7 +564,7 @@ function AlurSection() {
 
       <button
         onClick={addAlur}
-        className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors"
+        className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors"
       >
         ＋ Tambah Langkah
       </button>
@@ -599,10 +579,10 @@ export default function Dokumen() {
   return (
     <div className="p-6 space-y-5 max-w-4xl">
       <div>
-        <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
-          <Ruler size={18} /> {isSederhana ? 'RPP & Dokumen' : 'Dokumen Pembelajaran'}
+        <h2 className="text-xl font-bold text-silse-on-surface flex items-center gap-2">
+          <span className="material-symbols-outlined" style={ { fontSize: '18px' } }>straighten</span> {isSederhana ? 'RPP & Dokumen' : 'Dokumen Pembelajaran'}
         </h2>
-        <p className="text-sm text-app-secondary mt-1">
+        <p className="text-sm text-silse-on-surface-variant mt-1">
           {isSederhana
             ? 'Isi informasi dasar dan tujuan pembelajaran.'
             : 'Lengkapi semua dokumen perencanaan pembelajaran dalam satu halaman.'
@@ -611,27 +591,27 @@ export default function Dokumen() {
       </div>
 
       <div className="space-y-3">
-        <AccordionSection icon={<Tag size={16} className="inline" />} title={isSederhana ? 'Identitas' : 'Identitas Media'} defaultOpen>
+        <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>label</span>} title={isSederhana ? 'Identitas' : 'Identitas Media'} defaultOpen>
           <MetaSection />
         </AccordionSection>
 
-        <AccordionSection icon={<ClipboardList size={16} className="inline" />} title="Capaian Pembelajaran">
+        <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>assignment</span>} title="Capaian Pembelajaran">
           <CpSection />
         </AccordionSection>
 
-        <AccordionSection icon={<Target size={16} className="inline" />} title="Tujuan Pembelajaran">
+        <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>target</span>} title="Tujuan Pembelajaran">
           <TpSection />
         </AccordionSection>
 
         {/* ATP & Alur — only shown in lengkap (advanced) mode */}
         {!isSederhana && (
-          <AccordionSection icon={<Calendar size={16} className="inline" />} title="Alur Tujuan Pembelajaran">
+          <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>calendar_today</span>} title="Alur Tujuan Pembelajaran">
             <AtpSection />
           </AccordionSection>
         )}
 
         {!isSederhana && (
-          <AccordionSection icon={<Map size={16} className="inline" />} title="Alur Kegiatan">
+          <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>map</span>} title="Alur Kegiatan">
             <AlurSection />
           </AccordionSection>
         )}
@@ -639,22 +619,22 @@ export default function Dokumen() {
 
       {/* Helpful hint in sederhana mode */}
       {isSederhana && (
-        <div className="bg-app-info/5 border border-app-info/15 rounded-xl p-3.5 flex items-center gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-app-info/10 flex items-center justify-center text-app-info text-sm">
+        <div className="bg-silse-tertiary-container/5 border border-silse-tertiary-container/15 rounded-xl p-3.5 flex items-center gap-3">
+          <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-silse-tertiary-container/10 flex items-center justify-center text-silse-tertiary text-sm">
             💡
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-app-secondary leading-relaxed">
+            <p className="text-xs text-silse-on-surface-variant leading-relaxed">
               Bagian Alur Tujuan Pembelajaran & Alur Kegiatan tersedia di <strong>Mode Lanjutan</strong>. Sebagian besar guru SMP cukup mengisi Identitas, Capaian, dan Tujuan Pembelajaran.
             </p>
           </div>
         </div>
       )}
 
-      <div className="mt-6 pt-4 border-t border-app-border flex justify-end">
+      <div className="mt-6 pt-4 border-t border-silse-outline-variant/30 flex justify-end">
         <button
           onClick={() => useCanvaStore.setState({ panelRequest: 'konten' })}
-          className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-silse-primary hover:bg-silse-primary/90 text-silse-on-primary font-semibold text-sm rounded-xl transition-colors flex items-center gap-2"
         >
           {isSederhana ? 'Selanjutnya: Tambah Materi →' : 'Selanjutnya: Tambah Konten →'}
         </button>

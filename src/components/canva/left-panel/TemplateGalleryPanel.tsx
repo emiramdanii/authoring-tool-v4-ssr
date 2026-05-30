@@ -19,7 +19,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback } from 'react';
-import { Search, BookOpen, Loader2, FileText, Sparkles, Settings2, LayoutGrid, Wand2 } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
@@ -358,7 +358,7 @@ export default function TemplateGalleryPanel() {
     <div className="space-y-3" data-testid="template-gallery-panel">
       {/* Header */}
       <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider flex items-center gap-1.5">
-        <Sparkles size={10} />
+        <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>auto_awesome</span>
         {panelTitle}
         {activeView === 'prebuilt' && <span className="text-app-muted">({filteredTemplates.length})</span>}
       </div>
@@ -373,7 +373,7 @@ export default function TemplateGalleryPanel() {
               : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
           }`}
         >
-          <LayoutGrid size={9} />
+          <span className="material-symbols-outlined" style={{ fontSize: '9px' }}>grid_view</span>
           {isSederhana ? 'Template Siap Pakai' : 'Pre-built'}
         </button>
         <button
@@ -384,7 +384,7 @@ export default function TemplateGalleryPanel() {
               : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
           }`}
         >
-          <Wand2 size={9} />
+          <span className="material-symbols-outlined" style={{ fontSize: '9px' }}>auto_fix</span>
           {isSederhana ? 'Buat dari AI' : 'AI Generate'}
         </button>
       </div>
@@ -394,7 +394,7 @@ export default function TemplateGalleryPanel() {
         <>
           {/* Search input */}
           <div className="relative">
-            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted" aria-hidden="true" />
+            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted" style={{ fontSize: '12px' }} aria-hidden="true">search</span>
             <input
               id="template-gallery-search"
               type="text"
@@ -416,7 +416,7 @@ export default function TemplateGalleryPanel() {
               : 'bg-app-elevated border border-app-border-subtle text-app-secondary hover:border-app-border-strong'
           }`}
         >
-          <LayoutGrid size={9} />
+          <span className="material-symbols-outlined" style={{ fontSize: '9px' }}>grid_view</span>
           Semua
         </button>
         {(Object.entries(TEMPLATE_PATTERNS) as [TemplatePattern, typeof TEMPLATE_PATTERNS[TemplatePattern]][]).map(([key, pat]) => (
@@ -485,7 +485,7 @@ export default function TemplateGalleryPanel() {
         {filteredTemplates.length === 0 && (
           <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
             <div className="text-2xl mb-2 opacity-40">
-              <BookOpen size={24} />
+              <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>menu_book</span>
             </div>
             <div className="text-[10px] text-app-muted">
               Tidak ada template yang cocok
@@ -573,7 +573,7 @@ function TemplateCard({
 
           {/* Page count */}
           <div className="flex-shrink-0 text-[8px] text-app-muted flex items-center gap-0.5 mt-0.5">
-            <FileText size={8} />
+            <span className="material-symbols-outlined" style={{ fontSize: '8px' }}>description</span>
             {template.estimatedPages} hal.
           </div>
         </div>
@@ -661,12 +661,12 @@ function TemplateCard({
           >
             {isLoading ? (
               <>
-                <Loader2 size={10} className="animate-spin" />
+                <span className="material-symbols-outlined animate-spin" style={{ fontSize: '10px' }}>progress_activity</span>
                 Menerapkan...
               </>
             ) : (
               <>
-                <Sparkles size={10} />
+                <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>auto_awesome</span>
                 {hasExistingPages ? 'Tambahkan' : 'Gunakan'}
               </>
             )}
@@ -678,7 +678,7 @@ function TemplateCard({
             disabled={isAnyLoading}
             className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-bold border border-app-border/30 bg-app-elevated/40 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-[transform,box-shadow,background-color] active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
-            <Settings2 size={10} />
+            <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>settings</span>
             Sesuaikan
           </button>
         </div>

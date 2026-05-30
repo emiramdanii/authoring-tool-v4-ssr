@@ -2,8 +2,7 @@
 
 import { useCanvaStore } from '@/store/canva-store';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 // ═══════════════════════════════════════════════════════════════
 // TOOLBAR NAV — Project name + back button
 // ═══════════════════════════════════════════════════════════════
@@ -24,7 +23,7 @@ export function ToolbarNav() {
         onClick={() => useCanvaStore.setState({ panelRequest: 'dashboard' })}
         title="Kembali ke Dashboard"
       >
-        <ChevronLeft size={14} />
+        <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>chevron_left</span>
       </Button>
       <span className="text-[11px] font-semibold text-app-primary min-w-0 truncate max-w-[160px]">
         {label}

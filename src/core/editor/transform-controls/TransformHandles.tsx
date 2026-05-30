@@ -12,7 +12,8 @@
 
 import React, { useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import type { SchemaBlock } from '../../schema/types';
+import type { SchemaBlock, BlockLayout } from '../../schema/types';
+import { isSpatialLayout } from '../../schema/types';
 // NOTE: Import type from BlockDefinitionRegistry (NOT SceneRegistry) to break
 // the circular dependency: SceneRegistry → renderers → SchemaRenderer → BlockSelectionOverlay → TransformHandles → SceneRegistry
 import type { BlockCapabilities } from '../../registry/BlockDefinitionRegistry';
@@ -56,7 +57,7 @@ const RESIZE_DIRS: ResizeDirDef[] = [
 // HELPER: Get block layout from store
 // ═══════════════════════════════════════════════════════════════════
 
-function getBlockLayout(blockId: string): { layout: SchemaBlock['layout']; isAbsolute: boolean } {
+function getBlockLayout(blockId: string): { layout: BlockLayout; isAbsolute: boolean } {
   const state = useCanvaStore.getState();
   const page = state.pages[state.currentPageIndex];
   if (!page) return { layout: { position: 'flow' }, isAbsolute: false };
@@ -67,7 +68,8 @@ function getBlockLayout(blockId: string): { layout: SchemaBlock['layout']; isAbs
 
   const blocks = schemaScreen.blocks as SchemaBlock[];
   const block = blocks.find(b => b.id === blockId);
-  const layout = block?.layout || { position: 'flow' as const };
+  const rawLayout = block?.layout;
+  const layout: BlockLayout = (rawLayout && isSpatialLayout(rawLayout)) ? rawLayout : { position: 'flow' as const };
 
   return { layout, isAbsolute: layout.position === 'absolute' };
 }

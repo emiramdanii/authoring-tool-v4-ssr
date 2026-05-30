@@ -16,21 +16,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback } from 'react';
-import {
-  X,
-  Eye,
-  EyeOff,
-  Sparkles,
-  Loader2,
-  ChevronRight,
-  FileText,
-  Settings2,
-  Minus,
-  Plus,
-  Replace,
-  Merge,
-  Layers,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { useCanvaStore } from '@/store/canva-store';
 import {
@@ -151,7 +137,7 @@ export default function TemplateCustomizeDialog({
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-app-border/30">
           <div className="flex items-center gap-2">
-            <Settings2 size={14} className="text-app-accent" />
+            <span className="material-symbols-outlined text-app-accent" style={{ fontSize: '14px' }}>settings</span>
             <span className="text-[11px] font-bold text-app-primary">
               {isSederhana ? 'Atur Template' : 'Customize Template'}
             </span>
@@ -160,7 +146,7 @@ export default function TemplateCustomizeDialog({
             onClick={onClose}
             className="p-1 rounded-lg hover:bg-app-elevated/60 text-app-muted hover:text-app-primary transition-colors"
           >
-            <X size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
           </button>
         </div>
 
@@ -187,7 +173,7 @@ export default function TemplateCustomizeDialog({
           {/* ── Apply Mode Section ── */}
           <div>
             <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Layers size={10} />
+              <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>layers</span>
               {isSederhana ? 'Cara Penerapan' : 'Apply Mode'}
             </div>
             <div className="grid grid-cols-2 gap-1.5">
@@ -200,7 +186,7 @@ export default function TemplateCustomizeDialog({
                 }`}
               >
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Replace size={10} className={applyMode === 'replace' ? 'text-amber-400' : 'text-app-muted'} />
+                  <span className={`material-symbols-outlined ${applyMode === 'replace' ? 'text-amber-400' : 'text-app-muted'}`} style={{ fontSize: '10px' }}>swap_horiz</span>
                   <span className="text-[10px] font-bold">
                     {isSederhana ? 'Ganti Semua' : 'Replace All'}
                   </span>
@@ -221,7 +207,7 @@ export default function TemplateCustomizeDialog({
                 } disabled:opacity-30 disabled:cursor-not-allowed`}
               >
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Merge size={10} className={applyMode === 'insert' ? 'text-emerald-400' : 'text-app-muted'} />
+                  <span className={`material-symbols-outlined ${applyMode === 'insert' ? 'text-emerald-400' : 'text-app-muted'}`} style={{ fontSize: '10px' }}>merge</span>
                   <span className="text-[10px] font-bold">
                     {isSederhana ? 'Tambahkan' : 'Insert'}
                   </span>
@@ -238,7 +224,7 @@ export default function TemplateCustomizeDialog({
           {/* ── Page Toggle Section ── */}
           <div>
             <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <FileText size={10} />
+              <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>description</span>
               {isSederhana ? 'Halaman' : 'Page Selection'}
             </div>
             <div className="space-y-1">
@@ -272,9 +258,9 @@ export default function TemplateCustomizeDialog({
                         Wajib
                       </span>
                     ) : isEnabled ? (
-                      <Eye size={12} className="text-app-accent flex-shrink-0" />
+                      <span className="material-symbols-outlined text-app-accent flex-shrink-0" style={{ fontSize: '12px' }}>visibility</span>
                     ) : (
-                      <EyeOff size={12} className="text-app-muted flex-shrink-0" />
+                      <span className="material-symbols-outlined text-app-muted flex-shrink-0" style={{ fontSize: '12px' }}>visibility_off</span>
                     )}
                   </button>
                 );
@@ -293,7 +279,7 @@ export default function TemplateCustomizeDialog({
                 disabled={config.jumlahKuis <= 3}
                 className="p-1 rounded-lg hover:bg-app-elevated/80 text-app-muted hover:text-app-primary transition-colors disabled:opacity-30"
               >
-                <Minus size={12} />
+                <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>remove</span>
               </button>
               <span className="text-[14px] font-bold text-app-primary flex-1 text-center">
                 {config.jumlahKuis}
@@ -303,7 +289,7 @@ export default function TemplateCustomizeDialog({
                 disabled={config.jumlahKuis >= 20}
                 className="p-1 rounded-lg hover:bg-app-elevated/80 text-app-muted hover:text-app-primary transition-colors disabled:opacity-30"
               >
-                <Plus size={12} />
+                <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>add</span>
               </button>
               <span className="text-[8px] text-app-muted">soal</span>
             </div>
@@ -391,16 +377,16 @@ export default function TemplateCustomizeDialog({
           >
             {isLoading ? (
               <>
-                <Loader2 size={12} className="animate-spin" />
+                <span className="material-symbols-outlined animate-spin" style={{ fontSize: '12px' }}>progress_activity</span>
                 Membuat...
               </>
             ) : (
               <>
-                {applyMode === 'insert' ? <Merge size={12} /> : <Sparkles size={12} />}
+                {applyMode === 'insert' ? <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>merge</span> : <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>auto_awesome</span>}
                 {applyMode === 'insert'
                   ? (isSederhana ? 'Tambahkan ke Project' : 'Insert into Project')
                   : (isSederhana ? 'Buat Materi' : 'Apply Template')}
-                <ChevronRight size={12} />
+                <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>chevron_right</span>
               </>
             )}
           </button>

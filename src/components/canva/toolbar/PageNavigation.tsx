@@ -2,8 +2,7 @@
 
 import { useCanvaStore } from '@/store/canva-store';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 // ═══════════════════════════════════════════════════════════════
 // PAGE NAVIGATION — ◄ ► 1/5 with scene sub-counter
 // ═══════════════════════════════════════════════════════════════
@@ -26,10 +25,10 @@ export function PageNavigation() {
         size="icon"
         onClick={() => currentPageIndex > 0 && goPage(currentPageIndex - 1)}
         disabled={currentPageIndex <= 0}
-        className="h-7 w-7 disabled:opacity-30"
+        className="h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30 disabled:opacity-30"
         title="Halaman sebelumnya"
       >
-        <ChevronLeft size={13} />
+        <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>chevron_left</span>
       </Button>
 
       {/* Page counter */}
@@ -50,10 +49,10 @@ export function PageNavigation() {
         size="icon"
         onClick={() => currentPageIndex < pages.length - 1 && goPage(currentPageIndex + 1)}
         disabled={currentPageIndex >= pages.length - 1}
-        className="h-7 w-7 disabled:opacity-30"
+        className="h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30 disabled:opacity-30"
         title="Halaman berikutnya"
       >
-        <ChevronRight size={13} />
+        <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>chevron_right</span>
       </Button>
     </div>
   );

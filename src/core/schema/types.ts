@@ -15,6 +15,8 @@ export type {
   TransactionResult,
 } from './types/base';
 
+export { isSpatialLayout } from './types/base';
+
 export type {
   CoverBlock,
   HeroBlock,
@@ -58,6 +60,9 @@ export type {
   MateriBlokBlock,
   MateriBlokTipe,
   MateriContentTab,
+  TabIconsBlock,
+  AccordionBlock,
+  InfografisBlock,
 } from './types/blocks';
 
 export type {

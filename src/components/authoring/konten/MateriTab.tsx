@@ -5,7 +5,7 @@ import { useSchemaMateri, useSchemaContext } from '@/hooks/use-schema-navigator'
 import type { MateriBlok } from '@/store/authoring-store';
 import { BLOCK_TYPES, blockTypeInfo, ChevronIcon, TypeBadge } from './shared';
 import { BlockEditor } from './block-editors';
-import { Trash2, FileEdit, BookOpen, Zap, RefreshCw } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { RegenerateButton } from './RegenerateButton';
 import { regenerateMateri, regenerateMateriSchema, regenerateSingleMateriBlok } from '../auto-generate/regenerate';
 import { toast } from 'sonner';
@@ -84,14 +84,14 @@ function BlokCard({
               className="px-2 py-1 text-xs text-app-muted hover:text-cyan-400 rounded-md hover:bg-cyan-500/10 transition-colors"
               title="Regenerate blok ini"
             >
-              <RefreshCw size={12} className="inline" /> Regen
+              <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>refresh</span> Regen
             </button>
             <button
               onClick={onRemove}
               className="px-2 py-1 text-xs text-app-muted hover:text-red-400 rounded-md hover:bg-red-500/10 transition-colors"
               title="Hapus blok"
             >
-              <Trash2 size={12} className="inline" /> Hapus
+              <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>delete</span> Hapus
             </button>
           </div>
 
@@ -197,7 +197,7 @@ export function MateriTab() {
       {isEmpty ? (
         <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
           <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mx-auto mb-3">
-            <BookOpen size={24} className="text-teal-400" />
+            <span className="material-symbols-outlined text-teal-400" style={ { fontSize: '24px' } }>menu_book</span>
           </div>
           <p className="text-sm font-medium text-app-primary mb-1">Belum ada materi</p>
           <p className="text-xs text-app-muted mb-4">Gunakan Auto-Generate atau tambah blok manual.</p>
@@ -206,7 +206,7 @@ export function MateriTab() {
               onClick={handleRegenerateMateri}
               className="px-3 py-1.5 bg-app-accent hover:bg-app-accent/90 text-app-inverse text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
             >
-              <Zap size={12} /> Auto-Generate
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>bolt</span> Auto-Generate
             </button>
             <button
               onClick={() => handleAdd('teks')}

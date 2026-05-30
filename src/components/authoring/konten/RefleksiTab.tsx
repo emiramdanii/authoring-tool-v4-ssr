@@ -16,7 +16,7 @@ import { useSchemaRefleksi, useSchemaContext } from '@/hooks/use-schema-navigato
 import { RegenerateButton } from './RegenerateButton';
 import { ItemRegenerateButton } from './ItemRegenerateButton';
 import { regenerateRefleksi, regenerateSingleRefleksiQuestion } from '../auto-generate/regenerate';
-import { Zap, NotebookPen, Trash2, Plus } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { INPUT_CLS, TEXTAREA_CLS, FieldLabel, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
 // ── Refleksi Tab — Schema-first edit with RegenerateButton ──
@@ -125,7 +125,7 @@ export function RefleksiTab() {
       {refleksi.pertanyaan.length === 0 ? (
         <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
           <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
-            <NotebookPen size={24} className="text-amber-400" />
+            <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '24px' } }>edit_note</span>
           </div>
           <p className="text-sm font-medium text-app-primary mb-1">Belum ada pertanyaan refleksi</p>
           <p className="text-xs text-app-muted mb-4">Generate otomatis dari materi atau buat manual.</p>
@@ -134,7 +134,7 @@ export function RefleksiTab() {
               onClick={handleRegenerateRefleksi}
               className="px-3 py-1.5 bg-app-accent hover:bg-app-accent/90 text-app-inverse text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
             >
-              <Zap size={12} /> Auto-Generate
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>bolt</span> Auto-Generate
             </button>
             {locations.length > 0 && (
               <button
@@ -180,7 +180,7 @@ export function RefleksiTab() {
                     onClick={() => removeQuestion(0, i)}
                     className="inline-flex items-center justify-center w-7 h-7 rounded-md text-app-muted hover:text-red-400 hover:bg-red-500/10 transition-all text-sm"
                   >
-                    <Trash2 size={14} />
+                    <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>delete</span>
                   </button>
                 </div>
               </div>
@@ -290,7 +290,7 @@ export function RefleksiTab() {
           onClick={handleAdd}
           className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors inline-flex items-center gap-1.5"
         >
-          <Plus size={14} /> Tambah Refleksi
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>add</span> Tambah Refleksi
         </button>
       )}
     </div>

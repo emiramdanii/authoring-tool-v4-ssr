@@ -4,7 +4,7 @@ import PresetModuleCard, { type LayoutVariant, LAYOUT_VARIANTS } from '@/compone
 import { FieldLabel, INPUT_CLS } from './module-editors/shared';
 import type { Fn, FnAI, FnRI, FnUI } from './module-editors/shared';
 import type { Module } from '@/store/authoring/types';
-import { Pencil, Eye } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import {
   VideoEditor,
   FlashcardEditor,
@@ -72,7 +72,7 @@ export default function ModuleEditorModal({ open, onClose, mod, updateField, add
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-app-border flex-shrink-0">
           <div>
-            <h3 className="text-lg font-bold text-app-primary"><Pencil size={16} className="inline" /> Edit Modul</h3>
+            <h3 className="text-lg font-bold text-app-primary"><span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>edit</span> Edit Modul</h3>
             <p className="text-xs text-app-secondary mt-0.5 capitalize">{t} — {mod.title || '(tanpa judul)'}</p>
           </div>
           <button onClick={onClose} className="text-app-muted hover:text-app-primary transition-colors text-xl leading-none p-1">✕</button>
@@ -127,7 +127,7 @@ export default function ModuleEditorModal({ open, onClose, mod, updateField, add
           {/* ── Live Preview Panel ── */}
           <div className="border-t border-app-border pt-4 mt-2">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-bold text-app-primary"><Eye size={16} className="inline" /> Pratinjau Langsung</h4>
+              <h4 className="text-sm font-bold text-app-primary"><span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>visibility</span> Pratinjau Langsung</h4>
               {/* Layout Variant Picker */}
               <div className="flex gap-1">
                 {LAYOUT_VARIANTS.map(v => {

@@ -106,6 +106,8 @@ function startProjectionSync() {
           if (projection.skenario) updates.skenario = projection.skenario;
           if (projection.motivasi) updates.motivasi = projection.motivasi;
           if (projection.rangkuman) updates.rangkuman = projection.rangkuman;
+          // Phase 5 P2: Game blocks → modules projection sync
+          if (projection.modules) updates.modules = projection.modules;
 
           if (Object.keys(updates).length > 0) {
             useAuthoringStore.setState(updates);

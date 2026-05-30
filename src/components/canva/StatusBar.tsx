@@ -3,8 +3,7 @@
 import { useCanvaStore } from '@/store/canva-store';
 import { useDirtyStore } from '@/store/dirty-store';
 import { RATIOS } from '@/components/canva/types';
-import { Ratio, Box, FileText, CheckCircle2, Loader2, Layers, AlertCircle, Eye, Zap, GraduationCap, Monitor, Projector, Printer, Laptop } from 'lucide-react';
-// Note: lucide icons kept for small 10-11px status bar inline icons — Material Symbols at this size are blurry
+// All icons migrated to Material Symbols Outlined
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { ThemePresetPicker } from '@/components/canva/ThemePresetPicker';
@@ -42,12 +41,11 @@ const DISPLAY_MODES: Array<{
   key: EduDisplayMode;
   label: string;
   icon: React.ReactNode;
-  shortLabel: string;
 }> = [
-  { key: 'classroom', label: 'Kelas', icon: <Monitor size={10} />, shortLabel: '🏫' },
-  { key: 'projector', label: 'Proyektor', icon: <Projector size={10} />, shortLabel: '📽️' },
-  { key: 'print', label: 'Cetak', icon: <Printer size={10} />, shortLabel: '🖨️' },
-  { key: 'student', label: 'Siswa', icon: <Laptop size={10} />, shortLabel: '💻' },
+  { key: 'classroom', label: 'Kelas', icon: <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>monitor</span> },
+  { key: 'projector', label: 'Proyektor', icon: <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>videocam</span> },
+  { key: 'print', label: 'Cetak', icon: <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>print</span> },
+  { key: 'student', label: 'Siswa', icon: <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>laptop</span> },
 ];
 
 function DisplayModeSelector() {
@@ -62,7 +60,7 @@ function DisplayModeSelector() {
           <button
             key={m.key}
             onClick={() => setDisplayMode(m.key)}
-            className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded transition-colors text-[9px] font-bold ${
+            className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-md transition-colors text-[9px] font-bold ${
               isActive
                 ? 'bg-silse-primary/15 text-silse-primary'
                 : 'text-silse-on-surface-variant hover:text-silse-on-surface-variant/80 hover:bg-silse-surface-container-high/50'
@@ -88,17 +86,17 @@ const SAVE_INDICATOR_CONFIG: Record<SaveStatus, { icon: React.ReactNode; label: 
     className: 'text-silse-error/60',
   },
   saving: {
-    icon: <Loader2 size={10} className="animate-spin text-silse-tertiary" />,
+    icon: <span className="material-symbols-outlined animate-spin text-silse-tertiary" style={{ fontSize: '11px' }}>progress_activity</span>,
     label: 'Menyimpan...',
     className: 'text-silse-tertiary/60',
   },
   saved: {
-    icon: <CheckCircle2 size={10} className="text-silse-primary" />,
+    icon: <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '11px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>,
     label: 'Tersimpan',
     className: 'text-silse-primary/50',
   },
   error: {
-    icon: <AlertCircle size={10} className="text-silse-error" />,
+    icon: <span className="material-symbols-outlined text-silse-error" style={{ fontSize: '11px' }}>error</span>,
     label: 'Gagal simpan',
     className: 'text-silse-error/60',
   },
@@ -175,23 +173,23 @@ export default function StatusBar() {
   return (
     <div
       className="flex items-center gap-3 px-4 py-1 bg-silse-surface-container-lowest border-t border-silse-outline-variant/40 text-xs text-silse-on-surface-variant select-none"
-      style={{ height: '26px' }}
+      style={{ height: '28px' }}
     >
       {/* Ratio */}
       <span className="flex items-center gap-1.5">
-        <Ratio size={11} className="text-silse-on-surface-variant" />
+        <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '11px' }}>aspect_ratio</span>
         <span className="font-mono">{ratio!.w}×{ratio!.h}</span>
       </span>
 
       {/* Element count — teacher-friendly label */}
       <span className="flex items-center gap-1.5">
-        <Box size={11} className="text-silse-on-surface-variant" />
+        <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '11px' }}>widgets</span>
         <span>{totalElements} {teacherMode ? 'konten' : 'elemen'}</span>
       </span>
 
       {/* Page info with template type + scene type */}
       <span className="flex items-center gap-1.5">
-        <FileText size={11} className="text-silse-on-surface-variant" />
+        <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '11px' }}>description</span>
         <span>{currentPageIndex + 1}/{pagesLength}</span>
         <span className="text-[8px] text-silse-on-surface-variant">
           {templateBadge?.icon} {templateBadge?.name || page?.templateType}
@@ -222,7 +220,7 @@ export default function StatusBar() {
       {/* Scene indicator */}
       {sceneTotal > 1 && (
         <span className="flex items-center gap-1">
-          <Layers size={11} className="text-silse-primary/60" />
+          <span className="material-symbols-outlined text-silse-primary/60" style={{ fontSize: '11px' }}>layers</span>
           <span className="text-silse-primary/70 font-medium">{teacherMode ? 'Halaman' : 'Scene'} {sceneIndex + 1}/{sceneTotal}</span>
         </span>
       )}
@@ -230,7 +228,7 @@ export default function StatusBar() {
       {/* Block selection feedback — shown in both modes */}
       {selectedBlockId && selectedBlockType && (
         <span className="flex items-center gap-1">
-          <Zap size={11} className="text-silse-primary/60" />
+          <span className="material-symbols-outlined text-silse-primary/60" style={{ fontSize: '11px' }}>bolt</span>
           <span className="text-silse-primary/70 font-medium">
             {teacherTerm(BLOCK_DEFINITIONS[selectedBlockType]?.name || selectedBlockType, teacherMode)}
           </span>
@@ -240,7 +238,7 @@ export default function StatusBar() {
       {/* Canvas preview mode indicator */}
       {canvasPreview && (
         <span className="flex items-center gap-1">
-          <Eye size={11} className="text-silse-secondary/60" />
+          <span className="material-symbols-outlined text-silse-secondary/60" style={{ fontSize: '11px' }}>visibility</span>
           <span className="text-silse-secondary/70 font-medium">Preview</span>
         </span>
       )}
@@ -277,13 +275,13 @@ export default function StatusBar() {
         {/* Teacher mode badge — always visible so teachers know their mode */}
         {teacherMode && (
           <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-silse-primary-container/10 text-[8px] font-bold text-silse-primary-container">
-            <GraduationCap size={8} />
+            <span className="material-symbols-outlined" style={{ fontSize: '8px' }}>school</span>
             Mode Guru
           </span>
         )}
         <ThemePresetPicker />
         <ThemeToggle />
-        <Layers size={10} className="text-silse-on-surface-variant" />
+        <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '10px' }}>layers</span>
         {/* Zoom slider — hidden in teacher mode (simpler), show only fit button + percentage */}
         {!teacherMode && (
           <input
@@ -298,7 +296,7 @@ export default function StatusBar() {
         )}
         <button
           onClick={zoomToFit}
-          className="font-mono text-[9px] text-silse-on-surface-variant hover:text-silse-primary transition-colors w-12 text-right"
+          className="font-mono text-[10px] text-silse-on-surface-variant hover:text-silse-primary transition-colors w-12 text-right"
           title="Sesuaikan layar"
         >
           {storeZoom === -1 ? `Pas ${Math.round(storeFitZoom * 100)}%` : `${Math.round(storeZoom * 100)}%`}

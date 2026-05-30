@@ -75,7 +75,7 @@ function BreadcrumbSeparator({
       className={cn("[&>svg]:size-3.5", className)}
       {...props}
     >
-      {children ?? <ChevronRight />}
+      {children ?? <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>chevron_right</span>}
     </li>
   )
 }

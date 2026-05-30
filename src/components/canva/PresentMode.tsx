@@ -7,7 +7,7 @@ import { PageRenderer } from './page-renderer';
 import { RATIOS } from './types';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
-import { ChevronLeft, ChevronRight, X, Maximize2, Minimize2 } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import { SceneTabBar } from './toolbar/SceneTabBar';
 
@@ -238,7 +238,7 @@ export default function PresentMode() {
             className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10"
             title="Keluar presentasi (Esc)"
           >
-            <X size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
             <span className="hidden sm:inline">Keluar</span>
           </Button>
 
@@ -253,7 +253,7 @@ export default function PresentMode() {
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold text-white/70 hover:text-white disabled:opacity-30"
             aria-label="Halaman sebelumnya"
           >
-            <ChevronLeft size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_left</span>
           </Button>
 
           {/* Page counter + progress bar */}
@@ -278,7 +278,7 @@ export default function PresentMode() {
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold text-white/70 hover:text-white disabled:opacity-30"
             aria-label="Halaman berikutnya"
           >
-            <ChevronRight size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_right</span>
           </Button>
 
           <div className="w-px h-5 bg-white/10" />
@@ -292,7 +292,7 @@ export default function PresentMode() {
             aria-label={isFullscreen ? 'Keluar layar penuh' : 'Layar penuh'}
             title={isFullscreen ? 'Keluar layar penuh (F)' : 'Layar penuh (F)'}
           >
-            {isFullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+            {isFullscreen ? <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>close_fullscreen</span> : <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>open_in_full</span>}
           </Button>
         </div>
       </ShowTransition>

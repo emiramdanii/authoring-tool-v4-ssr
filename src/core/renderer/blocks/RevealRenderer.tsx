@@ -234,7 +234,7 @@ export const RevealRenderer = React.memo(function RevealRenderer({ block, tokens
                     }}
                     aria-label="Sembunyikan konten"
                   >
-                    <EyeOff size={11} className="inline mr-1" /> Sembunyikan
+                    <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '11px' } }>visibility_off</span> Sembunyikan
                   </button>
                 </MicroInteraction>
               )}
