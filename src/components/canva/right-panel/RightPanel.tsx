@@ -11,6 +11,7 @@ import BlockPropertiesPanel from './BlockPropertiesPanel';
 import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import TabManagementSection from './TabManagementSection';
+import ValidationSection from './ValidationSection';
 import LayerPanel from '../left-panel/LayerPanel';
 import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand, SlidersHorizontal } from 'lucide-react';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
@@ -159,6 +160,7 @@ export default function RightPanel() {
               <BlockPropertiesPanel />
             ) : isSchemaDriven ? (
               <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <ValidationSection />
                 <BackgroundSection />
                 <PageSettingsSection />
                 <PaletteSection />

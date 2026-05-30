@@ -6,6 +6,7 @@ import { useLearningMediaStore } from '@/store/learning-media-store';
 import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { getPageContract, type PageCompletionStatus } from '@/core/edu/page-runtime-contract';
+import { validateSinglePage } from '@/core/template/health-check/template-health-check';
 import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
@@ -102,6 +103,16 @@ export function SceneList() {
     return pages.map((_, i) => getPageStatus(i));
   }, [sessionInitialized, pages.length, getPageStatus]);
 
+  // Compute page health indicators (validation errors per page)
+  const pageHealthIssues = useMemo(() => {
+    return pages.map((page, i) => {
+      const issues = validateSinglePage(page, i);
+      const errors = issues.filter(issue => issue.severity === 'error').length;
+      const warnings = issues.filter(issue => issue.severity === 'warning').length;
+      return { errors, warnings, hasIssues: errors > 0 || warnings > 0 };
+    });
+  }, [pages]);
+
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
@@ -179,6 +190,14 @@ export function SceneList() {
                 Scene {i + 1}: {p.label}
                 {pageOverflowStatus[p.id]?.hasOverflow && (
                   <span className="material-symbols-outlined inline ml-1 text-silse-tertiary" style={{ fontSize: '12px' }} aria-label="Konten melebihi kapasitas">warning</span>
+                )}
+                {/* Health check indicator — show if page has validation issues */}
+                {pageHealthIssues[i]?.hasIssues && !sessionInitialized && (
+                  <span
+                    className={`inline ml-1 w-1.5 h-1.5 rounded-full ${pageHealthIssues[i]!.errors > 0 ? 'bg-silse-error' : 'bg-amber-500'}`}
+                    title={`${pageHealthIssues[i]!.errors} error, ${pageHealthIssues[i]!.warnings} warning — lihat panel Validasi`}
+                    aria-label="Ada masalah validasi"
+                  />
                 )}
               </span>
             </div>

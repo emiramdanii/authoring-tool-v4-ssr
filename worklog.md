@@ -1008,3 +1008,57 @@ Stage Summary:
   → pageCompletionStatus: 'locked' → 'completed' → BottomNav unlocks → progress updates
 - 2 files changed: learning-media-store.ts (computePageStatus fix), LearningMediaShell.tsx (bridge upgrade)
 - Build verified clean
+---
+Task ID: health-check-1
+Agent: main
+Task: Build Template Health Check system for Canvas Workspace
+
+Work Log:
+- Explored codebase: CanvaPage types, SchemaBlock, TemplateValidator, RightPanel, SceneList
+- Created `src/core/template/health-check/types.ts` — Types, constants, score thresholds
+  - TemplateIssueType (14 issue types), HealthScoreBreakdown, PageHealthSummary
+  - Safe area constants (1280×720, 72/56px margins)
+  - Font minimums per element type (cover 48px, title 36px, body 20px, etc.)
+  - Max blocks per page type (cover=1, kuis=1, game=1, materi=3, etc.)
+  - Placeholder patterns (17 patterns)
+  - Health status thresholds (90+=ready, 75+=polish, 60+=problematic, <60=unusable)
+- Created `src/core/template/health-check/template-health-check.ts` — Core validation engine
+  - validateTemplate(project) — 10 checks:
+    1. 1 Page 1 Fokus (max blocks per page type, mixed focus detection)
+    2. Overlap (bounding box collision for absolute blocks)
+    3. Overflow (safe area boundary check)
+    4. Font Terlalu Kecil (per element type minimums)
+    5. Warna Tidak Konsisten (6+ distinct colors = warning, multi-accent detection)
+    6. Placeholder Text (17 patterns checked recursively)
+    7. Navigasi (cover first, penutup last, lock consistency)
+    8. Interaksi (quiz feedback, game interactive flag, refleksi/diskusi questions)
+    9. Score & Completion Sync (scoring enabled but no score block, lock but no interaction)
+    10. Narrative Coherence (validateNarrativeArc, monotony detection)
+  - validateSinglePage(page, pageIndex) — Quick per-page validation
+  - Weighted score computation (overlap 20, overflow 20, font 15, focus 15, color 10, nav 10, interaction 10)
+- Created `src/core/template/health-check/index.ts` — Barrel export
+- Created `src/components/canva/right-panel/ValidationSection.tsx` — Validation panel UI
+  - Score ring (SVG circular progress with color by status)
+  - Breakdown bars (7 areas with progress bars)
+  - Issue list (expandable, sorted by severity, with icons per type)
+  - Quick fix buttons (8 fix types: split-page, enlarge-font, remove-placeholder, etc.)
+  - Filter toggle: current page only vs all pages
+  - Page health summary (click to navigate)
+  - Template not ready warning banner
+- Wired ValidationSection into RightPanel.tsx (Properties tab, schema-driven, no block selected)
+- Added health indicator dots to SceneList.tsx (red=error, amber=warning)
+- Build passed clean
+
+Stage Summary:
+- Template Health Check system fully implemented with 10 validation checks
+- Score 0-100 with weighted breakdown (7 areas)
+- UI: ValidationSection in right panel + health dots in SceneList
+- Quick fix actions wired to canva store (split page, edit placeholder, enlarge font, etc.)
+- Files created:
+  - src/core/template/health-check/types.ts (165 lines)
+  - src/core/template/health-check/template-health-check.ts (510 lines)
+  - src/core/template/health-check/index.ts (25 lines)
+  - src/components/canva/right-panel/ValidationSection.tsx (340 lines)
+- Files modified:
+  - src/components/canva/right-panel/RightPanel.tsx (import + placement)
+  - src/components/canva/left-panel/SceneList.tsx (health dots)
