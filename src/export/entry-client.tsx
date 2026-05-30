@@ -57,7 +57,7 @@ class ExportErrorBoundary extends React.Component<
           fontFamily: "'Nunito', sans-serif",
         }}>
           <div style={{ textAlign: 'center', maxWidth: 400 }}>
-            <AlertTriangle size={48} className="text-amber-400" />
+            <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '48px' } }>warning</span>
             <div style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>
               Terjadi Kesalahan
             </div>

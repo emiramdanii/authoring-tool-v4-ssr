@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Palette } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import Section from './Section';
 
@@ -17,7 +17,7 @@ export default function PaletteSection() {
 
   return (
     <Section
-      icon={<Palette size={12} />}
+      icon={<span className="material-symbols-outlined" style={{ fontSize: '12px' }}>palette</span>}
       title="Palet Warna"
       collapsed={collapsed}
       onToggle={() => setCollapsed(c => !c)}

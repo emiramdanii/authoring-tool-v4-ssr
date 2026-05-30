@@ -20,7 +20,7 @@ export function FieldLabel({ children }: { children: React.ReactNode }) {
 export function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="flex items-center gap-2">
-      <input type="color" className="w-8 h-8 rounded cursor-pointer border border-app-border bg-transparent" value={value || '#3ecfcf'} onChange={(e) => onChange(e.target.value)} />
+      <input type="color" className="w-8 h-8 rounded cursor-pointer border border-app-border bg-transparent" value={value || '#3B82F6'} onChange={(e) => onChange(e.target.value)} />
       <span className="text-xs text-app-muted font-mono">{value}</span>
     </div>
   );

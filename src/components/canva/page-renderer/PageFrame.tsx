@@ -29,7 +29,7 @@ import { EDU_MODE_BG } from '@/core/edu/education-colors';
 //   - 'glass': Glassmorphism, gradient borders, glowing accents
 // ═══════════════════════════════════════════════════════════════
 
-export type PageFrameMode = 'canvas' | 'preview' | 'export';
+export type PageFrameMode = 'canvas' | 'preview' | 'export' | 'learn';
 
 export interface PageFrameProps {
   /** Which render context is using this frame */
@@ -422,16 +422,16 @@ export const PageFrame = React.memo(function PageFrame({
           )}
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{ background: `${alpha(tokens.color('bg'), 0.8)}` }}
+            style={{ background: `${alpha(modeBg.bg, 0.8)}` }}
           />
         </>
       )}
       {isSchemaDriven && (() => {
         const schemaBg = page.schema?.background;
-        let baseBg = tokens.color('bg');
+        let baseBg = modeBg.bg;
         if (schemaBg?.type === 'solid') baseBg = displayMode === 'print' ? modeBg.bg : tokens.color(schemaBg.color1 || 'bg');
         else if (schemaBg?.type === 'gradient') baseBg = `linear-gradient(180deg, ${tokens.color(schemaBg.color1 || 'y')}, ${tokens.color(schemaBg.color2 || 'bg')})`;
-        else if (schemaBg?.type === 'radial') baseBg = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(schemaBg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(schemaBg.color2 || 'bg')}, ${tokens.color('bg2')})`;
+        else if (schemaBg?.type === 'radial') baseBg = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(schemaBg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(schemaBg.color2 || 'bg')}, ${modeBg.bg2})`;
         else baseBg = page.bgColor || modeBg.bg;
 
         return (

@@ -243,7 +243,7 @@ export default function CrashRecoveryDialog() {
         <div className="px-5 py-4 bg-amber-500/10 border-b border-amber-500/20">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-500/20">
-              <AlertTriangle size={20} className="text-amber-400" />
+              <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '20px' } }>warning</span>
             </div>
             <div>
               <h2 className="text-sm font-bold text-amber-300">Sesi Sebelumnya Terdeteksi</h2>
@@ -275,7 +275,7 @@ export default function CrashRecoveryDialog() {
             className="flex-1 gap-2 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-bold text-[11px]"
             variant="outline"
           >
-            <RotateCcw size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>refresh</span>
             Pulihkan
           </Button>
           <Button
@@ -283,7 +283,7 @@ export default function CrashRecoveryDialog() {
             className="flex-1 gap-2 bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30 font-bold text-[11px]"
             variant="outline"
           >
-            <Trash2 size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>delete</span>
             Mulai Baru
           </Button>
         </div>

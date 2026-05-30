@@ -58,7 +58,7 @@ export const StatistikRenderer = React.memo(function StatistikRenderer({ block, 
                 className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: accentAlpha(0.2) }}
               >
-                <BarChart3 size={10} style={{ color: accentColor }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>bar_chart</span>
               </div>
             </MicroInteraction>
             <PremiumBadge tokens={tokens} accent={colorKey} variant="glass">

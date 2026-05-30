@@ -1,26 +1,27 @@
 'use client';
 
 import { navigateToBlock } from '@/hooks/use-schema-navigator';
-import { ExternalLink } from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 // ── Sub-tab type ─────────────────────────────────────────────────
 export type KontenTab = 'materi' | 'diskusi' | 'refleksi' | 'skenario' | 'modules' | 'kuis' | 'motivasi' | 'rangkuman';
 
 // ── Block type definitions ──────────────────────────────────────
+// SILSE v4: Semantic color tokens mapped to silse-* design system
+// Each color maps to a Tailwind silse-* class for TypeBadge rendering
 export const BLOCK_TYPES = [
-  { id: 'teks',      icon: '📝', label: 'Paragraf Teks',    color: '#a1a1aa' },
-  { id: 'definisi',  icon: '📌', label: 'Kotak Definisi',   color: '#f9c82e' },
-  { id: 'poin',      icon: '•',  label: 'Poin-Poin',        color: '#3ecfcf' },
-  { id: 'tabel',     icon: '📊', label: 'Tabel',            color: '#a78bfa' },
-  { id: 'kutipan',   icon: '💬', label: 'Kutipan / Quote',  color: '#34d399' },
-  { id: 'gambar',    icon: '🖼️', label: 'Gambar / Upload',  color: '#fb923c' },
-  { id: 'timeline',  icon: '🔄', label: 'Timeline / Alur',  color: '#3ecfcf' },
-  { id: 'highlight', icon: '⚡', label: 'Highlight Card',   color: '#f9c82e' },
-  { id: 'compare',   icon: '⚖️', label: 'Perbandingan',     color: '#a78bfa' },
-  { id: 'infobox',   icon: '💡', label: 'Info / Tips Box',  color: '#60a5fa' },
-  { id: 'checklist', icon: '✅', label: 'Checklist',        color: '#34d399' },
-  { id: 'statistik', icon: '📈', label: 'Statistik Angka',  color: '#fb923c' },
-  { id: 'studi',     icon: '📖', label: 'Studi Kasus',      color: '#f87171' },
+  { id: 'teks',      icon: '📝', label: 'Paragraf Teks',    color: 'silse-on-surface-variant' },
+  { id: 'definisi',  icon: '📌', label: 'Kotak Definisi',   color: 'silse-tertiary' },
+  { id: 'poin',      icon: '•',  label: 'Poin-Poin',        color: 'silse-secondary' },
+  { id: 'tabel',     icon: '📊', label: 'Tabel',            color: 'silse-tertiary-container' },
+  { id: 'kutipan',   icon: '💬', label: 'Kutipan / Quote',  color: 'silse-primary' },
+  { id: 'gambar',    icon: '🖼️', label: 'Gambar / Upload',  color: 'silse-secondary-container' },
+  { id: 'timeline',  icon: '🔄', label: 'Timeline / Alur',  color: 'silse-secondary' },
+  { id: 'highlight', icon: '⚡', label: 'Highlight Card',   color: 'silse-tertiary' },
+  { id: 'compare',   icon: '⚖️', label: 'Perbandingan',     color: 'silse-tertiary-container' },
+  { id: 'infobox',   icon: '💡', label: 'Info / Tips Box',  color: 'silse-primary' },
+  { id: 'checklist', icon: '✅', label: 'Checklist',        color: 'silse-primary' },
+  { id: 'statistik', icon: '📈', label: 'Statistik Angka',  color: 'silse-secondary-container' },
+  { id: 'studi',     icon: '📖', label: 'Studi Kasus',      color: 'silse-error' },
 ] as const;
 
 // ── Constants ──────────────────────────────────────────────────
@@ -37,53 +38,53 @@ export const TEXTAREA_CLS = INPUT_CLS + ' resize-none';
 
 // ── Module Type Definitions ───────────────────────────────────
 export const MODULE_TYPES = [
-  { id: 'skenario', icon: '🎭', label: 'Skenario Interaktif', desc: 'Pilihan bercabang dengan dialog dan konsekuensi', color: '#f9c82e' },
-  { id: 'video', icon: '🎥', label: 'Video Embed', desc: 'Video dari YouTube, Drive, atau URL lain', color: '#ff6b6b' },
-  { id: 'flashcard', icon: '🃏', label: 'Flashcard', desc: 'Kartu bolak-balik untuk belajar istilah', color: '#3ecfcf' },
-  { id: 'infografis', icon: '📊', label: 'Infografis / Kartu Konsep', desc: 'Kartu informasi visual', color: '#a78bfa' },
-  { id: 'studi-kasus', icon: '📰', label: 'Studi Kasus', desc: 'Analisis kasus dengan pertanyaan', color: '#fb923c' },
-  { id: 'debat', icon: '🗣️', label: 'Debat & Polling', desc: 'Mosiperta debat pro dan kontra', color: '#f87171' },
-  { id: 'timeline', icon: '📅', label: 'Timeline', desc: 'Urutan peristiwa berdasarkan waktu', color: '#34d399' },
-  { id: 'matching', icon: '🔀', label: 'Game Pasangkan', desc: 'Cocokkan istilah dengan definisi', color: '#60a5fa' },
-  { id: 'materi', icon: '📖', label: 'Materi Teks', desc: 'Blok konten teks untuk siswa baca', color: '#a1a1aa' },
-  { id: 'hero', icon: '🖼️', label: 'Hero Banner', desc: 'Banner utama dengan gradient', color: '#ff6b6b' },
-  { id: 'kutipan', icon: '💬', label: 'Kutipan Inspiratif', desc: 'Kutipan dengan gaya visual', color: '#34d399' },
-  { id: 'langkah', icon: '👣', label: 'Langkah-Langkah', desc: 'Tutorial langkah demi langkah', color: '#3ecfcf' },
-  { id: 'accordion', icon: '🗂️', label: 'Accordion / FAQ', desc: 'Panel yang bisa dibuka/tutup', color: '#a78bfa' },
-  { id: 'statistik', icon: '📊', label: 'Statistik & Angka', desc: 'Angka kunci dengan visual', color: '#fb923c' },
-  { id: 'polling', icon: '🗳️', label: 'Polling / Voting', desc: 'Voting dan polling interaktif', color: '#60a5fa' },
-  { id: 'embed', icon: '🔗', label: 'Embed / iFrame', desc: 'Sematkan konten eksternal', color: '#a1a1aa' },
-  { id: 'tab-icons', icon: '📑', label: 'Tab Interaktif', desc: 'Konten dalam tab bergambar', color: '#f9c82e' },
-  { id: 'icon-explore', icon: '🔍', label: 'Eksplorasi Ikon', desc: 'Jelajahi konten lewat ikon', color: '#34d399' },
-  { id: 'comparison', icon: '⚖️', label: 'Perbandingan', desc: 'Bandingkan beberapa kolom', color: '#a78bfa' },
-  { id: 'card-showcase', icon: '🃏', label: 'Card Showcase', desc: 'Tampilkan kartu visual', color: '#fb923c' },
-  { id: 'hotspot-image', icon: '🗺️', label: 'Hotspot Image', desc: 'Gambar dengan titik interaktif', color: '#ff6b6b' },
+  { id: 'skenario', icon: '🎭', label: 'Skenario Interaktif', desc: 'Pilihan bercabang dengan dialog dan konsekuensi', color: 'silse-tertiary' },
+  { id: 'video', icon: '🎥', label: 'Video Embed', desc: 'Video dari YouTube, Drive, atau URL lain', color: 'silse-error' },
+  { id: 'flashcard', icon: '🃏', label: 'Flashcard', desc: 'Kartu bolak-balik untuk belajar istilah', color: 'silse-secondary' },
+  { id: 'infografis', icon: '📊', label: 'Infografis / Kartu Konsep', desc: 'Kartu informasi visual', color: 'silse-tertiary-container' },
+  { id: 'studi-kasus', icon: '📰', label: 'Studi Kasus', desc: 'Analisis kasus dengan pertanyaan', color: 'silse-secondary-container' },
+  { id: 'debat', icon: '🗣️', label: 'Debat & Polling', desc: 'Mosiperta debat pro dan kontra', color: 'silse-error' },
+  { id: 'timeline', icon: '📅', label: 'Timeline', desc: 'Urutan peristiwa berdasarkan waktu', color: 'silse-primary' },
+  { id: 'matching', icon: '🔀', label: 'Game Pasangkan', desc: 'Cocokkan istilah dengan definisi', color: 'silse-primary' },
+  { id: 'materi', icon: '📖', label: 'Materi Teks', desc: 'Blok konten teks untuk siswa baca', color: 'silse-on-surface-variant' },
+  { id: 'hero', icon: '🖼️', label: 'Hero Banner', desc: 'Banner utama dengan gradient', color: 'silse-error' },
+  { id: 'kutipan', icon: '💬', label: 'Kutipan Inspiratif', desc: 'Kutipan dengan gaya visual', color: 'silse-primary' },
+  { id: 'langkah', icon: '👣', label: 'Langkah-Langkah', desc: 'Tutorial langkah demi langkah', color: 'silse-secondary' },
+  { id: 'accordion', icon: '🗂️', label: 'Accordion / FAQ', desc: 'Panel yang bisa dibuka/tutup', color: 'silse-tertiary-container' },
+  { id: 'statistik', icon: '📊', label: 'Statistik & Angka', desc: 'Angka kunci dengan visual', color: 'silse-secondary-container' },
+  { id: 'polling', icon: '🗳️', label: 'Polling / Voting', desc: 'Voting dan polling interaktif', color: 'silse-primary' },
+  { id: 'embed', icon: '🔗', label: 'Embed / iFrame', desc: 'Sematkan konten eksternal', color: 'silse-on-surface-variant' },
+  { id: 'tab-icons', icon: '📑', label: 'Tab Interaktif', desc: 'Konten dalam tab bergambar', color: 'silse-tertiary' },
+  { id: 'icon-explore', icon: '🔍', label: 'Eksplorasi Ikon', desc: 'Jelajahi konten lewat ikon', color: 'silse-primary' },
+  { id: 'comparison', icon: '⚖️', label: 'Perbandingan', desc: 'Bandingkan beberapa kolom', color: 'silse-tertiary-container' },
+  { id: 'card-showcase', icon: '🃏', label: 'Card Showcase', desc: 'Tampilkan kartu visual', color: 'silse-secondary-container' },
+  { id: 'hotspot-image', icon: '🗺️', label: 'Hotspot Image', desc: 'Gambar dengan titik interaktif', color: 'silse-error' },
 ] as const;
 
 export const GAME_TYPES = [
-  { id: 'truefalse', icon: '✅', label: 'Benar / Salah', desc: 'Pernyataan benar atau salah', color: '#34d399' },
-  { id: 'memory', icon: '🧠', label: 'Memory Match', desc: 'Cocokkan kartu berpasangan', color: '#a78bfa' },
-  { id: 'roda', icon: '🎡', label: 'Roda Putar', desc: 'Putar roda untuk pilihan acak', color: '#fb923c' },
-  { id: 'sorting', icon: '🔢', label: 'Urutkan / Klasifikasi', desc: 'Kelompokkan item ke kategori', color: '#3ecfcf' },
-  { id: 'spinwheel', icon: '🎡', label: 'Roda Pertanyaan', desc: 'Roda putar dengan soal acak', color: '#ff6b6b' },
-  { id: 'teambuzzer', icon: '🏆', label: 'Kuis Tim / Buzzer', desc: 'Kuis kompetisi antar tim', color: '#f9c82e' },
-  { id: 'wordsearch', icon: '🔍', label: 'Teka-Teki Kata', desc: 'Cari kata tersembunyi', color: '#60a5fa' },
-  { id: 'flashcard', icon: '🃏', label: 'Flashcard', desc: 'Kartu belajar bolak-balik', color: '#3ecfcf' },
-  { id: 'crossword', icon: '🔤', label: 'Teka Silang', desc: 'Isi kata sesuai petunjuk', color: '#a78bfa' },
-  { id: 'fillblank', icon: '✏️', label: 'Isian', desc: 'Soal isian singkat', color: '#34d399' },
-  { id: 'dragdrop', icon: '🖐️', label: 'Seret & Letakkan', desc: 'Letakkan item ke target yang benar', color: '#fb923c' },
-  { id: 'matching', icon: '🔀', label: 'Pasangkan', desc: 'Cocokkan pasangan kiri-kanan', color: '#f9c82e' },
+  { id: 'truefalse', icon: '✅', label: 'Benar / Salah', desc: 'Pernyataan benar atau salah', color: 'silse-primary' },
+  { id: 'memory', icon: '🧠', label: 'Memory Match', desc: 'Cocokkan kartu berpasangan', color: 'silse-tertiary-container' },
+  { id: 'roda', icon: '🎡', label: 'Roda Putar', desc: 'Putar roda untuk pilihan acak', color: 'silse-secondary-container' },
+  { id: 'sorting', icon: '🔢', label: 'Urutkan / Klasifikasi', desc: 'Kelompokkan item ke kategori', color: 'silse-secondary' },
+  { id: 'spinwheel', icon: '🎡', label: 'Roda Pertanyaan', desc: 'Roda putar dengan soal acak', color: 'silse-error' },
+  { id: 'teambuzzer', icon: '🏆', label: 'Kuis Tim / Buzzer', desc: 'Kuis kompetisi antar tim', color: 'silse-tertiary' },
+  { id: 'wordsearch', icon: '🔍', label: 'Teka-Teki Kata', desc: 'Cari kata tersembunyi', color: 'silse-primary' },
+  { id: 'flashcard', icon: '🃏', label: 'Flashcard', desc: 'Kartu belajar bolak-balik', color: 'silse-secondary' },
+  { id: 'crossword', icon: '🔤', label: 'Teka Silang', desc: 'Isi kata sesuai petunjuk', color: 'silse-tertiary-container' },
+  { id: 'fillblank', icon: '✏️', label: 'Isian', desc: 'Soal isian singkat', color: 'silse-primary' },
+  { id: 'dragdrop', icon: '🖐️', label: 'Seret & Letakkan', desc: 'Letakkan item ke target yang benar', color: 'silse-secondary-container' },
+  { id: 'matching', icon: '🔀', label: 'Pasangkan', desc: 'Cocokkan pasangan kiri-kanan', color: 'silse-tertiary' },
 ] as const;
 
 export const ALL_MODULE_TYPES = [...MODULE_TYPES, ...GAME_TYPES];
 
 // ── Helper functions ──────────────────────────────────────────
 export function blockTypeInfo(tipe: string) {
-  return BLOCK_TYPES.find((b) => b.id === tipe) || { id: 'unknown', icon: '📦', label: tipe, color: '#71717a' };
+  return BLOCK_TYPES.find((b) => b.id === tipe) || { id: 'unknown', icon: '📦', label: tipe, color: 'silse-on-surface-variant' };
 }
 
 export function moduleTypeInfo(typeId: string) {
-  return ALL_MODULE_TYPES.find((t) => t.id === typeId) || { id: 'unknown', icon: '📦', label: typeId, desc: '', color: '#71717a' };
+  return ALL_MODULE_TYPES.find((t) => t.id === typeId) || { id: 'unknown', icon: '📦', label: typeId, desc: '', color: 'silse-on-surface-variant' };
 }
 
 // ── Module Mini Preview ───────────────────────────────────────
@@ -103,7 +104,7 @@ export function modulePreview(mod: import('@/store/authoring/types').Module): st
     }
     case 'infografis': {
       const k = (mod.kartu as unknown[]) || [];
-      return k.length ? `${k.length} kartu · ${(mod.layout as string) || 'grid'}` : 'Belum ada kartu';
+      return k.length ? `${k.length} kartu · ${(mod.layoutVariant as string) || (mod.layout as string) || 'grid'}` : 'Belum ada kartu';
     }
     case 'studi-kasus': {
       const p = (mod.pertanyaan as unknown[]) || [];
@@ -171,15 +172,28 @@ export function ChevronIcon({ open }: { open: boolean }) {
 }
 
 // ── Block type badge ───────────────────────────────────────────
+// SILSE v4: Map semantic token names to CSS custom properties for dynamic badges
+const SILSE_TOKEN_CSS: Record<string, { bg: string; text: string; border: string }> = {
+  'silse-primary':               { bg: 'var(--silse-primary)',               text: 'var(--silse-primary)',               border: 'var(--silse-primary)' },
+  'silse-secondary':             { bg: 'var(--silse-secondary)',             text: 'var(--silse-secondary)',             border: 'var(--silse-secondary)' },
+  'silse-tertiary':              { bg: 'var(--silse-tertiary)',              text: 'var(--silse-tertiary)',              border: 'var(--silse-tertiary)' },
+  'silse-error':                 { bg: 'var(--silse-error)',                 text: 'var(--silse-error)',                 border: 'var(--silse-error)' },
+  'silse-primary-container':     { bg: 'var(--silse-primary-container)',     text: 'var(--silse-primary-container)',     border: 'var(--silse-primary-container)' },
+  'silse-secondary-container':   { bg: 'var(--silse-secondary-container)',   text: 'var(--silse-secondary-container)',   border: 'var(--silse-secondary-container)' },
+  'silse-tertiary-container':    { bg: 'var(--silse-tertiary-container)',    text: 'var(--silse-tertiary-container)',    border: 'var(--silse-tertiary-container)' },
+  'silse-on-surface-variant':    { bg: 'var(--silse-on-surface-variant)',    text: 'var(--silse-on-surface-variant)',    border: 'var(--silse-on-surface-variant)' },
+};
+
 export function TypeBadge({ tipe }: { tipe: string }) {
   const info = blockTypeInfo(tipe);
+  const token = SILSE_TOKEN_CSS[info.color] ?? SILSE_TOKEN_CSS['silse-on-surface-variant'];
   return (
     <span
       className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border"
       style={{
-        backgroundColor: info.color + '18',
-        color: info.color,
-        borderColor: info.color + '30',
+        backgroundColor: `color-mix(in srgb, ${token.bg} 12%, transparent)`,
+        color: token.text,
+        borderColor: `color-mix(in srgb, ${token.border} 25%, transparent)`,
       }}
     >
       <span>{info.icon}</span>
@@ -243,7 +257,7 @@ export function LocateInCanvaButton({
       className="inline-flex items-center gap-1 px-2 py-1 text-xs text-app-muted hover:text-app-accent rounded-md hover:bg-app-accent/10 transition-colors"
       title="Buka halaman ini di editor Canva"
     >
-      <ExternalLink size={11} />
+      <span className="material-symbols-outlined" style={ { fontSize: '11px' } }>open_in_new</span>
       {label}
     </button>
   );

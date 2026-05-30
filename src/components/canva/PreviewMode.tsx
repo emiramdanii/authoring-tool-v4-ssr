@@ -7,7 +7,7 @@ import { PageRenderer } from './page-renderer';
 import { RATIOS } from './types';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
-import { ChevronLeft, ChevronRight, Edit3, Maximize2, Minimize2 } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
@@ -196,7 +196,7 @@ export default function PreviewMode() {
             onClick={() => setAppMode('edit')}
             className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold text-app-accent hover:text-app-accent/80"
           >
-            <Edit3 size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
             <span className="hidden sm:inline">Edit</span>
           </Button>
 
@@ -210,7 +210,7 @@ export default function PreviewMode() {
             disabled={currentPageIndex <= 0}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-30 active:scale-95 transition-transform"
           >
-            <ChevronLeft size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_left</span>
           </Button>
 
           {/* Page counter */}
@@ -226,7 +226,7 @@ export default function PreviewMode() {
             disabled={currentPageIndex >= totalPages - 1}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-30 active:scale-95 transition-transform"
           >
-            <ChevronRight size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_right</span>
           </Button>
 
           <div className="w-px h-5 bg-app-border/40" />
@@ -238,7 +238,7 @@ export default function PreviewMode() {
             onClick={toggleFullscreen}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-app-muted hover:text-app-secondary"
           >
-            {isFullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+            {isFullscreen ? <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>close_fullscreen</span> : <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>open_in_full</span>}
           </Button>
         </div>
       </div>

@@ -33,11 +33,9 @@ const BLOCK_DISPLAY: Record<string, { icon: string; label: string; color: string
   'cover':             { icon: 'home', label: 'Cover', color: 'text-silse-tertiary-container' },
   'hero':              { icon: 'rocket_launch', label: 'Hero', color: 'text-silse-tertiary' },
   'petunjuk':          { icon: 'push_pin', label: 'Petunjuk', color: 'text-silse-secondary' },
-  'cp':                { icon: 'school', label: 'Capaian Pembelajaran', color: 'text-silse-secondary' },
   'tp':                { icon: 'target', label: 'Tujuan Pembelajaran', color: 'text-silse-secondary' },
-  'atp':               { icon: 'date_range', label: 'Alur Tujuan', color: 'text-silse-tertiary' },
-  'alur':              { icon: 'route', label: 'Alur Kegiatan', color: 'text-silse-tertiary' },
-  'skenario':          { icon: 'theater_comedy', label: 'Skenario', color: 'text-silse-error' },
+  'alur':              { icon: 'map', label: 'Alur Pembelajaran', color: 'text-silse-tertiary' },
+  'sateri':            { icon: 'theater_comedy', label: 'Skenario', color: 'text-silse-error' },
   'materi-section':    { icon: 'auto_stories', label: 'Materi', color: 'text-silse-primary' },
   'materi-blok':       { icon: 'edit_note', label: 'Blok Materi', color: 'text-silse-primary' },
   'def-box':           { icon: 'push_pin', label: 'Definisi', color: 'text-silse-tertiary-container' },
@@ -309,7 +307,7 @@ export function SchemaBlockTree() {
     <div className="space-y-0.5">
       <div className="flex items-center gap-1.5 px-1 py-1">
         <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>account_tree</span>
-        <span className="text-[10px] font-bold text-silse-outline uppercase tracking-widest">
+        <span className="text-[11px] font-bold text-silse-outline uppercase tracking-widest">
           Schema
         </span>
       </div>
@@ -361,7 +359,7 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
     <div className="ml-4">
       <button
         onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-        className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
+        className="flex items-center gap-1 text-[10px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
       >
         <span className={`material-symbols-outlined transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} style={{ fontSize: '9px' }}>chevron_right</span>
         <span className="material-symbols-outlined text-silse-primary-container/50" style={{ fontSize: '9px' }}>bolt</span>

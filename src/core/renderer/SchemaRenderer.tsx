@@ -483,7 +483,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     if (bg) {
       if (bg.type === 'radial') {
         // Radial backgrounds (cover/hero) keep their design intent
-        style.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${tokens.color('bg2')})`;
+        style.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${modeBg.bg2})`;
       } else if (bg.type === 'gradient') {
         // Gradient backgrounds keep their design intent
         style.background = `linear-gradient(180deg, ${tokens.color(bg.color1 || 'y')}, ${tokens.color(bg.color2 || 'bg')})`;
@@ -824,7 +824,46 @@ export const SchemaBlockRenderer = React.memo(function SchemaBlockRenderer({ blo
   );
 
   if (!isCompact) {
-    // Preview/export mode — no selection overlay, but compression still applies
+    // Preview/export/learn mode — no selection overlay, but compression still applies
+    if (mode === 'learn' && onEdit) {
+      // Learn mode: polished inline editing wrapper
+      // Design: Subtle hover ring → click to edit → emerald editing border + badge
+      // Flow: Click → onEdit → startEditing → editingBlockId set → InlineTextEditor activates
+      // Exit: Click outside / Escape → stopEditing → save via blur on InlineTextEditor
+      return (
+        <div
+          className={`relative group/learn-block transition-all duration-200 ${isEditing
+            ? 'ring-2 ring-emerald-400/60 rounded-lg'
+            : 'hover:ring-1 hover:ring-blue-400/30 hover:rounded-lg'
+          }`}
+          data-block-id={blockId}
+          data-block-type={block.type}
+          onClick={(e) => {
+            // If NOT already editing, enter edit mode on click
+            // If already editing, let the click propagate to InlineTextEditor
+            if (!isEditing) {
+              e.stopPropagation();
+              onEdit(blockId, block.type);
+            }
+          }}
+          style={{ cursor: isEditing ? 'text' : 'pointer' }}
+        >
+          {compressedContent}
+          {/* Editing badge — visible when this block is in edit mode */}
+          {isEditing && (
+            <div className="absolute -top-0.5 right-1 z-50 flex items-center gap-1 px-2 py-0.5 rounded-b-md text-[9px] font-bold bg-emerald-500 text-white shadow-sm animate-in fade-in slide-in-from-top-1 duration-150">
+              ✏️ Editing
+            </div>
+          )}
+          {/* Hover hint — only when NOT editing, appears on hover */}
+          {!isEditing && (
+            <div className="absolute top-1 right-1 z-50 opacity-0 group-hover/learn-block:opacity-100 transition-opacity duration-200 px-2 py-1 rounded-md text-[8px] font-semibold bg-slate-800/70 text-white pointer-events-none backdrop-blur-sm">
+              Klik untuk edit
+            </div>
+          )}
+        </div>
+      );
+    }
     return compressedContent;
   }
 

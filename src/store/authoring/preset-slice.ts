@@ -38,7 +38,7 @@ import {
 } from './initial-state';
 
 export type PresetSlice = Pick<AuthoringState,
-  | 'activePreset' | 'pendingCanvasGenerate' | 'games'
+  | 'activePreset' | 'pendingCanvasGenerate'
   | 'petunjuk' | 'motivasi' | 'rangkuman' | 'penutup' | 'suara'
   | 'applyFullPreset' | 'applyKuisPreset' | 'applyTpPreset'
   | 'applyCpPreset' | 'applyAtpPreset' | 'applyAlurPreset'
@@ -48,7 +48,8 @@ export type PresetSlice = Pick<AuthoringState,
 export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice> = (set, get) => ({
   activePreset: null as string | null,
   pendingCanvasGenerate: null as string | null,
-  games: [],
+  // Phase 5-H: `games` removed from PresetSlice — auto-derived from modules
+  // via subscription in store/authoring/index.ts
   petunjuk: { ...DEFAULT_PETUNJUK },
   motivasi: { ...DEFAULT_MOTIVASI },
   rangkuman: { ...DEFAULT_RANGKUMAN },
@@ -87,7 +88,7 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       skenario: skenario ? deepClone(skenario) as SkenarioChapter[] : [],
       materi: materi ? { blok: deepClone(materi) as unknown as MateriBlok[] } : { blok: [] },
       modules: modules ? ensureModuleIds(deepClone(modules)) as Module[] : [],
-      games: modules ? (ensureModuleIds(deepClone(modules)) as Module[]).filter(m => (GAME_TYPES as readonly string[]).includes(m.type)) : [],
+      // Phase 5-H: games auto-derived from modules — no manual write needed
       petunjuk: petunjuk ? deepClone(petunjuk) : { ...DEFAULT_PETUNJUK },
       diskusi: diskusi ? deepClone(diskusi) : { ...DEFAULT_DISKUSI },
       refleksi: refleksi ? deepClone(refleksi) : { ...DEFAULT_REFLEKSI },
@@ -105,46 +106,52 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
     set({ pendingCanvasGenerate: presetKey === 'blank' ? null : presetKey });
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyKuisPreset: (presetKey: string) => {
     const p = PRESETS_KUIS[presetKey];
     if (!p) return;
     set({ kuis: deepClone(p.soal), dirty: true });
-    toast.success(`\u2705 Preset Kuis diterapkan: ${p.label}`);
+    toast.success(`✅ Preset Kuis diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyTpPreset: (presetKey: string) => {
     const p = PRESETS_TP[presetKey];
     if (!p) return;
     set({ tp: deepClone(p.items), dirty: true });
-    toast.success(`\u2705 Preset TP diterapkan: ${p.label}`);
+    toast.success(`✅ Preset TP diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyCpPreset: (presetKey: string) => {
     const p = PRESETS_CP[presetKey];
     if (!p) return;
     set({ cp: deepClone(p), dirty: true });
-    toast.success(`\u2705 Preset CP diterapkan: ${p.label}`);
+    toast.success(`✅ Preset CP diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyAtpPreset: (presetKey: string) => {
     const p = PRESETS_ATP[presetKey];
     if (!p) return;
     set({ atp: deepClone(p), dirty: true });
-    toast.success(`\u2705 Preset ATP diterapkan: ${p.label}`);
+    toast.success(`✅ Preset ATP diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyAlurPreset: (presetKey: string) => {
     const p = PRESETS_ALUR[presetKey];
     if (!p) return;
     set({ alur: deepClone(p.steps), dirty: true });
-    toast.success(`\u2705 Preset Alur diterapkan: ${p.label}`);
+    toast.success(`✅ Preset Alur diterapkan: ${p.label}`);
   },
 
+  /** @deprecated Dead code — no callers. Use applyGuidedSchemaPatch() instead. */
   applyMetaPreset: (presetKey: string) => {
     const p = PRESETS_META[presetKey];
     if (!p) return;
     set({ meta: deepClone(p), dirty: true });
-    toast.success(`\u2705 Preset meta diterapkan: ${p.label}`);
+    toast.success(`✅ Preset meta diterapkan: ${p.label}`);
   },
 
   newProject: () => {
@@ -158,7 +165,7 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       skenario: [],
       kuis: [],
       modules: [],
-      games: [], // Empty because modules is empty
+      // Phase 5-H: games auto-derived from modules — no manual write needed
       materi: { blok: [] },
       petunjuk: { ...DEFAULT_PETUNJUK },
       diskusi: { ...DEFAULT_DISKUSI },

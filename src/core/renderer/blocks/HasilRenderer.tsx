@@ -133,7 +133,7 @@ function VariantAKlasik({
             border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
             boxShadow: edu.shadow('card'),
           }}>
-          <CheckCircle2 size={14} className="inline mb-0.5" style={{ color: tokens.color('g') }} />
+          <span className="material-symbols-outlined inline mb-0.5" style={ { fontSize: '14px' } }>check_circle</span>
           <div className="font-extrabold" style={{ color: tokens.color('g'), ...edu.micro() }}>Benar</div>
           <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('g') }}>
             {scores.filter(s => s.completed).length}
@@ -145,7 +145,7 @@ function VariantAKlasik({
             border: `1px solid ${tokens.colorAlpha('y', 0.2)}`,
             boxShadow: edu.shadow('card'),
           }}>
-          <Star size={14} className="inline mb-0.5" style={{ color: tokens.color('y') }} />
+          <span className="material-symbols-outlined inline mb-0.5" style={ { fontSize: '14px' } }>star</span>
           <div className="font-extrabold" style={{ color: tokens.color('y'), ...edu.micro() }}>Skor</div>
           <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('y') }}>{displayScore}</div>
         </div>
@@ -155,7 +155,7 @@ function VariantAKlasik({
             border: `1px solid ${tokens.colorAlpha('c', 0.2)}`,
             boxShadow: edu.shadow('card'),
           }}>
-          <Target size={14} className="inline mb-0.5" style={{ color: tokens.color('c') }} />
+          <span className="material-symbols-outlined inline mb-0.5" style={ { fontSize: '14px' } }>target</span>
           <div className="font-extrabold" style={{ color: tokens.color('c'), ...edu.micro() }}>Maks</div>
           <div className={`font-black ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: tokens.color('c') }}>{displayMax}</div>
         </div>
@@ -172,7 +172,7 @@ function VariantAKlasik({
           maxWidth: tokens.iosSubtitleWidth('coverCentered'),
         }}>
         <div className="flex items-start gap-2">
-          <Sparkles size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor) }} />
+          <span className="material-symbols-outlined inline flex-shrink-0 mt-0.5" style={ { fontSize: '14px' } }>auto_awesome</span>
           <div className={`leading-relaxed text-left ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ ...edu.caption(), color: edu.mutedText(0.8) }}>
             {displayPct >= 90
               ? 'Kamu menguasai materi dengan sangat baik! Pertahankan prestasimu dan terus belajar!'
@@ -189,7 +189,7 @@ function VariantAKlasik({
       <div className="mt-3 flex gap-2">
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
           style={{ ...edu.micro(), background: 'transparent', border: `1px solid ${tokens.color(tierColor)}`, color: tokens.color(tierColor) }}>
-          <TrendingUp size={10} /> Level {displayPct >= 90 ? 'Mahir' : displayPct >= 75 ? 'Kompeten' : displayPct >= 50 ? 'Berkembang' : 'Dasar'}
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>trending_up</span> Level {displayPct >= 90 ? 'Mahir' : displayPct >= 75 ? 'Kompeten' : displayPct >= 50 ? 'Berkembang' : 'Dasar'}
         </span>
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
           style={{ ...edu.micro(), background: tokens.accentBg(tierColor, 0.08), border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`, color: tokens.color(tierColor) }}>
@@ -217,7 +217,7 @@ function VariantAKlasik({
                 color: tokens.color('bg'),
                 boxShadow: edu.shadow('card'),
               }}>
-              <RotateCcw size={14} className="inline" /> Ulangi Semua
+              <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi Semua
             </button>
         </div>
       )}
@@ -313,7 +313,7 @@ function VariantBMajalah({
             border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
           }}>
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>check_circle</span>
             <span className="font-extrabold" style={{ color: tokens.color('g'), ...edu.micro() }}>Benar</span>
           </div>
           <div className="font-black text-lg mt-0.5" style={{ color: tokens.color('g') }}>
@@ -326,7 +326,7 @@ function VariantBMajalah({
             border: `1px solid ${tokens.colorAlpha('y', 0.2)}`,
           }}>
           <div className="flex items-center gap-1.5">
-            <Star size={12} style={{ color: tokens.color('y') }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>star</span>
             <span className="font-extrabold" style={{ color: tokens.color('y'), ...edu.micro() }}>Skor</span>
           </div>
           <div className="font-black text-lg mt-0.5" style={{ color: tokens.color('y') }}>{displayScore}</div>
@@ -337,7 +337,7 @@ function VariantBMajalah({
             border: `1px solid ${tokens.colorAlpha('c', 0.2)}`,
           }}>
           <div className="flex items-center gap-1.5">
-            <Target size={12} style={{ color: tokens.color('c') }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>target</span>
             <span className="font-extrabold" style={{ color: tokens.color('c'), ...edu.micro() }}>Maks</span>
           </div>
           <div className="font-black text-lg mt-0.5" style={{ color: tokens.color('c') }}>{displayMax}</div>
@@ -350,7 +350,7 @@ function VariantBMajalah({
         <div className="flex flex-col gap-1.5 flex-shrink-0">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
             style={{ ...edu.micro(), background: 'transparent', border: `1px solid ${tokens.color(tierColor)}`, color: tokens.color(tierColor) }}>
-            <TrendingUp size={10} /> {displayPct >= 90 ? 'Mahir' : displayPct >= 75 ? 'Kompeten' : displayPct >= 50 ? 'Berkembang' : 'Dasar'}
+            <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>trending_up</span> {displayPct >= 90 ? 'Mahir' : displayPct >= 75 ? 'Kompeten' : displayPct >= 50 ? 'Berkembang' : 'Dasar'}
           </span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold"
             style={{ ...edu.micro(), background: tokens.accentBg(tierColor, 0.08), border: `1px solid ${tokens.colorAlpha(tierColor, 0.2)}`, color: tokens.color(tierColor) }}>
@@ -367,7 +367,7 @@ function VariantBMajalah({
             ...edu.nestedPadding(),
           }}>
           <div className="flex items-start gap-2">
-            <Sparkles size={13} className="flex-shrink-0 mt-0.5" style={{ color: tokens.color(tierColor) }} />
+            <span className="material-symbols-outlined flex-shrink-0 mt-0.5" style={ { fontSize: '13px' } }>auto_awesome</span>
             <div className="leading-relaxed text-left" style={{ ...edu.caption(), color: edu.mutedText(0.8) }}>
               {motivationalText}
             </div>
@@ -395,7 +395,7 @@ function VariantBMajalah({
                 color: tokens.color('bg'),
                 boxShadow: edu.shadow('card'),
               }}>
-              <RotateCcw size={12} className="inline" /> Ulangi Semua
+              <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>refresh</span> Ulangi Semua
             </button>
         </div>
       )}
@@ -464,20 +464,20 @@ function VariantCRingkas({
       {/* ── Score breakdown as simple inline text ─────────────────── */}
       <div className="mt-2 flex items-center gap-3" style={{ ...edu.micro(), color: edu.mutedText(0.85), fontWeight: 700 }}>
         <span className="flex items-center gap-1">
-          <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check_circle</span>
           <span style={{ color: tokens.color('g') }}>{scores.filter(s => s.completed).length}</span> benar
         </span>
         <span className="flex items-center gap-1">
-          <Star size={10} style={{ color: tokens.color('y') }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>star</span>
           <span style={{ color: tokens.color('y') }}>{displayScore}</span> skor
         </span>
         <span className="flex items-center gap-1">
-          <Target size={10} style={{ color: tokens.color('c') }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>target</span>
           <span style={{ color: tokens.color('c') }}>{displayMax}</span> maks
         </span>
         <span style={{ color: edu.mutedText(0.5) }}>|</span>
         <span className="flex items-center gap-0.5">
-          <TrendingUp size={10} style={{ color: tokens.color(tierColor) }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>trending_up</span>
           <span style={{ color: tokens.color(tierColor) }}>
             {displayPct >= 90 ? 'Mahir' : displayPct >= 75 ? 'Kompeten' : displayPct >= 50 ? 'Berkembang' : 'Dasar'}
           </span>
@@ -509,7 +509,7 @@ function VariantCRingkas({
               color: tokens.color('y'),
               border: `1px solid ${tokens.colorAlpha('y', 0.25)}`,
             }}>
-            <RotateCcw size={10} className="inline" /> Ulangi
+            <span className="material-symbols-outlined inline" style={ { fontSize: '10px' } }>refresh</span> Ulangi
           </button>
         </div>
       )}
@@ -577,8 +577,8 @@ function ActivityBreakdown({
           Skor Per Aktivitas
         </span>
         {expanded
-          ? <ChevronUp size={12} style={{ color: edu.mutedText(0.5) }} />
-          : <ChevronDown size={12} style={{ color: edu.mutedText(0.5) }} />
+          ? <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>expand_less</span>
+          : <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>expand_more</span>
         }
       </button>
 
@@ -598,7 +598,7 @@ function ActivityBreakdown({
                     background: act.completed ? tokens.accentBg(barColor, 0.1) : tokens.accentBg('p', 0.05),
                   }}>
                   {act.completed
-                    ? <CheckCircle2 size={10} style={{ color: tokens.color(barColor) }} />
+                    ? <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check_circle</span>
                     : <div className="w-1.5 h-1.5 rounded-full" style={{ background: tokens.muted(0.3) }} />
                   }
                 </div>
@@ -649,10 +649,10 @@ export const HasilRenderer = React.memo(function HasilRenderer({ block, tokens, 
   // Determine performance tier
   const tier = displayPct >= 90 ? 'excellent' : displayPct >= 75 ? 'good' : displayPct >= 50 ? 'fair' : 'needs-practice';
   const tierConfig = {
-    'excellent': { icon: <Trophy size={24} className="inline" />, label: 'Luar Biasa!', color: 'y', emoji: '🏆' },
-    'good': { icon: <Star size={24} className="inline" />, label: 'Hebat!', color: 'g', emoji: '⭐' },
-    'fair': { icon: <Target size={24} className="inline" />, label: 'Cukup Baik', color: 'c', emoji: '🎯' },
-    'needs-practice': { icon: <Zap size={24} className="inline" />, label: 'Terus Berlatih!', color: 'o', emoji: '💪' },
+    'excellent': { icon: <span className="material-symbols-outlined inline" style={ { fontSize: '24px' } }>emoji_events</span>, label: 'Luar Biasa!', color: 'y', emoji: '🏆' },
+    'good': { icon: <span className="material-symbols-outlined inline" style={ { fontSize: '24px' } }>star</span>, label: 'Hebat!', color: 'g', emoji: '⭐' },
+    'fair': { icon: <span className="material-symbols-outlined inline" style={ { fontSize: '24px' } }>target</span>, label: 'Cukup Baik', color: 'c', emoji: '🎯' },
+    'needs-practice': { icon: <span className="material-symbols-outlined inline" style={ { fontSize: '24px' } }>bolt</span>, label: 'Terus Berlatih!', color: 'o', emoji: '💪' },
   }[tier];
   const tierColor = tierConfig.color;
 

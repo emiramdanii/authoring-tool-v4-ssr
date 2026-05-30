@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Misi 1 — Bintang Kerukunan Revisi</title>
+<style>
+:root{
+  --navy:#14243d;
+  --blue:#1d3557;
+  --sky:#457b9d;
+  --cream:#fff8e6;
+  --paper:#fffdf7;
+  --gold:#ffd166;
+  --gold2:#ffb703;
+  --red:#e63946;
+  --green:#2a9d8f;
+  --soft-blue:#eaf6ff;
+  --soft-gold:#fff2c6;
+  --soft-green:#ecfff7;
+  --soft-red:#fff0f1;
+  --text:#17324d;
+  --muted:#61758a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;background:#0b1728;color:var(--text)}
+body{display:grid;place-items:center}
+.viewport{width:100vw;height:100vh;display:grid;place-items:center;padding:14px;background:radial-gradient(circle at 15% 15%,rgba(255,209,102,.18),transparent 34%),linear-gradient(135deg,#0b1728 0%,#17385d 62%,#203b5f 100%)}
+.stage{width:min(1280px,calc(100vw - 28px),calc((100vh - 28px)*16/9));aspect-ratio:16/9;max-height:calc(100vh - 28px);position:relative;overflow:hidden;border-radius:28px;background:linear-gradient(135deg,#f9fbff 0%,#fff8e6 100%);box-shadow:0 24px 70px rgba(0,0,0,.38)}
+.stage:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 12% 18%,rgba(255,209,102,.35),transparent 20%),radial-gradient(circle at 85% 20%,rgba(69,123,157,.18),transparent 28%),radial-gradient(circle at 82% 86%,rgba(42,157,143,.13),transparent 30%);pointer-events:none}
+.scene{position:absolute;inset:0;display:none;padding:42px 54px;z-index:1}
+.scene.active{display:grid;animation:fade .24s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.topbar{position:absolute;top:22px;left:34px;right:34px;display:flex;align-items:center;justify-content:space-between;z-index:5;pointer-events:none}
+.brand{display:flex;gap:10px;align-items:center;color:#fff;font-weight:900;letter-spacing:.02em;text-shadow:0 2px 12px rgba(0,0,0,.16)}
+.brand .dot{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),#fff2a8);box-shadow:0 9px 20px rgba(255,183,3,.25);color:#1d3557}
+.progress{display:flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.55);box-shadow:0 8px 24px rgba(20,36,61,.08)}
+.pip{width:10px;height:10px;border-radius:999px;background:rgba(29,53,87,.18)}
+.pip.done,.pip.active{background:var(--gold2)}
+.pip.active{width:28px}
+
+.hero{height:100%;display:grid;grid-template-columns:1.08fr .92fr;gap:34px;align-items:center}
+.panel{background:rgba(255,255,255,.84);border:1px solid rgba(255,255,255,.76);border-radius:32px;box-shadow:0 22px 56px rgba(29,53,87,.14);padding:34px;position:relative;overflow:hidden}
+.panel:after{content:"";position:absolute;right:-80px;bottom:-100px;width:230px;height:230px;border-radius:50%;background:rgba(255,209,102,.17)}
+.kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border-radius:999px;background:var(--soft-gold);color:#7b4d00;font-size:14px;font-weight:900;margin-bottom:16px;border:1px solid rgba(255,183,3,.28)}
+h1,h2{font-family:'Arial Rounded MT Bold','Trebuchet MS','Segoe UI',Arial,sans-serif;line-height:1.04;color:var(--blue);font-weight:900;letter-spacing:-.025em}
+h1{font-size:clamp(46px,5.3vw,76px);margin-bottom:16px;text-transform:uppercase}
+h2{font-size:clamp(34px,4vw,56px);margin-bottom:12px}
+h1 span,h2 span{color:var(--red)}
+p{font-size:clamp(17px,1.45vw,22px);line-height:1.48;color:#405a72;font-weight:650}
+.lead{font-size:clamp(19px,1.65vw,25px);line-height:1.46;color:#2a4660;font-weight:700}
+.visual-card{height:450px;border-radius:36px;background:linear-gradient(145deg,#1d3557 0%,#2f6790 60%,#ffd166 160%);position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 26px 50px rgba(29,53,87,.24);overflow:hidden;display:grid;place-items:center;color:white;text-align:center;padding:28px}
+.visual-card:before{content:"";position:absolute;inset:-30%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.22),transparent 14%),radial-gradient(circle at 65% 60%,rgba(255,209,102,.25),transparent 22%);animation:floatbg 9s ease-in-out infinite alternate}
+@keyframes floatbg{to{transform:translate(30px,-20px) scale(1.05)}}
+.big-star{font-size:150px;filter:drop-shadow(0 18px 28px rgba(0,0,0,.25));position:relative;z-index:1;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.06) rotate(2deg)}}
+.visual-title{position:relative;z-index:1;font-size:30px;font-weight:900;margin-top:12px;color:#fff}
+.visual-sub{position:relative;z-index:1;font-size:17px;color:rgba(255,255,255,.82);font-weight:700;margin-top:8px}
+
+.content{height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:18px}
+.header{text-align:center;max-width:920px;margin:0 auto}
+.header .kicker{margin-bottom:10px}.header p{max-width:880px;margin:0 auto}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-self:center}
+.info-card{min-height:210px;background:rgba(255,255,255,.88);border:1px solid rgba(29,53,87,.08);border-radius:28px;padding:24px;box-shadow:0 16px 42px rgba(29,53,87,.10);position:relative;overflow:hidden;text-align:left}
+.info-card.gold{background:linear-gradient(180deg,#fff9df,#fff)}.info-card.blue{background:linear-gradient(180deg,#eaf6ff,#fff)}.info-card.green{background:linear-gradient(180deg,#ecfff7,#fff)}
+.icon{font-size:42px;margin-bottom:12px}.title{font-size:23px;font-weight:900;color:var(--blue);margin-bottom:9px}.body{font-size:17px;line-height:1.42;color:#566f85;font-weight:650}
+
+.story-wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:22px;align-items:center;align-self:center}
+.scene-illustration{min-height:360px;border-radius:32px;background:linear-gradient(145deg,#eaf6ff,#fff7d8);box-shadow:0 18px 46px rgba(29,53,87,.12);position:relative;overflow:hidden;display:grid;place-items:center;text-align:center;padding:24px;border:1px solid rgba(29,53,87,.08)}
+.scene-illustration .emoji{font-size:108px;line-height:1}.scene-illustration .caption{font-size:22px;font-weight:900;color:var(--blue);margin-top:16px}.scene-illustration:before{content:"";position:absolute;inset:auto -70px -80px auto;width:230px;height:230px;border-radius:50%;background:rgba(255,209,102,.34)}
+.story-card{border-radius:32px;background:rgba(255,255,255,.9);box-shadow:0 18px 46px rgba(29,53,87,.12);padding:32px;border:1px solid rgba(29,53,87,.08)}
+.story-card p{font-size:22px;line-height:1.5;margin-bottom:12px}.question{margin-top:18px;padding:18px 20px;border-radius:22px;background:var(--soft-gold);border:1px solid rgba(255,183,3,.35);color:var(--blue);font-size:24px;font-weight:900;text-align:center}
+
+.choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-self:center}
+.choice{border:0;border-radius:28px;background:rgba(255,255,255,.9);box-shadow:0 18px 42px rgba(29,53,87,.13);padding:22px;min-height:250px;cursor:pointer;text-align:left;transition:.2s ease;border:3px solid transparent;color:inherit;font-family:inherit}
+.choice:hover{transform:translateY(-5px);box-shadow:0 24px 54px rgba(29,53,87,.18)}
+.choice.selected{border-color:var(--gold2);background:#fff8db}.choice.correct{border-color:var(--green);background:var(--soft-green)}.choice.wrong{border-color:var(--red);background:var(--soft-red)}
+.path-label{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(29,53,87,.08);font-size:13px;font-weight:900;color:var(--blue);margin-bottom:12px}.path-title{font-size:24px;font-weight:900;color:var(--blue);margin-bottom:12px}.path-text{font-size:18px;line-height:1.42;color:#526b80;font-weight:650}
+.feedback{display:none;margin-top:0;padding:18px 24px;border-radius:24px;background:rgba(255,255,255,.86);border:1px solid rgba(29,53,87,.09);box-shadow:0 14px 36px rgba(29,53,87,.10);align-items:center;gap:15px}.feedback.show{display:flex}.feedback .mark{font-size:34px}.feedback strong{font-size:22px;color:var(--blue)}.feedback p{font-size:17px;line-height:1.4}
+
+.key-layout{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:center;align-self:center}.key-box{border-radius:32px;background:rgba(255,255,255,.9);box-shadow:0 18px 46px rgba(29,53,87,.12);padding:32px;border:1px solid rgba(29,53,87,.08)}.key-box h3{font-size:30px;color:var(--blue);margin-bottom:14px}.key-box p{font-size:21px;line-height:1.52;margin-bottom:12px}.mission-key{margin-top:18px;padding:18px 20px;border-radius:22px;background:var(--soft-green);border:1px solid rgba(42,157,143,.25);font-weight:900;color:#1e6d62;font-size:21px}.badge-card{min-height:360px;border-radius:36px;background:linear-gradient(145deg,#1d3557,#2a6f97);display:grid;place-items:center;text-align:center;color:white;box-shadow:0 24px 56px rgba(29,53,87,.24);padding:28px;position:relative;overflow:hidden}.badge-card:before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,209,102,.22);top:-80px;right:-70px}.badge{width:220px;height:220px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#fff6bf 0%,#ffd166 52%,#ffb703 100%);font-size:105px;box-shadow:0 20px 46px rgba(0,0,0,.25);position:relative;z-index:1}.badge-title{position:relative;z-index:1;margin-top:16px;font-size:28px;font-weight:900}.badge-sub{position:relative;z-index:1;margin-top:8px;font-size:17px;color:rgba(255,255,255,.84);font-weight:700}
+
+.finish-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:24px;align-items:center;align-self:center}.summary-list{display:grid;gap:12px;margin-top:18px}.summary-item{display:flex;gap:12px;align-items:flex-start;padding:13px 15px;border-radius:18px;background:rgba(255,255,255,.68);border:1px solid rgba(29,53,87,.07);font-size:18px;font-weight:700;color:#456076}.summary-item span:first-child{font-size:24px;line-height:1}.reward{min-height:390px;border-radius:36px;background:linear-gradient(145deg,#fff6c8,#ffffff);display:grid;place-items:center;text-align:center;box-shadow:0 22px 52px rgba(29,53,87,.13);padding:28px;border:1px solid rgba(255,183,3,.25)}.reward .big{font-size:150px;animation:pulse 2.4s ease-in-out infinite}.reward h3{font-size:34px;color:var(--blue);margin-top:10px}.reward p{font-size:20px;margin-top:8px}
+
+.nav{display:flex;justify-content:center;gap:14px;align-items:center;z-index:4}.btn{min-width:170px;min-height:52px;border:0;border-radius:999px;cursor:pointer;font-size:17px;font-weight:850;box-shadow:0 12px 26px rgba(29,53,87,.14);transition:.18s ease;font-family:inherit}.btn:hover{transform:translateY(-2px)}.btn.primary{background:linear-gradient(135deg,var(--red),#ff5964);color:white}.btn.secondary{background:linear-gradient(135deg,var(--gold),#fff0a3);color:#17324d}.btn.ghost{background:rgba(255,255,255,.72);color:var(--blue);border:1px solid rgba(29,53,87,.10)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.small-note{position:absolute;right:34px;bottom:24px;font-size:13px;font-weight:800;color:rgba(23,50,77,.52)}
+
+@media (max-width:900px),(max-height:650px){
+  .scene{padding:28px 36px}.topbar{top:14px;left:24px;right:24px}.brand{font-size:12px}.brand .dot{width:30px;height:30px}.progress{padding:6px 9px}.pip{width:8px;height:8px}.pip.active{width:22px}
+  .hero{gap:18px}.panel{padding:23px;border-radius:24px}.visual-card{height:330px;border-radius:28px}.big-star{font-size:105px}.visual-title{font-size:22px}.visual-sub{font-size:13px}
+  h1{font-size:42px}h2{font-size:32px}.lead,p{font-size:15px}.kicker{font-size:11px;padding:6px 11px;margin-bottom:10px}.content{gap:10px}.header p{font-size:14px}.card-grid{gap:10px}.info-card{min-height:145px;padding:16px;border-radius:20px}.icon{font-size:28px;margin-bottom:8px}.title{font-size:16px}.body{font-size:12px;line-height:1.35}
+  .story-wrap{gap:14px}.scene-illustration{min-height:235px;border-radius:24px}.scene-illustration .emoji{font-size:76px}.scene-illustration .caption{font-size:16px}.story-card{padding:22px;border-radius:24px}.story-card p{font-size:15px;margin-bottom:8px}.question{font-size:16px;padding:12px 14px;border-radius:16px}
+  .choice-grid{gap:10px}.choice{min-height:172px;padding:15px;border-radius:20px}.path-label{font-size:10px;padding:5px 9px}.path-title{font-size:17px}.path-text{font-size:13px}.feedback{padding:12px 16px;border-radius:18px}.feedback .mark{font-size:26px}.feedback strong{font-size:15px}.feedback p{font-size:12px}
+  .key-layout{gap:14px}.key-box{padding:22px;border-radius:24px}.key-box h3{font-size:21px}.key-box p{font-size:15px}.mission-key{font-size:15px;padding:13px;border-radius:16px}.badge-card{min-height:250px;border-radius:26px}.badge{width:150px;height:150px;font-size:72px}.badge-title{font-size:20px}.badge-sub{font-size:13px}
+  .finish-grid{gap:14px}.summary-list{gap:7px;margin-top:10px}.summary-item{font-size:12.5px;padding:9px 10px;border-radius:14px}.summary-item span:first-child{font-size:18px}.reward{min-height:250px;border-radius:26px}.reward .big{font-size:95px}.reward h3{font-size:22px}.reward p{font-size:14px}.btn{min-width:135px;min-height:42px;font-size:13px}.small-note{font-size:10px;right:24px;bottom:16px}
+}
+
+
+/* Revisi: feedback menjadi halaman sendiri */
+.choice.locked{pointer-events:none;opacity:.72}
+.result-layout{display:grid;grid-template-columns:.9fr 1.1fr;gap:24px;align-items:center;align-self:center}
+.result-card{border-radius:34px;background:rgba(255,255,255,.92);box-shadow:0 20px 50px rgba(29,53,87,.13);padding:34px;border:1px solid rgba(29,53,87,.08);position:relative;overflow:hidden}
+.result-card:before{content:"";position:absolute;right:-90px;top:-90px;width:220px;height:220px;border-radius:50%;background:rgba(255,209,102,.20)}
+.result-mark{width:106px;height:106px;border-radius:30px;display:grid;place-items:center;font-size:54px;background:var(--soft-gold);box-shadow:0 14px 30px rgba(29,53,87,.10);margin-bottom:18px;position:relative;z-index:1}
+.result-card h3{font-size:34px;color:var(--blue);margin-bottom:12px;position:relative;z-index:1}.result-card p{font-size:22px;line-height:1.5;position:relative;z-index:1}.result-card.good{background:linear-gradient(180deg,#ecfff7,#fff)}.result-card.warn{background:linear-gradient(180deg,#fff7db,#fff)}.result-card.bad{background:linear-gradient(180deg,#fff0f1,#fff)}
+.result-path{border-radius:30px;background:linear-gradient(145deg,#1d3557,#2a6f97);color:white;min-height:360px;display:grid;place-items:center;text-align:center;padding:28px;box-shadow:0 22px 54px rgba(29,53,87,.22);position:relative;overflow:hidden}.result-path:before{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:rgba(255,209,102,.20);top:-110px;right:-80px}.result-path .path-big{font-size:82px;position:relative;z-index:1}.result-path h3{font-size:30px;margin-top:12px;position:relative;z-index:1}.result-path p{font-size:18px;color:rgba(255,255,255,.84);margin-top:8px;position:relative;z-index:1}
+.symbol-img{width:180px;height:180px;object-fit:contain;filter:drop-shadow(0 18px 24px rgba(0,0,0,.20));position:relative;z-index:1;animation:pulse 2.4s ease-in-out infinite}.symbol-img.large{width:235px;height:235px}.chain-row{display:flex;gap:10px;justify-content:center;align-items:center;margin:16px 0}.chain-link{width:52px;height:36px;border:8px solid var(--gold2);box-shadow:0 8px 18px rgba(255,183,3,.22)}.chain-link.circle{border-radius:50%}.chain-link.square{border-radius:10px}.micro-note{font-size:15px;color:#6b7f91;font-weight:750;margin-top:12px;padding:13px 16px;border-radius:16px;background:rgba(255,255,255,.58);border:1px solid rgba(29,53,87,.08)}
+@media (max-width:900px),(max-height:650px){.result-layout{gap:14px}.result-card{padding:22px;border-radius:24px}.result-mark{width:72px;height:72px;font-size:38px;border-radius:20px;margin-bottom:10px}.result-card h3{font-size:22px}.result-card p{font-size:15px}.result-path{min-height:250px;border-radius:24px}.result-path .path-big{font-size:55px}.result-path h3{font-size:21px}.result-path p{font-size:13px}.symbol-img{width:115px;height:115px}.symbol-img.large{width:155px;height:155px}.chain-link{width:34px;height:24px;border-width:5px}.micro-note{font-size:11px;padding:9px 11px}}
+</style>
+</head>
+<body>
+<div class="viewport">
+  <main class="stage" aria-live="polite">
+    <div class="topbar">
+      <div class="brand"><div class="dot">⭐</div><div>Penjelajah Pancasila</div></div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <section class="scene active" data-scene="0">
+      <div class="hero">
+        <div class="panel">
+          <div class="kicker">⭐ Misi 1 • Sila Pertama</div>
+          <h1>Mencari <span>Bintang Kerukunan</span></h1>
+          <p class="lead">Kamu telah membuka Peta Misi Pancasila. Misi pertama dimulai dari lambang <b>bintang</b>, simbol Sila Pertama: <b>Ketuhanan Yang Maha Esa</b>.</p>
+          <p style="margin-top:14px">Untuk mendapatkan Bintang Kerukunan, kamu harus menunjukkan sikap yang menghormati agama dan keyakinan orang lain.</p>
+          <div class="nav" style="justify-content:flex-start;margin-top:26px">
+            <button class="btn primary" onclick="nextScene()">Masuki Misi</button>
+            <button class="btn ghost" onclick="goScene(6)">Lihat Lencana</button>
+          </div>
+        </div>
+        <div class="visual-card"><div><div class="big-star">⭐</div><div class="visual-title">Bintang Kerukunan</div><div class="visual-sub">Lencana untuk penjelajah yang menghargai perbedaan</div></div></div>
+      </div>
+      <div class="small-note">Misi 1 dari 5</div>
+    </section>
+
+    <section class="scene" data-scene="1">
+      <div class="content">
+        <div class="header"><div class="kicker">🧭 Bekal Penjelajah</div><h2>Nilai dan Makna <span>Sila Pertama</span></h2><p>Sebelum masuk ke tantangan, pahami dulu bekal utama dari Sila Pertama.</p></div>
+        <div class="card-grid">
+          <div class="info-card gold"><div class="icon">⭐</div><div class="title">Makna Sila</div><div class="body">Bangsa Indonesia percaya kepada Tuhan Yang Maha Esa dan menghormati agama serta keyakinan setiap orang.</div></div>
+          <div class="info-card blue"><div class="icon">🙏</div><div class="title">Nilai Utama</div><div class="body">Keimanan, ketakwaan, toleransi, dan saling menghormati antarumat beragama.</div></div>
+          <div class="info-card green"><div class="icon">🧭</div><div class="title">Arah Sikap</div><div class="body">Setiap orang perlu diberi kesempatan untuk menjalankan ibadah dengan tenang sesuai keyakinannya.</div></div>
+        </div>
+        <div class="nav"><button class="btn ghost" onclick="prevScene()">Sebelumnya</button><button class="btn primary" onclick="nextScene()">Lanjut ke Situasi</button></div>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="2">
+      <div class="content">
+        <div class="header"><div class="kicker">🏫 Pos Misi</div><h2>Suasana di <span>Sekolah</span></h2></div>
+        <div class="story-wrap">
+          <div class="scene-illustration"><div><div class="emoji">🏫🙏💬</div><div class="caption">Ada teman yang ingin beribadah dengan tenang.</div></div></div>
+          <div class="story-card"><p>Saat jam istirahat, beberapa siswa sedang berada di ruang kelas.</p><p>Ada teman yang ingin menjalankan ibadah sesuai keyakinannya.</p><p>Namun, sebagian siswa berbicara keras dan bercanda di dekatnya. Suasana menjadi kurang nyaman.</p><div class="question">Sebagai Penjelajah Pancasila, apa sikap terbaik yang akan kamu lakukan?</div></div>
+        </div>
+        <div class="nav"><button class="btn ghost" onclick="prevScene()">Sebelumnya</button><button class="btn primary" onclick="nextScene()">Pilih Jalan Sikap</button></div>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="3">
+      <div class="content">
+        <div class="header"><div class="kicker">🛤️ Tantangan Misi</div><h2>Pilih <span>Jalan Sikap</span></h2><p>Pilih jalan yang paling sesuai dengan nilai Sila Pertama.</p></div>
+        <div class="choice-grid">
+          <button class="choice" onclick="choose('A')" data-choice="A"><div class="path-label">Jalan A</div><div class="path-title">Diam Saja</div><div class="path-text">Menjauh dan membiarkan keadaan tetap ramai.</div></button>
+          <button class="choice" onclick="choose('B')" data-choice="B"><div class="path-label">Jalan B</div><div class="path-title">Ingatkan dengan Sopan</div><div class="path-text">Mengingatkan teman agar lebih tenang dan menghargai teman yang sedang beribadah.</div></button>
+          <button class="choice" onclick="choose('C')" data-choice="C"><div class="path-label">Jalan C</div><div class="path-title">Menyuruh Pindah</div><div class="path-text">Menyuruh teman yang beribadah pindah ke tempat lain.</div></button>
+        </div>
+        <div class="nav"><button class="btn ghost" onclick="prevScene()">Sebelumnya</button><button class="btn primary" onclick="alert('Silakan klik salah satu jalan sikap untuk melihat akibat pilihan.')">Klik Salah Satu Jalan</button></div>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="4">
+      <div class="content">
+        <div class="header"><div class="kicker">🧭 Akibat Pilihan</div><h2>Akibat dari <span>Jalan Sikapmu</span></h2><p>Setiap pilihan membawa akibat. Perhatikan hubungan pilihanmu dengan nilai Pancasila.</p></div>
+        <div class="result-layout">
+          <div class="result-path"><div><div class="path-big" id="resultIcon">🧭</div><h3 id="resultPath">Jalan Sikap</h3><p id="resultSub">Akibat pilihanmu akan terlihat di sini.</p></div></div>
+          <div class="result-card" id="resultCard"><div class="result-mark" id="resultMark">⭐</div><h3 id="resultTitle">Pilih salah satu jalan.</h3><p id="resultText">Kembali ke halaman sebelumnya untuk memilih sikap.</p></div>
+        </div>
+        <div class="nav"><button class="btn ghost" onclick="goScene(3)">Ubah Pilihan</button><button class="btn primary" onclick="nextScene()">Buka Kunci Nilai</button></div>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="5">
+      <div class="content">
+        <div class="header"><div class="kicker">🔑 Kunci Nilai</div><h2>Kunci Nilai <span>Sila Pertama</span></h2></div>
+        <div class="key-layout">
+          <div class="key-box"><h3>Mengapa Jalan B paling tepat?</h3><p>Sikap terbaik adalah mengingatkan teman dengan sopan agar tidak mengganggu ibadah orang lain.</p><p>Sikap ini menunjukkan bahwa kita menghormati keyakinan dan hak setiap orang untuk beribadah dengan tenang.</p><div class="mission-key">Kunci Misi: Menghormati ibadah orang lain adalah bagian dari pengamalan Sila Pertama.</div></div>
+          <div class="badge-card"><div><div class="badge">🔑</div><div class="badge-title">Kunci Terbuka</div><div class="badge-sub">Kamu memahami arah sikap Sila Pertama.</div></div></div>
+        </div>
+        <div class="nav"><button class="btn ghost" onclick="prevScene()">Sebelumnya</button><button class="btn primary" onclick="nextScene()">Ambil Bintang Kerukunan</button></div>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="6">
+      <div class="content">
+        <div class="header"><div class="kicker">🏅 Lencana Misi</div><h2>Misi 1 <span>Berhasil!</span></h2><p>Kamu berhasil mendapatkan Bintang Kerukunan.</p></div>
+        <div class="finish-grid">
+          <div class="key-box"><h3>Kesimpulan Misi 1</h3><p>Sila Pertama mengajarkan kita untuk percaya kepada Tuhan Yang Maha Esa, menghormati perbedaan agama, dan menjaga kerukunan.</p><div class="summary-list"><div class="summary-item"><span>🙏</span><span>Beribadah sesuai agama masing-masing.</span></div><div class="summary-item"><span>🤫</span><span>Tidak mengganggu teman yang sedang beribadah.</span></div><div class="summary-item"><span>💬</span><span>Menjaga ucapan agar tidak menyinggung keyakinan orang lain.</span></div><div class="summary-item"><span>🤝</span><span>Hidup rukun dengan teman yang berbeda agama.</span></div></div></div>
+          <div class="reward"><div><div class="big">⭐</div><h3>Bintang Kerukunan</h3><p>Lencana Sila Pertama telah terbuka.</p></div></div>
+        </div>
+        <div class="nav"><button class="btn ghost" onclick="goScene(0)">Ulangi Misi</button><button class="btn secondary" onclick="alert('Kembali ke Peta Misi dapat dihubungkan ke Section 1.')">Kembali ke Peta</button><button class="btn primary" onclick="alert('Lanjut ke Misi 2.')">Lanjut Misi 2</button></div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+const scenes=[...document.querySelectorAll('.scene')];
+let current=0;
+let selectedChoice=null;
+const resultData={
+  A:{icon:'🧭',path:'Jalan A — Diam Saja',sub:'Kamu memilih untuk menjauh.',kind:'bad',mark:'⚠️',title:'Jalan ini belum tepat.',text:'Jika hanya diam, suasana tetap ramai dan teman yang ingin beribadah belum merasa dihargai.'},
+  B:{icon:'⭐',path:'Jalan B — Ingatkan dengan Sopan',sub:'Kamu memilih jalan terbaik.',kind:'good',mark:'⭐',title:'Jalan terbaik!',text:'Kamu menunjukkan sikap hormat dan peduli. Teman dapat beribadah dengan tenang, dan suasana kelas tetap rukun.'},
+  C:{icon:'🧭',path:'Jalan C — Menyuruh Pindah',sub:'Kamu memilih meminta teman pindah.',kind:'bad',mark:'⚠️',title:'Jalan ini belum tepat.',text:'Menyuruh teman pindah bisa membuatnya merasa tidak dihargai. Kita perlu menjaga ketenangan bersama.'}
+};
+function renderProgress(){const holder=document.getElementById('progress');holder.innerHTML='';scenes.forEach((_,i)=>{const pip=document.createElement('div');pip.className='pip'+(i<current?' done':'')+(i===current?' active':'');holder.appendChild(pip);})}
+function goScene(index){current=Math.max(0,Math.min(index,scenes.length-1));scenes.forEach((s,i)=>s.classList.toggle('active',i===current));renderProgress();if(current===4) renderResult();}
+function nextScene(){goScene(current+1)}
+function prevScene(){goScene(current-1)}
+function choose(choice){selectedChoice=choice;document.querySelectorAll('.choice').forEach(btn=>{btn.classList.remove('selected','correct','wrong');if(btn.dataset.choice===choice){btn.classList.add('selected', choice==='B'?'correct':'wrong');}});goScene(4)}
+function renderResult(){const d=resultData[selectedChoice]||{icon:'🧭',path:'Belum memilih jalan',sub:'Kembali untuk memilih sikap.',kind:'warn',mark:'🧭',title:'Belum ada pilihan.',text:'Silakan kembali ke halaman pilihan sikap terlebih dahulu.'};document.getElementById('resultIcon').textContent=d.icon;document.getElementById('resultPath').textContent=d.path;document.getElementById('resultSub').textContent=d.sub;const card=document.getElementById('resultCard');card.className='result-card '+d.kind;document.getElementById('resultMark').textContent=d.mark;document.getElementById('resultTitle').textContent=d.title;document.getElementById('resultText').textContent=d.text;}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight') nextScene(); if(e.key==='ArrowLeft') prevScene();});
+renderProgress();
+</script>
+</body>
+</html>

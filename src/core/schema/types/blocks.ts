@@ -319,6 +319,10 @@ export interface SortirGameBlock extends BaseBlock {
 export interface RodaGameBlock extends BaseBlock {
   type: 'roda-game';
   title: string;
+  /** Whether to show one question at a time ('single') or all at once ('all') */
+  stepMode?: 'single' | 'all';
+  /** Starting question index (0-based). Runtime tracks progress via interactive store. */
+  currentQuestionIndex?: number;
   questions: Array<{
     q: string;
     diskusiHint?: string;
@@ -679,7 +683,7 @@ export interface TabIconsBlock extends BaseBlock {
   title: string;
   intro?: string;
   /** Layout variant: horizontal, vertical, pills */
-  layout?: 'horizontal' | 'vertical' | 'pills';
+  layoutVariant?: 'horizontal' | 'vertical' | 'pills';
   /** Animation style for tab switching */
   animation?: 'fade' | 'slide-up' | 'zoom' | 'bounce';
   tabs: Array<{
@@ -719,7 +723,7 @@ export interface InfografisBlock extends BaseBlock {
   title: string;
   intro?: string;
   /** Layout variant: grid, list, timeline */
-  layout?: 'grid' | 'list' | 'timeline';
+  layoutVariant?: 'grid' | 'list' | 'timeline';
   kartu: Array<{
     icon: string;
     judul: string;

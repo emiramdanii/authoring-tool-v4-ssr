@@ -35,21 +35,21 @@ const TOUR_STEPS: TourStep[] = [
     title: 'Toolbar Editor',
     description: 'Ini adalah toolbar utama. Di sini Anda bisa mempreview, undo/redo, mengatur zoom, dan mengexport hasil karya Anda.',
     position: 'bottom',
-    icon: <Settings2 className="h-5 w-5" />,
+    icon: <span className="material-symbols-outlined h-5 w-5" style={ { fontSize: '16px' } }>settings</span>,
   },
   {
     targetSelector: '[data-tour="play-button"]',
     title: 'Preview Media',
     description: 'Klik tombol hijau ini untuk melihat tampilan media pembelajaran Anda seperti yang akan dilihat siswa. Ini adalah tombol yang paling sering digunakan!',
     position: 'bottom',
-    icon: <Play className="h-5 w-5" />,
+    icon: <span className="material-symbols-outlined h-5 w-5" style={ { fontSize: '16px' } }>play_arrow</span>,
   },
   {
     targetSelector: '[data-tour="left-panel"]',
     title: 'Panel Halaman & Block',
     description: 'Panel kiri menampilkan daftar halaman dan block. Gunakan tab "Tambah" untuk menambahkan konten baru seperti kuis, game, dan materi.',
     position: 'right',
-    icon: <Layers className="h-5 w-5" />,
+    icon: <span className="material-symbols-outlined h-5 w-5" style={ { fontSize: '16px' } }>layers</span>,
   },
   {
     targetSelector: '[data-tour="canvas-stage"]',
@@ -63,7 +63,7 @@ const TOUR_STEPS: TourStep[] = [
     title: 'Panel Properti',
     description: 'Panel kanan menampilkan properti block yang sedang dipilih. Di sini Anda bisa mengubah teks, warna, dan pengaturan lainnya. Ada juga AI Assistant untuk membantu membuat konten!',
     position: 'left',
-    icon: <Sparkles className="h-5 w-5" />,
+    icon: <span className="material-symbols-outlined h-5 w-5" style={ { fontSize: '16px' } }>auto_awesome</span>,
   },
 ];
 
@@ -356,7 +356,7 @@ export default function CanvaTour() {
           <div className="bg-app-accent/10 px-5 pt-4 pb-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-app-accent/20 flex items-center justify-center text-app-accent">
-                {step!.icon || <LifeBuoy className="h-5 w-5" />}
+                {step!.icon || <span className="material-symbols-outlined h-5 w-5" style={ { fontSize: '16px' } }>lifebuoy</span>}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[10px] font-medium text-app-accent/70">
@@ -372,7 +372,7 @@ export default function CanvaTour() {
                 className="p-1.5 rounded-lg hover:bg-app-elevated text-app-muted hover:text-app-primary transition-colors"
                 aria-label="Tutup tur"
               >
-                <X size={14} />
+                <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>close</span>
               </button>
             </div>
           </div>
@@ -470,7 +470,7 @@ export default function CanvaTour() {
                 onClick={prevStep}
                 className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium text-app-secondary hover:text-app-primary transition-colors rounded-lg hover:bg-app-elevated"
               >
-                <ChevronLeft size={12} />
+                <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>chevron_left</span>
                 Kembali
               </button>
             )}
@@ -483,12 +483,12 @@ export default function CanvaTour() {
               {isLast ? (
                 <>
                   Selesai
-                  <Sparkles size={12} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>auto_awesome</span>
                 </>
               ) : (
                 <>
                   Lanjut
-                  <ChevronRight size={12} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>chevron_right</span>
                 </>
               )}
             </button>

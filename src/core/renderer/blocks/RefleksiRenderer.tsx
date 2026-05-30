@@ -44,11 +44,15 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
     if (!interactive || !allAnswered) return;
     setSubmitted(true);
     if (block.id) {
+      // Report completion without inflating actual score — refleksi is
+      // reflection-based, not scored. Score (0, 0) allows the bridge
+      // to mark the page as completed via markPageReflected, but won't
+      // add to the Hasil page's total score.
       reportScore({
         elementId: block.id,
         pageIndex: pageIndex ?? 0,
-        score: (block.questions || []).length * 10,
-        maxScore: (block.questions || []).length * 10,
+        score: 0,
+        maxScore: 0,
         completed: true,
       });
     }
@@ -77,7 +81,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           ...edu.cardStyle(),
         }}>
         <div className="mb-3">
-          <CheckCircle2 size={28} style={{ color: tokens.color('g') }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '28px' } }>check_circle</span>
         </div>
         <div className="font-bold mb-2" style={{ ...edu.heading(), color: edu.textColor() }}>
           Refleksi Selesai
@@ -89,7 +93,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
           {(block.questions || []).map((_, i) => (
             <div key={`refleksi-dot-${block.id || 'ref'}-${i}`} className="w-5 h-5 rounded-full flex items-center justify-center"
               style={{ background: tokens.accentBg('g', 0.1) }}>
-              <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check_circle</span>
             </div>
           ))}
         </div>
@@ -103,7 +107,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
               background: edu.accentAlpha(0.08),
               border: `1px solid ${edu.accentBorder()}`,
             }}>
-            <RotateCcw size={14} className="inline" /> Tulis Ulang
+            <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Tulis Ulang
           </button>
         </div>
       </div>
@@ -179,7 +183,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
                 />
                 {hasResponse && (
                   <div className="absolute top-2 right-2">
-                    <CheckCircle2 size={14} style={{ color: tokens.color('g') }} />
+                    <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>check_circle</span>
                   </div>
                 )}
               </div>

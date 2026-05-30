@@ -125,7 +125,7 @@ function RangkumanConceptCardA({ concept, index, tokens, isCompact }: {
           borderTop: `1px solid ${tokens.colorAlpha(concept.color, 0.12)}`,
         }}
       >
-        <CheckCircle2 size={9} style={{ color: tokens.colorAlpha(concept.color, 0.65) }} />
+        <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>check_circle</span>
         <span
           className="font-bold"
           style={{
@@ -342,7 +342,7 @@ function RangkumanAccordionGroup({ concepts, tokens, isCompact }: {
 
               {/* Expand/collapse icon */}
               <div className="flex-shrink-0" style={{ color: conceptColor, opacity: 0.6 }}>
-                {isOpen ? <ChevronUp size={isCompact ? 12 : 14} /> : <ChevronDown size={isCompact ? 12 : 14} />}
+                {isOpen ? <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_less</span> : <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span>}
               </div>
             </button>
 
@@ -573,7 +573,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
                   justifyContent: 'center',
                 }}
               >
-                <BookOpen size={isCompact ? 13 : 16} style={{ color: tokens.color('bg') }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>menu_book</span>
               </div>
             ) : (
               /* Default: rounded icon box */
@@ -584,7 +584,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
                   border: `1px solid ${accentAlpha(0.3)}`,
                 }}
               >
-                <BookOpen size={16} style={{ color: accent }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>menu_book</span>
               </div>
             )}
             <h2
@@ -606,7 +606,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
 
           {block.bsnpRequired && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
-              <Shield size={isCompact ? 8 : 10} /> WAJIB
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>shield</span> WAJIB
             </span>
           )}
         </div>
@@ -696,7 +696,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
             className="absolute top-2 right-3"
             style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.2 }}
           >
-            <Sparkles size={isCompact ? 12 : 16} style={{ color: accent }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>auto_awesome</span>
           </div>
 
           <div className="flex items-start gap-2.5 relative">
@@ -706,7 +706,7 @@ export const RangkumanRenderer = React.memo(function RangkumanRenderer({ block, 
                 background: accentAlpha(0.2),
               }}
             >
-              <CheckCircle2 size={12} style={{ color: accent }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>check_circle</span>
             </div>
             <RichText content={block.closingStatement ?? ''}
               tag="p"

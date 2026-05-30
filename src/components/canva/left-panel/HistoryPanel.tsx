@@ -12,7 +12,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { patchHistory } from '@/core/editor/patch-history';
 import type { PatchHistoryEntry, PatchHistoryState } from '@/core/editor/patch-history';
-import { History, Undo2, Redo2, RotateCcw, Clock, User, Bot, RefreshCw, Sparkles } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 
 // ── Relative time formatter ─────────────────────────────────────
 function formatRelativeTime(timestamp: number): string {
@@ -27,11 +27,11 @@ function formatRelativeTime(timestamp: number): string {
 
 // ── Source icon mapping ─────────────────────────────────────────
 function SourceBadge({ source }: { source?: string }) {
-  if (!source || source === 'user') return <User size={9} className="text-blue-400" />;
-  if (source === 'ai') return <Bot size={9} className="text-purple-400" />;
-  if (source === 'sync') return <RefreshCw size={9} className="text-green-400" />;
-  if (source === 'auto') return <Sparkles size={9} className="text-amber-400" />;
-  return <User size={9} className="text-blue-400" />;
+  if (!source || source === 'user') return <span className="material-symbols-outlined text-blue-400" style={{ fontSize: '9px' }}>person</span>;
+  if (source === 'ai') return <span className="material-symbols-outlined text-purple-400" style={{ fontSize: '9px' }}>smart_toy</span>;
+  if (source === 'sync') return <span className="material-symbols-outlined text-green-400" style={{ fontSize: '9px' }}>sync</span>;
+  if (source === 'auto') return <span className="material-symbols-outlined text-amber-400" style={{ fontSize: '9px' }}>auto_awesome</span>;
+  return <span className="material-symbols-outlined text-blue-400" style={{ fontSize: '9px' }}>person</span>;
 }
 
 // ── Parse description for display ───────────────────────────────
@@ -93,7 +93,7 @@ export default function HistoryPanel() {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
         <div className="w-12 h-12 rounded-2xl bg-app-elevated flex items-center justify-center mb-3">
-          <History size={20} className="text-app-muted" />
+          <span className="material-symbols-outlined text-app-muted" style={{ fontSize: '20px' }}>history</span>
         </div>
         <div className="text-[11px] font-bold text-app-secondary mb-1">Belum Ada Riwayat</div>
         <div className="text-[9px] text-app-muted leading-relaxed">
@@ -109,7 +109,7 @@ export default function HistoryPanel() {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider flex items-center gap-1.5">
-          <History size={10} />
+          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>history</span>
           Riwayat Edit
           <span className="text-app-muted">({entries.length})</span>
         </div>
@@ -120,7 +120,7 @@ export default function HistoryPanel() {
             className={`p-1 rounded hover:bg-app-elevated/50 transition-colors ${!canUndo ? 'opacity-30 cursor-not-allowed' : 'text-app-secondary'}`}
             title="Undo (Ctrl+Z)"
           >
-            <Undo2 size={12} />
+            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>undo</span>
           </button>
           <button
             onClick={redo}
@@ -128,14 +128,14 @@ export default function HistoryPanel() {
             className={`p-1 rounded hover:bg-app-elevated/50 transition-colors ${!canRedo ? 'opacity-30 cursor-not-allowed' : 'text-app-secondary'}`}
             title="Redo (Ctrl+Y)"
           >
-            <Redo2 size={12} />
+            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>redo</span>
           </button>
         </div>
       </div>
 
       {/* Info bar */}
       <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded-lg bg-app-elevated/40 border border-app-border/10">
-        <Clock size={10} className="text-app-muted" />
+        <span className="material-symbols-outlined text-app-muted" style={{ fontSize: '10px' }}>schedule</span>
         <span className="text-[8px] text-app-muted">
           Posisi: {currentIndex + 1}/{entries.length} · Klik untuk time-travel
         </span>

@@ -9,12 +9,14 @@ import type { ScreenSchema } from '@/core/schema/types';
 import { ensurePageSchema, validateCanvaPageInvariant } from '@/core/schema/ensure-schema';
 import { paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
 import { useCanvaStore } from '@/store/canva-store';
+import { useLearningMediaStore } from '@/store/learning-media-store';
 import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '@/core/scene/SceneLayoutEngine';
 import { inferSceneType } from '@/core/edu/education-scene-types';
 import type { SceneType } from '@/core/edu/education-scene-types';
 import { isFullPageBlockType } from '@/core/schema/capability-registry';
 import { resolveContractStyle, type ContractResolvedStyle } from '@/core/template/contract';
 import { GoldenPageRenderer } from '@/core/renderer/GoldenPageRenderer';
+import { getScreenAdapter, getScreenConfig } from '@/core/renderer/screens';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -29,7 +31,7 @@ import { GoldenPageRenderer } from '@/core/renderer/GoldenPageRenderer';
 //   <PageRenderer mode="export" page={page} currentPageIndex={0} totalPages={5} />
 // ═══════════════════════════════════════════════════════════════
 
-export type PageRendererMode = 'canvas' | 'preview' | 'export';
+export type PageRendererMode = 'canvas' | 'preview' | 'export' | 'learn';
 
 export interface PageRendererProps {
   /** Which render context */
@@ -42,6 +44,10 @@ export interface PageRendererProps {
   totalPages: number;
   /** Whether template is selected in canvas (for editable fields) */
   isTemplateSelected?: boolean;
+  /** Whether inline editing is enabled (teacher learning mode) */
+  editable?: boolean;
+  /** Learning edit context value for providing to screen adapters */
+  editContext?: import('@/components/canva/LearningEditContext').LearningEditContextValue | null;
 }
 
 // Map PageRendererMode to the sub-component modes
@@ -49,12 +55,14 @@ const frameModeMap: Record<PageRendererMode, PageFrameMode> = {
   canvas: 'canvas',
   preview: 'preview',
   export: 'export',
+  learn: 'preview',
 };
 
 const blockModeMap: Record<PageRendererMode, BlockRendererMode> = {
   canvas: 'canvas',
   preview: 'preview',
   export: 'export',
+  learn: 'preview',
 };
 
 export const PageRenderer = React.memo(function PageRenderer({
@@ -63,6 +71,8 @@ export const PageRenderer = React.memo(function PageRenderer({
   currentPageIndex,
   totalPages,
   isTemplateSelected = false,
+  editable = false,
+  editContext = null,
 }: PageRendererProps) {
   // ═══ DUAL-RENDER INVARIANT (dev mode) ════════════════════════
   // Catch dual-data bug early in development.
@@ -185,6 +195,7 @@ export const PageRenderer = React.memo(function PageRenderer({
     canvas: 'canvas',
     preview: 'preview',
     export: 'export',
+    learn: 'learn',
   };
 
   // Block selection handler for canvas editing overlay
@@ -202,6 +213,17 @@ export const PageRenderer = React.memo(function PageRenderer({
   const handleBlockSelect = React.useCallback((blockId: string, blockType: string, addToSelection?: boolean) => {
     selectBlock(blockId, blockType, addToSelection);
   }, [selectBlock]);
+  // Learn mode select: does NOT call selectBlock (which clears editingBlockId).
+  // In learn mode, clicking a block should NOT disrupt the editing flow.
+  // Instead, if a block is being edited, clicking another block just stops editing.
+  const handleBlockLearnSelect = React.useCallback((blockId: string, blockType: string) => {
+    const currentEditing = useCanvaStore.getState().editingBlockId;
+    if (currentEditing && currentEditing !== blockId) {
+      // Clicking a different block while editing → stop editing (save happens via blur)
+      useCanvaStore.getState().stopEditing();
+    }
+    // Do NOT call selectBlock — it resets editingBlockId and opens right panel
+  }, []);
   const handleBlockHover = React.useCallback((blockId: string | null) => {
     hoverBlock(blockId);
   }, [hoverBlock]);
@@ -271,6 +293,13 @@ export const PageRenderer = React.memo(function PageRenderer({
   // ═══ FIX 3: Detect if golden contract is active for this page ═══
   const isGoldenContract = !!contractStyle;
 
+  // Learn mode: pass editing state so blocks can be inline-edited
+  // BUT only if learnSubMode === 'edit'. In 'play' mode, no editing at all.
+  const isLearnMode = mode === 'learn';
+  const learnSubMode = useLearningMediaStore(s => s.learnSubMode);
+  const isLearnEditMode = isLearnMode && learnSubMode === 'edit';
+  const isLearnPlayMode = isLearnMode && learnSubMode === 'play';
+
   const schemaContent = useSchemaRenderer && adaptedSchema ? (
     <SchemaScreenRenderer
       screen={adaptedSchema}
@@ -280,10 +309,10 @@ export const PageRenderer = React.memo(function PageRenderer({
       selectedBlockId={mode === 'canvas' ? selectedBlockId : undefined}
       selectedBlockIds={mode === 'canvas' ? selectedBlockIds : undefined}
       hoveredBlockId={mode === 'canvas' ? hoveredBlockId : undefined}
-      editingBlockId={mode === 'canvas' ? editingBlockId : undefined}
-      onBlockSelect={mode === 'canvas' ? handleBlockSelect : undefined}
+      editingBlockId={mode === 'canvas' || isLearnEditMode ? editingBlockId : undefined}
+      onBlockSelect={mode === 'canvas' ? handleBlockSelect : isLearnEditMode ? handleBlockLearnSelect : undefined}
       onBlockHover={mode === 'canvas' ? handleBlockHover : undefined}
-      onBlockEdit={mode === 'canvas' ? handleBlockEdit : undefined}
+      onBlockEdit={mode === 'canvas' ? handleBlockEdit : isLearnEditMode ? handleBlockEdit : undefined}
       onBlockDelete={mode === 'canvas' ? handleBlockDelete : undefined}
       onBlockMoveUp={mode === 'canvas' ? handleBlockMoveUp : undefined}
       onBlockMoveDown={mode === 'canvas' ? handleBlockMoveDown : undefined}
@@ -299,26 +328,73 @@ export const PageRenderer = React.memo(function PageRenderer({
     />
   ) : null;
 
+  // ═══ SCREEN ADAPTER SYSTEM ═════════════════════════════════
+  // In preview/export modes (student-facing), use the screen adapter
+  // system instead of raw SchemaScreenRenderer. Each page gets its
+  // ScreenAdapter from getScreenAdapter(sceneType), which wraps
+  // SchemaScreenRenderer with ScreenShell for consistent chrome.
+  // This ensures 1 screen = 1 page with proper structure.
+  //
+  // In canvas mode (teacher-facing), continue using the raw
+  // SchemaScreenRenderer with editing overlay functionality.
+  const useScreenAdapter = useSchemaRenderer && adaptedSchema && mode !== 'canvas';
+
+  // Resolve the screen adapter component and config for this page type
+  const ScreenAdapter = useScreenAdapter ? getScreenAdapter(templateType) : null;
+  const screenConfig = useScreenAdapter ? getScreenConfig(templateType) : null;
+
+  // ═══ SCREEN ADAPTER CONTENT — for preview/export modes ═══════
+  const screenAdapterContent = useScreenAdapter && ScreenAdapter && screenConfig && adaptedSchema ? (
+    <ScreenAdapter
+      page={page}
+      schema={adaptedSchema}
+      tokens={tokens}
+      mode={schemaModeMap[mode]}
+      config={screenConfig}
+      interactive={interactive}
+      sceneResolution={sceneResolution}
+      safeArea={safeArea}
+      ratioId={ratioId}
+      showTopNav={showTopNav}
+      showBottomNav={showBottomNav}
+      pageIndex={currentPageIndex}
+      sceneType={sceneType}
+      totalPages={totalPages}
+      editable={editable}
+      editContext={editContext}
+    />
+  ) : null;
+
   const content = (
     <>
-      {/* ═══ FIX 3: Golden Page Renderer — structural chrome ════════ */}
-      {/* When the golden contract is active, wrap the schema output with
-          GoldenPageRenderer to add progress bar, phase badge, nav dots.
-          Cover pages get NO chrome (full bleed). */}
-      {useSchemaRenderer && adaptedSchema && isGoldenContract && contractStyle ? (
-        <GoldenPageRenderer
-          contractStyle={contractStyle}
-          tokens={tokens}
-          sceneType={sceneType || 'concept'}
-          pageType={templateType}
-          pageIndex={currentPageIndex}
-          totalPages={totalPages}
-          isCoverPage={isPureCoverPage}
-        >
-          {schemaContent}
-        </GoldenPageRenderer>
+      {/* ═══ SCREEN ADAPTER PATH — preview/export mode ══════════════ */}
+      {/* When NOT in canvas mode, use the screen adapter system which
+          wraps SchemaScreenRenderer with ScreenShell for consistent chrome.
+          This enforces 1 screen = 1 page with proper structure. */}
+      {useScreenAdapter ? (
+        screenAdapterContent
       ) : (
-        schemaContent
+        <>
+          {/* ═══ FIX 3: Golden Page Renderer — structural chrome ════════ */}
+          {/* When the golden contract is active in canvas mode, wrap the
+              schema output with GoldenPageRenderer to add progress bar,
+              phase badge, nav dots. Cover pages get NO chrome (full bleed). */}
+          {useSchemaRenderer && adaptedSchema && isGoldenContract && contractStyle ? (
+            <GoldenPageRenderer
+              contractStyle={contractStyle}
+              tokens={tokens}
+              sceneType={sceneType || 'concept'}
+              pageType={templateType}
+              pageIndex={currentPageIndex}
+              totalPages={totalPages}
+              isCoverPage={isPureCoverPage}
+            >
+              {schemaContent}
+            </GoldenPageRenderer>
+          ) : (
+            schemaContent
+          )}
+        </>
       )}
 
       {/* Empty schema page hint — when page has schema but 0 blocks (canvas mode only) */}

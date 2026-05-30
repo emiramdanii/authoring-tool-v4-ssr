@@ -115,7 +115,7 @@ function MotivasiVariantKlasik({
                 border: `1px solid ${tokens.colorAlpha(gradientFrom, 0.3)}`,
               }}
             >
-              <Lightbulb size={16} style={{ color: tokens.color(gradientFrom) }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>lightbulb</span>
             </div>
             <h2
               className="font-black leading-tight min-w-0"
@@ -136,7 +136,7 @@ function MotivasiVariantKlasik({
 
           {block.bsnpRequired && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
-              <Shield size={isCompact ? 8 : 10} /> WAJIB
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>shield</span> WAJIB
             </span>
           )}
         </div>
@@ -167,7 +167,7 @@ function MotivasiVariantKlasik({
           className="absolute top-2 right-3"
           style={{ animation: 'float 3s ease-in-out infinite', opacity: 0.3 }}
         >
-          <Sparkles size={isCompact ? 14 : 20} style={{ color: tokens.color(gradientFrom) }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>auto_awesome</span>
         </div>
 
         <div className="flex items-start gap-4 relative">
@@ -221,7 +221,7 @@ function MotivasiVariantKlasik({
               color: tokens.muted(0.85),
             }}
           >
-            <Lightbulb size={10} />
+            <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>lightbulb</span>
             Koneksi Pengetahuan
           </div>
 
@@ -280,7 +280,7 @@ function MotivasiVariantKlasik({
           }}
         >
           <div className="flex items-center gap-2">
-            <ArrowRight size={12} style={{ color: tokens.color(gradientTo) }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>arrow_forward</span>
             <RichText content={block.transition ?? ''}
               className="italic leading-relaxed"
               style={{
@@ -349,7 +349,7 @@ function MotivasiVariantKartuHook({
         {/* Minimal header with title + BSNP badge */}
         <div className="flex items-center justify-between gap-2 mb-4">
           <div className="flex items-center gap-2 min-w-0">
-            <Lightbulb size={14} style={{ color: tokens.color(gradientFrom) }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>lightbulb</span>
             <h2
               className="font-bold leading-tight min-w-0"
               style={{
@@ -368,7 +368,7 @@ function MotivasiVariantKartuHook({
           </div>
           {block.bsnpRequired && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
-              <Shield size={isCompact ? 8 : 10} /> WAJIB
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>shield</span> WAJIB
             </span>
           )}
         </div>
@@ -452,7 +452,7 @@ function MotivasiVariantKartuHook({
           }}
         >
           <div className="flex items-center gap-2">
-            <ArrowRight size={10} style={{ color: tokens.color(gradientTo) }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>arrow_forward</span>
             <span
               className="italic"
               style={{
@@ -511,7 +511,7 @@ function MotivasiVariantKutipan({
       {/* Minimal header */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
-          <Lightbulb size={12} style={{ color: tokens.color(gradientFrom) }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>lightbulb</span>
           <h2
             className="font-semibold min-w-0"
             style={{
@@ -530,7 +530,7 @@ function MotivasiVariantKutipan({
         </div>
         {block.bsnpRequired && (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold" style={{ ...edu.micro(), background: tokens.accentBg('y', 0.1), color: tokens.color('y'), border: `1px solid ${tokens.colorAlpha('y', 0.2)}` }}>
-            <Shield size={7} /> WAJIB
+            <span className="material-symbols-outlined" style={ { fontSize: '7px' } }>shield</span> WAJIB
           </span>
         )}
       </div>
@@ -564,7 +564,7 @@ function MotivasiVariantKutipan({
           }}
         >
           <div className="flex items-center gap-2">
-            <ArrowRight size={10} style={{ color: tokens.color(gradientFrom) }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>arrow_forward</span>
             <span
               className="italic"
               style={{

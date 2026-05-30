@@ -107,6 +107,10 @@ export function InlineTextEditor({
     if (newText !== value) {
       onSave(newText);
     }
+    // Always stop editing after blur — ensures editingBlockId is cleared
+    // so the UI exits editing mode cleanly. The store's stopEditing is safe
+    // to call even if editingBlockId is already null.
+    useCanvaStore.getState().stopEditing();
   }, [value, onSave]);
 
   const handleInput = useCallback(() => {
@@ -140,11 +144,7 @@ export function InlineTextEditor({
     const hasHtml = /<[a-z][\s\S]*>/i.test(value || '');
     if (allowHtml || hasHtml) {
       return (
-        <Tag
-          className={className}
-          style={style}
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(value || placeholder) }}
-        />
+        <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>label</span>
       );
     }
     return (

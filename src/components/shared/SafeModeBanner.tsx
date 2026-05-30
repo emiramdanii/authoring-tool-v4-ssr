@@ -76,7 +76,7 @@ export function SafeModeBanner() {
   return (
     <div className="fixed top-0 left-0 right-0 z-[150] bg-amber-500/90 text-amber-950 px-4 py-1.5 flex items-center justify-between text-xs font-medium backdrop-blur-sm">
       <div className="flex items-center gap-2">
-        <AlertTriangle size={14} className="shrink-0" />
+        <span className="material-symbols-outlined shrink-0" style={ { fontSize: '14px' } }>warning</span>
         <span>Mode Aman aktif — beberapa fitur dinonaktifkan untuk mencegah kerusakan data</span>
         {integritySummary && (
           <span className="text-[10px] text-amber-800/70 ml-2 border-l border-amber-800/30 pl-2">
@@ -92,7 +92,7 @@ export function SafeModeBanner() {
           className="flex items-center gap-1 hover:bg-amber-600/30 rounded px-2 py-0.5 transition-colors"
           title="Jalankan pengecekan integritas"
         >
-          <Activity size={12} className={checking ? 'animate-spin' : ''} />
+          <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>monitoring</span>
           <span className="text-[10px]">{checking ? 'Memeriksa...' : 'Cek Integritas'}</span>
         </button>
 
@@ -127,7 +127,7 @@ export function SafeModeBanner() {
               className="hover:bg-amber-600/30 rounded p-0.5 transition-colors"
               aria-label="Tutup banner"
             >
-              <X size={14} />
+              <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>close</span>
             </button>
           </>
         )}

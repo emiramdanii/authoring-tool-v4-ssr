@@ -6,6 +6,45 @@ import type { DiskusiBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
 import { InlineTextEditor, useInlineEditor } from '../../editor/inline-editor/InlineTextEditor';
 import { RichText } from './RichText';
+
+// ═══════════════════════════════════════════════════════════════════
+// EXPANDABLE TEXT — Smart truncation with "Baca selengkapnya" toggle
+// For long question text (e.g. s-diskusi-konflik with 4 norms).
+// Truncates to maxLines when text is long, expandable on click.
+// ═══════════════════════════════════════════════════════════════════
+function ExpandableText({ content, isCompact, edu, maxLines = 3, style }: {
+  content: string;
+  isCompact: boolean;
+  edu: ReturnType<TokenResolver['edu']>;
+  maxLines?: number;
+  style?: { fontWeight?: number; bodyStyle?: string };
+}) {
+  const [expanded, setExpanded] = React.useState(false);
+  const isLong = content.length > 200;
+  const shouldTruncate = !expanded && !isCompact && isLong;
+  const bodyStyle = style?.bodyStyle === 'bodyLg' ? edu.bodyLg() : edu.body();
+
+  return (
+    <div>
+      <div
+        className={`mt-1.5 leading-relaxed ${isCompact ? 'canvas-truncate-2' : shouldTruncate ? `canvas-truncate-${maxLines}` : ''}`}
+        style={{ ...bodyStyle, fontWeight: style?.fontWeight ?? 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}
+      >
+        <RichText content={content} tag="p" />
+      </div>
+      {isLong && !expanded && !isCompact && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="mt-1 font-bold"
+          style={{ ...edu.caption(), color: edu.accent(), cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+        >
+          Baca selengkapnya ▾
+        </button>
+      )}
+    </div>
+  );
+}
 import { useInteractiveStore } from '@/store/interactive-store';
 import { playSound } from '@/lib/sounds';
 
@@ -104,11 +143,15 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
     if (!interactive || !allAnswered) return;
     setSubmitted(true);
     if (block.id) {
+      // Report completion without inflating actual score — diskusi is
+      // participation-based, not scored. Score (0, 0) allows the bridge
+      // to mark the page as completed via markPageReflected, but won't
+      // add to the Hasil page's total score.
       reportScore({
         elementId: block.id,
         pageIndex: pageIndex ?? 0,
-        score: questions.length * 10,
-        maxScore: questions.length * 10,
+        score: 0,
+        maxScore: 0,
         completed: true,
       });
     }
@@ -161,7 +204,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
                 boxShadow: 'none',
                 ...edu.emotionalMotion('reveal', i),
               }}>
-              <CheckCircle2 size={14} style={{ color: edu.accent() }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>check_circle</span>
             </div>
           ))}
         </div>
@@ -182,7 +225,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               color: tokens.color('bg'),
               boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
             }}>
-            <RotateCcw size={14} className="inline" /> Diskusi Ulang
+            <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Diskusi Ulang
           </button>
       </div>
       </PremiumBlockWrapper>
@@ -200,7 +243,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             border: `1px solid ${edu.accentAlpha(0.35)}`,
             boxShadow: `0 4px 12px ${edu.accentAlpha(0.25)}`,
           }}>
-          <MessageCircle size={16} style={{ color: edu.accent() }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>chat_bubble</span>
         </div>
         <div className="font-extrabold min-w-0" style={{ ...edu.bodyLg(), fontWeight: 800, color: edu.accent(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
@@ -263,7 +306,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             <span className="font-extrabold min-w-0 truncate" style={{ ...edu.body(), fontWeight: 800, color: tokens.color(qColor) }}>{q.label}</span>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
-                <CheckCircle2 size={12} style={{ color: tokens.color('g') }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>check_circle</span>
               </div>
             )}
             {/* Question number badge */}
@@ -279,7 +322,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               </span>
             </div>
           </div>
-          <RichText content={q.teks ?? ''} tag="p" className={`mt-1.5 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), fontWeight: 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
+          <ExpandableText content={q.teks ?? ''} isCompact={isCompact} edu={edu} maxLines={3} style={{ fontWeight: 700 }} />
           {interactive ? (
             <textarea className={`w-full mt-2 rounded-lg p-2.5 resize-y ${tokens.iosTextInputTw()}`}
               style={{
@@ -351,7 +394,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             border: `1px solid ${edu.accentAlpha(0.4)}`,
             boxShadow: `0 6px 16px ${edu.accentAlpha(0.3)}`,
           }}>
-          <MessageCircle size={22} style={{ color: edu.accent() }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '22px' } }>chat_bubble</span>
         </div>
         <div className="font-extrabold min-w-0" style={{ ...edu.heading(), fontWeight: 800, color: edu.accent(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
@@ -435,11 +478,11 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             </div>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
-                <CheckCircle2 size={16} style={{ color: tokens.color('g') }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>check_circle</span>
               </div>
             )}
           </div>
-          <RichText content={q.teks ?? ''} tag="p" className={`mb-3 leading-relaxed font-bold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.bodyLg(), fontWeight: 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
+          <ExpandableText content={q.teks ?? ''} isCompact={isCompact} edu={edu} maxLines={3} style={{ fontWeight: 700, bodyStyle: 'bodyLg' }} />
           {interactive ? (
             <textarea className={`w-full rounded-xl p-3.5 resize-y ${tokens.iosTextInputTw()}`}
               style={{
@@ -508,7 +551,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
 
       {/* ── Compact header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-1.5 mb-2">
-        <MessageCircle size={13} style={{ color: edu.accent() }} />
+        <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>chat_bubble</span>
         <span className="font-extrabold min-w-0" style={{ ...edu.caption(), fontWeight: 800, color: edu.accent(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <InlineTextEditor
             {...titleEditor}
@@ -570,7 +613,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
             <span className="font-bold min-w-0 truncate" style={{ ...edu.caption(), fontWeight: 700, color: tokens.color(qColor) }}>{q.label}</span>
             {hasResponse && interactive && (
               <div style={{ animation: 'popIn 0.3s ease-out' }}>
-                <CheckCircle2 size={10} style={{ color: tokens.color('g') }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check_circle</span>
               </div>
             )}
             {/* Question number */}
@@ -583,7 +626,7 @@ export const DiskusiRenderer = React.memo(function DiskusiRenderer({ block, toke
               {i + 1}
             </span>
           </div>
-          <RichText content={q.teks ?? ''} tag="p" className={`mt-1 leading-snug font-semibold ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), fontWeight: 600, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }} />
+          <ExpandableText content={q.teks ?? ''} isCompact={isCompact} edu={edu} maxLines={2} style={{ fontWeight: 600 }} />
           {interactive ? (
             <textarea className={`w-full mt-1.5 rounded-md p-1.5 resize-y ${tokens.iosTextInputTw()}`}
               style={{

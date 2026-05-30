@@ -997,7 +997,7 @@ export function genTabIconsSchema(
     id: generateBlockId(),
     title: `${tp.length} Tujuan Pembelajaran`,
     intro: `Eksplorasi ${tp.length} tujuan pembelajaran hari ini`,
-    layout: 'horizontal',
+    layoutVariant: 'horizontal',
     animation: 'fade',
     tabs: tp.map((t, i) => ({
       icon: ['🎯', '🔍', '💡', '🧠', '📐', '🏆'][i % 6],
@@ -1077,7 +1077,7 @@ export function genInfografisSchema(
     type: 'infografis',
     id: generateBlockId(),
     title: 'Profil Pelajar Pancasila',
-    layout: 'grid',
+    layoutVariant: 'grid',
     intro: 'Dimensi Profil Pelajar Pancasila yang dikembangkan melalui kegiatan pembelajaran ini',
     kartu: profil.map((p, i) => ({
       icon: ['🌟', '🧠', '🤝', '🌍', '🎯', '💡'][i % 6],

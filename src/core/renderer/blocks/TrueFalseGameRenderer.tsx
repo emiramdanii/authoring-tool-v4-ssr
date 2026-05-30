@@ -187,7 +187,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
  background: tokens.subtleBg(0.04),
  border: '2px dashed ' + tokens.subtleBorder(0.15),
  }}>
- <CheckCircle2 size={24} style={{ color: edu.mutedText(0.4) }} />
+ <span className="material-symbols-outlined" style={ { fontSize: '24px' } }>check_circle</span>
  <div className="mt-2 font-extrabold" style={{ ...edu.caption(), color: edu.mutedText(0.5) }}>
  Benar / Salah
  </div>
@@ -202,9 +202,9 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
  if (phase === 'result') {
  const pct = validQuestions.length > 0 ? Math.round((score / validQuestions.length) * 100) : 0;
  const tierIcon = pct >= 80
- ? <Trophy size={28} className="inline" style={{ color: edu.accent() }} />
+ ? <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>emoji_events</span>
  : pct >= 50
- ? <Star size={28} className="inline" style={{ color: edu.accent() }} />
+ ? <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>star</span>
  : <Dumbbell size={28} className="inline" style={{ color: edu.accent() }} />;
  const tierMessage = pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Berlatih!';
 
@@ -212,7 +212,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
  <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
  <div className="text-center p-5 rounded-2xl"
  style={{
- background: tokens.color('bg'),
+ background: edu.pageBg(),
  border: '2px solid ' + edu.accentAlpha(0.3),
  boxShadow: edu.shadow('elevated'),
  animation: 'popSuccess 0.5s ease-out',
@@ -246,7 +246,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
  color: tokens.color('bg'),
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}>
- <RotateCcw size={14} className="inline" /> Ulangi
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi
  </button>
  </MicroInteraction>
  )}
@@ -272,7 +272,7 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
  <div className="flex items-center justify-between min-w-0">
  <div className="flex items-center gap-2 min-w-0">
  <div className="font-extrabold" style={{ ...edu.caption(), color: edu.accent() }}>
- <CheckCircle2 size={14} className="inline" />{' '}
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>check_circle</span>{' '}
  <InlineTextEditor
  {...titleEditor}
  className="font-extrabold"
@@ -455,11 +455,11 @@ export const TrueFalseGameRenderer = React.memo(function TrueFalseGameRenderer({
  }}>
  {isCorrectAnswer ? (
  <>
- <CheckCircle2 size={14} className="inline mr-1" /> Benar!
+ <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>check_circle</span> Benar!
  </>
  ) : (
  <>
- <XCircle size={14} className="inline mr-1" /> Salah. Jawaban yang benar: {q.correct ? 'Benar' : 'Salah'}
+ <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>cancel</span> Salah. Jawaban yang benar: {q.correct ? 'Benar' : 'Salah'}
  </>
  )}
  {/* Show explanation if available */}

@@ -237,7 +237,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  border: '2px dashed ' + tokens.subtleBorder(0.15),
  }}
  >
- <Zap size={24} style={{ color: edu.mutedText(0.4) }} />
+ <span className="material-symbols-outlined" style={ { fontSize: '24px' } }>bolt</span>
  <div className="mt-2 font-extrabold" style={{ ...edu.caption(), color: edu.mutedText(0.5) }}>
  <InlineTextEditor
  {...titleEditor}
@@ -264,7 +264,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  <div
  className="text-center p-5 rounded-2xl"
  style={{
- background: tokens.color('bg'),
+ background: edu.pageBg(),
  border: '2px solid ' + edu.accentAlpha(0.3),
  boxShadow: edu.shadow('elevated'),
  animation: 'popSuccess 0.5s ease-out',
@@ -274,9 +274,9 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  {/* Tiered icon */}
  <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
  {pct >= 80 ? (
- <Trophy size={28} className="inline" style={{ color: edu.accent() }} />
+ <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>emoji_events</span>
  ) : pct >= 50 ? (
- <Star size={28} className="inline" style={{ color: edu.accent() }} />
+ <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>star</span>
  ) : (
  <Dumbbell size={28} className="inline" style={{ color: edu.accent() }} />
  )}
@@ -317,7 +317,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}
  >
- <RotateCcw size={14} className="inline" /> Ulangi
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi
  </button>
  </MicroInteraction>
  )}
@@ -342,7 +342,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  <div className="flex items-center justify-between min-w-0">
  <div className="flex items-center gap-2 min-w-0">
  <div className="font-extrabold" style={{ ...edu.caption(), color: edu.accent() }}>
- <Zap size={14} className="inline" />{' '}
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>bolt</span>{' '}
  <InlineTextEditor
  {...titleEditor}
  className="font-extrabold"
@@ -504,7 +504,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  cursor: 'pointer',
  }}
  >
- <CheckCircle2 size={12} className="inline mr-1" />
+ <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '12px' } }>check_circle</span>
  Benar ({buzzed === 'A' ? teamA : teamB})
  </button>
  <button
@@ -520,7 +520,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  cursor: 'pointer',
  }}
  >
- <XCircle size={12} className="inline mr-1" />
+ <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '12px' } }>cancel</span>
  Salah ({buzzed === 'A' ? teamA : teamB})
  </button>
  </div>
@@ -535,7 +535,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  animation: 'fadeIn 0.3s ease',
  }}>
  <div className="text-center font-extrabold" style={{ ...edu.caption(), color: tokens.color('g') }}>
- <CheckCircle2 size={14} className="inline mr-1" />
+ <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>check_circle</span>
  {correct === 'A' ? teamA : teamB} benar! +{q.poin || 10} poin
  </div>
  </div>
@@ -549,7 +549,7 @@ export const TeamBuzzerGameRenderer = React.memo(function TeamBuzzerGameRenderer
  animation: 'fadeIn 0.3s ease',
  }}>
  <div className="text-center font-extrabold" style={{ ...edu.caption(), color: tokens.color('r') }}>
- <XCircle size={14} className="inline mr-1" />
+ <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>cancel</span>
  Salah! Lanjut ke soal berikutnya...
  </div>
  </div>

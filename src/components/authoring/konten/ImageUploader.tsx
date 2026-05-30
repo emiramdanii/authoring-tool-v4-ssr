@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, type DragEvent } from 'react';
-import { Upload, ImagePlus, X, Loader2 } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { toast } from 'sonner';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -188,7 +188,7 @@ export function ImageUploader({ value, onUpload, onClear, className }: ImageUplo
               className="p-1.5 bg-app-surface/90 border border-app-border rounded-lg text-app-secondary hover:text-app-primary hover:bg-app-elevated transition-colors"
               title="Ganti gambar"
             >
-              <ImagePlus size={14} />
+              <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>add_photo_alternate</span>
             </button>
             {onClear && (
               <button
@@ -196,7 +196,7 @@ export function ImageUploader({ value, onUpload, onClear, className }: ImageUplo
                 className="p-1.5 bg-app-surface/90 border border-app-border rounded-lg text-app-muted hover:text-red-400 hover:border-red-400/50 transition-colors"
                 title="Hapus gambar"
               >
-                <X size={14} />
+                <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>close</span>
               </button>
             )}
           </div>
@@ -204,7 +204,7 @@ export function ImageUploader({ value, onUpload, onClear, className }: ImageUplo
       ) : isUploading ? (
         /* Upload progress state */
         <div className="rounded-lg border border-app-border bg-app-elevated/50 p-6 flex flex-col items-center gap-3">
-          <Loader2 size={32} className="text-app-accent animate-spin" />
+          <span className="material-symbols-outlined text-app-accent animate-spin" style={ { fontSize: '32px' } }>progress_activity</span>
           <span className="text-sm text-app-secondary">Mengunggah...</span>
           {/* Progress bar */}
           <div className="w-full max-w-xs h-1.5 bg-app-border/50 rounded-full overflow-hidden">
@@ -242,7 +242,7 @@ export function ImageUploader({ value, onUpload, onClear, className }: ImageUplo
             }
           }}
         >
-          <Upload size={28} className={isDragging ? 'text-app-accent' : 'text-app-muted'} />
+          <span className="material-symbols-outlined" style={ { fontSize: '28px' } }>upload</span>
           <p className="text-sm font-medium text-app-secondary">
             {isDragging ? 'Lepaskan file di sini' : 'Seret gambar ke sini'}
           </p>

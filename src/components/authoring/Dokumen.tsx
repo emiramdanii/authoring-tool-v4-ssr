@@ -18,7 +18,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import type { PanelId } from '@/store/authoring-store';
 import { useDragSort } from '@/hooks/use-drag-sort';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
-import { Target, ClipboardList, Trash2, Tag, Map, Ruler, Calendar, GripVertical, ChevronDown } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Collapse } from '@/lib/transition';
 import { COLORS } from '@/lib/color-palette';
 
@@ -46,10 +46,12 @@ function AccordionSection({
           <span className="text-silse-on-surface-variant">{icon}</span>
           <span className="text-[10px] uppercase tracking-widest font-bold text-silse-outline">{title}</span>
         </div>
-        <ChevronDown
-          size={16}
-          className={`text-silse-on-surface-variant/60 transition-transform duration-300 ease-in-out ${open ? 'rotate-180' : ''}`}
-        />
+        <span
+          className={`material-symbols-outlined text-silse-on-surface-variant/60 transition-transform duration-300 ease-in-out ${open ? 'rotate-180' : ''}`}
+          style={{ fontSize: '16px' }}
+        >
+          expand_more
+        </span>
       </button>
       <Collapse open={open} className="border-t border-silse-outline-variant/30" duration={0.25}>
         <div className="p-4 bg-silse-surface-container-lowest/80 space-y-4">
@@ -210,7 +212,7 @@ function DragHandle({ onPointerDown, index }: { onPointerDown: (e: React.Pointer
       className="text-silse-on-surface-variant/50 hover:text-silse-on-surface-variant cursor-grab active:cursor-grabbing select-none text-lg leading-none px-1"
       aria-label="Drag to reorder"
     >
-      <GripVertical size={16} />
+      <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>drag_indicator</span>
     </span>
   );
 }
@@ -232,7 +234,7 @@ function TpSection() {
     return (
       <div className="text-center py-8 px-4 bg-silse-surface-container-low/30 border border-dashed border-silse-outline-variant/40 rounded-2xl">
         <div className="w-12 h-12 rounded-xl bg-silse-primary/10 flex items-center justify-center mx-auto mb-3">
-          <Target size={24} className="text-silse-primary/70" />
+          <span className="material-symbols-outlined text-silse-primary/70" style={ { fontSize: '24px' } }>target</span>
         </div>
         <p className="text-sm font-medium text-silse-on-surface mb-1">Belum ada Tujuan Pembelajaran</p>
         <p className="text-xs text-silse-on-surface-variant mb-4">Tambahkan TP untuk mendefinisikan tujuan setiap pertemuan.</p>
@@ -269,7 +271,7 @@ function TpSection() {
               onClick={() => deleteTp(i)}
               className="ml-auto text-silse-on-surface-variant/60 hover:text-silse-error transition-colors text-sm"
             >
-              <Trash2 size={14} className="inline" />
+              <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>delete</span>
             </button>
           </div>
 
@@ -363,7 +365,7 @@ function AtpSection() {
       {!atp.pertemuan.length ? (
         <div className="text-center py-8 px-4 bg-silse-surface-container-low/30 border border-dashed border-silse-outline-variant/40 rounded-2xl">
           <div className="w-12 h-12 rounded-xl bg-silse-secondary/10 flex items-center justify-center mx-auto mb-3">
-            <Calendar size={24} className="text-silse-secondary/70" />
+            <span className="material-symbols-outlined text-silse-secondary/70" style={ { fontSize: '24px' } }>calendar_today</span>
           </div>
           <p className="text-sm font-medium text-silse-on-surface mb-1">Belum ada pertemuan</p>
           <p className="text-xs text-silse-on-surface-variant mb-4">Tambahkan pertemuan untuk menyusun Alur Tujuan Pembelajaran.</p>
@@ -387,7 +389,7 @@ function AtpSection() {
                   onClick={() => deleteAtpPertemuan(i)}
                   className="ml-auto text-silse-on-surface-variant/60 hover:text-silse-error transition-colors text-sm"
                 >
-                  <Trash2 size={14} className="inline" />
+                  <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>delete</span>
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -476,7 +478,7 @@ function AlurSection() {
       {!alur.length ? (
         <div className="text-center py-8 px-4 bg-silse-surface-container-low/30 border border-dashed border-silse-outline-variant/40 rounded-2xl">
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
-            <Map size={24} className="text-emerald-400/70" />
+            <span className="material-symbols-outlined text-emerald-400/70" style={ { fontSize: '24px' } }>map</span>
           </div>
           <p className="text-sm font-medium text-silse-on-surface mb-1">Belum ada langkah kegiatan</p>
           <p className="text-xs text-silse-on-surface-variant mb-4">Tambahkan langkah Pendahuluan, Inti, dan Penutup untuk menyusun alur pembelajaran.</p>
@@ -510,7 +512,7 @@ function AlurSection() {
                   onClick={() => deleteAlur(i)}
                   className="ml-auto text-silse-on-surface-variant/60 hover:text-silse-error transition-colors text-sm"
                 >
-                  <Trash2 size={14} className="inline" />
+                  <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>delete</span>
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -578,7 +580,7 @@ export default function Dokumen() {
     <div className="p-6 space-y-5 max-w-4xl">
       <div>
         <h2 className="text-xl font-bold text-silse-on-surface flex items-center gap-2">
-          <Ruler size={18} /> {isSederhana ? 'RPP & Dokumen' : 'Dokumen Pembelajaran'}
+          <span className="material-symbols-outlined" style={ { fontSize: '18px' } }>straighten</span> {isSederhana ? 'RPP & Dokumen' : 'Dokumen Pembelajaran'}
         </h2>
         <p className="text-sm text-silse-on-surface-variant mt-1">
           {isSederhana
@@ -589,27 +591,27 @@ export default function Dokumen() {
       </div>
 
       <div className="space-y-3">
-        <AccordionSection icon={<Tag size={16} className="inline" />} title={isSederhana ? 'Identitas' : 'Identitas Media'} defaultOpen>
+        <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>label</span>} title={isSederhana ? 'Identitas' : 'Identitas Media'} defaultOpen>
           <MetaSection />
         </AccordionSection>
 
-        <AccordionSection icon={<ClipboardList size={16} className="inline" />} title="Capaian Pembelajaran">
+        <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>assignment</span>} title="Capaian Pembelajaran">
           <CpSection />
         </AccordionSection>
 
-        <AccordionSection icon={<Target size={16} className="inline" />} title="Tujuan Pembelajaran">
+        <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>target</span>} title="Tujuan Pembelajaran">
           <TpSection />
         </AccordionSection>
 
         {/* ATP & Alur — only shown in lengkap (advanced) mode */}
         {!isSederhana && (
-          <AccordionSection icon={<Calendar size={16} className="inline" />} title="Alur Tujuan Pembelajaran">
+          <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>calendar_today</span>} title="Alur Tujuan Pembelajaran">
             <AtpSection />
           </AccordionSection>
         )}
 
         {!isSederhana && (
-          <AccordionSection icon={<Map size={16} className="inline" />} title="Alur Kegiatan">
+          <AccordionSection icon={<span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>map</span>} title="Alur Kegiatan">
             <AlurSection />
           </AccordionSection>
         )}

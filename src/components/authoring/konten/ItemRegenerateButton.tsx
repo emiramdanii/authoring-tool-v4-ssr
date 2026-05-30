@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { isEnabled } from '@/config/feature-flags';
-import { RefreshCw, Loader2 } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { canRegenerate } from '../auto-generate/regenerate';
 
 // ── Item Regenerate Button ─────────────────────────────────────────
@@ -50,9 +50,9 @@ export function ItemRegenerateButton({
       title={title}
     >
       {loading ? (
-        <Loader2 size={13} className="animate-spin" />
+        <span className="material-symbols-outlined animate-spin" style={ { fontSize: '13px' } }>progress_activity</span>
       ) : (
-        <RefreshCw size={13} />
+        <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>refresh</span>
       )}
     </button>
   );

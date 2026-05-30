@@ -59,7 +59,7 @@ export function ShortcutHelpOverlay() {
             onClick={() => setOpen(false)}
             className="p-1 rounded hover:bg-app-elevated text-app-muted hover:text-app-primary transition-colors"
           >
-            <X size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>close</span>
           </button>
         </div>
 

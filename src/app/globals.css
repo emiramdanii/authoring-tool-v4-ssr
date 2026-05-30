@@ -944,7 +944,7 @@ select {
 /* ── SILSE v4 Canvas dot-grid background ── */
 .canvas-bg {
   background-image: radial-gradient(var(--silse-outline-variant) 0.8px, transparent 0.8px);
-  background-size: 20px 20px;
+  background-size: 24px 24px;
 }
 
 /* ── SILSE v4 Material Symbols Outlined icon font ── */
@@ -960,9 +960,12 @@ select {
 
 /* ── SILSE v4 Glass card ── */
 .glass-card {
-  background: var(--silse-surface-container-lowest);
+  background: rgba(255,255,255,0.9);
   backdrop-filter: blur(20px);
   border: 1px solid var(--silse-outline-variant);
+}
+.dark .glass-card {
+  background: var(--silse-surface-container-lowest);
 }
 
 /* ── SILSE v4 Liquid progress bar ── */

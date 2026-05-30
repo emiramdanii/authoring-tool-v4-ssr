@@ -69,7 +69,7 @@ function RightActions() {
       </div>
 
       {/* Teacher Profile Avatar — SILSE v4 reference */}
-      <div className="w-8 h-8 rounded-full bg-silse-primary-container/20 border border-silse-primary-container/40 flex items-center justify-center ml-1">
+      <div className="w-8 h-8 rounded-full bg-silse-primary-container/20 border border-silse-primary-container/30 flex items-center justify-center ml-1">
         <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '16px' }}>school</span>
       </div>
     </div>
@@ -155,7 +155,7 @@ export default function Toolbar() {
   return (
     <header
       className="fixed top-0 left-0 w-full z-40 flex items-center justify-between px-5 bg-silse-surface-container-lowest/95 backdrop-blur-md border-b border-silse-outline-variant/60 select-none"
-      style={{ height: '52px' }}
+      style={{ height: '56px' }}
     >
       {/* LEFT: Brand + Project */}
       <ToolbarNav />

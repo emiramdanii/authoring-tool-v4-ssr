@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MPI Penjelajah Pancasila</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;font-family:'Segoe UI',Arial,sans-serif;background:radial-gradient(circle at top left,#294c75 0%,#10243d 48%,#071524 100%);color:#1d3557;display:grid;place-items:center;padding:28px}
+.wrap{width:min(1080px,100%);background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.7);border-radius:32px;padding:34px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.header{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;margin-bottom:26px}
+.kicker{display:inline-flex;padding:8px 15px;border-radius:999px;background:#ffd166;font-weight:900;font-size:13px;color:#1d3557;margin-bottom:12px}
+h1{font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;font-size:clamp(34px,5vw,58px);line-height:1.02;letter-spacing:-.035em}
+h1 span{color:#e63946}
+p{margin-top:12px;font-size:18px;line-height:1.55;color:#516b80;font-weight:650}
+.badge{width:126px;height:126px;border-radius:32px;background:linear-gradient(145deg,#fff8d6,#ffd166);display:grid;place-items:center;font-size:58px;box-shadow:0 14px 30px rgba(0,0,0,.18)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.card{display:flex;gap:14px;align-items:center;text-decoration:none;color:#1d3557;background:#fff;border:1px solid rgba(29,53,87,.10);border-radius:22px;padding:17px;box-shadow:0 10px 24px rgba(0,0,0,.10);transition:.18s ease}
+.card:hover{transform:translateY(-3px);box-shadow:0 16px 30px rgba(0,0,0,.14)}
+.num{min-width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:#1d3557;color:#fff;font-weight:950}
+.card h2{font-size:19px;margin-bottom:4px}
+.card div div{font-size:14px;color:#60788d;font-weight:650}
+.note{margin-top:22px;padding:16px 18px;border-radius:20px;background:#eef8ff;border:1px solid rgba(69,123,157,.18);font-size:15px;color:#405b72;font-weight:650}
+@media(max-width:760px){.header{grid-template-columns:1fr}.badge{display:none}.grid{grid-template-columns:1fr}.wrap{padding:24px}}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="header">
+      <div>
+        <div class="kicker">Media Pembelajaran Interaktif</div>
+        <h1>Misi Penjelajah <span>Pancasila</span></h1>
+        <p>Buka file secara berurutan dari Section 1, Misi 1 sampai Misi 5, lalu lanjut ke Evaluasi dan Refleksi Akhir.</p>
+      </div>
+      <div class="badge">🧭</div>
+    </section>
+    <section class="grid">
+      <a class="card" href="01_section_1_cover_sampai_peta.html"><span class="num">01</span><div><h2>Section 1</h2><div>Cover, pengantar, pemantik, arah belajar, dan peta misi.</div></div></a>
+      <a class="card" href="02_misi_1_bintang_kerukunan.html"><span class="num">02</span><div><h2>Misi 1</h2><div>Bintang Kerukunan — Sila Pertama.</div></div></a>
+      <a class="card" href="03_misi_2_rantai_kepedulian.html"><span class="num">03</span><div><h2>Misi 2</h2><div>Rantai Kepedulian — Sila Kedua.</div></div></a>
+      <a class="card" href="04_misi_3_pohon_persatuan.html"><span class="num">04</span><div><h2>Misi 3</h2><div>Pohon Persatuan — Sila Ketiga.</div></div></a>
+      <a class="card" href="05_misi_4_banteng_musyawarah.html"><span class="num">05</span><div><h2>Misi 4</h2><div>Banteng Musyawarah — Sila Keempat.</div></div></a>
+      <a class="card" href="06_misi_5_padi_kapas_keadilan.html"><span class="num">06</span><div><h2>Misi 5</h2><div>Padi Kapas Keadilan — Sila Kelima.</div></div></a>
+      <a class="card" href="07_evaluasi_refleksi_akhir.html"><span class="num">07</span><div><h2>Evaluasi Akhir</h2><div>Kuis, feedback per halaman, hasil evaluasi, refleksi, dan lencana akhir.</div></div></a>
+    </section>
+    <div class="note"><b>Petunjuk:</b> ekstrak ZIP terlebih dahulu, lalu buka <b>index.html</b> di browser. Semua file bersifat standalone dan bisa dibuka tanpa internet.</div>
+  </main>
+</body>
+</html>

@@ -16,21 +16,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { isEnabled } from '@/config/feature-flags';
-import {
-  Sparkles,
-  Loader2,
-  Wand2,
-  CheckCircle2,
-  AlertCircle,
-  BookOpen,
-  Target,
-  Lightbulb,
-  Type,
-  Minimize2,
-  Expand,
-  RotateCcw,
-  ChevronDown,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { toast } from 'sonner';
@@ -219,7 +205,7 @@ export default function AIRefinePanel() {
     <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Wand2 size={14} className="text-violet-400" />
+        <span className="material-symbols-outlined text-violet-400" style={ { fontSize: '14px' } }>auto_fix</span>
         <div className="text-[9px] font-bold text-violet-400 uppercase tracking-wider">
           {isSederhana ? 'Perbaiki Konten AI' : 'AI Refine'}
         </div>
@@ -263,7 +249,7 @@ export default function AIRefinePanel() {
                 <div className="text-[7px] text-app-muted truncate">{option.description}</div>
               </div>
               {isActive && loading && (
-                <Loader2 size={10} className="animate-spin text-violet-300 flex-shrink-0" />
+                <span className="material-symbols-outlined animate-spin text-violet-300 flex-shrink-0" style={ { fontSize: '10px' } }>progress_activity</span>
               )}
             </button>
           );
@@ -275,7 +261,7 @@ export default function AIRefinePanel() {
             onClick={() => setShowAll(!showAll)}
             className="w-full py-1 text-[8px] text-app-muted hover:text-app-secondary transition-colors flex items-center justify-center gap-1"
           >
-            <ChevronDown size={8} className={`transition-transform ${showAll ? 'rotate-180' : ''}`} />
+            <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>expand_more</span>
             {showAll ? 'Lebih sedikit' : `+${REFINEMENT_OPTIONS.length - 4} lainnya`}
           </button>
         )}
@@ -284,7 +270,7 @@ export default function AIRefinePanel() {
       {/* Error */}
       {error && (
         <div className="flex items-start gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20">
-          <AlertCircle size={12} className="text-red-400 flex-shrink-0 mt-0.5" />
+          <span className="material-symbols-outlined text-red-400 flex-shrink-0 mt-0.5" style={ { fontSize: '12px' } }>error</span>
           <div className="text-[9px] text-red-300">{error}</div>
         </div>
       )}
@@ -294,7 +280,7 @@ export default function AIRefinePanel() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 size={10} className="text-emerald-400" />
+              <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '10px' } }>check_circle</span>
               <span className="text-[9px] font-bold text-emerald-300">Refinement Berhasil</span>
             </div>
             <div className="flex items-center gap-1">
@@ -303,7 +289,7 @@ export default function AIRefinePanel() {
                 className="p-1 rounded hover:bg-app-elevated/50 text-app-muted hover:text-app-secondary transition-colors"
                 title="Regenerate"
               >
-                <RotateCcw size={10} />
+                <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>refresh</span>
               </button>
             </div>
           </div>
@@ -327,9 +313,9 @@ export default function AIRefinePanel() {
               }`}
             >
               {applied ? (
-                <><CheckCircle2 size={12} /> Sudah Diterapkan</>
+                <><span className="material-symbols-outlined" style={ { fontSize: '12px' } }>check_circle</span> Sudah Diterapkan</>
               ) : (
-                <><Sparkles size={12} /> Terapkan ke Block</>
+                <><span className="material-symbols-outlined" style={ { fontSize: '12px' } }>auto_awesome</span> Terapkan ke Block</>
               )}
             </button>
           )}

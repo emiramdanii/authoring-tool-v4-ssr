@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Compass } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import type { NavConfig } from '../types';
 import Section from './Section';
@@ -42,7 +42,7 @@ export default function NavigationSection() {
 
   return (
     <Section
-      icon={<Compass size={12} />}
+      icon={<span className="material-symbols-outlined" style={{ fontSize: '12px' }}>explore</span>}
       title="Navigasi"
       collapsed={collapsed}
       onToggle={() => setCollapsed(c => !c)}

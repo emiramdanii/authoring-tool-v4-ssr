@@ -1,30 +1,15 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { isEnabled } from '@/config/feature-flags';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { COLORS } from '@/lib/color-palette';
-import {
-  Shield,
-  BookOpen,
-  Target,
-  FileText,
-  Users,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  ArrowRight,
-  Lightbulb,
-  BookMarked,
-  ChevronDown,
-  ChevronUp,
-  Sparkles,
-  Zap,
-  FileCheck,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import type { PanelId } from '@/store/authoring/types';
 import { isGameBlockType, isBlockTypeInteractive } from '@/core/schema/capability-registry';
+import { useSchemaKuisProjection, useSchemaModulesProjection } from '@/hooks/use-schema-projection';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
 
 // ═══════════════════════════════════════════════════════════════════
 // BSNP COMPLIANCE PANEL — Enhanced with sub-checks & auto-fix
@@ -128,11 +113,11 @@ function ComplianceRing({ percentage, status }: { percentage: number; status: Co
 function StatusIcon({ status, size = 16 }: { status: ComplianceStatus; size?: number }) {
   switch (status) {
     case 'complete':
-      return <CheckCircle2 size={size} className="text-emerald-400 flex-shrink-0" />;
+      return <span className="material-symbols-outlined text-emerald-400 flex-shrink-0" style={ { fontSize: '16px' } }>check_circle</span>;
     case 'partial':
-      return <AlertTriangle size={size} className="text-amber-400 flex-shrink-0" />;
+      return <span className="material-symbols-outlined text-amber-400 flex-shrink-0" style={ { fontSize: '16px' } }>warning</span>;
     case 'missing':
-      return <XCircle size={size} className="text-red-400 flex-shrink-0" />;
+      return <span className="material-symbols-outlined text-red-400 flex-shrink-0" style={ { fontSize: '16px' } }>cancel</span>;
   }
 }
 
@@ -214,7 +199,7 @@ function ComponentCard({ comp, onNavigate }: { comp: BsnpComponent; onNavigate: 
           </span>
         </div>
         <StatusIcon status={comp.status} />
-        {expanded ? <ChevronUp size={12} className="text-app-muted" /> : <ChevronDown size={12} className="text-app-muted" />}
+        {expanded ? <span className="material-symbols-outlined text-app-muted" style={ { fontSize: '12px' } }>expand_less</span> : <span className="material-symbols-outlined text-app-muted" style={ { fontSize: '12px' } }>expand_more</span>}
       </button>
 
       {/* Expanded sub-checks */}
@@ -240,7 +225,7 @@ function ComponentCard({ comp, onNavigate }: { comp: BsnpComponent; onNavigate: 
                         onClick={(e) => { e.stopPropagation(); onNavigate(sc.fixAction!); }}
                         className="text-[0.5rem] text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-0.5 transition-colors"
                       >
-                        Perbaiki <ArrowRight size={8} />
+                        Perbaiki <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>arrow_forward</span>
                       </button>
                     )}
                   </div>
@@ -254,7 +239,7 @@ function ComponentCard({ comp, onNavigate }: { comp: BsnpComponent; onNavigate: 
             onClick={() => onNavigate(comp.targetPanel)}
             className="mt-2 w-full text-[0.6rem] text-app-muted hover:text-app-primary font-medium flex items-center justify-center gap-1 py-1.5 rounded-md bg-app-elevated/20 hover:bg-app-elevated/40 transition-all"
           >
-            Buka Panel <ArrowRight size={10} />
+            Buka Panel <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>arrow_forward</span>
           </button>
         </div>
       )}
@@ -264,19 +249,45 @@ function ComponentCard({ comp, onNavigate }: { comp: BsnpComponent; onNavigate: 
 
 // ── Main Component ─────────────────────────────────────────────────
 export default function BsnpCompliancePanel() {
+  // ── Project metadata (still from AuthoringStore — Phase 5 territory) ──
   const petunjuk = useAuthoringStore((s) => s.petunjuk);
   const cp = useAuthoringStore((s) => s.cp);
   const tp = useAuthoringStore((s) => s.tp);
-  const materi = useAuthoringStore((s) => s.materi);
-  const modules = useAuthoringStore((s) => s.modules);
-  const kuis = useAuthoringStore((s) => s.kuis);
-  const games = useAuthoringStore((s) => s.games);
   const alur = useAuthoringStore((s) => s.alur);
-  // Phase 3: setActivePanel migrated → panelRequest; content reads stay until Phase 5
-  const setActivePanel = (_panel: string) => useCanvaStore.setState({ panelRequest: _panel });
 
-  // Get pages from canva store to check for schema blocks
+  // ── Content data (from schema — single source of truth) ──
+  const kuis = useSchemaKuisProjection();
+  const modules = useSchemaModulesProjection();
+  // games auto-derived from modules (same logic as Phase 5-H subscription)
+  const games = useMemo(() => modules.filter(m => isGameBlockType(m.type) || ['matching', 'truefalse', 'memory', 'roda', 'sorting', 'fillblank', 'wordsearch', 'dragdrop', 'crossword', 'teambuzzer', 'spinwheel', 'flashcard'].includes(m.type)), [modules]);
+
+  // ── Schema block detection (from CanvaStore pages) ──
   const pages = useCanvaStore((s) => s.pages);
+
+  // ── Materi data from schema (materi-blok blocks inside materi-section) ──
+  const materi = useMemo(() => {
+    const bloks: unknown[] = [];
+    for (const page of pages) {
+      const schema = ensurePageSchema(page);
+      if (!schema) continue;
+      for (const block of schema.blocks) {
+        if (block.type === 'materi-section') {
+          const section = block as unknown as { content?: Array<{ type: string }> };
+          if (section.content) {
+            for (const child of section.content) {
+              if (child.type === 'materi-blok') {
+                bloks.push(child);
+              }
+            }
+          }
+        }
+      }
+    }
+    return { blok: bloks };
+  }, [pages]);
+
+  // Phase 5: setActivePanel migrated → panelRequest
+  const setActivePanel = (_panel: string) => useCanvaStore.setState({ panelRequest: _panel });
 
   // ── Schema block type detection ──────────────────────────────────
   const schemaBlockTypes = new Set<string>();
@@ -346,7 +357,7 @@ export default function BsnpCompliancePanel() {
       missingHint: 'Tambahkan langkah petunjuk penggunaan',
       status: petunjukStatus,
       targetPanel: 'konten',
-      icon: <BookOpen size={16} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>menu_book</span>,
       subChecks: [
         { key: 'pet-langkah', label: 'Langkah penggunaan', status: petunjuk.langkah.length > 0 ? 'complete' : 'missing', fixHint: 'Tambahkan minimal 3 langkah', fixAction: 'konten' },
         { key: 'pet-nav', label: 'Info navigasi', status: (petunjuk.navigation?.length ?? 0) > 0 ? 'complete' : 'partial', fixHint: 'Tambahkan info navigasi', fixAction: 'konten' },
@@ -359,7 +370,7 @@ export default function BsnpCompliancePanel() {
       missingHint: 'Tambahkan Tujuan Pembelajaran',
       status: tujuanDisplayStatus,
       targetPanel: 'dokumen',
-      icon: <Target size={16} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>target</span>,
       subChecks: [
         { key: 'tp-items', label: 'Tujuan Pembelajaran (TP)', status: tp.length > 0 ? 'complete' : 'missing', fixHint: 'Tambahkan TP di panel Dokumen', fixAction: 'dokumen' },
         { key: 'tp-display', label: 'Block Tujuan Display', status: hasTujuanDisplay ? 'complete' : 'missing', fixHint: 'Tambahkan block "Tujuan (Tampilan)" di canvas', fixAction: 'konten' },
@@ -373,7 +384,7 @@ export default function BsnpCompliancePanel() {
       missingHint: 'Tambahkan block Motivasi/Apersepsi',
       status: motivasiStatus,
       targetPanel: 'konten',
-      icon: <Lightbulb size={16} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>lightbulb</span>,
       subChecks: [
         { key: 'mot-block', label: 'Block Motivasi', status: hasMotivasi ? 'complete' : 'missing', fixHint: 'Tambahkan block "Motivasi / Apersepsi" di canvas', fixAction: 'konten' },
         { key: 'mot-hook', label: 'Pertanyaan pemicu', status: hasMotivasi ? 'complete' : 'missing', fixHint: 'Isi pertanyaan pemicu yang menarik', fixAction: 'konten' },
@@ -386,7 +397,7 @@ export default function BsnpCompliancePanel() {
       missingHint: 'Tambahkan materi blok atau modul',
       status: materiStatus,
       targetPanel: 'konten',
-      icon: <FileText size={16} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>description</span>,
       subChecks: [
         { key: 'mat-blok', label: 'Blok materi', status: materi.blok.length > 0 ? 'complete' : 'missing', fixHint: 'Tambahkan blok materi', fixAction: 'konten' },
         { key: 'mat-modules', label: 'Modul interaktif', status: modules.length > 0 ? 'complete' : 'partial', fixHint: 'Tambahkan modul (game, kuis)', fixAction: 'konten' },
@@ -400,7 +411,7 @@ export default function BsnpCompliancePanel() {
       missingHint: 'Tambahkan block Rangkuman',
       status: rangkumanStatus,
       targetPanel: 'konten',
-      icon: <BookMarked size={16} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>menu_book</span>,
       subChecks: [
         { key: 'rang-block', label: 'Block Rangkuman', status: hasRangkuman ? 'complete' : 'missing', fixHint: 'Tambahkan block "Rangkuman" di canvas', fixAction: 'konten' },
         { key: 'rang-concepts', label: 'Konsep kunci', status: hasRangkuman ? 'complete' : 'missing', fixHint: 'Isi konsep kunci yang telah dipelajari', fixAction: 'konten' },
@@ -413,7 +424,7 @@ export default function BsnpCompliancePanel() {
       missingHint: evaluasiCount === 0 ? 'Tambahkan kuis atau game' : 'Tambahkan lebih banyak evaluasi',
       status: evaluasiStatus,
       targetPanel: 'konten',
-      icon: <Shield size={16} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>shield</span>,
       subChecks: [
         { key: 'eval-kuis', label: `Kuis (${kuis.length})`, status: kuis.length > 0 || schemaBlockTypes.has('kuis') ? 'complete' : 'missing', fixHint: 'Tambahkan minimal 1 kuis', fixAction: 'konten' },
         { key: 'eval-game', label: `Game interaktif (${games.length + schemaGameCount})`, status: games.length + schemaGameCount > 0 ? 'complete' : 'missing', fixHint: 'Tambahkan game (Memory, Pasangkan, Isian, dll.)', fixAction: 'konten' },
@@ -427,7 +438,7 @@ export default function BsnpCompliancePanel() {
       missingHint: 'Isi Capaian Pembelajaran',
       status: kdtpStatus,
       targetPanel: 'dokumen',
-      icon: <Zap size={16} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>bolt</span>,
       subChecks: [
         { key: 'kd-cp', label: 'Capaian Fase', status: cp.capaianFase ? 'complete' : 'missing', fixHint: 'Isi Capaian Fase di panel Dokumen', fixAction: 'dokumen' },
         { key: 'kd-tp', label: 'Tujuan Pembelajaran', status: tp.length > 0 ? 'complete' : 'missing', fixHint: 'Tambahkan TP', fixAction: 'dokumen' },
@@ -440,7 +451,7 @@ export default function BsnpCompliancePanel() {
       missingHint: 'Pilih dimensi Profil Pelajar Pancasila',
       status: profilStatus,
       targetPanel: 'dokumen',
-      icon: <Users size={16} />,
+      icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>groups</span>,
       subChecks: [
         { key: 'pp-dimensi', label: `${cp.profil.length} dimensi`, status: cp.profil.length > 0 ? 'complete' : 'missing', fixHint: 'Pilih minimal 1 dimensi', fixAction: 'dokumen' },
       ],
@@ -496,7 +507,7 @@ export default function BsnpCompliancePanel() {
     <div className="bg-app-surface/60 border border-app-border/60 rounded-xl p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Shield size={14} className="text-app-accent" />
+        <span className="material-symbols-outlined text-app-accent" style={ { fontSize: '14px' } }>shield</span>
         <h2 className="text-xs font-semibold text-app-secondary">Kepatuhan BSNP</h2>
         <span className="text-[0.55rem] text-app-muted ml-auto">
           8 komponen wajib MPI
@@ -507,7 +518,7 @@ export default function BsnpCompliancePanel() {
       {!hasAnyContent ? (
         <div className="text-center py-8 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
           <div className="w-12 h-12 rounded-xl bg-app-accent/10 flex items-center justify-center mx-auto mb-3">
-            <FileCheck size={24} className="text-app-accent/70" />
+            <span className="material-symbols-outlined text-app-accent/70" style={ { fontSize: '24px' } }>task</span>
           </div>
           <p className="text-sm font-medium text-app-primary mb-1">Isi dokumen terlebih dahulu</p>
           <p className="text-xs text-app-muted mb-4">Isi dokumen terlebih dahulu untuk melihat kepatuhan BSNP.</p>
@@ -573,7 +584,7 @@ export default function BsnpCompliancePanel() {
       {/* Footer */}
       {overallPercent < 100 && (
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/15">
-          <Sparkles size={12} className="text-amber-400 flex-shrink-0" />
+          <span className="material-symbols-outlined text-amber-400 flex-shrink-0" style={ { fontSize: '12px' } }>auto_awesome</span>
           <p className="text-[0.55rem] text-amber-400/80">
             Lengkapi semua komponen untuk memenuhi standar BSNP. Klik komponen untuk detail dan saran perbaikan.
           </p>
@@ -581,7 +592,7 @@ export default function BsnpCompliancePanel() {
       )}
       {overallPercent === 100 && (
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
-          <CheckCircle2 size={12} className="text-emerald-400 flex-shrink-0" />
+          <span className="material-symbols-outlined text-emerald-400 flex-shrink-0" style={ { fontSize: '12px' } }>check_circle</span>
           <p className="text-[0.55rem] text-emerald-400/80 font-medium">
             Semua komponen BSNP telah lengkap! Media Pembelajaran Interaktif siap digunakan.
           </p>

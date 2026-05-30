@@ -67,6 +67,10 @@ export interface CourseTemplate {
   semester: string;
   /** Theme preset ID (links to existing DesignTokens theme) */
   theme: string;
+  /** Legacy preset key — links to the AuthoringStore preset system.
+   *  When applying a template, this key triggers applyFullPreset()
+   *  to populate the authoring data alongside the canvas pages. */
+  presetId?: string;
   /** Contract ID — links to TemplateThemeContract for visual enforcement.
    *  When set, the contract OVERRIDES scene/block default styles.
    *  Priority: TemplateThemeContract > Scene Style > Block Default */

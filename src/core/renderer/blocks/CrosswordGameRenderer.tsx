@@ -487,7 +487,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  <div
  className="text-center p-5 rounded-2xl"
  style={{
- background: tokens.color('bg'),
+ background: edu.pageBg(),
  border: '2px solid ' + edu.accentAlpha(0.3),
  boxShadow: edu.shadow('elevated'),
  animation: 'popSuccess 0.5s ease-out',
@@ -497,9 +497,9 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  {/* Tiered icon */}
  <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
  {pct >= 80 ? (
- <Trophy size={28} className="inline" style={{ color: edu.accent() }} />
+ <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>emoji_events</span>
  ) : pct >= 50 ? (
- <Star size={28} className="inline" style={{ color: edu.accent() }} />
+ <span className="material-symbols-outlined inline" style={ { fontSize: '28px' } }>star</span>
  ) : (
  <Dumbbell size={28} className="inline" style={{ color: edu.accent() }} />
  )}
@@ -540,7 +540,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}
  >
- <RotateCcw size={14} className="inline" /> Ulangi
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi
  </button>
  </MicroInteraction>
  )}
@@ -669,7 +669,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  {cell.num > 0 && (
  <span
  className="absolute top-0 left-0.5 font-bold"
- style={{ fontSize: '5px', color: edu.mutedText(0.4), lineHeight: 1 }}
+ style={{ fontSize: '10px', color: edu.mutedText(0.4), lineHeight: 1 }}
  >
  {cell.num}
  </span>
@@ -696,7 +696,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  <>
  <div
  className="font-extrabold uppercase tracking-wider mb-1.5"
- style={{ ...edu.micro(), color: edu.accent() }}
+ style={{ ...edu.caption(), color: edu.accent() }}
  >
  Mendatar →
  </div>
@@ -707,7 +707,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  onClick={() => { if (interactive && phase === 'play') setActiveCell({ r: cl.startR, c: cl.startC }); }}
  className="block text-left w-full px-1.5 py-0.5 rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
  style={{
- ...edu.micro(),
+ ...edu.caption(),
  color: edu.mutedText(0.6),
  cursor: interactive && phase === 'play' ? 'pointer' : 'default',
  wordBreak: 'break-word',
@@ -724,7 +724,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  <>
  <div
  className="font-extrabold uppercase tracking-wider mt-2 mb-1.5"
- style={{ ...edu.micro(), color: edu.accent() }}
+ style={{ ...edu.caption(), color: edu.accent() }}
  >
  Menurun ↓
  </div>
@@ -735,7 +735,7 @@ export const CrosswordGameRenderer = React.memo(function CrosswordGameRenderer({
  onClick={() => { if (interactive && phase === 'play') setActiveCell({ r: cl.startR, c: cl.startC }); }}
  className="block text-left w-full px-1.5 py-0.5 rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-accent"
  style={{
- ...edu.micro(),
+ ...edu.caption(),
  color: edu.mutedText(0.6),
  cursor: interactive && phase === 'play' ? 'pointer' : 'default',
  wordBreak: 'break-word',

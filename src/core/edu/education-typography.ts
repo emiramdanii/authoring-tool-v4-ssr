@@ -116,9 +116,9 @@ export const EDU_TYPOGRAPHY = {
   /** Caption — labels, metadata, source attribution */
   caption: {
     name: 'Caption',
-    minPx: 14,
-    px: 14,
-    maxPx: 16,
+    minPx: 16,
+    px: 16,
+    maxPx: 18,
     weight: 500,
     lineHeight: 1.4,
     letterSpacing: 0.01,
@@ -128,9 +128,9 @@ export const EDU_TYPOGRAPHY = {
   /** Micro — BSNP badge, variant pill (only for non-reading UI) */
   micro: {
     name: 'Micro',
-    minPx: 11,
-    px: 12,
-    maxPx: 13,
+    minPx: 14,
+    px: 14,
+    maxPx: 15,
     weight: 700,
     lineHeight: 1.3,
     letterSpacing: 0.03,

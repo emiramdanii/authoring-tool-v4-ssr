@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { FadeIn, ScaleIn, SlideIn, StaggerChildren } from '@/lib/transition';
-import { Sparkles, FileText, Plus, Lightbulb } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
@@ -23,7 +23,7 @@ interface ActionCard {
   id: string;
   title: string;
   description: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: string; // Material Symbols Outlined icon name
   colorClass: string;
   iconBgClass: string;
   borderClass: string;
@@ -53,7 +53,7 @@ export default function CanvasEmptyState() {
       id: 'template',
       title: isSederhana ? 'Template Siap Pakai' : 'Dari Template',
       description: 'Pilih template PPKn dan mapel lain, langsung pakai',
-      icon: FileText,
+      icon: 'description',
       colorClass: 'text-app-accent',
       iconBgClass: 'bg-app-accent/15',
       borderClass: 'border-app-accent/30',
@@ -64,7 +64,7 @@ export default function CanvasEmptyState() {
       id: 'autogen',
       title: isSederhana ? 'Buat dengan AI' : 'Auto-Generate',
       description: 'Tempel materi, AI buatkan untuk Anda',
-      icon: Sparkles,
+      icon: 'auto_awesome',
       colorClass: 'text-purple-400',
       iconBgClass: 'bg-purple-500/15',
       borderClass: 'border-purple-500/20',
@@ -75,7 +75,7 @@ export default function CanvasEmptyState() {
       id: 'blank',
       title: 'Halaman Kosong',
       description: isSederhana ? 'Buat halaman, lalu tambah konten' : 'Buat halaman baru dari nol',
-      icon: Plus,
+      icon: 'add',
       colorClass: 'text-cyan-400',
       iconBgClass: 'bg-cyan-500/15',
       borderClass: 'border-cyan-500/20',
@@ -90,7 +90,7 @@ export default function CanvasEmptyState() {
         {/* Illustration / Icon */}
         <ScaleIn delay={0} className="mb-6">
           <div className="w-16 h-16 rounded-2xl bg-app-accent/10 border border-app-accent/20 flex items-center justify-center">
-            <Sparkles size={28} className="text-app-accent" />
+            <span className="material-symbols-outlined text-app-accent" style={{ fontSize: '28px' }}>auto_awesome</span>
           </div>
         </ScaleIn>
 
@@ -122,7 +122,7 @@ export default function CanvasEmptyState() {
                   </span>
                 )}
                 <div className={`w-10 h-10 rounded-lg ${card.iconBgClass} flex items-center justify-center mb-3`}>
-                  <Icon size={20} className={card.colorClass} />
+                  <span className={`material-symbols-outlined ${card.colorClass}`} style={{ fontSize: '20px' }}>{card.icon}</span>
                 </div>
                 <div className={`text-sm font-semibold ${card.colorClass} mb-1`}>
                   {card.title}
@@ -137,7 +137,7 @@ export default function CanvasEmptyState() {
 
         {/* Tip */}
         <FadeIn delay={0.4} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-app-elevated/40 border border-app-border/30 max-w-md">
-          <Lightbulb size={14} className="text-amber-400 flex-shrink-0" />
+          <span className="material-symbols-outlined text-amber-400 flex-shrink-0" style={{ fontSize: '14px' }}>lightbulb</span>
           <span className="text-xs text-app-secondary">
             {isSederhana
               ? 'Tip: Template Siap Pakai paling mudah — pilih PPKn, langsung jadi!'

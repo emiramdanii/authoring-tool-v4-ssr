@@ -18,7 +18,7 @@ export function PreviewVideo({ mod, compact }: { mod: M; compact: boolean }) {
       {/* Video placeholder area */}
       <div className="relative flex items-center justify-center" style={{ background: COLORS.bgVideo, minHeight: compact ? 32 : 56 }}>
         <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: alpha(T.r, 0.19) }}>
-          <Play size={12} />
+          <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>play_arrow</span>
         </div>
         {duration && (
           <div className="absolute bottom-1 right-1 text-[9px] px-1 rounded" style={{ background: 'rgba(0,0,0,0.7)', color: T.text }}>

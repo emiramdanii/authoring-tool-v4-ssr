@@ -14,8 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Minus, Maximize, PlusCircle, ChevronDown } from 'lucide-react';
-
+// All icons migrated to Material Symbols Outlined
 // ═══════════════════════════════════════════════════════════════
 // ZOOM CONTROLS — Ratio badge + zoom in/out/fit + percentage
 // ═══════════════════════════════════════════════════════════════
@@ -50,7 +49,7 @@ export function ZoomControls() {
             title="Rasio canvas"
           >
             {ratioId}
-            <ChevronDown size={8} />
+            <span className="material-symbols-outlined" style={{ fontSize: '8px' }}>expand_more</span>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -76,7 +75,7 @@ export function ZoomControls() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant="ghost" size="icon" onClick={zoomToFit} className="focus-ring h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30">
-            <Maximize size={12} />
+            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>fullscreen</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">
@@ -90,7 +89,7 @@ export function ZoomControls() {
         className="focus-ring h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30"
         title="Perkecil (Ctrl+-)"
       >
-        <Minus size={12} />
+        <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>remove</span>
       </Button>
       <span
         className="text-[10px] font-mono text-app-secondary w-12 text-center select-none"
@@ -105,7 +104,7 @@ export function ZoomControls() {
         className="focus-ring h-7 w-7 rounded-xl bg-silse-surface-container-lowest/80 hover:bg-silse-surface-container-lowest border border-silse-outline-variant/30"
         title="Perbesar (Ctrl++)"
       >
-        <PlusCircle size={12} />
+        <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>add_circle</span>
       </Button>
     </div>
   );

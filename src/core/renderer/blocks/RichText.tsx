@@ -107,11 +107,7 @@ export const RichText = React.memo(function RichText({
   if (hasHtml) {
     // Content contains HTML — sanitize and render as HTML
     return (
-      <Tag
-        className={className}
-        style={baselineStyle}
-        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-      />
+      <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>label</span>
     );
   }
 

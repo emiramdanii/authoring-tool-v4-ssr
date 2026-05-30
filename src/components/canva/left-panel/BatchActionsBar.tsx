@@ -14,14 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { useCallback, useState } from 'react';
-import {
-  Trash2,
-  Copy,
-  Palette,
-  X,
-  CheckSquare,
-  Loader2,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
 
@@ -78,7 +71,7 @@ export default function BatchActionsBar() {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-2">
-          <CheckSquare size={12} className="text-blue-400" />
+          <span className="material-symbols-outlined text-blue-400" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>check_box</span>
           <span className="text-[10px] font-bold text-blue-300">
             {count} {isSederhana ? 'konten' : 'block'} dipilih
           </span>
@@ -88,7 +81,7 @@ export default function BatchActionsBar() {
           className="p-0.5 rounded hover:bg-blue-500/20 text-blue-400/60 hover:text-blue-300 transition-colors"
           aria-label="Batal pilih semua"
         >
-          <X size={12} />
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>close</span>
         </button>
       </div>
 
@@ -100,7 +93,7 @@ export default function BatchActionsBar() {
           className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-bold bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-[transform,box-shadow,background-color] active:scale-95"
           title="Duplikat semua yang dipilih"
         >
-          <Copy size={10} />
+          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>content_copy</span>
           {isSederhana ? 'Gandakan' : 'Duplikat'}
         </button>
 
@@ -111,7 +104,7 @@ export default function BatchActionsBar() {
             className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-bold bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:text-app-accent hover:border-app-accent/30 transition-[transform,box-shadow,background-color] active:scale-95"
             title="Atur tampilan variant"
           >
-            <Palette size={10} />
+            <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>palette</span>
             {isSederhana ? 'Tampilan' : 'Variant'}
           </button>
 
@@ -138,7 +131,7 @@ export default function BatchActionsBar() {
           className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-[9px] font-bold bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 hover:border-red-500/30 transition-[transform,box-shadow,background-color] active:scale-95"
           title="Hapus semua yang dipilih"
         >
-          <Trash2 size={10} />
+          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>delete</span>
           Hapus
         </button>
       </div>

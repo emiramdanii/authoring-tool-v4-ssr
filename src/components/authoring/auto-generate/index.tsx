@@ -3,21 +3,9 @@
 import { useState } from 'react';
 import { GEN_BUTTONS } from './constants';
 import { Spinner } from './Spinner';
-import {
-  Zap,
-  Search,
-  Trash2,
-  CheckCircle2,
-  FileEdit,
-  ClipboardList,
-  Settings2,
-  Sparkles,
-  Check,
-  ArrowRight,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { renderPreviewContent } from './previews';
 import { useAutoGenerate } from './use-auto-generate';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { ShowTransition } from '@/lib/transition';
 
@@ -26,9 +14,9 @@ import { ShowTransition } from '@/lib/transition';
 // ═══════════════════════════════════════════════════════════════════
 
 const STEPS = [
-  { id: 1, label: 'Paste Materi', icon: ClipboardList },
-  { id: 2, label: 'Pengaturan', icon: Settings2 },
-  { id: 3, label: 'Generate', icon: Sparkles },
+  { id: 1, label: 'Paste Materi', icon: 'assignment' },
+  { id: 2, label: 'Pengaturan', icon: 'settings' },
+  { id: 3, label: 'Generate', icon: 'auto_awesome' },
 ] as const;
 
 function StepIndicator({ currentStep }: { currentStep: number }) {
@@ -37,7 +25,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
       {STEPS.map((step, idx) => {
         const isCompleted = currentStep > step.id;
         const isActive = currentStep === step.id;
-        const Icon = step.icon;
+        const stepIcon = step.icon;
 
         return (
           <div key={step.id} className="flex items-center">
@@ -56,9 +44,9 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
                 `}
               >
                 {isCompleted ? (
-                  <Check size={16} strokeWidth={2.5} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>check</span>
                 ) : (
-                  <Icon size={16} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>{step.icon}</span>
                 )}
               </div>
               <span
@@ -131,7 +119,7 @@ export default function AutoGenerate() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
-            <Zap size={18} className="text-app-accent" /> Auto-Generate
+            <span className="material-symbols-outlined text-app-accent" style={ { fontSize: '18px' } }>bolt</span> Auto-Generate
           </h2>
           <p className="text-sm text-app-secondary mt-1">
             Paste teks materi → Generate Full Lesson BSNP dalam 1 klik.
@@ -176,13 +164,13 @@ export default function AutoGenerate() {
             disabled={text.trim().length < 50}
             className="px-4 py-2 bg-app-accent hover:bg-app-accent-hover disabled:bg-app-elevated disabled:text-app-muted text-app-inverse font-semibold text-sm rounded-lg transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow disabled:shadow-none"
           >
-            <Search size={14} /> Parse Teks
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>search</span> Parse Teks
           </button>
           <button
             onClick={() => setText('')}
             className="px-3 py-2 bg-app-elevated hover:bg-app-elevated/80 text-app-secondary text-xs rounded-lg transition-all duration-200 flex items-center gap-1.5 border border-transparent hover:border-app-border"
           >
-            <Trash2 size={13} /> Bersihkan
+            <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>delete</span> Bersihkan
           </button>
           <div className="ml-auto flex items-center gap-2 text-xs text-app-muted">
             {text.trim().length < 50 && text.length > 0 && (
@@ -257,7 +245,7 @@ export default function AutoGenerate() {
         <div className="bg-app-surface border border-app-border rounded-xl overflow-hidden">
           <div className="px-5 pt-4 pb-3">
             <h3 className="text-sm font-semibold text-app-primary flex items-center gap-2">
-              <CheckCircle2 size={15} className="text-app-success" />
+              <span className="material-symbols-outlined text-app-success" style={ { fontSize: '15px' } }>check_circle</span>
               Hasil Parse
             </h3>
           </div>
@@ -321,7 +309,7 @@ export default function AutoGenerate() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-bold text-app-accent flex items-center gap-2">
-                <Zap size={16} className="flex-shrink-0" />
+                <span className="material-symbols-outlined flex-shrink-0" style={ { fontSize: '16px' } }>bolt</span>
                 Generate Full Lesson BSNP
               </h3>
               <p className="text-xs text-app-secondary mt-1">
@@ -333,7 +321,7 @@ export default function AutoGenerate() {
               disabled={fullLessonLoading || loading.size > 0}
               className="flex-shrink-0 px-5 py-2.5 bg-app-accent hover:bg-app-accent-hover disabled:bg-app-elevated disabled:text-app-muted text-app-inverse font-bold text-sm rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg disabled:shadow-none"
             >
-              {fullLessonLoading ? <Spinner /> : <Sparkles size={16} />}
+              {fullLessonLoading ? <Spinner /> : <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>auto_awesome</span>}
               {fullLessonLoading ? 'Generating...' : '⚡ Generate Full Lesson'}
             </button>
           </div>
@@ -382,7 +370,7 @@ export default function AutoGenerate() {
               disabled={loading.size > 0}
               className="px-4 py-2 bg-app-accent hover:bg-app-accent-hover disabled:bg-app-elevated disabled:text-app-muted text-app-inverse font-semibold text-sm rounded-lg transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow disabled:shadow-none"
             >
-              {loading.size > 0 ? <Spinner /> : <Sparkles size={14} />}
+              {loading.size > 0 ? <Spinner /> : <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>auto_awesome</span>}
               {loading.size > 0 ? `Generating ${loading.size}...` : 'Generate Semua'}
             </button>
           </div>
@@ -420,7 +408,7 @@ export default function AutoGenerate() {
                     <span className="text-lg leading-none">{btn.icon}</span>
                     {preview && (
                       <span className="text-[0.6rem] bg-app-success/15 text-app-success px-1.5 py-0.5 rounded-md font-semibold flex items-center gap-0.5">
-                        <Check size={8} strokeWidth={3} /> {preview.count}
+                        <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>check</span> {preview.count}
                       </span>
                     )}
                     {isLoading && <Spinner />}
@@ -467,7 +455,7 @@ export default function AutoGenerate() {
                 disabled={applying}
                 className="px-4 py-2 bg-app-accent hover:bg-app-accent-hover disabled:bg-app-accent/60 text-app-inverse font-semibold text-sm rounded-lg transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow disabled:shadow-none"
               >
-                {applying ? <Spinner /> : <CheckCircle2 size={14} />}
+                {applying ? <Spinner /> : <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>check_circle</span>}
                 {applying ? 'Menerapkan...' : 'Terapkan ke Proyek'}
               </button>
               {previews.length > 1 && (
@@ -482,7 +470,7 @@ export default function AutoGenerate() {
                   disabled={applying}
                   className="px-3 py-2 bg-app-elevated hover:bg-app-elevated/80 disabled:bg-app-elevated/40 text-app-primary text-xs rounded-lg transition-all duration-200 flex items-center gap-1.5 border border-transparent hover:border-app-border disabled:cursor-not-allowed"
                 >
-                  {applying ? <Spinner /> : <Zap size={13} />}
+                  {applying ? <Spinner /> : <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>bolt</span>}
                   {applying ? '...' : `Terapkan Semua (${previews.length})`}
                 </button>
               )}
@@ -525,7 +513,7 @@ export default function AutoGenerate() {
         >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-9 h-9 rounded-lg bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
-                <ArrowRight size={18} className="text-emerald-400" />
+                <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '18px' } }>arrow_forward</span>
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-emerald-300">
@@ -540,7 +528,7 @@ export default function AutoGenerate() {
               onClick={() => useCanvaStore.setState({ panelRequest: 'canva' })}
               className="px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2 flex-shrink-0"
             >
-              Buka Canva untuk Edit <ArrowRight size={14} />
+              Buka Canva untuk Edit <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>arrow_forward</span>
             </button>
         </div>
       )}
@@ -549,7 +537,7 @@ export default function AutoGenerate() {
       {!parsed && (
         <div className="bg-app-surface border border-app-border rounded-xl p-8 sm:p-10 text-center">
           <div className="mx-auto w-14 h-14 rounded-2xl bg-app-elevated/80 flex items-center justify-center mb-4">
-            <FileEdit size={24} className="text-app-muted" />
+            <span className="material-symbols-outlined text-app-muted" style={ { fontSize: '24px' } }>edit_note</span>
           </div>
           <h3 className="text-lg font-semibold text-app-primary mb-2">Paste materi untuk memulai</h3>
           <p className="text-sm text-app-secondary max-w-lg mx-auto leading-relaxed">
@@ -558,19 +546,19 @@ export default function AutoGenerate() {
           </p>
           <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-app-muted">
             <span className="inline-flex items-center gap-1.5 bg-app-elevated/80 border border-app-border/40 px-2.5 py-1 rounded-lg">
-              <FileEdit size={12} /> Paste
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>edit_note</span> Paste
             </span>
             <span className="text-app-muted/60">→</span>
             <span className="inline-flex items-center gap-1.5 bg-app-elevated/80 border border-app-border/40 px-2.5 py-1 rounded-lg">
-              <Search size={12} /> Parse
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>search</span> Parse
             </span>
             <span className="text-app-muted/60">→</span>
             <span className="inline-flex items-center gap-1.5 bg-app-elevated/80 border border-app-border/40 px-2.5 py-1 rounded-lg">
-              <Zap size={12} /> Generate
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>bolt</span> Generate
             </span>
             <span className="text-app-muted/60">→</span>
             <span className="inline-flex items-center gap-1.5 bg-app-elevated/80 border border-app-border/40 px-2.5 py-1 rounded-lg">
-              <CheckCircle2 size={12} /> Terapkan
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>check_circle</span> Terapkan
             </span>
           </div>
         </div>

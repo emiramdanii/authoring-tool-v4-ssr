@@ -38,6 +38,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { SchemaBlock, ScreenSchema } from './types';
+import { isSpatialLayout } from './types';
 import {
   deepClone,
   produce,
@@ -458,7 +459,7 @@ export class SceneTransaction {
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
       // Skip absolute-positioned blocks
-      if (block!.layout?.position === 'absolute') continue;
+      if (isSpatialLayout(block!.layout) && block!.layout.position === 'absolute') continue;
 
       const measuredH = this.measurements.get(block!.id || '')!;
       if (measuredH != null) {

@@ -319,7 +319,7 @@ function MateriVariantKlasik({
           {/* BSNP badge */}
           {block.bsnpRequired && (
             <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
-              <Shield size={isCompact ? 9 : 11} /> WAJIB BSNP
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>shield</span> WAJIB BSNP
             </PremiumBadge>
           )}
         </div>
@@ -382,8 +382,8 @@ function MateriVariantKlasik({
                       {(childBlock as Record<string, unknown>).title as string || `Bagian ${i + 1}`}
                     </span>
                     {expandedSections.has(i)
-                      ? <ChevronUp size={isCompact ? 11 : 13} style={{ opacity: 0.5 }} />
-                      : <ChevronDown size={isCompact ? 11 : 13} style={{ opacity: 0.5 }} />
+                      ? <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_less</span>
+                      : <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span>
                     }
                   </button>
                   <div style={{
@@ -445,7 +445,7 @@ function MateriVariantKlasik({
                 background: tokens.colorAlpha('g', 0.12),
               }}
             >
-              <Star size={12} style={{ color: tokens.color('g') }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>star</span>
             </div>
             <span
               className="font-extrabold uppercase tracking-wider"
@@ -469,11 +469,7 @@ function MateriVariantKlasik({
                   border: `1px solid ${tokens.subtleBorder(0.06)}`,
                 }}
               >
-                <CheckCircle2
-                  size={isCompact ? 12 : 14}
-                  className="flex-shrink-0 mt-0.5"
-                  style={{ color: tokens.color('g') }}
-                />
+                <span className="material-symbols-outlined flex-shrink-0 mt-0.5" style={ { fontSize: '16px' } }>check_circle</span>
                 <span
                   className="leading-relaxed"
                   style={{
@@ -557,8 +553,8 @@ function MateriVariantKlasik({
             }}
           >
             {isExpanded
-              ? <><ChevronUp size={isCompact ? 10 : 12} /> Ringkas</>
-              : <><ChevronDown size={isCompact ? 10 : 12} /> Selengkapnya ({hiddenCount} bagian)</>
+              ? <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_less</span> Ringkas</>
+              : <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span> Selengkapnya ({hiddenCount} bagian)</>
             }
           </button>
         </div>
@@ -693,7 +689,7 @@ function MateriVariantMajalah({
           </h2>
           {block.bsnpRequired && (
             <PremiumBadge tokens={tokens} accent="y" variant="solid" isCompact={isCompact}>
-              <Shield size={isCompact ? 9 : 11} /> WAJIB BSNP
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>shield</span> WAJIB BSNP
             </PremiumBadge>
           )}
         </div>
@@ -760,7 +756,7 @@ function MateriVariantMajalah({
             }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <Star size={11} style={{ color: tokens.color('g') }} />
+              <span className="material-symbols-outlined" style={ { fontSize: '11px' } }>star</span>
               <span
                 className="font-extrabold uppercase tracking-wider"
                 style={{
@@ -780,11 +776,7 @@ function MateriVariantMajalah({
                     background: tokens.subtleBg(0.02),
                   }}
                 >
-                  <CheckCircle2
-                    size={11}
-                    className="flex-shrink-0 mt-0.5"
-                    style={{ color: tokens.color('g') }}
-                  />
+                  <span className="material-symbols-outlined flex-shrink-0 mt-0.5" style={ { fontSize: '11px' } }>check_circle</span>
                   <span
                     className="leading-relaxed"
                     style={{
@@ -1039,7 +1031,7 @@ function MateriVariantPill({
                 }}
                 title={stripHtmlTags(item)}
               >
-                <CheckCircle2 size={8} />
+                <span className="material-symbols-outlined" style={ { fontSize: '8px' } }>check_circle</span>
                 <span style={{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -1084,7 +1076,7 @@ function MateriVariantPill({
           >
             <Brain size={10} />
             <span>Cek Pemahaman</span>
-            {showSelfCheck ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+            {showSelfCheck ? <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>expand_less</span> : <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>expand_more</span>}
           </button>
           </MicroInteraction>
 

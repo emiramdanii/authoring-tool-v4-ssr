@@ -16,7 +16,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { ShowTransition } from '@/lib/transition';
-import { X, Search, ChevronLeft, ChevronRight, CheckCircle2, Layers, BookOpen, Eye, List } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -139,7 +139,7 @@ function TemplatePreview({
                   : 'text-app-muted hover:text-app-secondary'
               }`}
             >
-              <Eye size={11} />
+              <span className="material-symbols-outlined" style={{ fontSize: '11px' }}>visibility</span>
               Visual
             </button>
             <button
@@ -150,12 +150,12 @@ function TemplatePreview({
                   : 'text-app-muted hover:text-app-secondary'
               }`}
             >
-              <List size={11} />
+              <span className="material-symbols-outlined" style={ { fontSize: '11px' } }>list</span>
               Daftar
             </button>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-app-muted hover:text-app-primary shrink-0">
-            <X size={16} />
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
           </Button>
         </div>
 
@@ -164,7 +164,7 @@ function TemplatePreview({
           {/* Screen indicator */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Layers size={14} className="text-app-accent" />
+              <span className="material-symbols-outlined text-app-accent" style={{ fontSize: '14px' }}>layers</span>
               <span className="text-app-accent text-xs font-semibold">
                 Layar {screenIdx + 1} / {scenes.length}
               </span>
@@ -260,7 +260,7 @@ function TemplatePreview({
             disabled={screenIdx === 0}
             className="text-app-secondary"
           >
-            <ChevronLeft size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_left</span>
             <span className="text-xs">Sebelumnya</span>
           </Button>
 
@@ -268,7 +268,7 @@ function TemplatePreview({
             onClick={() => onApply(template)}
             className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
           >
-            <CheckCircle2 size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check_circle</span>
             Gunakan Template
           </Button>
 
@@ -280,7 +280,7 @@ function TemplatePreview({
             className="text-app-secondary"
           >
             <span className="text-xs">Selanjutnya</span>
-            <ChevronRight size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_right</span>
           </Button>
         </div>
       </div>
@@ -382,7 +382,7 @@ function TemplateCard({
             Kelas {template.grade}
           </Badge>
           <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-5 border border-app-border text-app-muted">
-            <Layers size={9} className="mr-0.5" />
+            <span className="material-symbols-outlined mr-0.5" style={{ fontSize: '9px' }}>layers</span>
             {template.scenes.length} layar
           </Badge>
         </div>
@@ -593,7 +593,7 @@ export default function TemplateMarketplace({
                   className="text-app-muted hover:text-app-primary shrink-0"
                   title="Tutup (Esc)"
                 >
-                  <X size={16} />
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>
                 </Button>
               </div>
 
@@ -601,7 +601,7 @@ export default function TemplateMarketplace({
               <div className="px-5 py-3 border-b border-app-border/50 space-y-3 shrink-0">
                 {/* Search bar */}
                 <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-app-muted" />
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-app-muted" style={{ fontSize: '14px' }}>search</span>
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -695,7 +695,7 @@ export default function TemplateMarketplace({
                   {filteredTemplates.length} template tersedia • Semua template memenuhi standar BSNP
                 </span>
                 <span className="text-[10px] text-app-muted/50 flex items-center gap-1">
-                  <BookOpen size={10} />
+                  <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>menu_book</span>
                   SMP Kurikulum Merdeka
                 </span>
               </div>

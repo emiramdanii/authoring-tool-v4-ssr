@@ -13,7 +13,7 @@ export function TabIconsEditor({ mod, uf, ai, ri, ui }: EdProps) {
       <div className="flex gap-3">
         <div>
           <FieldLabel>Layout</FieldLabel>
-          <select className={SELECT_CLS} value={(mod.layout as string) || 'horizontal'} onChange={(e) => uf('layout', e.target.value)}>
+          <select className={SELECT_CLS} value={(mod.layoutVariant as string) || (mod.layout as string) || 'horizontal'} onChange={(e) => uf('layoutVariant', e.target.value)}>
             <option value="horizontal">Horizontal</option>
             <option value="vertical">Vertical</option>
             <option value="pills">Pills</option>
