@@ -73,19 +73,29 @@ function TopNavbar({
   totalScore,
   maxScore,
   onBack,
+  isDark,
 }: {
   title: string;
   progress: number;
   totalScore: number;
   maxScore: number;
   onBack: () => void;
+  isDark: boolean;
 }) {
   return (
-    <div className="h-12 flex items-center gap-3 px-4 bg-white border-b border-slate-200 shrink-0 z-10">
+    <div className={`h-12 flex items-center gap-3 px-4 shrink-0 z-10 ${
+      isDark
+        ? 'bg-[#0e1c2f]/95 backdrop-blur-md border-b border-white/10'
+        : 'bg-white border-b border-slate-200'
+    }`}>
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors"
+        className={`flex items-center gap-1 transition-colors ${
+          isDark
+            ? 'text-slate-300 hover:text-white'
+            : 'text-slate-600 hover:text-slate-900'
+        }`}
         aria-label="Kembali ke editor"
       >
         <ArrowLeft size={18} />
@@ -94,25 +104,31 @@ function TopNavbar({
 
       {/* Title */}
       <div className="flex-1 min-w-0">
-        <h1 className="text-sm font-semibold text-slate-800 truncate">{title}</h1>
+        <h1 className={`text-sm font-semibold truncate ${
+          isDark ? 'text-white' : 'text-slate-800'
+        }`}>{title}</h1>
       </div>
 
       {/* Progress bar */}
       <div className="flex items-center gap-2">
-        <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div className={`w-24 h-2 rounded-full overflow-hidden ${
+          isDark ? 'bg-white/10' : 'bg-slate-200'
+        }`}>
           <div
             className="h-full bg-emerald-500 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <span className="text-[10px] font-medium text-slate-500 min-w-[32px] text-right">
+        <span className={`text-[10px] font-medium min-w-[32px] text-right ${
+          isDark ? 'text-slate-400' : 'text-slate-500'
+        }`}>
           {progress}%
         </span>
       </div>
 
       {/* Score */}
       {maxScore > 0 && (
-        <div className="flex items-center gap-1 text-amber-600">
+        <div className={`flex items-center gap-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
           <Trophy size={14} />
           <span className="text-xs font-bold">{totalScore}/{maxScore}</span>
         </div>
@@ -134,6 +150,7 @@ function BottomNav({
   onGoToScreen,
   isNextLocked,
   lockReason,
+  isDark,
 }: {
   currentScreen: number;
   totalScreens: number;
@@ -143,6 +160,7 @@ function BottomNav({
   onGoToScreen: (index: number) => void;
   isNextLocked: boolean;
   lockReason: string;
+  isDark: boolean;
 }) {
   // Completion indicator for each dot
   const getDotClass = (index: number) => {
@@ -165,7 +183,11 @@ function BottomNav({
   };
 
   return (
-    <div className="h-14 flex items-center justify-between px-4 bg-white border-t border-slate-200 shrink-0 z-10">
+    <div className={`h-14 flex items-center justify-between px-4 shrink-0 z-10 ${
+      isDark
+        ? 'bg-[#0e1c2f]/95 backdrop-blur-md border-t border-white/10'
+        : 'bg-white border-t border-slate-200'
+    }`}>
       {/* Prev — always allowed */}
       <Button
         variant="ghost"
@@ -642,10 +664,26 @@ export default function LearningMediaShell() {
   // Page title for top navbar
   const pageTitle = page?.label || phaseMeta.label || `Halaman ${currentScreenIndex + 1}`;
 
+  // Detect dark content: check if the theme is a dark theme (based on contractId or themeId)
+  // Dark themes: macam-norma, golden-presentation, hakikat-norma, default
+  // Light themes: ios-light, ios-warm, minimal, ocean-light, warm-light
+  const isDarkContent = (() => {
+    const contractId = page?.contractId;
+    const schemaThemeId = page?.schema?.themeId || (page?.templateData as Record<string, unknown>)?.schemaThemeId as string | undefined;
+    // macam-norma, golden-pertemuan, hakikat-norma → dark
+    // ios-light, ios-warm, minimal, ocean-light, warm-light → light
+    const lightThemes = ['ios-light', 'ios-warm', 'minimal', 'ocean-light', 'warm-light'];
+    if (lightThemes.includes(schemaThemeId || '')) return false;
+    // Default to dark for all PPKn learning media (matches HTML originals)
+    return true;
+  })();
+
   if (!page) return null;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-100 overflow-hidden">
+    <div className={`flex-1 flex flex-col h-full overflow-hidden ${
+      isDarkContent ? 'bg-[#080f1a]' : 'bg-slate-100'
+    }`}>
       {/* Top Navbar */}
       <TopNavbar
         title={pageTitle}
@@ -653,10 +691,15 @@ export default function LearningMediaShell() {
         totalScore={totalScore}
         maxScore={maxScore}
         onBack={handleBack}
+        isDark={isDarkContent}
       />
 
       {/* Phase badge row + Edit/Play toggle */}
-      <div className="flex items-center gap-2 px-4 py-1.5 bg-white/80 border-b border-slate-100 shrink-0">
+      <div className={`flex items-center gap-2 px-4 py-1.5 shrink-0 ${
+        isDarkContent
+          ? 'bg-[#0e1c2f]/80 border-b border-white/5'
+          : 'bg-white/80 border-b border-slate-100'
+      }`}>
         <PhaseBadge templateType={templateType} />
         <span className="text-[11px] text-slate-400">
           Halaman {currentScreenIndex + 1} dari {totalScreens}
@@ -732,6 +775,7 @@ export default function LearningMediaShell() {
         onGoToScreen={forceGoToScreen}
         isNextLocked={!isNextAllowed && currentScreenIndex < totalScreens - 1}
         lockReason={nextLockReason}
+        isDark={isDarkContent}
       />
 
       {/* Navigation Lock Toast */}

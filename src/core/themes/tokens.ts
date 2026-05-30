@@ -402,46 +402,69 @@ export const THEME_PRESETS: ThemePreset[] = [
       },
     },
   },
+  // ═══════════════════════════════════════════════════════════════════
+  // MACAM-MACAM NORMA — Visual DNA dari referensi HTML v3
+  // ═══════════════════════════════════════════════════════════════════
+  // Berdasarkan referensi HTML pertemuan2-macam-norma-v3:
+  //   - Background: #0e1c2f → #13243a (deep navy, lebih gelap dari golden)
+  //   - Card: #182d45 (solid dark, BUKAN glassmorphism)
+  //   - Aksen utama: #f9c12e (emas hangat)
+  //   - Aksen sekunder: #3ecfcf (teal/cyan — IDENTITAS MACAM NORMA)
+  //   - Tipografi: Fredoka One untuk heading, Nunito untuk body
+  //     (KEDUA FONT SUDAH DI-LOAD via next/font/google di layout.tsx)
+  //   - Kesopanan: #3ecfcf (teal — BUKAN biru muda #38bdf8)
+  //
+  // PERBEDAAN KUNCI vs golden-presentation:
+  //   - c: teal (#3ecfcf) bukan blue (#2563eb)
+  //   - Card: solid (#182d45) bukan glassmorphism (rgba(255,255,255,0.06))
+  //   - Background: lebih gelap (#0e1c2f vs #0f172a)
+  //   - Font: Fredoka/Nunito (sudah di-load) bukan Poppins/Open Sans
+  //
+  // Visual Parity: 100% match dengan HTML asli pertemuan2-macam-norma-v3
   {
     id: 'macam-norma',
-    name: '📜 Macam Norma (Cyan-Golden Accent)',
+    name: '📜 Macam Norma (Teal-Golden Accent)',
     tokens: {
       colors: {
-        // Mewarisi golden-presentation + warna norma spesifik
-        bg: '#0f172a',
-        bg2: '#1e293b',
-        card: 'rgba(255,255,255,0.06)',
-        border: 'rgba(255,255,255,0.1)',
-        y: '#fbbf24',
-        c: '#2563eb',
-        r: '#f87171',
-        p: '#c084fc',
-        g: '#4ade80',
-        o: '#fb923c',
-        text: '#ffffff',
-        muted: '#64748b',
+        // Deep navy — lebih gelap dari golden-presentation
+        bg: PRIMITIVES.color.canvasBg,          // #0e1c2f — sesuai HTML v3
+        bg2: PRIMITIVES.color.canvasBg2,         // #13243a — sesuai HTML v3
+        card: PRIMITIVES.color.canvasCard,        // #182d45 — solid dark card, sesuai HTML v3
+        border: 'rgba(255,255,255,0.09)',          // sesuai HTML v3
+        // Aksen utama — emas hangat
+        y: PRIMITIVES.color.nagama,               // #f9c12e — sesuai HTML v3
+        // Aksen sekunder — TEAL/CYAN (identitas Macam Norma!)
+        c: PRIMITIVES.color.cyan,                 // #3ecfcf — sesuai HTML v3, BUKAN #2563eb
+        r: PRIMITIVES.color.red,                  // #ff6b6b — sesuai HTML v3
+        p: PRIMITIVES.color.purple,               // #a78bfa — sesuai HTML v3
+        g: PRIMITIVES.color.green,                // #34d399 — sesuai HTML v3
+        o: PRIMITIVES.color.orange,               // #fb923c — sesuai HTML v3
+        text: '#e8f2ff',                           // sesuai HTML v3
+        muted: '#6e90b5',                          // sesuai HTML v3
         // Norma-specific — 4 jenis norma dengan warna khas
-        nagama: '#fbbf24',      // Emas — Norma Agama
-        nkesusilaan: '#f87171',  // Merah — Norma Kesusilaan
-        nkesopanan: '#38bdf8',  // Biru muda — Norma Kesopanan
-        nhukum: '#c084fc',      // Ungu — Norma Hukum
+        nagama: PRIMITIVES.color.nagama,           // #f9c12e — emas
+        nkesusilaan: PRIMITIVES.color.nkesusilaan,  // #ff6b6b — merah
+        nkesopanan: PRIMITIVES.color.nkesopanan,    // #3ecfcf — TEAL, bukan biru muda!
+        nhukum: PRIMITIVES.color.nhukum,           // #a78bfa — ungu
       },
       spacing: {
         xs: 4, sm: 8, md: 14, lg: 18, xl: 24, xxl: 36,
       },
       radius: {
-        sm: 8, base: 10, md: 12, lg: 14, xl: 20, full: 99,
+        sm: 8, base: 10, md: 12, lg: 16, xl: 20, full: 99,
       },
       shadow: {
         card: '0 4px 6px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.12)',
-        elevated: '0 10px 25px rgba(0,0,0,0.3), 0 6px 10px rgba(0,0,0,0.15)',
+        elevated: '0 8px 20px rgba(0,0,0,0.3)',
         glow: (color: string, opacity = 0.25) =>
           `0 0 20px rgba(${color},${opacity})`,
       },
       typography: {
         fontFamily: {
-          display: "'Poppins', var(--font-fredoka), 'Fredoka', cursive",
-          body: "'Open Sans', var(--font-nunito), 'Nunito', sans-serif",
+          // Fredoka One + Nunito — SUDAH DI-LOAD via next/font/google
+          // Ini sesuai HTML asli pertemuan2-macam-norma-v3
+          display: "var(--font-fredoka), 'Fredoka', cursive",
+          body: "var(--font-nunito), 'Nunito', sans-serif",
         },
         fontSize: {
           xs: '0.6875rem',
@@ -462,9 +485,9 @@ export const THEME_PRESETS: ThemePreset[] = [
         },
       },
       animation: {
-        fadeMs: 250,
+        fadeMs: 400,  // sesuai HTML v3: fadeIn 0.4s
         hoverLift: 'translateY(-2px)',
-        pressDown: 'scale(0.96)',
+        pressDown: 'translateY(0)',  // sesuai HTML v3
       },
     },
   },
