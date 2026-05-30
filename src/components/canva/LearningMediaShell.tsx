@@ -6,14 +6,14 @@
 // Layout:
 //   [TopNavbar 48px]  ← Back + Title | Progress bar | Score 🏆
 //   [Content flex-1]  PageRenderer mode="preview"
-//   [BottomNav 56px]  ← Prev | Dots | Next →
+//   [BottomNav 56px]  ← Prev | Dots | Next → (with navigation lock)
+//   [LockToast]       Shows when navigation is locked
 //   [CompletionModal] overlay on "Selesai"
 //
 // Architecture:
-//   - Leverages existing PageRenderer + SchemaScreenRenderer
-//   - No custom adapter layer — uses the same rendering pipeline
-//   - 1 screen = 1 page (enforced by navigation)
-//   - Score synced from interactive kuis/game widgets
+//   PageRuntimeContract → LearningMediaStore → BottomNav (lock)
+//   Score bridge: interactive-store → learning-media-store → navbar
+//   Edit vs Play: mode-aware click handling
 // ═══════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
@@ -25,6 +25,7 @@ import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { RATIOS, type CanvaPage } from './types';
 import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
 import { PageTransition, type PageDirection } from '@/lib/transition';
+import { getPageContract, type PageCompletionStatus } from '@/core/edu/page-runtime-contract';
 import {
   ArrowLeft,
   ChevronLeft,
@@ -34,6 +35,10 @@ import {
   RotateCcw,
   CheckCircle2,
   Star,
+  Lock,
+  AlertCircle,
+  Pencil,
+  Play,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -117,27 +122,51 @@ function TopNavbar({
 }
 
 // ═══════════════════════════════════════════════════════════════
-// BOTTOM NAVIGATION — 56px fixed height
+// BOTTOM NAVIGATION — 56px fixed height, contract-aware
 // ═══════════════════════════════════════════════════════════════
 
 function BottomNav({
   currentScreen,
   totalScreens,
-  visitedScreens,
-  onPrev,
+  pageStatuses,
   onNext,
+  onPrev,
   onGoToScreen,
+  isNextLocked,
+  lockReason,
 }: {
   currentScreen: number;
   totalScreens: number;
-  visitedScreens: Set<number>;
-  onPrev: () => void;
+  pageStatuses: PageCompletionStatus[];
   onNext: () => void;
+  onPrev: () => void;
   onGoToScreen: (index: number) => void;
+  isNextLocked: boolean;
+  lockReason: string;
 }) {
+  // Completion indicator for each dot
+  const getDotClass = (index: number) => {
+    const isCurrent = index === currentScreen;
+    const status = pageStatuses[index];
+
+    if (isCurrent) {
+      return 'w-6 h-2.5 bg-blue-500';
+    }
+
+    switch (status) {
+      case 'completed':
+        return 'w-2.5 h-2.5 bg-emerald-400 hover:bg-emerald-500';
+      case 'locked':
+        return 'w-2.5 h-2.5 bg-amber-400 hover:bg-amber-500 ring-1 ring-amber-300';
+      case 'incomplete':
+      default:
+        return 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400';
+    }
+  };
+
   return (
     <div className="h-14 flex items-center justify-between px-4 bg-white border-t border-slate-200 shrink-0 z-10">
-      {/* Prev */}
+      {/* Prev — always allowed */}
       <Button
         variant="ghost"
         size="sm"
@@ -149,32 +178,27 @@ function BottomNav({
         <span className="hidden sm:inline">Sebelumnya</span>
       </Button>
 
-      {/* Screen dots */}
+      {/* Screen dots — with completion indicators */}
       <div className="flex items-center gap-1.5 overflow-x-auto max-w-[60%] px-2">
         {Array.from({ length: totalScreens }, (_, i) => {
-          const isCurrent = i === currentScreen;
-          const isVisited = visitedScreens.has(i);
+          const status = pageStatuses[i];
+          const statusIcon = status === 'completed' ? ' ✓' : status === 'locked' ? ' 🔒' : '';
           return (
             <button
               key={i}
               onClick={() => onGoToScreen(i)}
               className={`
                 shrink-0 rounded-full transition-all duration-300
-                ${isCurrent
-                  ? 'w-6 h-2.5 bg-blue-500'
-                  : isVisited
-                    ? 'w-2.5 h-2.5 bg-emerald-400 hover:bg-emerald-500'
-                    : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
-                }
+                ${getDotClass(i)}
               `}
-              aria-label={`Halaman ${i + 1}`}
-              title={`Halaman ${i + 1}`}
+              aria-label={`Halaman ${i + 1}${statusIcon}`}
+              title={`Halaman ${i + 1}${statusIcon}`}
             />
           );
         })}
       </div>
 
-      {/* Next / Selesai */}
+      {/* Next / Selesai — contract-aware */}
       {currentScreen >= totalScreens - 1 ? (
         <Button
           size="sm"
@@ -184,18 +208,62 @@ function BottomNav({
           <CheckCircle2 size={16} />
           <span>Selesai</span>
         </Button>
+      ) : isNextLocked ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled
+          className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium opacity-50 cursor-not-allowed"
+          title={lockReason}
+        >
+          <Lock size={14} className="text-amber-500" />
+          <span className="hidden sm:inline text-amber-600">Terkunci</span>
+        </Button>
       ) : (
         <Button
           variant="ghost"
           size="sm"
           onClick={onNext}
-          disabled={currentScreen >= totalScreens - 1}
-          className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-30 active:scale-95 transition-transform"
+          className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium active:scale-95 transition-transform"
         >
           <span className="hidden sm:inline">Selanjutnya</span>
           <ChevronRight size={18} />
         </Button>
       )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION LOCK TOAST — Shown when trying to advance while locked
+// ═══════════════════════════════════════════════════════════════
+
+function LockToast({
+  reason,
+  onDismiss,
+}: {
+  reason: string;
+  onDismiss: () => void;
+}) {
+  // Auto-dismiss after 4 seconds
+  useEffect(() => {
+    const timer = setTimeout(onDismiss, 4000);
+    return () => clearTimeout(timer);
+  }, [onDismiss]);
+
+  return (
+    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
+      <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl shadow-lg max-w-sm">
+        <Lock size={16} className="text-amber-600 shrink-0" />
+        <p className="text-sm text-amber-800 flex-1">{reason}</p>
+        <button
+          onClick={onDismiss}
+          className="text-amber-400 hover:text-amber-600 transition-colors shrink-0"
+          aria-label="Tutup"
+        >
+          <X size={14} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -333,15 +401,23 @@ export default function LearningMediaShell() {
   const visitedScreens = useLearningMediaStore(s => s.visitedScreens);
   const isComplete = useLearningMediaStore(s => s.isComplete);
   const showCompletionModal = useLearningMediaStore(s => s.showCompletionModal);
+  const showLockToast = useLearningMediaStore(s => s.showLockToast);
+  const navigationLockReason = useLearningMediaStore(s => s.navigationLockReason);
+  const learnSubMode = useLearningMediaStore(s => s.learnSubMode);
   const initSession = useLearningMediaStore(s => s.initSession);
   const goToScreen = useLearningMediaStore(s => s.goToScreen);
   const nextScreen = useLearningMediaStore(s => s.nextScreen);
   const prevScreen = useLearningMediaStore(s => s.prevScreen);
+  const forceGoToScreen = useLearningMediaStore(s => s.forceGoToScreen);
   const getTotalScore = useLearningMediaStore(s => s.getTotalScore);
   const getProgress = useLearningMediaStore(s => s.getProgress);
   const showCompletion = useLearningMediaStore(s => s.showCompletion);
   const dismissCompletion = useLearningMediaStore(s => s.dismissCompletion);
+  const dismissLockToast = useLearningMediaStore(s => s.dismissLockToast);
   const resetSession = useLearningMediaStore(s => s.resetSession);
+  const canGoNext = useLearningMediaStore(s => s.canGoNext);
+  const getAllPageStatuses = useLearningMediaStore(s => s.getAllPageStatuses);
+  const toggleLearnSubMode = useLearningMediaStore(s => s.toggleLearnSubMode);
 
   // Editing state for direct editing
   const editingBlockId = useCanvaStore(s => s.editingBlockId);
@@ -351,6 +427,13 @@ export default function LearningMediaShell() {
   useEffect(() => {
     stopEditing();
   }, [currentScreenIndex, stopEditing]);
+
+  // In Play sub-mode, stop any active editing immediately
+  useEffect(() => {
+    if (learnSubMode === 'play' && editingBlockId) {
+      stopEditing();
+    }
+  }, [learnSubMode, editingBlockId, stopEditing]);
 
   // Click outside content area → stop editing (save happens via blur on InlineTextEditor)
   useEffect(() => {
@@ -374,23 +457,32 @@ export default function LearningMediaShell() {
   const [direction, setDirection] = useState<PageDirection>(0);
   const prevIdxRef = useRef(currentScreenIndex);
 
-  // Initialize session on mount
+  // Initialize session on mount — pass template types for contract mapping
   useEffect(() => {
-    initSession(pages.length);
-  }, [pages.length, initSession]);
+    const templateTypes = pages.map(p => p.templateType || 'custom');
+    initSession(pages.length, templateTypes);
+  }, [pages.length, initSession]); // Only re-init when page count changes
+
+  // Re-sync contracts when template types change
+  useEffect(() => {
+    const templateTypes = pages.map(p => p.templateType || 'custom');
+    const currentTypes = useLearningMediaStore.getState().templateTypes;
+    // Check if template types changed
+    if (templateTypes.length !== currentTypes.length ||
+        templateTypes.some((t, i) => t !== currentTypes[i])) {
+      initSession(pages.length, templateTypes);
+    }
+  }, [pages, initSession]);
 
   // ═══ Score sync bridge: interactive store → learning media store ═══
-  // When interactive widgets (kuis, game) report scores via the interactive
-  // store, we bridge them to the learning media store so the top navbar
-  // score display and completion modal show the correct totals.
   const syncScores = useLearningMediaStore(s => s.syncScores);
   useEffect(() => {
     const unsubscribe = useInteractiveStore.subscribe((state) => {
-      // Convert interactive store ScoreEntry[] → learning media ScoreEntry[]
       const entries = state.scores
         .filter(s => s.completed)
         .map((s: InteractiveScoreEntry) => ({
           pageId: s.elementId,
+          screenIndex: s.pageIndex,
           score: s.score,
           maxScore: s.maxScore,
           timestamp: Date.now(),
@@ -404,6 +496,7 @@ export default function LearningMediaShell() {
       .filter(s => s.completed)
       .map((s: InteractiveScoreEntry) => ({
         pageId: s.elementId,
+        screenIndex: s.pageIndex,
         score: s.score,
         maxScore: s.maxScore,
         timestamp: Date.now(),
@@ -449,7 +542,6 @@ export default function LearningMediaShell() {
 
       if (e.key === 'Escape') {
         e.preventDefault();
-        // If editing a block, exit editing first before leaving learn mode
         if (editingBlockId) {
           stopEditing();
           return;
@@ -475,7 +567,7 @@ export default function LearningMediaShell() {
 
   // Handle "Selesai" button — always show completion modal
   const handleSelesai = useCallback(() => {
-    stopEditing(); // Save any pending edits first
+    stopEditing();
     showCompletion();
   }, [showCompletion, stopEditing]);
 
@@ -488,12 +580,19 @@ export default function LearningMediaShell() {
   // Handle restart
   const handleRestart = useCallback(() => {
     resetSession();
-    initSession(pages.length);
-  }, [resetSession, initSession, pages.length]);
+    const templateTypes = pages.map(p => p.templateType || 'custom');
+    initSession(pages.length, templateTypes);
+  }, [resetSession, initSession, pages]);
 
   // Compute scores
   const { earned: totalScore, possible: maxScore } = getTotalScore();
   const progress = getProgress();
+
+  // Navigation lock state
+  const { allowed: isNextAllowed, reason: nextLockReason } = canGoNext();
+
+  // Page statuses for dots
+  const pageStatuses = useMemo(() => getAllPageStatuses(), [currentScreenIndex, getAllPageStatuses]);
 
   // Current page
   const page = pages[currentScreenIndex];
@@ -516,12 +615,43 @@ export default function LearningMediaShell() {
         onBack={handleBack}
       />
 
-      {/* Phase badge row */}
+      {/* Phase badge row + Edit/Play toggle */}
       <div className="flex items-center gap-2 px-4 py-1.5 bg-white/80 border-b border-slate-100 shrink-0">
         <PhaseBadge templateType={templateType} />
         <span className="text-[11px] text-slate-400">
           Halaman {currentScreenIndex + 1} dari {totalScreens}
         </span>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Edit / Play toggle — CRITICAL for mode separation */}
+        <button
+          onClick={toggleLearnSubMode}
+          className={`
+            flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all
+            ${learnSubMode === 'edit'
+              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+              : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+            }
+          `}
+          title={learnSubMode === 'edit'
+            ? 'Mode Edit — klik teks untuk mengedit'
+            : 'Mode Main — klik interaksi untuk bermain'
+          }
+        >
+          {learnSubMode === 'edit' ? (
+            <>
+              <Pencil size={11} />
+              <span>Edit</span>
+            </>
+          ) : (
+            <>
+              <Play size={11} />
+              <span>Main</span>
+            </>
+          )}
+        </button>
       </div>
 
       {/* Main content area — scaled page preview */}
@@ -552,15 +682,25 @@ export default function LearningMediaShell() {
         </PageTransition>
       </div>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation — contract-aware */}
       <BottomNav
         currentScreen={currentScreenIndex}
         totalScreens={totalScreens}
-        visitedScreens={visitedScreens}
+        pageStatuses={pageStatuses}
         onPrev={prevScreen}
         onNext={currentScreenIndex >= totalScreens - 1 ? handleSelesai : nextScreen}
-        onGoToScreen={goToScreen}
+        onGoToScreen={forceGoToScreen}
+        isNextLocked={!isNextAllowed && currentScreenIndex < totalScreens - 1}
+        lockReason={nextLockReason}
       />
+
+      {/* Navigation Lock Toast */}
+      {showLockToast && navigationLockReason && (
+        <LockToast
+          reason={navigationLockReason}
+          onDismiss={dismissLockToast}
+        />
+      )}
 
       {/* Completion Modal */}
       {showCompletionModal && (

@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useLearningMediaStore } from '@/store/learning-media-store';
 import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
+import { getPageContract, type PageCompletionStatus } from '@/core/edu/page-runtime-contract';
 import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
-// SCENE LIST v2 — SILSE v4 Stitch Reference Page Navigator
+// SCENE LIST v3 — SILSE v4 Stitch Reference Page Navigator
 // ═══════════════════════════════════════════════════════════════
 // Stitch spec:
 //   - Active: bg-silse-primary-container text-silse-on-primary-container rounded-xl px-3 py-2 border border-silse-primary/20
@@ -15,6 +17,7 @@ import { Button } from '@/components/ui/button';
 //   - Scene thumbnail: w-12 h-8 rounded with scene number
 //   - "Scenes" uppercase label above list
 //   - Drag reorder functionality
+//   - Page completion indicators (✓ / ○ / 🔒) from PageRuntimeContract
 // ═══════════════════════════════════════════════════════════════
 
 // Badge color map using semantic tokens instead of hardcoded Tailwind colors
@@ -35,6 +38,46 @@ const BADGE_COLOR_MAP: Record<string, string> = {
   custom: 'bg-silse-surface-container/50 text-silse-on-surface-variant border-silse-outline-variant/30',
 };
 
+// ── Completion indicator icon per status ─────────────────────
+function CompletionIndicator({ status }: { status: PageCompletionStatus }) {
+  switch (status) {
+    case 'completed':
+      return (
+        <span
+          className="material-symbols-outlined text-emerald-500"
+          style={{ fontSize: '14px' }}
+          aria-label="Selesai"
+          title="Selesai"
+        >
+          check_circle
+        </span>
+      );
+    case 'locked':
+      return (
+        <span
+          className="material-symbols-outlined text-amber-500"
+          style={{ fontSize: '14px' }}
+          aria-label="Terkunci"
+          title="Terkunci — selesaikan dulu"
+        >
+          lock
+        </span>
+      );
+    case 'incomplete':
+    default:
+      return (
+        <span
+          className="material-symbols-outlined text-slate-400"
+          style={{ fontSize: '14px' }}
+          aria-label="Belum selesai"
+          title="Belum selesai"
+        >
+          radio_button_unchecked
+        </span>
+      );
+  }
+}
+
 export function SceneList() {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
@@ -46,6 +89,19 @@ export function SceneList() {
   const ratio = useCanvaStore(s => s.currentRatio());
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const pageOverflowStatus = useOverflowWarningStore(s => s.pageOverflowStatus);
+
+  // ── Learning progress (from PageRuntimeContract) ──
+  // Only shown when a learning session has been initialized.
+  const sessionInitialized = useLearningMediaStore(s => s.sessionInitialized);
+  const getPageStatus = useLearningMediaStore(s => s.getPageStatus);
+  const totalScreens = useLearningMediaStore(s => s.totalScreens);
+
+  // Compute page statuses for completion indicators
+  const pageStatuses = useMemo(() => {
+    if (!sessionInitialized) return [];
+    return pages.map((_, i) => getPageStatus(i));
+  }, [sessionInitialized, pages.length, getPageStatus]);
+
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
@@ -114,7 +170,7 @@ export function SceneList() {
               {isActive ? <span className="font-bold">{i + 1}</span> : <span className="text-silse-on-surface-variant font-medium">{i + 1}</span>}
             </div>
 
-            {/* Scene Label */}
+            {/* Scene Label + Completion Indicator */}
             <div className="flex-1 min-w-0">
               <span className={`text-[11px] font-medium truncate block ${
                 isActive ? 'font-bold' : ''
@@ -126,6 +182,11 @@ export function SceneList() {
                 )}
               </span>
             </div>
+
+            {/* Completion Indicator — only shown if learning session exists */}
+            {sessionInitialized && pageStatuses[i] && (
+              <CompletionIndicator status={pageStatuses[i]!} />
+            )}
           </button>
         );
       })}

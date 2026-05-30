@@ -938,3 +938,49 @@ Stage Summary:
 - 4 files changed, 97 insertions, 24 deletions
 - Commit: 2333d1f "Polish function flow: direct editing UX, score sync, navigation"
 - Key fixes: editing no longer cancelled on click, score display now shows interactive widget results, smooth click-to-edit UX
+
+---
+Task ID: page-runtime-contract
+Agent: main
+Task: Create PageRuntimeContract + integrate into LearningMediaStore + BottomNav + SceneList + Edit/Play mode separation
+
+Work Log:
+- Created /src/core/edu/page-runtime-contract.ts — per-page runtime rules
+  - CompletionType: view | scroll | answer | game | reflection | auto
+  - PageScoringConfig: enabled/maxPoints
+  - NavigationLockConfig: enabled/message
+  - DEFAULT_CONTRACTS for all 13+ templateTypes
+  - Helper functions: getPageContract, isAutoComplete, isInteractiveCompletion, getPageCompletionStatus, canNavigateNext
+- Upgraded /src/store/learning-media-store.ts — contract-aware store
+  - Added PageInteraction tracking (hasAnswered, hasCompletedGame, hasReflected)
+  - Added pageContracts Map and templateTypes array
+  - Navigation lock system: canGoNext, lockReason, showLockToast
+  - Actions: markPageAnswered, markPageGameCompleted, markPageReflected
+  - Actions: forceGoToScreen (bypasses locks for dot navigation)
+  - Progress now based on COMPLETED pages, not just visited
+  - Added learnSubMode: 'edit' | 'play' — critical for Edit vs Play separation
+  - Added setLearnSubMode, toggleLearnSubMode
+- Updated /src/components/canva/LearningMediaShell.tsx
+  - BottomNav now contract-aware: shows lock indicator, amber "Terkunci" button
+  - LockToast component: auto-dismiss after 4s, shows navigation lock reason
+  - Edit/Play toggle button in PhaseBadge row (Pencil icon = Edit, Play icon = Main)
+  - Play mode: immediately stops editing, no editingBlockId passed to renderer
+  - Score sync bridge now includes screenIndex for proper contract matching
+- Updated /src/components/canva/page-renderer/PageRenderer.tsx
+  - isLearnEditMode vs isLearnPlayMode distinction
+  - In play mode: no onBlockEdit, no onBlockSelect, no editingBlockId
+  - In edit mode: click-to-edit works as before
+  - Imported useLearningMediaStore for learnSubMode
+- Updated /src/components/canva/left-panel/SceneList.tsx
+  - Added CompletionIndicator component: check_circle (completed) / lock (locked) / radio_button_unchecked (incomplete)
+  - Indicators only shown when learning session is initialized
+  - Subscribes to useLearningMediaStore for page statuses
+
+Stage Summary:
+- 6 files changed/created
+- PageRuntimeContract defines per-page completion, scoring, navigation lock rules
+- LearningMediaStore enforces contracts: navigation locks, completion tracking, progress
+- BottomNav shows lock state with amber 🔒 button + toast explanation
+- SceneList shows ✓/🔒/○ indicators per page
+- Edit vs Play sub-mode fully separated: Edit = click to edit, Play = click to interact
+- Build verified clean (next build passes)

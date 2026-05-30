@@ -9,6 +9,7 @@ import type { ScreenSchema } from '@/core/schema/types';
 import { ensurePageSchema, validateCanvaPageInvariant } from '@/core/schema/ensure-schema';
 import { paletteToTokenOverrides } from '@/core/engine/TemplateAdapter';
 import { useCanvaStore } from '@/store/canva-store';
+import { useLearningMediaStore } from '@/store/learning-media-store';
 import { getSceneResolution, computeSafeArea, type SceneResolution, type SafeArea } from '@/core/scene/SceneLayoutEngine';
 import { inferSceneType } from '@/core/edu/education-scene-types';
 import type { SceneType } from '@/core/edu/education-scene-types';
@@ -286,7 +287,11 @@ export const PageRenderer = React.memo(function PageRenderer({
   const isGoldenContract = !!contractStyle;
 
   // Learn mode: pass editing state so blocks can be inline-edited
+  // BUT only if learnSubMode === 'edit'. In 'play' mode, no editing at all.
   const isLearnMode = mode === 'learn';
+  const learnSubMode = useLearningMediaStore(s => s.learnSubMode);
+  const isLearnEditMode = isLearnMode && learnSubMode === 'edit';
+  const isLearnPlayMode = isLearnMode && learnSubMode === 'play';
 
   const schemaContent = useSchemaRenderer && adaptedSchema ? (
     <SchemaScreenRenderer
@@ -297,10 +302,10 @@ export const PageRenderer = React.memo(function PageRenderer({
       selectedBlockId={mode === 'canvas' ? selectedBlockId : undefined}
       selectedBlockIds={mode === 'canvas' ? selectedBlockIds : undefined}
       hoveredBlockId={mode === 'canvas' ? hoveredBlockId : undefined}
-      editingBlockId={mode === 'canvas' || isLearnMode ? editingBlockId : undefined}
-      onBlockSelect={mode === 'canvas' ? handleBlockSelect : isLearnMode ? handleBlockLearnSelect : undefined}
+      editingBlockId={mode === 'canvas' || isLearnEditMode ? editingBlockId : undefined}
+      onBlockSelect={mode === 'canvas' ? handleBlockSelect : isLearnEditMode ? handleBlockLearnSelect : undefined}
       onBlockHover={mode === 'canvas' ? handleBlockHover : undefined}
-      onBlockEdit={mode === 'canvas' ? handleBlockEdit : isLearnMode ? handleBlockEdit : undefined}
+      onBlockEdit={mode === 'canvas' ? handleBlockEdit : isLearnEditMode ? handleBlockEdit : undefined}
       onBlockDelete={mode === 'canvas' ? handleBlockDelete : undefined}
       onBlockMoveUp={mode === 'canvas' ? handleBlockMoveUp : undefined}
       onBlockMoveDown={mode === 'canvas' ? handleBlockMoveDown : undefined}
