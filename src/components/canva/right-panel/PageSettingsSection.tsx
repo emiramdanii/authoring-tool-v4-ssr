@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { LayoutTemplate, Zap, Square } from 'lucide-react';
 import { useCanvaStore } from '@/store/canva-store';
 import { LAYOUT_PRESETS } from '../types';
+import { getVariantsForPageType, type PageVariant } from '@/core/template/health-check/page-variant-registry';
 import type { PageTemplateType } from '../types';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { getAllPresets } from '@/core/preset/PagePresetRegistry';
@@ -66,93 +67,61 @@ export default function PageSettingsSection() {
         </select>
       </div>
 
-      {/* Phase 3: Template Layout Variant picker — available for all template types */}
-      {isTemplateMode && page && (
-        <div className="mb-3">
-          <label className="text-[10px] text-app-muted block mb-1.5">Varian Tampilan</label>
-          <div className="flex gap-1.5">
-            {(page.templateType === 'cover'
-              ? [
-                  { id: 'A', label: 'Centered', icon: <Square size={12} /> },
-                  { id: 'B', label: 'Left Align', icon: '▐▌' },
-                  { id: 'C', label: 'Split', icon: '◧◨' },
-                ]
-              : page.templateType === 'materi'
-                ? [
-                    { id: 'A', label: 'Vertical', icon: '☰' },
-                    { id: 'B', label: 'Grid 2-Kolom', icon: '▥' },
-                  ]
-              : page.templateType === 'kuis'
-                ? [
-                    { id: 'A', label: 'Widget', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Daftar Kartu', icon: '☵' },
-                  ]
-              : page.templateType === 'skenario'
-                ? [
-                    { id: 'A', label: 'Interaktif', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Timeline', icon: '┃' },
-                  ]
-              : page.templateType === 'dokumen'
-                ? [
-                    { id: 'A', label: 'Tab', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Side Nav', icon: '▐▌' },
-                  ]
-              : page.templateType === 'hasil'
-                ? [
-                    { id: 'A', label: 'Centered', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Dashboard', icon: '▥' },
-                  ]
-              : page.templateType === 'penutup'
-                ? [
-                    { id: 'A', label: 'Kartu', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Checklist', icon: '☑' },
-                  ]
-              : page.templateType === 'hero'
-                ? [
-                    { id: 'A', label: 'Centered', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Split', icon: '◧◨' },
-                  ]
-              : page.templateType === 'petunjuk'
-                ? [
-                    { id: 'A', label: 'Langkah', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Timeline', icon: '┃' },
-                  ]
-              : page.templateType === 'diskusi'
-                ? [
-                    { id: 'A', label: 'Satu-satu', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Semua', icon: '▥' },
-                  ]
-              : page.templateType === 'refleksi'
-                ? [
-                    { id: 'A', label: 'Satu-satu', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Jurnal', icon: '📓' },
-                  ]
-              : page.templateType === 'game'
-                ? [
-                    { id: 'A', label: 'Widget', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Galeri', icon: '▦' },
-                  ]
-                : [
-                    { id: 'A', label: 'Default', icon: <Square size={12} /> },
-                    { id: 'B', label: 'Alt Layout', icon: '▥' },
-                  ]
-            ).map(v => (
-              <button
-                key={v.id}
-                onClick={() => setVariant(v.id as 'A' | 'B' | 'C')}
-                className={`flex-1 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] font-bold transition-colors ${
-                  (page?.templateVariant || 'A') === v.id
-                    ? 'bg-app-accent/15 border border-app-accent/30 text-app-accent'
-                    : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
-                }`}
-              >
-                <span className="text-sm">{v.icon}</span>
-                <span>{v.label}</span>
-              </button>
-            ))}
+      {/* Phase 3: Template Layout Variant picker — driven by PageVariantRegistry */}
+      {isTemplateMode && page && (() => {
+        const registryVariants = getVariantsForPageType(page.templateType);
+        // Map registry variants to A/B/C slots
+        const variantSlots = registryVariants.length > 0
+          ? registryVariants.map((v, i) => ({
+              id: String.fromCharCode(65 + i) as 'A' | 'B' | 'C',
+              label: v.label,
+              icon: v.icon,
+              description: v.description,
+              isDefault: v.isDefault,
+            }))
+          : [
+              { id: 'A' as const, label: 'Default', icon: '⬜', description: '', isDefault: true },
+              { id: 'B' as const, label: 'Alt Layout', icon: '▥', description: '', isDefault: false },
+            ];
+
+        return (
+          <div className="mb-3">
+            <label className="text-[10px] text-app-muted block mb-1.5">Varian Tampilan</label>
+            <div className="flex gap-1.5">
+              {variantSlots.map(v => (
+                <button
+                  key={v.id}
+                  onClick={() => setVariant(v.id)}
+                  className={`flex-1 flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] font-bold transition-colors ${
+                    (page?.templateVariant || 'A') === v.id
+                      ? 'bg-app-accent/15 border border-app-accent/30 text-app-accent'
+                      : 'bg-app-elevated/40 border border-app-border/20 text-app-secondary hover:border-app-border'
+                  }`}
+                  title={v.description}
+                >
+                  <span className="text-sm">{v.icon}</span>
+                  <span>{v.label}</span>
+                  {v.isDefault && (page?.templateVariant || 'A') !== v.id && (
+                    <span className="text-[6px] text-app-muted">(default)</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {/* Show variant description for active variant */}
+            {(() => {
+              const activeVariant = registryVariants.find((_, i) => String.fromCharCode(65 + i) === (page.templateVariant || 'A'));
+              if (activeVariant?.description) {
+                return (
+                  <p className="text-[8px] text-app-muted mt-1 leading-tight">
+                    {activeVariant.description}
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Phase 7: Scene Type Override — teacher can explicitly set the learning scene type.
           This controls scene-aware rendering: typography hierarchy, accent prominence,

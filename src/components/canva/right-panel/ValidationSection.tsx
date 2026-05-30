@@ -1,18 +1,24 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════
-// VALIDATION SECTION — Template Health Check Panel
+// VALIDATION SECTION — Template Health Check + Quality Gate Panel
 // ═══════════════════════════════════════════════════════════════════
-// Tampilkan hasil validasi di panel kanan bagian "Validasi".
-// Beri tombol aksi: Pecah Halaman, Pilih Variasi Lain,
-// Perbesar Font, Hapus Placeholder.
+// Template dibuat → health check → quality gate → repair → re-check
+// → baru boleh tampil ke guru.
 //
-// Template tidak boleh dianggap siap jika masih ada issue error.
+// Panel ini menampilkan:
+//   - Skor kesehatan (0-100)
+//   - Gate status (ready/needs-polish/broken/blocked)
+//   - Ringkasan masalah utama (manusiawi, bukan daftar error mentah)
+//   - Saran perbaikan
+//   - Auto-repair tombol
+//   - Daftar issue dengan quick fix
+//   - Breakdown skor per area
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useCallback, useMemo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import { validateTemplate, validateSinglePage } from '@/core/template/health-check/template-health-check';
+import { validateTemplate } from '@/core/template/health-check/template-health-check';
 import {
   type TemplateHealthIssue,
   type TemplateQuickFix,
@@ -21,9 +27,21 @@ import {
   getHealthStatusColor,
   FONT_MINIMUMS,
 } from '@/core/template/health-check/types';
+import {
+  decideTemplateStatus,
+  getGalleryVisibility,
+  type TemplateGateResult,
+  type AutoRepairType,
+} from '@/core/template/health-check/quality-gate';
+import {
+  runRepairPipeline,
+  runSingleRepair,
+  type RepairPipelineResult,
+  type RepairResult,
+} from '@/core/template/health-check/auto-repair';
 import { toast } from 'sonner';
 import Section from './Section';
-import { Shield, AlertTriangle, CheckCircle2, XCircle, ChevronDown, ChevronRight, RefreshCw, Split, Type, Eraser, Palette, Navigation, Zap } from 'lucide-react';
+import { Shield, AlertTriangle, CheckCircle2, XCircle, ChevronDown, ChevronRight, RefreshCw, Split, Type, Eraser, Palette, Navigation, Zap, Wrench, Play } from 'lucide-react';
 
 // ── Issue Type Icon Map ──────────────────────────────────────────
 
@@ -70,6 +88,16 @@ function getQuickFixIcon(fix: TemplateQuickFix) {
     case 'fix-colors': return <Palette size={12} />;
     case 'add-feedback': return <Zap size={12} />;
     case 'fix-score-sync': return <RefreshCw size={12} />;
+  }
+}
+
+function getRepairLabel(repair: AutoRepairType): string {
+  switch (repair) {
+    case 'fix-font-size': return 'Perbesar Font';
+    case 'fix-colors': return 'Normalisasi Warna';
+    case 'add-default-feedback': return 'Tambah Feedback';
+    case 'sync-scoring': return 'Sinkronkan Skor';
+    case 'mark-placeholder': return 'Tandai Placeholder';
   }
 }
 
@@ -181,6 +209,34 @@ function IssueItem({ issue, onQuickFix }: { issue: TemplateHealthIssue; onQuickF
   );
 }
 
+// ── Gate Badge ───────────────────────────────────────────────────
+
+function GateBadge({ gate }: { gate: TemplateGateResult }) {
+  const visibility = getGalleryVisibility(gate.gateStatus);
+  const statusColors: Record<string, string> = {
+    ready: 'bg-emerald-500/15 text-emerald-700 border-emerald-500/30',
+    'needs-polish': 'bg-amber-500/15 text-amber-700 border-amber-500/30',
+    broken: 'bg-red-500/15 text-red-700 border-red-500/30',
+    blocked: 'bg-red-700/15 text-red-800 border-red-700/30',
+  };
+  const statusLabels: Record<string, string> = {
+    ready: 'Siap Pakai',
+    'needs-polish': 'Perlu Polish',
+    broken: 'Bermasalah',
+    blocked: 'Diblokir',
+  };
+
+  return (
+    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-bold ${statusColors[gate.gateStatus] || ''}`}>
+      {gate.gateStatus === 'ready' ? <CheckCircle2 size={10} /> : gate.gateStatus === 'blocked' ? <XCircle size={10} /> : <AlertTriangle size={10} />}
+      {statusLabels[gate.gateStatus]}
+      {visibility.badgeText && gate.gateStatus !== 'ready' && (
+        <span className="text-[7px] opacity-70 ml-0.5">({visibility.badgeText})</span>
+      )}
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // MAIN: ValidationSection
 // ═══════════════════════════════════════════════════════════════════
@@ -191,13 +247,18 @@ export default function ValidationSection() {
   const [collapsed, setCollapsed] = useState(false);
   const [showCurrentPageOnly, setShowCurrentPageOnly] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [repairInProgress, setRepairInProgress] = useState(false);
+  const [lastRepairResult, setLastRepairResult] = useState<RepairPipelineResult | null>(null);
 
   // ── Run validation ─────────────────────────────────────────
   const result = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    refreshKey; // Depend on refreshKey to trigger re-validation
+    refreshKey;
     return validateTemplate({ pages });
   }, [pages, refreshKey]);
+
+  // ── Quality Gate ───────────────────────────────────────────
+  const gate = useMemo(() => decideTemplateStatus(result), [result]);
 
   // ── Filter issues ──────────────────────────────────────────
   const displayedIssues = useMemo(() => {
@@ -210,17 +271,61 @@ export default function ValidationSection() {
   // ── Current page summary ───────────────────────────────────
   const currentPageSummary = result.pageSummaries[currentPageIndex];
 
+  // ── Auto Repair Handler ────────────────────────────────────
+  const handleAutoRepair = useCallback(() => {
+    if (!gate.canAutoRepair) {
+      toast.info('Tidak ada perbaikan otomatis yang tersedia');
+      return;
+    }
+
+    setRepairInProgress(true);
+    try {
+      const repairResult = runRepairPipeline(pages, result);
+      setLastRepairResult(repairResult);
+
+      if (repairResult.totalChanges > 0) {
+        // Apply the repaired pages to the store
+        useCanvaStore.setState({ pages: repairResult.modifiedPages });
+        toast.success(`Auto-repair selesai: ${repairResult.totalChanges} perbaikan diterapkan. Skor: ${repairResult.newScore}`);
+        // Re-validate after a short delay
+        setTimeout(() => setRefreshKey(k => k + 1), 300);
+      } else {
+        toast.info('Tidak ada perbaikan yang bisa diterapkan secara otomatis');
+      }
+    } catch (error) {
+      toast.error('Gagal menjalankan auto-repair');
+      console.error('Auto-repair error:', error);
+    } finally {
+      setRepairInProgress(false);
+    }
+  }, [pages, result, gate]);
+
+  // ── Single Repair Handler ──────────────────────────────────
+  const handleSingleRepair = useCallback((repairType: AutoRepairType) => {
+    try {
+      const repairResult = runSingleRepair(pages, repairType);
+      if (repairResult.success && repairResult.modifiedPages) {
+        useCanvaStore.setState({ pages: repairResult.modifiedPages });
+        toast.success(repairResult.description);
+        setTimeout(() => setRefreshKey(k => k + 1), 300);
+      } else {
+        toast.info(repairResult.description);
+      }
+    } catch (error) {
+      toast.error('Gagal menjalankan perbaikan');
+      console.error('Single repair error:', error);
+    }
+  }, [pages]);
+
   // ── Quick Fix Handlers ─────────────────────────────────────
   const handleQuickFix = useCallback((fix: TemplateQuickFix, issue: TemplateHealthIssue) => {
     const store = useCanvaStore.getState();
 
     switch (fix) {
       case 'split-page': {
-        // Navigate to the problematic page and suggest splitting
         if (issue.pageIndex !== store.currentPageIndex) {
           store.goPage(issue.pageIndex);
         }
-        // If there's a specific block, split at that block
         if (issue.blockId) {
           try {
             store.splitPageAtBlock(issue.blockId);
@@ -235,41 +340,32 @@ export default function ValidationSection() {
       }
 
       case 'enlarge-font': {
-        // Select the problematic block and increase font size
-        if (issue.blockId) {
-          store.selectBlock(issue.blockId);
-        }
-        // Navigate to the page first
-        if (issue.pageIndex !== store.currentPageIndex) {
-          store.goPage(issue.pageIndex);
-        }
-        toast.info(`Font minimal untuk media siswa: Body ${FONT_MINIMUMS.body}px, Judul ${FONT_MINIMUMS.pageTitle}px, Cover ${FONT_MINIMUMS.coverTitle}px`);
+        // Auto-repair: fix font sizes
+        handleSingleRepair('fix-font-size');
         break;
       }
 
       case 'remove-placeholder': {
-        // Select the block with placeholder text for editing
-        if (issue.pageIndex !== store.currentPageIndex) {
-          store.goPage(issue.pageIndex);
-        }
+        // Auto-repair: mark placeholder text
+        handleSingleRepair('mark-placeholder');
         if (issue.blockId) {
           store.selectBlock(issue.blockId);
-          // Start inline editing after a short delay (page might be changing)
           setTimeout(() => {
             try {
               const currentState = useCanvaStore.getState();
               if (currentState.startEditing) {
                 currentState.startEditing(issue.blockId!);
               }
-            } catch { /* ignore if block no longer exists */ }
+            } catch { /* ignore */ }
           }, 200);
         }
-        toast.info('Klik teks placeholder di canvas dan ganti dengan konten asli');
+        if (issue.pageIndex !== store.currentPageIndex) {
+          store.goPage(issue.pageIndex);
+        }
         break;
       }
 
       case 'change-variant': {
-        // Navigate to page and suggest variant change
         if (issue.pageIndex !== store.currentPageIndex) {
           store.goPage(issue.pageIndex);
         }
@@ -283,39 +379,30 @@ export default function ValidationSection() {
       }
 
       case 'fix-colors': {
-        if (issue.pageIndex !== store.currentPageIndex) {
-          store.goPage(issue.pageIndex);
-        }
-        toast.info('Gunakan palet warna di bagian "Palet Warna" untuk konsistensi');
+        // Auto-repair: normalize colors
+        handleSingleRepair('fix-colors');
         break;
       }
 
       case 'add-feedback': {
-        if (issue.blockId) {
-          store.selectBlock(issue.blockId);
-        }
-        if (issue.pageIndex !== store.currentPageIndex) {
-          store.goPage(issue.pageIndex);
-        }
-        toast.info('Tambahkan feedback/jawaban benar di properti block kuis/game');
+        // Auto-repair: add default feedback
+        handleSingleRepair('add-default-feedback');
         break;
       }
 
       case 'fix-score-sync': {
-        if (issue.pageIndex !== store.currentPageIndex) {
-          store.goPage(issue.pageIndex);
-        }
-        toast.info('Periksa konfigurasi scoring dan navigation lock di properti halaman');
+        // Auto-repair: sync scoring
+        handleSingleRepair('sync-scoring');
         break;
       }
     }
 
-    // Re-validate after a short delay
     setTimeout(() => setRefreshKey(k => k + 1), 500);
-  }, []);
+  }, [handleSingleRepair]);
 
   const handleRefresh = useCallback(() => {
     setRefreshKey(k => k + 1);
+    setLastRepairResult(null);
     toast.success('Validasi diperbarui');
   }, []);
 
@@ -330,12 +417,32 @@ export default function ValidationSection() {
       collapsed={collapsed}
       onToggle={() => setCollapsed(c => !c)}
     >
-      {/* ── Score & Status ────────────────────────────────────── */}
+      {/* ── Score & Gate Status ──────────────────────────────── */}
       <div className="mb-3">
         <ScoreRing score={result.score} status={result.status} />
       </div>
 
-      {/* ── Quick Stats ───────────────────────────────────────── */}
+      {/* ── Gate Badge ───────────────────────────────────────── */}
+      <div className="mb-3 flex items-center gap-2">
+        <GateBadge gate={gate} />
+        {gate.canPublish && (
+          <span className="text-[8px] text-emerald-600">Boleh tampil di galeri</span>
+        )}
+      </div>
+
+      {/* ── Human Summary ────────────────────────────────────── */}
+      {!gate.canPublish && (
+        <div className="mb-3 p-2.5 rounded-xl bg-silse-surface-container-low/50 border border-silse-outline-variant/15">
+          <div className="text-[8px] font-bold text-silse-on-surface-variant uppercase tracking-widest mb-1">Masalah Utama</div>
+          <p className="text-[9px] text-silse-on-surface leading-relaxed">{gate.summary}</p>
+          <div className="border-t border-silse-outline-variant/15 mt-2 pt-2">
+            <div className="text-[8px] font-bold text-silse-primary uppercase tracking-widest mb-0.5">Saran</div>
+            <p className="text-[8px] text-silse-on-surface-variant leading-relaxed">{gate.suggestedAction}</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Quick Stats ──────────────────────────────────────── */}
       <div className="flex items-center gap-2 mb-3">
         <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-silse-error-container/10">
           <XCircle size={10} className="text-silse-error" />
@@ -354,7 +461,67 @@ export default function ValidationSection() {
         </button>
       </div>
 
-      {/* ── Filter Toggle ─────────────────────────────────────── */}
+      {/* ── Auto Repair Button ───────────────────────────────── */}
+      {gate.canAutoRepair && !gate.canPublish && (
+        <div className="mb-3">
+          <button
+            onClick={handleAutoRepair}
+            disabled={repairInProgress}
+            className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[10px] font-bold transition-[background-color,transform] duration-150 ${
+              repairInProgress
+                ? 'bg-silse-surface-container-high/50 text-silse-on-surface-variant cursor-wait'
+                : 'bg-silse-primary/15 text-silse-primary hover:bg-silse-primary/25 active:scale-[0.97]'
+            }`}
+          >
+            {repairInProgress ? (
+              <>
+                <RefreshCw size={12} className="animate-spin" />
+                Memperbaiki...
+              </>
+            ) : (
+              <>
+                <Wrench size={12} />
+                Auto-Repair ({gate.availableRepairs.length} perbaikan)
+              </>
+            )}
+          </button>
+          {/* Individual repair buttons */}
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {gate.availableRepairs.map(repair => (
+              <button
+                key={repair}
+                onClick={() => handleSingleRepair(repair)}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-silse-surface-container-low/50 border border-silse-outline-variant/15 text-[8px] font-bold text-silse-on-surface-variant hover:bg-silse-surface-container-high/50 hover:text-silse-on-surface transition-colors"
+              >
+                {repair === 'fix-font-size' && <Type size={8} />}
+                {repair === 'fix-colors' && <Palette size={8} />}
+                {repair === 'add-default-feedback' && <Zap size={8} />}
+                {repair === 'sync-scoring' && <RefreshCw size={8} />}
+                {repair === 'mark-placeholder' && <Eraser size={8} />}
+                {getRepairLabel(repair)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Repair Result ────────────────────────────────────── */}
+      {lastRepairResult && lastRepairResult.totalChanges > 0 && (
+        <div className="mb-3 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+          <div className="text-[9px] font-bold text-emerald-700 mb-0.5">Repair Selesai</div>
+          <div className="text-[8px] text-silse-on-surface-variant">
+            {lastRepairResult.totalChanges} perbaikan diterapkan. Skor baru: {lastRepairResult.newScore}.
+            {lastRepairResult.nowPassesGate ? ' Template sekarang lolos gate!' : ' Masih perlu perbaikan manual.'}
+          </div>
+          {lastRepairResult.appliedRepairs.map((r, i) => (
+            <div key={i} className="text-[7px] text-silse-on-surface-variant mt-0.5">
+              - {r.description}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Filter Toggle ────────────────────────────────────── */}
       <div className="flex items-center gap-1 mb-3">
         <button
           onClick={() => setShowCurrentPageOnly(true)}
@@ -378,7 +545,7 @@ export default function ValidationSection() {
         </button>
       </div>
 
-      {/* ── Breakdown Bars ────────────────────────────────────── */}
+      {/* ── Breakdown Bars ───────────────────────────────────── */}
       <div className="mb-3 p-2.5 rounded-xl bg-silse-surface-container-low/50 border border-silse-outline-variant/15">
         <div className="text-[8px] font-bold text-silse-on-surface-variant uppercase tracking-widest mb-2">Breakdown Skor</div>
         <BreakdownBar label="Tidak Overlap" {...result.breakdown.noOverlap} />
@@ -390,7 +557,7 @@ export default function ValidationSection() {
         <BreakdownBar label="Interaksi Jalan" {...result.breakdown.interactionWorking} />
       </div>
 
-      {/* ── Issues List ───────────────────────────────────────── */}
+      {/* ── Issues List ──────────────────────────────────────── */}
       {displayedIssues.length === 0 ? (
         <div className="text-center py-4">
           <CheckCircle2 size={24} className="mx-auto text-emerald-500 mb-1.5" />
@@ -403,7 +570,6 @@ export default function ValidationSection() {
         </div>
       ) : (
         <div className="space-y-0">
-          {/* Show errors first, then warnings */}
           {displayedIssues
             .sort((a, b) => {
               if (a.severity === 'error' && b.severity !== 'error') return -1;
@@ -416,7 +582,7 @@ export default function ValidationSection() {
         </div>
       )}
 
-      {/* ── Page Health Summary (all pages view) ──────────────── */}
+      {/* ── Page Health Summary ──────────────────────────────── */}
       {!showCurrentPageOnly && result.pageSummaries.length > 1 && (
         <div className="mt-3 border-t border-silse-outline-variant/20 pt-2.5">
           <div className="text-[8px] font-bold text-silse-on-surface-variant uppercase tracking-widest mb-2">Per Halaman</div>
@@ -452,7 +618,7 @@ export default function ValidationSection() {
         </div>
       )}
 
-      {/* ── Template Not Ready Warning ────────────────────────── */}
+      {/* ── Template Not Ready Warning ───────────────────────── */}
       {errorCount > 0 && (
         <div className="mt-3 p-2.5 rounded-xl bg-silse-error-container/10 border border-silse-error/20">
           <div className="flex items-center gap-1.5 mb-1">
@@ -461,7 +627,9 @@ export default function ValidationSection() {
           </div>
           <p className="text-[8px] text-silse-on-surface-variant leading-relaxed">
             Masih ada {errorCount} error yang harus diperbaiki sebelum template bisa dipakai.
-            Perbaiki issue di atas atau pecah halaman yang terlalu padat.
+            {gate.canAutoRepair
+              ? ' Klik "Auto-Repair" untuk perbaikan otomatis, atau perbaiki manual.'
+              : ' Perbaiki issue di atas atau pecah halaman yang terlalu padat.'}
           </p>
         </div>
       )}

@@ -1062,3 +1062,76 @@ Stage Summary:
 - Files modified:
   - src/components/canva/right-panel/RightPanel.tsx (import + placement)
   - src/components/canva/left-panel/SceneList.tsx (health dots)
+---
+Task ID: quality-gate-variants-1
+Agent: main
+Task: Build Template Quality Gate + Repair Pipeline + Safe Variants
+
+Work Log:
+- Created `src/core/template/health-check/quality-gate.ts` — Quality Gate system
+  - decideTemplateStatus(result) → ready/needs-polish/broken/blocked
+  - canPublishTemplate(result) → score >= 90 AND 0 errors
+  - canPublishWithWarning(result) → score >= 75 AND 0 errors
+  - isTemplateBlocked(result) → score < 60
+  - getGalleryVisibility(status) → showInMain/showInPolish/showInAny/badgeText/badgeColor
+  - AutoRepairType: fix-font-size, fix-colors, add-default-feedback, sync-scoring, mark-placeholder
+  - PreviewRepairType: split-page, change-variant, fix-navigation-lock
+  - generateHumanSummary() — narrative summary instead of raw error list
+  - generateSuggestedAction() — context-aware next steps
+
+- Created `src/core/template/health-check/auto-repair.ts` — Auto Repair Pipeline
+  - repairFontSize() — sets font sizes to minimums per element type
+  - repairColors() — removes hardcoded hex colors, normalizes to contract tokens
+  - repairAddFeedback() — adds default feedback to quiz questions missing feedback
+  - repairSyncScoring() — syncs navConfig.showScore with scoring-enabled pages
+  - repairPlaceholder() — replaces placeholder text with [Edit: Label] markers
+  - runRepairPipeline() — runs all safe repairs in order, re-validates after
+  - runSingleRepair() — runs a single specific repair
+  - RepairPipelineResult tracks appliedRepairs, totalChanges, newScore, nowPassesGate
+
+- Upgraded `src/components/canva/right-panel/ValidationSection.tsx` — Full Quality Gate UI
+  - Gate badge (Siap Pakai / Perlu Polish / Bermasalah / Diblokir)
+  - Human summary section (Masalah Utama + Saran)
+  - Auto-repair button with progress indicator
+  - Individual repair buttons for each available repair
+  - Repair result display (applied changes, new score)
+  - Quick fix handlers now call auto-repair (enlarge-font → fix-font-size, etc.)
+
+- Created `src/core/template/health-check/page-variant-registry.ts` — Safe Variants
+  - PageVariant contract: id, label, description, pageType, icon, maxWords, maxItems, minBodyFont, allowedInteractions, overflowAction, isDefault, density, revealStrategy
+  - 20 variants registered across 9 page types:
+    - cover: center-hero, game-intro, split
+    - tujuan: list, cards
+    - materi: concept-focus, concept-example, reveal-step, flashcard
+    - kuis: single-question, card-choice
+    - game: board, arena
+    - diskusi: single, multi
+    - refleksi: calm-journal, mood-check
+    - rangkuman: list, visual
+    - penutup: kartu, checklist
+  - Registry API: getVariantsForPageType, getDefaultVariant, getVariantById, checkVariantFit, resolvePageVariant
+  - Variant fit checking (word count, item count limits)
+  - A/B/C mapping: resolvePageVariant maps templateVariant A/B/C to registry variant IDs
+
+- Upgraded `src/components/canva/right-panel/PageSettingsSection.tsx`
+  - Replaced hardcoded variant definitions with PageVariantRegistry-driven variants
+  - Variants now show descriptions from registry
+  - Shows "(default)" label for default variants
+  - Variant descriptions appear below the selector
+
+- Updated barrel exports in `src/core/template/health-check/index.ts`
+- Build passed clean
+
+Stage Summary:
+- Template Quality Gate: templates with score <90 or errors >0 cannot appear in main gallery
+- Auto Repair Pipeline: 5 safe repairs (font, colors, feedback, scoring, placeholder)
+- Safe Variants: 20 semantic variants across 9 page types with contract enforcement
+- Key invariant: variants change ONLY visual presentation, not runtime contracts (score, completion, navigation lock)
+- Files created:
+  - src/core/template/health-check/quality-gate.ts (190 lines)
+  - src/core/template/health-check/auto-repair.ts (380 lines)
+  - src/core/template/health-check/page-variant-registry.ts (310 lines)
+- Files modified:
+  - src/components/canva/right-panel/ValidationSection.tsx (full rewrite with gate + repair)
+  - src/components/canva/right-panel/PageSettingsSection.tsx (registry-driven variants)
+  - src/core/template/health-check/index.ts (barrel exports updated)
