@@ -21,6 +21,16 @@ import { deriveExportPayloadFromSchema } from '@/core/schema/export-projection';
 // COLORS import removed — using silse-* tokens instead
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
+import {
+  getCourseTemplatesFiltered,
+  createProjectFromTemplate,
+  getTemplateThemeId,
+  type CourseTemplate as RegistryCourseTemplate,
+  type ProjectMetadata,
+} from '@/core/template/CourseTemplateRegistry';
+import { useDirtyStore } from '@/store/dirty-store';
+import { toast } from 'sonner';
+import { logger } from '@/core/utils/logger';
 
 // ── Sidebar Nav Item Config ────────────────────────────────────
 interface SidebarNavItem {
@@ -87,6 +97,10 @@ function getNextStep(
 
 export default function Dashboard() {
   const [wizardOpen, setWizardOpen] = useState(false);
+  // ── Template preview & curation state ──
+  const [previewTemplate, setPreviewTemplate] = useState<RegistryCourseTemplate | null>(null);
+  const [showLegacyTemplates, setShowLegacyTemplates] = useState(false);
+  const [isApplyingTemplate, setIsApplyingTemplate] = useState(false);
   // ── Styled confirm dialog state ──
   const [confirmState, setConfirmState] = useState<{
     open: boolean;
@@ -129,6 +143,16 @@ export default function Dashboard() {
   const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
   const { saveProject, currentProjectId } = useProjectManager();
   const { isSederhana } = useTeacherMode();
+
+  // ── Curated templates from CourseTemplateRegistry ──
+  const curatedTemplates = React.useMemo(
+    () => getCourseTemplatesFiltered(undefined, undefined, false).filter(t => t.id !== 'template-kosong'),
+    [],
+  );
+  const legacyTemplates = React.useMemo(
+    () => getCourseTemplatesFiltered(undefined, undefined, true).filter(t => t.status === 'legacy'),
+    [],
+  );
 
   // ── Sidebar: read activePanel to determine highlighted nav item ──
   const activePanel = useAuthoringStore((s) => s.activePanel);
@@ -224,6 +248,88 @@ export default function Dashboard() {
       return;
     }
     applyTemplate(pKey);
+  };
+
+  // ── Apply template from CourseTemplateRegistry (preview flow) ──
+  const handleUseTemplate = async (template: RegistryCourseTemplate) => {
+    if (hasData) {
+      showConfirm(
+        'Timpa Data?',
+        'Template akan menimpa data saat ini. Lanjutkan?',
+        () => _applyRegistryTemplate(template),
+      );
+      return;
+    }
+    _applyRegistryTemplate(template);
+  };
+
+  const _applyRegistryTemplate = async (template: RegistryCourseTemplate) => {
+    setIsApplyingTemplate(true);
+    try {
+      const metadata: ProjectMetadata = {
+        title: template.name,
+        mapel: template.subject !== '*' ? template.subject : undefined,
+        kelas: template.grade !== '*' ? template.grade : undefined,
+      };
+
+      const rawPages = createProjectFromTemplate(template.id, metadata);
+      const themeId = getTemplateThemeId(template.id);
+
+      // Apply theme IMMUTABLY
+      const pages = rawPages.map(page => {
+        if (!page.schema) return page;
+        const updatedSchema = {
+          ...page.schema,
+          background: {
+            ...(page.schema.background ?? {}),
+            type: page.schema.background?.type ?? 'gradient',
+          } as NonNullable<import('@/core/schema/types').ScreenSchema['background']>,
+        };
+        return {
+          ...page,
+          schema: updatedSchema,
+          templateData: { ...page.templateData, schemaThemeId: themeId },
+        };
+      });
+
+      // Set pages in canva store
+      const store = useCanvaStore.getState();
+      store._pushHistory();
+      useCanvaStore.setState({
+        pages,
+        currentPageIndex: 0,
+        selectedElId: null,
+        selectedElIds: [],
+        selectedBlockId: null,
+        selectedBlockType: null,
+        editingBlockId: null,
+        selectedBlockIds: [],
+      });
+
+      // Update authoring store metadata
+      const authoringStore = useAuthoringStore.getState();
+      authoringStore.updateMeta('judulPertemuan', template.name);
+      if (template.subject !== '*') authoringStore.updateMeta('mapel', template.subject);
+      if (template.grade !== '*') authoringStore.updateMeta('kelas', template.grade);
+      useDirtyStore.getState().markDirty();
+
+      // Save to localStorage as fallback
+      useCanvaStore.getState().saveToStorage();
+      useAuthoringStore.getState().saveToStorage();
+
+      toast.success(`Template "${template.name}" berhasil diterapkan!`);
+      setPreviewTemplate(null);
+
+      // Navigate to Canva editor (Edit Media)
+      setTimeout(() => {
+        useCanvaStore.setState({ panelRequest: 'canva' });
+      }, 300);
+    } catch (err) {
+      toast.error('Gagal menerapkan template. Silakan coba lagi.');
+      logger.error('Dashboard', 'handleUseTemplate error: ' + String(err));
+    } finally {
+      setIsApplyingTemplate(false);
+    }
   };
 
   // ── Template data with lucide icons ────────────────────────────
@@ -547,71 +653,124 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* ══ PROJECT CARDS / TEMPLATES SECTION ═══════════════ */}
+          {/* ══ MULAI DARI TEMPLATE — HERO SECTION ════════════ */}
           <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <h2
                   className="text-lg font-bold text-silse-on-surface"
                   style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
                 >
-                  Proyek MPI Aktif
+                  Mulai dari Template
                 </h2>
-                <p className="text-xs text-silse-on-surface-variant mt-0.5">Pilih preset atau mulai dari proyek kosong.</p>
+                <p className="text-xs text-silse-on-surface-variant mt-0.5">Pilih template siap pakai, coba dulu, lalu edit.</p>
               </div>
-              <button className="text-xs font-semibold text-silse-primary hover:text-silse-primary/80 transition-colors">
-                Lihat Semua →
-              </button>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {templates.map((p) => {
-                // icon is now a string
-                const isCurrentPreset = isPresetMode && activePreset === p.key;
-                return (
-                  <button
-                    key={p.key}
-                    onClick={() => handleTemplateClick(p.key)}
-                    className={`glass-card rounded-[24px] p-4 text-center transition-all cursor-pointer hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] ${
-                      isCurrentPreset
-                        ? activeColorMap[p.color]
-                        : `border border-silse-outline-variant bg-silse-surface-container-lowest ${colorMap[p.color]}`
-                    }`}
-                  >
-                    {/* Cover image placeholder */}
-                    <div className={`w-full h-20 rounded-2xl mb-3 flex items-center justify-center ${iconColorMap[p.color]}`}>
-                      <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>{p.icon}</span>
-                    </div>
-                    <div className="text-xs font-semibold text-silse-on-surface">{p.label}</div>
-                    <div className="text-[0.65rem] text-silse-on-surface-variant mt-0.5">{p.sub}</div>
-                    {/* Progress bar for active preset */}
-                    {isCurrentPreset && (
-                      <div className="mt-2 h-1 bg-silse-surface-container rounded-full overflow-hidden">
-                        <div className="h-full rounded-full bg-silse-primary liquid-progress" style={{ width: `${completeness}%` }} />
-                      </div>
-                    )}
-                    {SCHEMA_DRIVEN_PRESETS.has(p.key) && !isCurrentPreset && (
-                      <div className="text-[0.6rem] text-silse-primary/70 font-medium mt-1.5 flex items-center justify-center gap-0.5">
-                        <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>bolt</span> {isSederhana ? 'Siap Pakai' : 'Schema'}
-                      </div>
-                    )}
-                    {isCurrentPreset && (
-                      <div className="text-[0.6rem] text-silse-primary font-bold mt-1.5">AKTIF</div>
-                    )}
-                  </button>
-                );
-              })}
-              {/* Mulai dari Template dashed card */}
               <button
                 onClick={() => setWizardOpen(true)}
-                className="rounded-[24px] p-4 text-center border-2 border-dashed border-silse-outline-variant bg-transparent hover:border-silse-primary/30 hover:bg-silse-primary/5 group transition-colors cursor-pointer"
+                className="text-xs font-semibold text-silse-primary hover:text-silse-primary/80 transition-colors flex items-center gap-1"
               >
-                <div className="w-16 h-16 rounded-full mb-3 mx-auto flex items-center justify-center bg-silse-primary/5 text-silse-primary group-hover:bg-silse-primary-container transition-colors">
-                  <span className="material-symbols-outlined" style={ { fontSize: '28px' } }>add</span>
-                </div>
-                <div className="text-xs font-semibold text-silse-on-surface-variant">Mulai dari Template</div>
-                <div className="text-[0.65rem] text-silse-on-surface-variant mt-0.5">Pilih & kustomisasi</div>
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>tune</span>
+                Filter & Kustomisasi
               </button>
             </div>
+
+            {/* Curated template grid — active templates from CourseTemplateRegistry */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {curatedTemplates.map((tmpl) => (
+                <button
+                  key={tmpl.id}
+                  onClick={() => setPreviewTemplate(tmpl)}
+                  className="glass-card rounded-[24px] p-4 text-left transition-all cursor-pointer hover:-translate-y-1 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-silse-outline-variant bg-silse-surface-container-lowest hover:border-silse-primary-container/30 hover:bg-silse-primary-container/5"
+                >
+                  {/* Icon + badge row */}
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-silse-primary-container/10 flex items-center justify-center text-lg flex-shrink-0">
+                      {tmpl.metadata.icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-bold text-silse-on-surface truncate">{tmpl.name}</div>
+                      <div className="text-[0.6rem] text-silse-on-surface-variant">
+                        {tmpl.subject === '*' ? 'Semua Mapel' : tmpl.subject} · {tmpl.scenes.length} halaman
+                      </div>
+                    </div>
+                  </div>
+                  {/* Description */}
+                  <p className="text-[0.65rem] text-silse-on-surface-variant line-clamp-2 mb-2">{tmpl.description}</p>
+                  {/* Scene flow pills */}
+                  <div className="flex flex-wrap gap-1">
+                    {tmpl.scenes.slice(0, 4).map((scene, i) => (
+                      <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-silse-surface-container text-silse-on-surface-variant font-medium border border-silse-outline-variant/50">
+                        {scene.label}
+                      </span>
+                    ))}
+                    {tmpl.scenes.length > 4 && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-silse-primary-container/10 text-silse-primary font-medium">
+                        +{tmpl.scenes.length - 4}
+                      </span>
+                    )}
+                  </div>
+                  {/* Coba Template action */}
+                  <div className="mt-2.5 flex items-center gap-1 text-silse-primary text-[0.65rem] font-semibold">
+                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>visibility</span>
+                    Coba Template
+                  </div>
+                </button>
+              ))}
+
+              {/* Proyek Kosong card — direct action */}
+              <button
+                onClick={() => handleTemplateClick('blank')}
+                className="rounded-[24px] p-4 text-center border-2 border-dashed border-silse-outline-variant bg-transparent hover:border-silse-primary/30 hover:bg-silse-primary/5 group transition-colors cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-full mb-2 mx-auto flex items-center justify-center bg-silse-primary/5 text-silse-primary group-hover:bg-silse-primary-container transition-colors">
+                  <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>add</span>
+                </div>
+                <div className="text-xs font-semibold text-silse-on-surface-variant">Proyek Kosong</div>
+                <div className="text-[0.65rem] text-silse-on-surface-variant mt-0.5">Mulai dari nol</div>
+              </button>
+            </div>
+
+            {/* Toggle for legacy templates */}
+            {legacyTemplates.length > 0 && (
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowLegacyTemplates(!showLegacyTemplates)}
+                  className="flex items-center gap-2 text-[0.7rem] text-silse-on-surface-variant hover:text-silse-on-surface transition-colors"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
+                    {showLegacyTemplates ? 'expand_less' : 'expand_more'}
+                  </span>
+                  Tampilkan Template Lama ({legacyTemplates.length})
+                </button>
+
+                {/* Legacy template grid */}
+                {showLegacyTemplates && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-3">
+                    {legacyTemplates.map((tmpl) => (
+                      <button
+                        key={tmpl.id}
+                        onClick={() => setPreviewTemplate(tmpl)}
+                        className="rounded-[20px] p-3 text-left transition-all cursor-pointer hover:-translate-y-0.5 border border-silse-outline-variant/50 bg-silse-surface-container-lowest/50 hover:border-silse-outline-variant opacity-70 hover:opacity-100"
+                      >
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-base">{tmpl.metadata.icon}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[0.7rem] font-semibold text-silse-on-surface-variant truncate">{tmpl.name}</div>
+                            <div className="text-[0.6rem] text-silse-on-surface-variant/70">
+                              {tmpl.subject} · {tmpl.scenes.length} hal
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-silse-on-surface-variant/70 text-[0.6rem]">
+                          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>visibility</span>
+                          Coba Template
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* ══ FLOW PROGRESS ═════════════════════════════════ */}
@@ -809,6 +968,77 @@ export default function Dashboard() {
 
       {/* Template Wizard Modal */}
       <TemplateWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+
+      {/* ══ TEMPLATE PREVIEW DIALOG ═════════════════════════════ */}
+      <Dialog open={!!previewTemplate} onOpenChange={(open) => { if (!open) setPreviewTemplate(null); }}>
+        <DialogContent className="bg-silse-surface border border-silse-outline-variant max-w-xl w-[95vw]">
+          {previewTemplate && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-silse-primary-container/10 flex items-center justify-center text-2xl flex-shrink-0">
+                    {previewTemplate.metadata.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <DialogTitle className="text-silse-on-surface">{previewTemplate.name}</DialogTitle>
+                    <DialogDescription className="text-xs text-silse-on-surface-variant mt-0.5">
+                      {previewTemplate.subject === '*' ? 'Semua Mata Pelajaran' : previewTemplate.subject} · Kelas {previewTemplate.grade === '*' ? 'Semua' : previewTemplate.grade} · {previewTemplate.scenes.length} halaman
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              {/* Description */}
+              <p className="text-sm text-silse-on-surface-variant">{previewTemplate.description}</p>
+
+              {/* Scene flow */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-silse-on-surface-variant uppercase tracking-wider">Alur Halaman</span>
+                <div className="space-y-1.5 max-h-[240px] overflow-y-auto custom-scrollbar">
+                  {previewTemplate.scenes.map((scene, i) => (
+                    <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-silse-surface-container border border-silse-outline-variant/50">
+                      <div className="w-6 h-6 rounded-lg bg-silse-primary-container/15 flex items-center justify-center text-[0.65rem] font-bold text-silse-primary flex-shrink-0">
+                        {i + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-medium text-silse-on-surface">{scene.label}</span>
+                      </div>
+                      <span className="text-[0.6rem] text-silse-on-surface-variant bg-silse-surface-container-high px-1.5 py-0.5 rounded font-mono">{scene.templateType}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  variant="ghost"
+                  onClick={() => setPreviewTemplate(null)}
+                  className="text-silse-on-surface-variant"
+                >
+                  Batal
+                </Button>
+                <Button
+                  onClick={() => handleUseTemplate(previewTemplate)}
+                  disabled={isApplyingTemplate}
+                  className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  {isApplyingTemplate ? (
+                    <>
+                      <span className="animate-spin text-sm">⏳</span>
+                      Menerapkan...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check_circle</span>
+                      Gunakan Template
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Styled Confirm Dialog — replaces native confirm() */}
       <Dialog open={confirmState.open} onOpenChange={(v) => !v && setConfirmState(s => ({ ...s, open: false }))}>

@@ -550,6 +550,180 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     metadata: { icon: '💪', author: 'SILSE', version: '1.0.0' },
   },
 
+  // ═══════════════════════════════════════════════════════════════════
+  // CURATED GENERAL TEMPLATES — Universal, subject='*'
+  // ═══════════════════════════════════════════════════════════════════
+  // These 5 templates cover the most common learning flows for teachers.
+  // They are always visible (subject='*', grade='*') and serve as the
+  // primary entry point for "Mulai dari Template" on the Dashboard.
+
+  // ── Materi + Kuis (5 scenes) ──────────────────────────────
+  {
+    id: 'materi-kuis',
+    name: 'Materi + Kuis',
+    description: 'Alur pembelajaran sederhana: Cover → Tujuan → Materi → Kuis → Penutup. Cocok untuk materi dengan asesmen singkat.',
+    subject: '*',
+    grade: '*',
+    semester: '*',
+    theme: 'default',
+    status: 'active',
+    contractId: 'golden-pertemuan',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '📝', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── Materi + Aktivitas (6 scenes) ─────────────────────────
+  {
+    id: 'materi-aktivitas',
+    name: 'Materi + Aktivitas',
+    description: 'Alur dengan diskusi dan refleksi: Cover → Tujuan → Materi → Diskusi → Refleksi → Penutup. Cocok untuk pembelajaran kolaboratif.',
+    subject: '*',
+    grade: '*',
+    semester: '*',
+    theme: 'default',
+    status: 'active',
+    contractId: 'golden-pertemuan',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🎯', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── Skenario + Diskusi (6 scenes) ─────────────────────────
+  {
+    id: 'skenario-diskusi',
+    name: 'Skenario + Diskusi',
+    description: 'Alur berbasis skenario interaktif: Cover → Tujuan → Skenario → Materi → Diskusi → Penutup. Cocok untuk studi kasus dan problem-based learning.',
+    subject: '*',
+    grade: '*',
+    semester: '*',
+    theme: 'default',
+    status: 'active',
+    contractId: 'golden-pertemuan',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🎭', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── Game Sortir + Kuis (6 scenes) ─────────────────────────
+  {
+    id: 'game-sortir-kuis',
+    name: 'Game Sortir + Kuis',
+    description: 'Alur dengan aktivitas sortir dan kuis: Cover → Tujuan → Materi → Aktivitas Sortir → Kuis → Penutup. Cocok untuk materi yang membutuhkan klasifikasi.',
+    subject: '*',
+    grade: '*',
+    semester: '*',
+    theme: 'default',
+    status: 'active',
+    contractId: 'golden-pertemuan',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'kuis', label: 'Aktivitas Sortir', suggestedBlocks: ['kuis'], variant: 'B', sceneType: 'assessment' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🧩', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── Pertemuan Lengkap (8 scenes) ──────────────────────────
+  {
+    id: 'pertemuan-lengkap',
+    name: 'Pertemuan Lengkap',
+    description: 'Alur pertemuan lengkap sesuai standar BSNP: Cover → Tujuan → Motivasi → Materi → Diskusi → Kuis → Refleksi → Penutup.',
+    subject: '*',
+    grade: '*',
+    semester: '*',
+    theme: 'default',
+    status: 'active',
+    contractId: 'golden-pertemuan',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Motivasi / Apersepsi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '📚', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CURATED PPKn TEMPLATES — Stable golden-quality content
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ── Macam-Macam Norma (PPKn VII, active) ──────────────────
+  {
+    id: 'macam-norma',
+    name: 'Macam-Macam Norma',
+    description: 'Alur pembelajaran PPKn kelas VII: Cover → Tujuan → Motivasi → Materi ×3 → Diskusi → Kuis → Refleksi → Penutup. Konten stabil dan teruji.',
+    subject: 'PPKn',
+    grade: '7',
+    semester: '1',
+    theme: 'golden-presentation',
+    status: 'active',
+    contractId: 'golden-pertemuan',
+    presetId: 'macam-norma',
+    scenes: [
+      { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'motivasi', label: 'Apersepsi / Motivasi', suggestedBlocks: ['motivasi'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 3', suggestedBlocks: ['def-box', 'nc-grid'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'diskusi', label: 'Diskusi', suggestedBlocks: ['diskusi'], variant: 'A', sceneType: 'discussion' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '⚖️', author: 'SILSE', version: '1.0.0' },
+  },
+
+  // ── Misi Penjelajah Pancasila (PPKn VII, active) ──────────
+  {
+    id: 'misi-penjelajah',
+    name: 'Misi Penjelajah Pancasila',
+    description: 'Alur interaktif PPKn kelas VII: Cover → Tujuan → Skenario → Materi ×2 → Kuis → Refleksi → Penutup. Dengan skenario penjelajahan.',
+    subject: 'PPKn',
+    grade: '7',
+    semester: '1',
+    theme: 'golden-presentation',
+    status: 'active',
+    contractId: 'golden-pertemuan',
+    presetId: 'misi-penjelajah-pancasila',
+    scenes: [
+      { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'skenario', label: 'Skenario Interaktif', suggestedBlocks: ['skenario'], variant: 'A', sceneType: 'example' },
+      { templateType: 'materi', label: 'Materi 1', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'materi', label: 'Materi 2', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: { icon: '🚀', author: 'SILSE', version: '1.0.0' },
+  },
+
   // ── Template Kosong — Universal (subject='*', grade='*') ────
   {
     id: 'template-kosong',

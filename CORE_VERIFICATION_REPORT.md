@@ -16,6 +16,7 @@ Sprint 1A — Workspace Gutter: PASS — gutter 16-24px terbukti via Playwright 
 Sprint 1B — Teacher Flow Label: PASS — navigasi label diperbaiki, guru tahu tombol masuk workspace
 Sprint 1C.1 — Workspace Labels & AI Tab: PASS — label tombol/panel disederhanakan, AI tab disembunyikan
 Sprint 1C.2 — Right Panel Simplification: PASS — ValidationSection dipindah, header kontekstual, Scene Type & Grid hidden di teacher mode
+Sprint 1D — Template Entry Point: PASS — curated template grid, preview dialog, "Gunakan Template" flow, legacy toggle
 Sprint 1 — Teacher Flow Entry: NOT VERIFIED — Template preview belum ada
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
@@ -421,11 +422,25 @@ Kanan:   Properti (tanpa AI tab)
 | Grid & Snap | terlihat | hidden (teacher mode) |
 | Advanced mode | "Properties" | "Properties" (tidak berubah) |
 
-### Sprint 1C — Template Entry Point: NOT STARTED
+### Sprint 1D — Template Entry Point: PASS ✅ (Ronde 12)
 
-- Template preview belum ada (regresi: TemplateMarketplace dihapus dari UI)
-- Alur: Beranda → Template → Preview → Gunakan Template → Edit Media
-- TemplateMarketplace.tsx (717 baris) ada tapi orphaned
+- Dashboard: "Mulai dari Template" section menonjol di atas, bukan dashed card kecil
+- Curated template grid: 8 active templates (5 general + 2 PPKn + 1 golden) dari CourseTemplateRegistry
+- Klik template card → Preview dialog (bukan langsung apply)
+- Preview dialog: nama, deskripsi, alur halaman, tombol "Gunakan Template"
+- "Gunakan Template" → createProjectFromTemplate → navigate ke Edit Media (CanvaBuilder)
+- "Tampilkan Template Lama" toggle: legacy templates hidden by default, bisa ditampilkan
+- 7 template baru di CourseTemplateRegistry: materi-kuis, materi-aktivitas, skenario-diskusi, game-sortir-kuis, pertemuan-lengkap, macam-norma, misi-penjelajah
+- TemplateWizard tetap tersedia via "Filter & Kustomisasi" button
+- Flow guru: Pilih Template → Preview Template → Gunakan Template → Edit Media
+
+| Sebelum | Sesudah |
+|---------|---------|
+| "Mulai dari Template" dashed card kecil di akhir grid | Section utama "Mulai dari Template" di posisi atas |
+| Klik template → langsung apply (tanpa preview) | Klik template → Preview dialog → "Gunakan Template" → apply |
+| 15 hardcoded preset cards + 1 wizard card | 8 curated active templates + Proyek Kosong + legacy toggle |
+| TemplateMarketplace orphaned | Tetap ada, diakses via "Filter & Kustomisasi" |
+| Legacy template selalu terlihat | Legacy hidden by default, "Tampilkan Template Lama" toggle |
 
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar":** Panel kiri/kanan hanya 30/35px karena size dianggap pixel. Fix ke persen string mengembalikan panel ke ukuran benar.
 
@@ -612,7 +627,7 @@ Sprint 1A — Workspace Layout: PASS ✅ (setelah BUG-8 fix + gutter measurement
 Sprint 1B — Teacher Flow Label: PASS ✅ (setelah BUG-9 fix, label navigasi jelas)
 Sprint 1C.1 — Workspace Labels & AI Tab: PASS ✅ (setelah BUG-10 fix, label tombol/panel jelas, AI tab hidden)
 Sprint 1C.2 — Right Panel Simplification: PASS ✅ (setelah BUG-11 fix, panel kanan ramah guru)
-Sprint 1D — Template Entry Point: NOT STARTED
+Sprint 1D — Template Entry Point: PASS ✅ (curated grid, preview dialog, "Gunakan Template" flow, legacy toggle)
 
 Base App (HTTP): PASS ✅ (5+ requests, sandbox, fallback)
 Browser Session:  PASS ✅ (Dashboard hydrate, Canvas Workspace render, chunks OK)
@@ -631,6 +646,7 @@ Area Parkir:      TETAP DITAHAN
 **Sprint 1B Teacher Flow Label PASS — BUG-9 fix (navigasi label jelas untuk guru).**
 **Sprint 1C.1 Workspace Labels & AI Tab PASS — BUG-10 fix (label tombol/panel jelas, AI tab hidden).**
 **Sprint 1C.2 Right Panel Simplification PASS — BUG-11 fix (panel kanan ramah guru: header kontekstual, ValidationSection dipindah, Scene Type & Grid hidden).**
+**Sprint 1D Template Entry Point PASS — curated grid, preview dialog, "Gunakan Template" flow, legacy toggle.**
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar" — panel ter-collapse ke 30px karena size dianggap pixel.**
 **BUG-9 adalah root cause masalah "guru bingung masuk workspace" — label Analytics/Workspace tidak sesuai fungsi.**
 **BUG-10 adalah root cause masalah "guru bingung di workspace" — istilah teknis Main/Publish/Scenes dan AI tab yang mengganggu.**
