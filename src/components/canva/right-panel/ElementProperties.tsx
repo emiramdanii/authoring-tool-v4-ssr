@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings2, Trash2, Copy, ArrowUp, ArrowDown, ChevronsUp, ChevronsDown } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { isInteractiveElementType } from '@/core/schema/capability-registry';
 import { ELEMENT_TYPE_COLORS } from '@/lib/canva-icon-maps';
@@ -28,7 +28,7 @@ export default function ElementProperties() {
   return (
     <div className="border-b border-silse-primary/10">
       <div className="px-3 py-2 flex items-center gap-1.5 bg-silse-primary/5">
-        <Settings2 size={12} className="text-silse-primary" />
+        <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '12px' }}>settings</span>
         <span className="text-[10px] font-bold text-silse-primary uppercase tracking-widest">Properti Elemen</span>
       </div>
       <div className="px-3 pb-3 pt-2 space-y-1">
@@ -68,7 +68,7 @@ export default function ElementProperties() {
             className="h-6 w-6 ml-auto"
             title="Duplikat elemen"
           >
-            <Copy size={10} />
+            <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>content_copy</span>
           </Button>
         </div>
 
@@ -253,10 +253,10 @@ export default function ElementProperties() {
           <label className="text-[10px] text-silse-on-surface-variant block mb-1">Urutan Layer</label>
           <div className="flex gap-1">
             {[
-              { dir: 'top' as const, icon: <ChevronsUp size={10} />, label: 'Paling Depan', shortcut: '⌘⇧]' },
-              { dir: 'up' as const, icon: <ArrowUp size={10} />, label: 'Maju 1 Layer', shortcut: '⌘]' },
-              { dir: 'down' as const, icon: <ArrowDown size={10} />, label: 'Mundur 1 Layer', shortcut: '⌘[' },
-              { dir: 'bottom' as const, icon: <ChevronsDown size={10} />, label: 'Paling Belakang', shortcut: '⌘⇧[' },
+              { dir: 'top' as const, icon: <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>keyboard_double_arrow_up</span>, label: 'Paling Depan', shortcut: '⌘⇧]' },
+              { dir: 'up' as const, icon: <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>arrow_upward</span>, label: 'Maju 1 Layer', shortcut: '⌘]' },
+              { dir: 'down' as const, icon: <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>arrow_downward</span>, label: 'Mundur 1 Layer', shortcut: '⌘[' },
+              { dir: 'bottom' as const, icon: <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>keyboard_double_arrow_down</span>, label: 'Paling Belakang', shortcut: '⌘⇧[' },
             ].map(item => (
               <button
                 key={item.dir}
@@ -276,7 +276,7 @@ export default function ElementProperties() {
           onClick={deleteSelected}
           className="w-full mt-3"
         >
-          <Trash2 size={12} />
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>delete</span>
           Hapus Elemen
         </Button>
       </div>

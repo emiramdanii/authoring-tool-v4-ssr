@@ -18,18 +18,7 @@
 
 import { useCallback, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import {
-  Trash2,
-  X,
-  Palette,
-  CheckCircle2,
-  Copy,
-  ChevronUp,
-  ChevronDown,
-  Minimize2,
-  Maximize2,
-  Layers,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { toast } from 'sonner';
 
 export default function BatchOperationsBar() {
@@ -92,7 +81,7 @@ export default function BatchOperationsBar() {
       <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 backdrop-blur-md shadow-lg shadow-amber-500/5">
         {/* Selection count */}
         <div className="flex items-center gap-1.5">
-          <CheckCircle2 size={12} className="text-amber-400" />
+          <span className="material-symbols-outlined text-amber-400" style={{ fontSize: '12px' }}>check_circle</span>
           <span className="text-[10px] font-bold text-amber-300">
             {count} {blockLabel} dipilih
           </span>
@@ -108,14 +97,14 @@ export default function BatchOperationsBar() {
             className="p-1 rounded-md text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-surface-container-low/60 transition-colors"
             title="Pindah atas"
           >
-            <ChevronUp size={12} />
+            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>expand_less</span>
           </button>
           <button
             onClick={handleMoveDown}
             className="p-1 rounded-md text-silse-on-surface-variant hover:text-silse-primary hover:bg-silse-surface-container-low/60 transition-colors"
             title="Pindah bawah"
           >
-            <ChevronDown size={12} />
+            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>expand_more</span>
           </button>
         </div>
 
@@ -128,7 +117,7 @@ export default function BatchOperationsBar() {
           className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border border-sky-500/30 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 transition-[background-color,border-color]"
           title="Duplikasi semua yang dipilih"
         >
-          <Copy size={10} />
+          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>content_copy</span>
           Duplikat
         </button>
 
@@ -137,7 +126,7 @@ export default function BatchOperationsBar() {
 
         {/* Variant buttons */}
         <div className="flex items-center gap-1">
-          <Palette size={10} className="text-silse-on-surface-variant" />
+          <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '10px' }}>palette</span>
           {(['A', 'B', 'C'] as const).map(v => (
             <button
               key={v}
@@ -158,7 +147,7 @@ export default function BatchOperationsBar() {
           className={`p-1 rounded-md transition-colors ${showMore ? 'text-amber-400 bg-amber-500/10' : 'text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-low/60'}`}
           title="Tindakan lainnya"
         >
-          <Layers size={12} />
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>layers</span>
         </button>
 
         {/* Delete button */}
@@ -166,7 +155,7 @@ export default function BatchOperationsBar() {
           onClick={handleDeleteAll}
           className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 transition-[background-color,border-color]"
         >
-          <Trash2 size={10} />
+          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>delete</span>
           Hapus
         </button>
 
@@ -176,7 +165,7 @@ export default function BatchOperationsBar() {
           className="flex items-center justify-center p-1 rounded-md text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-low/60 transition-colors"
           title="Batal pilih"
         >
-          <X size={12} />
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>close</span>
         </button>
       </div>
 
@@ -185,13 +174,13 @@ export default function BatchOperationsBar() {
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/5 border border-amber-500/15 backdrop-blur-md shadow-lg shadow-amber-500/5">
           {/* Compression priority */}
           <div className="flex items-center gap-1">
-            <Minimize2 size={10} className="text-silse-on-surface-variant" />
+            <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '10px' }}>close_fullscreen</span>
             <span className="text-[8px] text-silse-on-surface-variant font-semibold">Prioritas:</span>
             <button
               onClick={() => handleSetCompression('high')}
               className="px-1.5 py-0.5 rounded-md text-[8px] font-bold border border-amber-500/20 bg-amber-500/5 text-amber-300 hover:bg-amber-500/15 transition-[background-color,border-color]"
             >
-              <Maximize2 size={8} className="inline mr-0.5" />
+              <span className="material-symbols-outlined inline mr-0.5" style={{ fontSize: '8px' }}>open_in_full</span>
               Tinggi
             </button>
             <button
@@ -204,7 +193,7 @@ export default function BatchOperationsBar() {
               onClick={() => handleSetCompression('low')}
               className="px-1.5 py-0.5 rounded-md text-[8px] font-bold border border-emerald-500/20 bg-emerald-500/5 text-emerald-300 hover:bg-emerald-500/15 transition-[background-color,border-color]"
             >
-              <Minimize2 size={8} className="inline mr-0.5" />
+              <span className="material-symbols-outlined inline mr-0.5" style={{ fontSize: '8px' }}>close_fullscreen</span>
               Rendah
             </button>
           </div>

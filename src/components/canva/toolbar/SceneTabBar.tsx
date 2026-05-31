@@ -3,8 +3,7 @@
 import React from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { getTabIcon, TAB_ICON_MAP } from '@/lib/canva-icon-maps';
-import { LayoutGrid } from 'lucide-react';
-
+// All icons use Material Symbols Outlined
 // ═══════════════════════════════════════════════════════════════
 // SCENE TAB BAR — Horizontal pill bar showing tabs with icons
 // ═══════════════════════════════════════════════════════════════
@@ -31,11 +30,11 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
   // Don't render if no tabs or only 1 tab (nothing to filter)
   if (!tabs || tabs.length < 2) return null;
 
-  const AllIcon = LayoutGrid;
+  const allIconName = 'grid_view';
 
   return (
     <div
-      className={`flex items-center gap-1 ${isCompact ? 'px-2 py-1' : 'px-3 py-2'} overflow-x-auto custom-scrollbar ${className}`}
+      className={`flex items-center gap-1 ${isCompact ? 'px-2 py-1' : 'px-3 py-2'} overflow-x-auto custom-scrollbar border-b border-silse-outline-variant/30 ${className}`}
       role="tablist"
       aria-label="Tab navigasi"
     >
@@ -45,23 +44,23 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
         aria-selected={activeTabId === null}
         onClick={() => setActiveTabId(null)}
         className={`
-          flex items-center gap-1.5 rounded-full transition-[background-color,border-color,color] whitespace-nowrap
+          flex items-center gap-1.5 rounded-lg transition-[background-color,border-color,color] whitespace-nowrap
           ${isCompact ? 'px-2.5 py-1 text-[9px]' : 'px-3 py-1.5 text-[10px]'}
           font-bold
           ${activeTabId === null
-            ? 'bg-app-accent/15 text-app-accent shadow-sm'
-            : 'bg-app-elevated/50 text-app-muted hover:bg-app-elevated hover:text-app-secondary'
+            ? 'bg-silse-primary-container/20 text-silse-primary font-bold'
+            : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/50'
           }
         `}
         title="Tampilkan semua blok"
       >
-        <AllIcon size={isCompact ? 10 : 12} />
+        <span className="material-symbols-outlined" style={{ fontSize: isCompact ? '10px' : '12px' }}>{allIconName}</span>
         <span>Semua</span>
       </button>
 
       {/* User-defined tabs */}
       {tabs.map((tab) => {
-        const IconComponent = getTabIcon(tab.icon);
+        const iconName = getTabIcon(tab.icon);
         const isActive = activeTabId === tab.id;
 
         return (
@@ -71,17 +70,17 @@ export function SceneTabBar({ isCompact = false, className = '' }: SceneTabBarPr
             aria-selected={isActive}
             onClick={() => setActiveTabId(isActive ? null : tab.id)}
             className={`
-              flex items-center gap-1.5 rounded-full transition-[background-color,border-color,color] whitespace-nowrap
+              flex items-center gap-1.5 rounded-lg transition-[background-color,border-color,color] whitespace-nowrap
               ${isCompact ? 'px-2.5 py-1 text-[9px]' : 'px-3 py-1.5 text-[10px]'}
               font-bold
               ${isActive
-                ? 'bg-app-accent/15 text-app-accent shadow-sm'
-                : 'bg-app-elevated/50 text-app-muted hover:bg-app-elevated hover:text-app-secondary'
+                ? 'bg-silse-primary-container/20 text-silse-primary font-bold'
+                : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/50'
               }
             `}
             title={tab.label}
           >
-            <IconComponent size={isCompact ? 10 : 12} />
+            <span className="material-symbols-outlined" style={{ fontSize: isCompact ? '10px' : '12px' }}>{iconName}</span>
             <span>{tab.label}</span>
           </button>
         );

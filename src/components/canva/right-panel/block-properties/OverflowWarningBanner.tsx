@@ -70,15 +70,15 @@ export function OverflowWarningBanner({ details, pageId, onDismiss }: OverflowWa
 
   // ── Render ──
   return (
-    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 overflow-hidden">
+    <div className="rounded-xl border-silse-tertiary-container/30 border bg-silse-tertiary-container/5 overflow-hidden">
       {/* ── Warning header ── */}
       <div className="px-4 py-3 flex items-start gap-2.5">
-        <div className="mt-0.5 text-amber-400 text-sm shrink-0">⚠</div>
+        <div className="mt-0.5 text-silse-tertiary text-sm shrink-0">⚠</div>
         <div className="flex-1 min-w-0">
-          <div className="text-[12px] font-semibold text-amber-300 tracking-wide uppercase">
+          <div className="text-[12px] font-semibold text-silse-tertiary tracking-wide uppercase">
             Konten Melebihi Kapasitas
           </div>
-          <div className="text-[11px] text-amber-200/80 mt-0.5 leading-relaxed">
+          <div className="text-[11px] text-silse-on-surface-variant mt-0.5 leading-relaxed">
             {details.summary}
           </div>
         </div>
@@ -91,9 +91,9 @@ export function OverflowWarningBanner({ details, pageId, onDismiss }: OverflowWa
           <button
             onClick={handleCompress}
             disabled={isCompressing}
-            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold
-                       bg-amber-500/20 text-amber-200 border border-amber-500/30
-                       hover:bg-amber-500/30 transition-colors
+            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold
+                       bg-silse-tertiary-container/15 text-silse-tertiary border border-silse-tertiary-container/30
+                       hover:bg-silse-tertiary-container/25 transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCompressing ? 'Mengompres...' : 'Kompakkan'}
@@ -105,9 +105,9 @@ export function OverflowWarningBanner({ details, pageId, onDismiss }: OverflowWa
           <button
             onClick={handleSplit}
             disabled={isSplitting}
-            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold
-                       bg-blue-500/20 text-blue-200 border border-blue-500/30
-                       hover:bg-blue-500/30 transition-colors
+            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold
+                       bg-silse-primary/15 text-silse-primary border border-silse-primary/30
+                       hover:bg-silse-primary/25 transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSplitting ? 'Mem-split...' : 'Split ke Halaman Baru'}
@@ -117,9 +117,9 @@ export function OverflowWarningBanner({ details, pageId, onDismiss }: OverflowWa
         {/* Keep anyway — always available */}
         <button
           onClick={onDismiss}
-          className="px-3 py-1.5 rounded-lg text-[11px] font-semibold
-                     bg-white/5 text-white/60 border border-white/10
-                     hover:bg-white/10 hover:text-white/80 transition-colors"
+          className="px-3 py-1.5 rounded-xl text-[11px] font-semibold
+                     bg-silse-surface-container/50 text-silse-on-surface-variant border border-silse-outline-variant/30
+                     hover:bg-silse-surface-container hover:text-silse-on-surface transition-colors"
         >
           Tetap Simpan
         </button>
@@ -128,7 +128,7 @@ export function OverflowWarningBanner({ details, pageId, onDismiss }: OverflowWa
       {/* ── Error message ── */}
       {error && (
         <div className="px-4 pb-3">
-          <div className="text-[11px] text-red-300 bg-red-500/10 rounded-lg px-3 py-1.5">
+          <div className="text-[11px] text-silse-error bg-silse-error-container/10 rounded-xl px-3 py-1.5">
             {error}
           </div>
         </div>
@@ -137,7 +137,7 @@ export function OverflowWarningBanner({ details, pageId, onDismiss }: OverflowWa
       {/* ── Contract info for non-splittable pages ── */}
       {!details.canSplit && (
         <div className="px-4 pb-3">
-          <div className="text-[11px] text-amber-200/60 leading-relaxed">
+          <div className="text-[11px] text-silse-on-surface-variant/60 leading-relaxed">
             Tipe halaman ini tidak mendukung pemisahan otomatis.
             Persingkat konten agar muat dalam satu halaman.
           </div>

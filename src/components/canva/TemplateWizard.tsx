@@ -27,15 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Sparkles,
-  BookOpen,
-  GraduationCap,
-  FileText,
-  Check,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useDirtyStore } from '@/store/dirty-store';
@@ -57,10 +49,10 @@ import {
 // ── Step indicator ─────────────────────────────────────────────
 
 const STEPS = [
-  { num: 1, label: 'Mata Pelajaran', icon: BookOpen },
-  { num: 2, label: 'Kelas & Semester', icon: GraduationCap },
-  { num: 3, label: 'Pilih Template', icon: FileText },
-  { num: 4, label: 'Info Dasar', icon: Sparkles },
+  { num: 1, label: 'Mata Pelajaran', icon: 'menu_book' },
+  { num: 2, label: 'Kelas & Semester', icon: 'school' },
+  { num: 3, label: 'Pilih Template', icon: 'description' },
+  { num: 4, label: 'Info Dasar', icon: 'auto_awesome' },
 ];
 
 // ── Props ──────────────────────────────────────────────────────
@@ -288,7 +280,7 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
             disabled={step <= 1}
             className="gap-1 text-app-secondary"
           >
-            <ArrowLeft size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>arrow_back</span>
             Kembali
           </Button>
 
@@ -299,7 +291,7 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
               className="gap-1 bg-app-accent hover:bg-app-accent/90 text-app-accent-foreground"
             >
               Selanjutnya
-              <ArrowRight size={14} />
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>arrow_forward</span>
             </Button>
           ) : (
             <Button
@@ -314,7 +306,7 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
                 </>
               ) : (
                 <>
-                  <Sparkles size={14} />
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>auto_awesome</span>
                   Buat Project
                 </>
               )}
@@ -352,7 +344,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
                     ? 'bg-app-accent/10 text-app-accent border border-app-accent/30 ring-2 ring-app-accent/20'
                     : 'bg-app-elevated text-app-muted border border-app-border/50'
               }`}>
-                {isCompleted ? <Check size={12} /> : s.num}
+                {isCompleted ? <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>check</span> : s.num}
               </div>
               <span className={`text-[10px] font-semibold hidden sm:inline ${
                 isCurrent ? 'text-app-primary' : 'text-app-muted'
@@ -532,7 +524,7 @@ function StepTemplate({ templates, selectedId, onSelect }: {
                 {/* Selection check */}
                 {isSelected && (
                   <div className="w-6 h-6 rounded-full bg-app-accent/20 flex items-center justify-center flex-shrink-0">
-                    <Check size={14} className="text-app-accent" />
+                    <span className="material-symbols-outlined text-app-accent" style={{ fontSize: '14px' }}>check</span>
                   </div>
                 )}
               </div>

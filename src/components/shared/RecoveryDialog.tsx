@@ -377,14 +377,14 @@ export default function RecoveryDialog() {
       subtitle: 'Data disimpan otomatis sebelum aplikasi error',
     },
     crash: {
-      icon: <AlertTriangle size={20} className="text-amber-400" />,
+      icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '20px' } }>warning</span>,
       bgClass: 'bg-amber-500/10 border-amber-500/20',
       iconBgClass: 'bg-amber-500/20',
       title: 'Sesi Sebelumnya Terdeteksi',
       subtitle: 'Aplikasi kemungkinan ditutup tanpa menyimpan',
     },
     'auto-save': {
-      icon: <AlertTriangle size={20} className="text-amber-400" />,
+      icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '20px' } }>warning</span>,
       bgClass: 'bg-amber-500/10 border-amber-500/20',
       iconBgClass: 'bg-amber-500/20',
       title: 'Data Tersimpan Ditemukan',
@@ -452,7 +452,7 @@ export default function RecoveryDialog() {
             {canva && (
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-app-muted flex items-center gap-1">
-                  <FileText size={10} /> Halaman desain
+                  <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>description</span> Halaman desain
                 </span>
                 <span className="text-[10px] text-app-secondary font-semibold">{canva.pageCount} halaman</span>
               </div>
@@ -463,7 +463,7 @@ export default function RecoveryDialog() {
                 {authoring.hasCp && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <BookOpen size={10} /> Capaian Pembelajaran
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>menu_book</span> Capaian Pembelajaran
                     </span>
                     <span className="text-[10px] text-emerald-400 font-semibold">&#10003;</span>
                   </div>
@@ -471,7 +471,7 @@ export default function RecoveryDialog() {
                 {authoring.tpCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Target size={10} /> Tujuan Pembelajaran
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>target</span> Tujuan Pembelajaran
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.tpCount} TP</span>
                   </div>
@@ -479,7 +479,7 @@ export default function RecoveryDialog() {
                 {authoring.kuisCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <FileText size={10} /> Kuis
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>description</span> Kuis
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.kuisCount} kuis</span>
                   </div>
@@ -487,7 +487,7 @@ export default function RecoveryDialog() {
                 {authoring.moduleCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <BookOpen size={10} /> Modul Konten
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>menu_book</span> Modul Konten
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.moduleCount} modul</span>
                   </div>
@@ -495,7 +495,7 @@ export default function RecoveryDialog() {
                 {authoring.gameCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Gamepad2 size={10} /> Game Interaktif
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>sports_esports</span> Game Interaktif
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.gameCount} game</span>
                   </div>
@@ -503,7 +503,7 @@ export default function RecoveryDialog() {
                 {authoring.alurCount > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-app-muted flex items-center gap-1">
-                      <Layers size={10} /> Alur Pembelajaran
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>layers</span> Alur Pembelajaran
                     </span>
                     <span className="text-[10px] text-app-secondary font-semibold">{authoring.alurCount} alur</span>
                   </div>
@@ -528,7 +528,7 @@ export default function RecoveryDialog() {
             className="flex-1 gap-2 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 font-bold text-[11px]"
             variant="outline"
           >
-            <RotateCcw size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>refresh</span>
             Pulihkan
           </Button>
           <Button
@@ -536,7 +536,7 @@ export default function RecoveryDialog() {
             className="flex-1 gap-2 bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30 font-bold text-[11px]"
             variant="outline"
           >
-            <Trash2 size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>delete</span>
             Mulai Baru
           </Button>
         </div>

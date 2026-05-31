@@ -44,10 +44,10 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
 
   const tier = totalPct >= 90 ? 'excellent' : totalPct >= 75 ? 'good' : totalPct >= 50 ? 'fair' : 'needs-practice';
   const tierConfig = React.useMemo(() => hasScores ? {
-    'excellent': { label: 'Luar Biasa!', color: 'y', emoji: '🏆', icon: <Trophy size={16} /> },
-    'good': { label: 'Hebat!', color: 'g', emoji: '⭐', icon: <Star size={16} /> },
-    'fair': { label: 'Cukup Baik', color: 'c', emoji: '🎯', icon: <Target size={16} /> },
-    'needs-practice': { label: 'Terus Berlatih!', color: 'o', emoji: '💪', icon: <Zap size={16} /> },
+    'excellent': { label: 'Luar Biasa!', color: 'y', emoji: '🏆', icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>emoji_events</span> },
+    'good': { label: 'Hebat!', color: 'g', emoji: '⭐', icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>star</span> },
+    'fair': { label: 'Cukup Baik', color: 'c', emoji: '🎯', icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>target</span> },
+    'needs-practice': { label: 'Terus Berlatih!', color: 'o', emoji: '💪', icon: <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>bolt</span> },
   }[tier] : null, [hasScores, tier]);
 
   const isCompressed = compression?.isCompressed ?? false;
@@ -72,7 +72,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
             background: tokens.accentBg('g', 0.08),
             border: `1px solid ${tokens.colorAlpha('g', 0.15)}`,
           }}>
-          <CheckCircle2 size={18} style={{ color: tokens.color('g') }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '18px' } }>check_circle</span>
         </div>
         <div>
           <h2 className="font-black" style={{ ...edu.heading(), color: edu.textColor() }}>
@@ -149,7 +149,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
             ...edu.nestedPadding(),
           }}>
           <div className="flex items-center gap-2 mb-3">
-            <BookOpen size={14} style={{ color: tokens.color('c') }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>menu_book</span>
             <div className="font-bold uppercase tracking-wider" style={{ ...edu.caption(), color: tokens.color('c'), textTransform: 'uppercase' }}>
               Ringkasan Pembelajaran
             </div>
@@ -184,7 +184,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
             borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('g')}`,
           }}>
           <div className="flex items-center gap-2 mb-2">
-            <ArrowRight size={14} style={{ color: tokens.color('g') }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>arrow_forward</span>
             <div className="font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color('g') }}>Pertemuan Berikutnya</div>
           </div>
           <div className="mb-3 font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
@@ -227,7 +227,7 @@ export const PenutupRenderer = React.memo(function PenutupRenderer({ block, toke
                 background: tokens.accentBg('g', 0.1),
                 border: `1px solid ${tokens.colorAlpha('g', 0.2)}`,
               }}>
-              <ArrowRight size={14} className="inline mr-1" /> Lanjut ke Pertemuan Berikutnya
+              <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>arrow_forward</span> Lanjut ke Pertemuan Berikutnya
             </button>
             </MicroInteraction>
           )}

@@ -2,13 +2,13 @@
 // CONSTANTS for Live Preview
 // ═══════════════════════════════════════════════════════════════
 
-import { Monitor, Tablet, Smartphone } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import type { DeviceMode, LayoutTheme, PreviewMode } from './types';
 
-export const DEVICE_MODES: { id: DeviceMode; label: string; icon: typeof Smartphone; width: number }[] = [
-  { id: 'mobile', label: 'Mobile', icon: Smartphone, width: 390 },
-  { id: 'tablet', label: 'Tablet', icon: Tablet, width: 768 },
-  { id: 'desktop', label: 'Desktop', icon: Monitor, width: 0 },
+export const DEVICE_MODES: { id: DeviceMode; label: string; icon: string; width: number }[] = [
+  { id: 'mobile', label: 'Mobile', icon: 'smartphone', width: 390 },
+  { id: 'tablet', label: 'Tablet', icon: 'tablet', width: 768 },
+  { id: 'desktop', label: 'Desktop', icon: 'monitor', width: 0 },
 ];
 
 export const LAYOUT_THEMES: { id: LayoutTheme; icon: string; label: string }[] = [

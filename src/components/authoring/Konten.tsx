@@ -13,7 +13,7 @@ import { RangkumanTab } from './konten/RangkumanTab';
 import { SchemaNavigatorPanel } from './konten/SchemaNavigatorPanel';
 import { KontenOverflowBanner } from './konten/KontenOverflowBanner';
 import { useSchemaContext } from '@/hooks/use-schema-navigator';
-import { FileEdit, Puzzle, HelpCircle, BookOpen, Theater, ArrowRight, Gamepad2, ClipboardList, MessageSquare, NotebookPen, Sparkles, ListChecks, Layers } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { useCanvaStore } from '@/store/canva-store';
 
@@ -32,23 +32,23 @@ export default function Konten() {
   // Lengkap: technical/standard labels, all tabs visible
   const tabs: { id: KontenTab; icon: React.ReactNode; label: string; desc: string }[] = isSederhana
     ? [
-        { id: 'materi', icon: <BookOpen size={14} />, label: 'Materi', desc: 'Teks dan materi pembelajaran' },
-        { id: 'motivasi', icon: <Sparkles size={14} />, label: 'Motivasi', desc: 'Apersepsi dan pertanyaan pemantik' },
-        { id: 'diskusi', icon: <MessageSquare size={14} />, label: 'Diskusi', desc: 'Pertanyaan diskusi kelompok' },
-        { id: 'refleksi', icon: <NotebookPen size={14} />, label: 'Refleksi', desc: 'Refleksi dan penugasan pribadi' },
-        { id: 'rangkuman', icon: <ListChecks size={14} />, label: 'Rangkuman', desc: 'Poin-poin penting dan penutup materi' },
-        { id: 'modules', icon: <Gamepad2 size={14} />, label: 'Game & Aktivitas', desc: 'Modul interaktif dan permainan' },
-        { id: 'kuis', icon: <ClipboardList size={14} />, label: 'Soal Evaluasi', desc: 'Kuis dan soal pilihan ganda' },
+        { id: 'materi', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>menu_book</span>, label: 'Materi', desc: 'Teks dan materi pembelajaran' },
+        { id: 'motivasi', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>auto_awesome</span>, label: 'Motivasi', desc: 'Apersepsi dan pertanyaan pemantik' },
+        { id: 'diskusi', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>chat</span>, label: 'Diskusi', desc: 'Pertanyaan diskusi kelompok' },
+        { id: 'refleksi', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>edit_note</span>, label: 'Refleksi', desc: 'Refleksi dan penugasan pribadi' },
+        { id: 'rangkuman', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>checklist</span>, label: 'Rangkuman', desc: 'Poin-poin penting dan penutup materi' },
+        { id: 'modules', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>sports_esports</span>, label: 'Game & Aktivitas', desc: 'Modul interaktif dan permainan' },
+        { id: 'kuis', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>assignment</span>, label: 'Soal Evaluasi', desc: 'Kuis dan soal pilihan ganda' },
       ]
     : [
-        { id: 'materi', icon: <FileEdit size={14} />, label: 'Materi', desc: 'Materi, aktivitas/modul, dan evaluasi siswa dalam satu panel.' },
-        { id: 'motivasi', icon: <Sparkles size={14} />, label: 'Motivasi', desc: 'Apersepsi dan pertanyaan pemantik untuk memotivasi siswa' },
-        { id: 'diskusi', icon: <MessageSquare size={14} />, label: 'Diskusi', desc: 'Pertanyaan diskusi kelompok untuk pendalaman materi' },
-        { id: 'refleksi', icon: <NotebookPen size={14} />, label: 'Refleksi', desc: 'Refleksi metakognitif dan penugasan pribadi' },
-        { id: 'rangkuman', icon: <ListChecks size={14} />, label: 'Rangkuman', desc: 'Poin-poin penting, tips, dan penutup materi' },
-        { id: 'skenario', icon: <Theater size={14} />, label: 'Skenario', desc: 'Skenario interaktif dengan pilihan dan konsekuensi' },
-        { id: 'modules', icon: <Puzzle size={14} />, label: 'Modul & Game', desc: 'Modul interaktif dan game edukasi' },
-        { id: 'kuis', icon: <HelpCircle size={14} />, label: 'Evaluasi', desc: 'Kuis dan soal evaluasi siswa' },
+        { id: 'materi', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>edit_note</span>, label: 'Materi', desc: 'Materi, aktivitas/modul, dan evaluasi siswa dalam satu panel.' },
+        { id: 'motivasi', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>auto_awesome</span>, label: 'Motivasi', desc: 'Apersepsi dan pertanyaan pemantik untuk memotivasi siswa' },
+        { id: 'diskusi', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>chat</span>, label: 'Diskusi', desc: 'Pertanyaan diskusi kelompok untuk pendalaman materi' },
+        { id: 'refleksi', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>edit_note</span>, label: 'Refleksi', desc: 'Refleksi metakognitif dan penugasan pribadi' },
+        { id: 'rangkuman', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>checklist</span>, label: 'Rangkuman', desc: 'Poin-poin penting, tips, dan penutup materi' },
+        { id: 'skenario', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>theater_comedy</span>, label: 'Skenario', desc: 'Skenario interaktif dengan pilihan dan konsekuensi' },
+        { id: 'modules', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>extension</span>, label: 'Modul & Game', desc: 'Modul interaktif dan game edukasi' },
+        { id: 'kuis', icon: <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>help</span>, label: 'Evaluasi', desc: 'Kuis dan soal evaluasi siswa' },
       ];
 
   const currentTab = tabs.find(t => t.id === activeTab)!;
@@ -78,7 +78,7 @@ export default function Konten() {
       <div className="flex-shrink-0 px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
-            <BookOpen size={18} /> {isSederhana ? 'Materi Pembelajaran' : 'Konten Pembelajaran'}
+            <span className="material-symbols-outlined" style={ { fontSize: '18px' } }>menu_book</span> {isSederhana ? 'Materi Pembelajaran' : 'Konten Pembelajaran'}
           </h2>
           {/* View mode toggle — Phase 3 Schema Navigator */}
           <div className="flex items-center gap-1 bg-app-surface border border-app-border rounded-lg p-0.5">
@@ -92,7 +92,7 @@ export default function Konten() {
               }
               title="Tampilan Tab"
             >
-              <BookOpen size={12} /> Tab
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>menu_book</span> Tab
             </button>
             <button
               onClick={() => setViewMode('navigator')}
@@ -103,7 +103,7 @@ export default function Konten() {
               }`}
               title="Schema Navigator — lihat semua blok di seluruh halaman"
             >
-              <Layers size={12} /> Navigator
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>layers</span> Navigator
             </button>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function Konten() {
           className="px-4 py-2 bg-app-accent hover:bg-app-accent/90 text-app-inverse font-semibold text-sm rounded-lg transition-colors inline-flex items-center gap-2"
         >
           {isSederhana ? 'Selanjutnya: Desain Visual' : 'Selanjutnya: Desain di Canva'}
-          <ArrowRight size={14} />
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>arrow_forward</span>
         </button>
       </div>
     </div>

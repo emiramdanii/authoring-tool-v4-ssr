@@ -165,7 +165,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
  <div className="rounded-2xl overflow-hidden p-6 text-center"
  style={{
- background: tokens.color('bg'),
+ background: edu.pageBg(),
  border: '2px solid ' + tokens.colorAlpha(gradeColor, 0.3),
  boxShadow: edu.shadow('elevated'),
  }}>
@@ -201,7 +201,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  color: tokens.color('bg'),
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}>
- <RotateCcw size={14} className="inline" /> Ulangi Roda
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi Roda
  </button>
  </MicroInteraction>
  )}
@@ -228,7 +228,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  aria-describedby={`roda-instructions-${block.id || 'roda'}`}
  data-interactive
  style={{
- background: tokens.color('bg'),
+ background: edu.pageBg(),
  border: '2px solid ' + edu.accentAlpha(0.3),
  boxShadow: edu.shadow('elevated'),
  }}>
@@ -236,7 +236,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  {/* Header */}
  <div className="p-3 border-b"
  style={{
- background: 'linear-gradient(90deg, ' + tokens.color('bg') + ', ' + tokens.color('bg2') + ')',
+ background: 'linear-gradient(90deg, ' + edu.pageBg() + ', ' + edu.pageBg2() + ')',
  borderColor: edu.accentAlpha(0.15),
  }}>
  <div className="flex items-center justify-between">
@@ -467,7 +467,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  border: '1px solid ' + edu.accentAlpha(0.25),
  borderLeft: `${edu.stripeWidth()}px solid ${edu.accent()}`,
  }}>
- <div className="leading-relaxed" style={{ ...edu.caption() }}><strong style={{ color: edu.accent() }}><MessageCircle size={14} className="inline" /> Diskusi:</strong> <InlineTextEditor
+ <div className="leading-relaxed" style={{ ...edu.caption() }}><strong style={{ color: edu.accent() }}><span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>chat_bubble</span> Diskusi:</strong> <InlineTextEditor
  {...diskusiHintEditor}
  
  style={{ ...edu.micro() }}
@@ -539,7 +539,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  color: q.opts[answers[current]!]!.correct ? tokens.color('g') : tokens.color('r'),
  animation: 'fadeIn 0.3s ease',
  }}>
- {q.opts[answers[current]!]!.correct ? <CheckCircle2 size={14} className="inline mr-1" /> : <XCircle size={14} className="inline mr-1" />}
+ {q.opts[answers[current]!]!.correct ? <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>check_circle</span> : <span className="material-symbols-outlined inline mr-1" style={ { fontSize: '14px' } }>cancel</span>}
  {q.opts[answers[current]!]!.correct ? (q.feedbackCorrect || 'Benar!') : (q.feedbackWrong || 'Kurang tepat.')}
  </div>
  )}
@@ -563,7 +563,7 @@ export const RodaGameRenderer = React.memo(function RodaGameRenderer({ block, to
  <div className="mt-4 px-1">
  <div className="flex items-center justify-between mb-1.5">
  <span className="font-extrabold" style={{ ...edu.micro(), color: edu.accent() }}>
- <Trophy size={12} className="inline" /> Progres
+ <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>emoji_events</span> Progres
  </span>
  <span style={{ ...edu.micro(), color: edu.mutedText(0.6) }}>
  {totalAnswered}/{questions.length} soal

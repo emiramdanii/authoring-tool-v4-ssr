@@ -156,6 +156,16 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
     set({ editingBlockId: blockId });
   },
   stopEditing: () => {
+    // FIX: Force-blur any active contentEditable before clearing state.
+    // This ensures InlineEditableText's onBlur → onSave fires first,
+    // preventing the race condition where clearing editingBlockId causes
+    // the component to unmount before it can save the pending edit.
+    if (typeof document !== 'undefined') {
+      const activeEl = document.activeElement as HTMLElement | null;
+      if (activeEl && activeEl.contentEditable === 'true') {
+        activeEl.blur();
+      }
+    }
     const prevId = get().editingBlockId;
     if (prevId) editBus.emit({ type: 'edit-end', blockId: prevId });
     set({ editingBlockId: null });

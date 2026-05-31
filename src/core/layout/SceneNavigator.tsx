@@ -87,7 +87,7 @@ export const SceneNavigator = React.memo(function SceneNavigator({
         style={{ width: isCompact ? 20 : 24, height: isCompact ? 20 : 24 }}
         aria-label="Scene sebelumnya"
       >
-        <ChevronLeft size={isCompact ? 12 : 14} className="text-white/80" />
+        <span className="material-symbols-outlined text-white/80" style={ { fontSize: '16px' } }>chevron_left</span>
       </button>
 
       {/* Scene dots */}
@@ -119,7 +119,7 @@ export const SceneNavigator = React.memo(function SceneNavigator({
         style={{ width: isCompact ? 20 : 24, height: isCompact ? 20 : 24 }}
         aria-label="Scene berikutnya"
       >
-        <ChevronRight size={isCompact ? 12 : 14} className="text-white/80" />
+        <span className="material-symbols-outlined text-white/80" style={ { fontSize: '16px' } }>chevron_right</span>
       </button>
 
       {/* Scene label */}

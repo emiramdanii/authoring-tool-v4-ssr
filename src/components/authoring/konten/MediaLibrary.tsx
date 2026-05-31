@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Trash2, Image as ImageIcon, X, RefreshCw } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { toast } from 'sonner';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -119,7 +119,7 @@ export function MediaLibrary({ onSelect, isOpen, onClose }: MediaLibraryProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-app-border">
           <div className="flex items-center gap-2">
-            <ImageIcon size={18} className="text-app-accent" />
+            <span className="material-symbols-outlined text-app-accent" style={ { fontSize: '18px' } }>image</span>
             <h3 className="text-sm font-semibold text-app-primary">Pustaka Media</h3>
             <span className="text-xs text-app-muted">({images.length} gambar)</span>
           </div>
@@ -130,14 +130,14 @@ export function MediaLibrary({ onSelect, isOpen, onClose }: MediaLibraryProps) {
               className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated rounded-lg transition-colors disabled:opacity-50"
               title="Segarkan"
             >
-              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+              <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>refresh</span>
             </button>
             <button
               onClick={onClose}
               className="p-1.5 text-app-muted hover:text-app-primary hover:bg-app-elevated rounded-lg transition-colors"
               title="Tutup"
             >
-              <X size={14} />
+              <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>close</span>
             </button>
           </div>
         </div>
@@ -145,7 +145,7 @@ export function MediaLibrary({ onSelect, isOpen, onClose }: MediaLibraryProps) {
         {/* Search bar */}
         <div className="px-5 py-3 border-b border-app-border/50">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-app-muted" />
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-app-muted" style={ { fontSize: '14px' } }>search</span>
             <input
               type="text"
               placeholder="Cari berdasarkan nama file..."
@@ -160,12 +160,12 @@ export function MediaLibrary({ onSelect, isOpen, onClose }: MediaLibraryProps) {
         <div className="flex-1 overflow-y-auto p-5">
           {loading && images.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <RefreshCw size={24} className="text-app-accent animate-spin mb-3" />
+              <span className="material-symbols-outlined text-app-accent animate-spin mb-3" style={ { fontSize: '24px' } }>refresh</span>
               <p className="text-sm text-app-muted">Memuat gambar...</p>
             </div>
           ) : images.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <ImageIcon size={40} className="text-app-muted/40 mb-3" />
+              <span className="material-symbols-outlined text-app-muted/40 mb-3" style={ { fontSize: '40px' } }>image</span>
               <p className="text-sm font-medium text-app-secondary mb-1">Belum ada gambar</p>
               <p className="text-xs text-app-muted">Unggah gambar menggunakan ImageUploader di atas.</p>
             </div>
@@ -209,9 +209,9 @@ export function MediaLibrary({ onSelect, isOpen, onClose }: MediaLibraryProps) {
                     title="Hapus gambar"
                   >
                     {deleting === img.filename ? (
-                      <RefreshCw size={10} className="animate-spin" />
+                      <span className="material-symbols-outlined animate-spin" style={ { fontSize: '10px' } }>refresh</span>
                     ) : (
-                      <Trash2 size={10} />
+                      <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>delete</span>
                     )}
                   </button>
                 </div>

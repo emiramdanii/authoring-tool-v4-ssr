@@ -1,55 +1,14 @@
 // ── Materi Slice ──────────────────────────────────────────────────
+// [Phase 5] Deprecated write actions removed — schema is now the single write path.
+// Removed: addMateriBlok, removeMateriBlok, updateMateriBlok, moveMateriBlok
+// These actions had zero component callers; all writes go through
+// applyGuidedSchemaPatch() via useSchemaMateri() hooks.
 import type { StateCreator } from 'zustand';
-import type { AuthoringState, MateriBlok } from './types';
+import type { AuthoringState } from './types';
 import { DEFAULT_MATERI } from './initial-state';
 
-export type MateriSlice = Pick<AuthoringState, 'materi' | 'addMateriBlok' | 'removeMateriBlok' | 'updateMateriBlok' | 'moveMateriBlok'>;
+export type MateriSlice = Pick<AuthoringState, 'materi'>;
 
-export const createMateriSlice: StateCreator<AuthoringState, [], [], MateriSlice> = (set) => ({
+export const createMateriSlice: StateCreator<AuthoringState, [], [], MateriSlice> = () => ({
   materi: { ...DEFAULT_MATERI },
-  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMateri() hooks instead. Content writes should go through schema. */
-  addMateriBlok: (tipe: string) => {
-    console.warn('[deprecated] addMateriBlok() — Use useSchemaMateri().addBlock() or applyGuidedSchemaPatch() instead');
-    const base: MateriBlok = { tipe };
-    switch (tipe) {
-      case 'teks':      base.judul = ''; base.isi = ''; break;
-      case 'definisi':  base.judul = ''; base.isi = ''; break;
-      case 'poin':      base.judul = ''; base.butir = ['']; break;
-      case 'tabel':     base.judul = ''; base.baris = [['', ''], ['', '']]; break;
-      case 'kutipan':   base.judul = ''; base.isi = ''; break;
-      case 'gambar':    base.judul = ''; base.isi = ''; break;
-      case 'timeline':  base.judul = ''; base.langkah = [{ icon: '\uD83D\uDCCC', judul: '', isi: '' }]; break;
-      case 'highlight': base.judul = ''; base.icon = '\u26A1'; base.warna = '#f9c82e'; base.isi = ''; break;
-      case 'compare':   base.judul = ''; base.kiri = { icon: '', judul: '', isi: '' }; base.kanan = { icon: '', judul: '', isi: '' }; break;
-      case 'infobox':   base.judul = ''; base.style = 'info'; base.isi = ''; break;
-      case 'checklist': base.judul = ''; base.butir = ['']; break;
-      case 'statistik': base.judul = ''; base.items = [{ icon: '\uD83D\uDCCA', angka: '', label: '', warna: '#3ecfcf' }]; break;
-      case 'studi':     base.judul = ''; base.karakter = '\uD83E\uDDD1'; base.situasi = ''; base.pertanyaan = ''; base.pesan = ''; break;
-    }
-    set((s) => ({ materi: { blok: [...s.materi.blok, base] }, dirty: true }));
-  },
-  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMateri() hooks instead. Content writes should go through schema. */
-  removeMateriBlok: (index: number) => {
-    console.warn('[deprecated] removeMateriBlok() — Use useSchemaMateri().removeBlock() or applyGuidedSchemaPatch() instead');
-    set((s) => ({ materi: { blok: s.materi.blok.filter((_, i) => i !== index) }, dirty: true }));
-  },
-  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMateri() hooks instead. Content writes should go through schema. */
-  updateMateriBlok: (index: number, key: string, value: unknown) => {
-    console.warn('[deprecated] updateMateriBlok() — Use useSchemaMateri().updateBlock() or applyGuidedSchemaPatch() instead');
-    set((s) => {
-      const blok = [...s.materi.blok];
-      blok[index] = { ...blok[index], [key]: value };
-      return { materi: { blok }, dirty: true };
-    });
-  },
-  /** @deprecated Phase 5 — Use applyGuidedSchemaPatch() via useSchemaMateri() hooks instead. Content writes should go through schema. */
-  moveMateriBlok: (fromIndex: number, toIndex: number) => {
-    console.warn('[deprecated] moveMateriBlok() — Use useSchemaMateri().moveBlock() or applyGuidedSchemaPatch() instead');
-    set((s) => {
-      const blok = [...s.materi.blok];
-      const [moved] = blok.splice(fromIndex, 1);
-      blok.splice(toIndex, 0!, moved);
-      return { materi: { blok }, dirty: true };
-    });
-  },
 });

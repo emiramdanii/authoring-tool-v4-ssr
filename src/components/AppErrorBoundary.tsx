@@ -125,7 +125,7 @@ export class AppErrorBoundary extends React.Component<
             {/* Icon + Title */}
             <div className="flex items-start gap-4 mb-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-500" aria-hidden="true" />
+                <span className="material-symbols-outlined w-6 h-6 text-red-500" style={ { fontSize: '16px' } }>warning</span>
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-lg font-bold text-foreground">
@@ -158,14 +158,14 @@ export class AppErrorBoundary extends React.Component<
                 disabled={saving}
                 className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save className="w-4 h-4" aria-hidden="true" />
+                <span className="material-symbols-outlined w-4 h-4" style={ { fontSize: '16px' } }>save</span>
                 {saving ? 'Menyimpan...' : isSederhana ? 'Simpan & Muat Ulang' : 'Simpan & Muat Ulang'}
               </button>
               <button
                 onClick={this.handleReload}
                 className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-muted transition-colors"
               >
-                <RefreshCw className="w-4 h-4" aria-hidden="true" />
+                <span className="material-symbols-outlined w-4 h-4" style={ { fontSize: '16px' } }>refresh</span>
                 Muat Ulang
               </button>
             </div>
@@ -186,10 +186,7 @@ export class AppErrorBoundary extends React.Component<
                   className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   aria-expanded={showDetails}
                 >
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform ${showDetails ? 'rotate-180' : ''}`}
-                    aria-hidden="true"
-                  />
+                  <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_more</span>
                   Detail Teknis (untuk debugging)
                 </button>
 

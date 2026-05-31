@@ -19,7 +19,29 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { BlockVariant } from '@/core/schema/types/base';
-import { MODERN_EDUCATOR_ACCENT_PALETTE } from './ModernEducatorContract';
+
+// ── Contract Registry — Module-level Map, deferred registration ──
+// We use a deferred registration pattern: contracts call registerContract(),
+// but the actual Map is created synchronously at module load time.
+// The MODERN_EDUCATOR_ACCENT_PALETTE is imported lazily inside resolveContractStyle()
+// to avoid circular dependency with ModernEducatorContract.ts (which calls registerContract
+// at module eval time, before this module's variables are initialized).
+
+const CONTRACT_REGISTRY = new Map<string, TemplateThemeContract>();
+const PENDING_REGISTRATIONS: TemplateThemeContract[] = [];
+
+export function registerContract(contract: TemplateThemeContract): void {
+  // If registry is available, register immediately
+  CONTRACT_REGISTRY.set(contract.id, contract);
+}
+
+export function getContract(contractId: string): TemplateThemeContract | undefined {
+  return CONTRACT_REGISTRY.get(contractId);
+}
+
+export function getContractOrGolden(contractId?: string): TemplateThemeContract {
+  return CONTRACT_REGISTRY.get(contractId || '') || GOLDEN_PERTEMUAN_CONTRACT;
+}
 
 // ── Contract Types ──────────────────────────────────────────────
 
@@ -368,25 +390,227 @@ export const GOLDEN_PERTEMUAN_CONTRACT: TemplateThemeContract = {
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// CONTRACT REGISTRY — Map themeId → TemplateThemeContract
+// MACAM NORMA CONTRACT — Full Pertemuan PPKn (Macam-Macam Norma)
+// ═══════════════════════════════════════════════════════════════════
+// Visual DNA dari HTML referensi pertemuan2-macam-norma-v3:
+//   - Deep navy background (#0e1c2f) — lebih gelap dari golden
+//   - Solid dark cards (#182d45) — BUKAN glassmorphism
+//   - Teal/cyan secondary accent (#3ecfcf) — IDENTITAS Macam Norma
+//   - Fredoka One + Nunito fonts — sesuai HTML asli
+//   - 4 norma warna: agama=emas, kesusilaan=merah, kesopanan=teal, hukum=ungu
+//
+// PERBEDAAN KUNCI vs golden-pertemuan:
+//   - c: teal (#3ecfcf) bukan blue (#2563eb)
+//   - Card: solid (#182d45) bukan glassmorphism
+//   - Background: lebih gelap (#0e1c2f vs #0f172a)
+//   - Font: Fredoka/Nunito bukan Poppins/Open Sans
 // ═══════════════════════════════════════════════════════════════════
 
-const CONTRACT_REGISTRY = new Map<string, TemplateThemeContract>();
+export const MACAM_NORMA_CONTRACT: TemplateThemeContract = {
+  id: 'macam-norma',
+  name: '📜 Macam Norma (Teal-Golden)',
+  description: 'Deep navy + teal accent — Macam-Macam Norma identity. Teal (#3ecfcf) replaces blue, solid dark cards, Fredoka/Nunito fonts.',
 
-export function registerContract(contract: TemplateThemeContract): void {
-  CONTRACT_REGISTRY.set(contract.id, contract);
-}
+  colors: {
+    background: '#0e1c2f',       // Deep navy — sesuai HTML v3
+    surface: '#13243a',           // Secondary — sesuai HTML v3
+    card: '#182d45',              // Solid dark — sesuai HTML v3, BUKAN glassmorphism
+    text: '#e8f2ff',              // Light blue-white — sesuai HTML v3
+    muted: '#6e90b5',             // Blue-muted — sesuai HTML v3
+    accent: '#f9c12e',            // Warm gold — sesuai HTML v3
+    accentBg: 'rgba(249,193,46,0.12)',
+    accentBorder: 'rgba(249,193,46,0.25)',
+    maxAccents: 4,                // 4 norma = 4 accent colors
+    accentTokens: ['y', 'c', 'g', 'p', 'r'],
+  },
 
-export function getContract(contractId: string): TemplateThemeContract | undefined {
-  return CONTRACT_REGISTRY.get(contractId);
-}
+  typography: {
+    heroSize: 48,
+    titleSize: 36,
+    headingSize: 26,
+    bodyLgSize: 22,
+    bodySize: 20,
+    captionSize: 16,
+    microSize: 14,
+    // Fredoka One + Nunito — SUDAH DI-LOAD via next/font/google
+    displayFont: "var(--font-fredoka), 'Fredoka', cursive",
+    bodyFont: "var(--font-nunito), 'Nunito', sans-serif",
+    minFontSize: 16,
+  },
 
-export function getContractOrGolden(contractId?: string): TemplateThemeContract {
-  return CONTRACT_REGISTRY.get(contractId || '') || GOLDEN_PERTEMUAN_CONTRACT;
-}
+  spacing: {
+    pagePadding: 24,
+    cardPadding: 20,
+    blockGap: 24,
+    itemGap: 12,
+    nestedPadding: 14,
+  },
+
+  borders: {
+    cardRadius: 16,
+    pillRadius: 99,  // sesuai HTML v3: border-radius: 99px untuk pill
+    cardBorder: '1px solid rgba(255,255,255,0.09)',
+  },
+
+  shadows: {
+    card: '0 4px 6px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.12)',
+    elevated: '0 8px 20px rgba(0,0,0,0.3)',  // sesuai HTML v3: 0 8px 20px
+  },
+
+  maxContentHeight: 620,
+  cardTreatment: 'elevated',
+  headerTreatment: 'accented',
+
+  // Per-page accent colors — Macam Norma uses teal for discussion/kesopanan
+  pageAccents: {
+    cover:       { accentToken: 'y', bgTint: 'rgba(249,193,46,0.04)' },
+    petunjuk:    { accentToken: 'c', bgTint: 'rgba(62,207,207,0.04)' },  // teal
+    tujuan:      { accentToken: 'c', bgTint: 'rgba(62,207,207,0.04)' },  // teal
+    motivasi:    { accentToken: 'y', bgTint: 'rgba(249,193,46,0.04)' },
+    materi:      { accentToken: 'p', bgTint: 'rgba(167,139,250,0.04)' },
+    skenario:    { accentToken: 'o', bgTint: 'rgba(251,146,60,0.04)' },
+    kuis:        { accentToken: 'g', bgTint: 'rgba(52,211,153,0.04)' },
+    diskusi:     { accentToken: 'c', bgTint: 'rgba(62,207,207,0.04)' },  // teal
+    refleksi:    { accentToken: 'p', bgTint: 'rgba(167,139,250,0.04)' },
+    rangkuman:   { accentToken: 'y', bgTint: 'rgba(249,193,46,0.04)' },
+    hasil:       { accentToken: 'g', bgTint: 'rgba(52,211,153,0.04)' },
+    penutup:     { accentToken: 'y', bgTint: 'rgba(249,193,46,0.04)' },
+    dokumen:     { accentToken: 'c', bgTint: 'rgba(62,207,207,0.04)' },  // teal
+    custom:      { accentToken: 'y', bgTint: 'rgba(249,193,46,0.04)' },
+  },
+
+  pageLayouts: {
+    cover: {
+      maxBlocks: 1,
+      density: 'sparse',
+      canSplit: false,
+      allowedBlockTypes: ['cover'],
+      pattern: 'Judul besar + Subjudul + Badges norma + Tombol mulai',
+    },
+    petunjuk: {
+      maxBlocks: 2,
+      density: 'comfortable',
+      canSplit: true,
+      allowedBlockTypes: ['petunjuk'],
+      pattern: 'Judul + 4 langkah instruksi + Tips',
+    },
+    tujuan: {
+      maxBlocks: 2,
+      density: 'comfortable',
+      canSplit: true,
+      allowedBlockTypes: ['tujuan-display', 'tp'],
+      pattern: 'Judul + 2-5 tujuan dalam kartu + Profil PPP',
+    },
+    motivasi: {
+      maxBlocks: 2,
+      density: 'comfortable',
+      canSplit: true,
+      allowedBlockTypes: ['motivasi'],
+      pattern: 'Pertanyaan pemantik + Koneksi konsep',
+    },
+    materi: {
+      maxBlocks: 2,
+      density: 'dense',
+      canSplit: true,
+      allowedBlockTypes: ['nk-card', 'materi-section', 'def-box', 'nc-grid', 'tabel-accord', 'diskusi'],
+      pattern: 'Kartu norma / Tabel accordion + Diskusi',
+    },
+    skenario: {
+      maxBlocks: 2,
+      density: 'comfortable',
+      canSplit: true,
+      allowedBlockTypes: ['skenario'],
+      pattern: 'Instruksi + Langkah 1-3 + Aksi siswa',
+    },
+    kuis: {
+      maxBlocks: 2,
+      density: 'comfortable',
+      canSplit: true,
+      allowedBlockTypes: ['kuis'],
+      pattern: '1 pertanyaan per layar + 4 opsi + feedback',
+    },
+    diskusi: {
+      maxBlocks: 2,
+      density: 'comfortable',
+      canSplit: true,
+      allowedBlockTypes: ['diskusi', 'nc-grid'],
+      pattern: 'Pertanyaan diskusi + Kelompok + Petunjuk',
+    },
+    game: {
+      maxBlocks: 2,
+      density: 'dense',
+      canSplit: true,
+      allowedBlockTypes: ['sortir-game', 'roda-game', 'diskusi'],
+      pattern: 'Game interaktif + Diskusi pasca-game',
+    },
+    refleksi: {
+      maxBlocks: 2,
+      density: 'sparse',
+      canSplit: true,
+      allowedBlockTypes: ['refleksi', 'flashcard-set'],
+      pattern: 'Pertanyaan refleksi + Kartu kilat + Penugasan',
+    },
+    rangkuman: {
+      maxBlocks: 2,
+      density: 'comfortable',
+      canSplit: true,
+      allowedBlockTypes: ['rangkuman'],
+      pattern: 'Ringkasan konsep + Penutup',
+    },
+    hasil: {
+      maxBlocks: 1,
+      density: 'sparse',
+      canSplit: false,
+      allowedBlockTypes: ['hasil'],
+      pattern: 'Skor + Capaian + Portofolio',
+    },
+    penutup: {
+      maxBlocks: 1,
+      density: 'sparse',
+      canSplit: false,
+      allowedBlockTypes: ['penutup'],
+      pattern: 'Pesan penutup + Penugasan pertemuan berikutnya',
+    },
+    dokumen: {
+      maxBlocks: 3,
+      density: 'dense',
+      canSplit: true,
+      allowedBlockTypes: ['def-box', 'nc-grid', 'tp', 'alur'],
+      pattern: 'CP + TP + ATP + Profil PPP',
+    },
+    custom: {
+      maxBlocks: 5,
+      density: 'dense',
+      canSplit: true,
+      allowedBlockTypes: [],
+      pattern: 'Bebas — tapi tetap taat aturan contract',
+    },
+  },
+
+  variantOverrides: {
+    A: {}, // Default — gold + teal
+    B: {
+      accent: '#3ecfcf',
+      accentBg: 'rgba(62,207,207,0.12)',
+      accentBorder: 'rgba(62,207,207,0.25)',
+    },
+    C: {
+      accent: '#a78bfa',
+      accentBg: 'rgba(167,139,250,0.12)',
+      accentBorder: 'rgba(167,139,250,0.25)',
+    },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// CONTRACT REGISTRY — Auto-register all contracts
+// ═══════════════════════════════════════════════════════════════════
 
 // Auto-register the golden contract
 registerContract(GOLDEN_PERTEMUAN_CONTRACT);
+
+// Auto-register the macam-norma contract
+registerContract(MACAM_NORMA_CONTRACT);
 
 // ═══════════════════════════════════════════════════════════════════
 // CONTRACT ENFORCEMENT — Resolve style with contract priority
@@ -485,6 +709,20 @@ const CONTRACT_ACCENT_PALETTE: Record<string, string> = {
 };
 
 /**
+ * Macam Norma accent palette — teal replaces blue.
+ * These match the HTML original (pertemuan2-macam-norma-v3)
+ * and the macam-norma theme preset in tokens.ts.
+ */
+const MACAM_NORMA_ACCENT_PALETTE: Record<string, string> = {
+  y: '#f9c12e',  // Warm gold — sesuai HTML v3
+  c: '#3ecfcf',  // Teal — IDENTITAS Macam Norma, sesuai HTML v3
+  g: '#34d399',  // Green — sesuai HTML v3
+  p: '#a78bfa',  // Purple — sesuai HTML v3
+  o: '#fb923c',  // Orange — sesuai HTML v3
+  r: '#ff6b6b',  // Red — sesuai HTML v3
+};
+
+/**
  * Resolve the full visual style for a page, enforcing contract rules.
  * This is the function that renderers should call to get their styles.
  *
@@ -516,6 +754,7 @@ export function resolveContractStyle(
 
   // Detect contract type — must be before primaryAccentToken resolution
   const isModernEducator = contract.id === 'modern-educator';
+  const isMacamNorma = contract.id === 'macam-norma';
 
   // Resolve which token is the primary accent for this page type
   const primaryAccentToken = pageAccent.accentToken || (isModernEducator ? 'e' : 'y');
@@ -539,8 +778,13 @@ export function resolveContractStyle(
   // default which could be a different shade.
   const accentTokenMap: Record<string, string> = {};
   // Use the Modern Educator palette if that contract is active
-  // (isModernEducator already declared above)
-  const palette = isModernEducator ? MODERN_EDUCATOR_ACCENT_PALETTE : CONTRACT_ACCENT_PALETTE;
+  // Use the Macam Norma palette if that contract is active (teal replaces blue)
+  // (isModernEducator and isMacamNorma already declared above)
+  const palette = isModernEducator
+    ? require('./ModernEducatorContract').MODERN_EDUCATOR_ACCENT_PALETTE
+    : isMacamNorma
+    ? MACAM_NORMA_ACCENT_PALETTE
+    : CONTRACT_ACCENT_PALETTE;
   for (const [token, color] of Object.entries(palette)) {
     accentTokenMap[token] = color;
   }

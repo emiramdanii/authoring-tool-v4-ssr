@@ -64,6 +64,7 @@ import type {
   CustomMutationPayload,
 } from './types';
 import type { SchemaBlock, ScreenSchema } from '../../schema/types';
+import { isSpatialLayout } from '../../schema/types';
 import { commitSchemaUpdate } from '../../schema/commit-update';
 import { assertDocumentPurity } from '../../schema/session-state';
 import { assertValidSchema } from '../../schema/validation';
@@ -511,7 +512,7 @@ export class CommandEngine {
         const [newBlocks, forward, inverse] = produceWithPatches(blocks, draft => {
           for (const blockId of payload.blockIds) {
             const block = (draft as SchemaBlock[]).find(b => b.id === blockId);
-            if (block?.layout?.position === 'absolute') {
+            if (block && isSpatialLayout(block.layout) && block.layout.position === 'absolute') {
               if (block.layout.x !== undefined) block.layout.x += payload.dx;
               if (block.layout.y !== undefined) block.layout.y += payload.dy;
             }
@@ -533,7 +534,7 @@ export class CommandEngine {
         const payload = command.payload as AlignBlocksPayload;
         const absoluteBlocks = payload.blockIds
           .map(id => ({ id, block: findBlockById(blocks, id) }))
-          .filter(({ block }) => block && block.layout?.position === 'absolute');
+          .filter(({ block }) => block && isSpatialLayout(block.layout) && block.layout.position === 'absolute');
 
         if (absoluteBlocks.length < 2) {
           return this.executionError('Need at least 2 absolute blocks for alignment');
@@ -542,7 +543,7 @@ export class CommandEngine {
         const [newBlocks, forward, inverse] = produceWithPatches(blocks, draft => {
           for (const { id } of absoluteBlocks) {
             const block = (draft as SchemaBlock[]).find(b => b.id === id);
-            if (block?.layout && block.layout.position === 'absolute') {
+            if (block && isSpatialLayout(block.layout) && block.layout.position === 'absolute') {
               // Simplified alignment — full implementation in ui-slice
               // The command engine delegates complex geometry to the executor
             }

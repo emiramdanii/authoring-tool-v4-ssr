@@ -38,6 +38,11 @@ import type {
   RangkumanBlock,
   TujuanDisplayBlock,
   MateriSectionBlock,
+  MatchingGameBlock,
+  TrueFalseGameBlock,
+  TabIconsBlock,
+  AccordionBlock,
+  InfografisBlock,
   CompressionHints,
   SemanticHints,
 } from './types';
@@ -880,6 +885,209 @@ export function genPenutupSchema(
     ],
     compression: { priority: 'high', strategy: 'none' } satisfies CompressionHints,
     semantic: { topic: meta.namaBab, learningPhase: 'penutup', importance: 0.7 } satisfies SemanticHints,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MATCHING GAME — Pair matching interactive game
+// ═══════════════════════════════════════════════════════════════════
+// Phase 5-C: Schema generator for matching game blocks.
+// Converts ParseResult → MatchingGameBlock (schema-first).
+// Previously, this went through AuthoringStore.addModule('matching')
+// which is now deprecated. All writes go through schema.
+
+export function genMatchingSchema(
+  parsed: ParseResult,
+): MatchingGameBlock {
+  const { definitions, enumerations } = parsed;
+  const pairs: Array<{ left: string; right: string }> = [];
+
+  for (const def of definitions) {
+    pairs.push({
+      left: def.term,
+      right: def.meaning.slice(0, 60) + (def.meaning.length > 60 ? '...' : ''),
+    });
+  }
+
+  for (const en of enumerations) {
+    pairs.push({
+      left: en.subject.slice(0, 40),
+      right: en.items.slice(0, 3).join(', '),
+    });
+  }
+
+  return {
+    type: 'matching-game',
+    id: generateBlockId(),
+    title: 'Matching Game',
+    pairs: pairs.slice(0, 8),
+    compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { learningPhase: 'inti', interactionType: 'drag', importance: 0.7 } satisfies SemanticHints,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TRUE/FALSE GAME — True/false quiz game
+// ═══════════════════════════════════════════════════════════════════
+// Phase 5-C: Schema generator for true/false game blocks.
+// Converts ParseResult → TrueFalseGameBlock (schema-first).
+// Previously, this went through AuthoringStore.addModule('truefalse')
+// which is now deprecated. All writes go through schema.
+
+export function genTrueFalseSchema(
+  parsed: ParseResult,
+): TrueFalseGameBlock {
+  const { definitions, functions, topWords } = parsed;
+  const questions: Array<{ text: string; correct: boolean; explanation?: string }> = [];
+
+  // True statements from definitions
+  for (const def of definitions) {
+    questions.push({
+      text: `${def.term} adalah ${def.meaning}.`,
+      correct: true,
+      explanation: `Benar, ${def.term} ${def.meaning}.`,
+    });
+  }
+
+  // True statements from functions
+  for (const fn of functions) {
+    questions.push({
+      text: `${fn.subject} berfungsi untuk ${fn.desc}.`,
+      correct: true,
+      explanation: `Benar, ${fn.subject} berfungsi ${fn.desc}.`,
+    });
+  }
+
+  // False statements (negate definitions)
+  for (let i = 0; i < definitions.length && questions.length < definitions.length * 2; i++) {
+    const def = definitions[i]!;
+    const wrongWord = topWords.find(
+      (w) => !def.meaning.toLowerCase().includes(w) && w !== def.term.toLowerCase(),
+    );
+    if (wrongWord) {
+      questions.push({
+        text: `${def.term} adalah ${wrongWord}.`,
+        correct: false,
+        explanation: `Salah, ${def.term} adalah ${def.meaning}.`,
+      });
+    }
+  }
+
+  return {
+    type: 'true-false-game',
+    id: generateBlockId(),
+    title: 'Benar / Salah',
+    questions,
+    compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { learningPhase: 'inti', interactionType: 'choose', importance: 0.7 } satisfies SemanticHints,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB ICONS — Interactive tabs with icons (Phase 5-G)
+// ═══════════════════════════════════════════════════════════════════
+// Previously AuthoringStore Module type 'tab-icons'.
+// Now generates a TabIconsBlock directly into schema.
+
+export function genTabIconsSchema(
+  tp: Array<{ verb: string; desc: string; color?: string }>,
+): TabIconsBlock {
+  return {
+    type: 'tab-icons',
+    id: generateBlockId(),
+    title: `${tp.length} Tujuan Pembelajaran`,
+    intro: `Eksplorasi ${tp.length} tujuan pembelajaran hari ini`,
+    layoutVariant: 'horizontal',
+    animation: 'fade',
+    tabs: tp.map((t, i) => ({
+      icon: ['🎯', '🔍', '💡', '🧠', '📐', '🏆'][i % 6],
+      judul: t.verb,
+      warna: t.color || COLOR_PALETTE[i % COLOR_PALETTE.length],
+      isi: t.desc,
+      poin: [],
+      refleksi: '',
+    })),
+    compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { learningPhase: 'pendahuluan', interactionType: 'read', importance: 0.7 } satisfies SemanticHints,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ACCORDION — Expandable sections (Phase 5-G)
+// ═══════════════════════════════════════════════════════════════════
+// Previously AuthoringStore Module type 'accordion'.
+// Now generates an AccordionBlock directly into schema.
+
+export function genAccordionSchema(
+  cp: { elemen: string; capaianFase: string; profil: string[] },
+): AccordionBlock {
+  return {
+    type: 'accordion',
+    id: generateBlockId(),
+    title: 'Capaian Pembelajaran',
+    intro: 'Klik setiap bagian untuk membaca detail capaian pembelajaran',
+    items: [
+      { icon: '📌', judul: 'Elemen', isi: cp.elemen },
+      { icon: '🎯', judul: 'Capaian Fase', isi: cp.capaianFase },
+      { icon: '⭐', judul: 'Profil Pelajar Pancasila', isi: cp.profil.join(' · ') },
+    ],
+    compression: { priority: 'medium', strategy: 'accordion' } satisfies CompressionHints,
+    semantic: { learningPhase: 'pendahuluan', interactionType: 'read', importance: 0.7 } satisfies SemanticHints,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TIMELINE (MODULE) — Activity timeline with events (Phase 5-G)
+// ═══════════════════════════════════════════════════════════════════
+// Previously AuthoringStore Module type 'timeline'.
+// Maps Module.events[] → TimelineBlock.steps[].
+// Note: TimelineBlock already existed in schema but was NOT used by
+// auto-generate (which wrote to AuthoringStore instead). This generator
+// bridges that gap.
+
+export function genTimelineModuleSchema(
+  alur: Array<{ judul: string; deskripsi: string; durasi?: string }>,
+): import('./types').TimelineBlock {
+  return {
+    type: 'timeline',
+    id: generateBlockId(),
+    title: 'Alur Kegiatan Pembelajaran',
+    steps: alur.map((a, i) => ({
+      icon: ['📍', '🔍', '💡', '📝', '✅', '🎯'][i % 6],
+      label: a.judul,
+      description: a.durasi ? `${a.durasi} — ${a.deskripsi}` : a.deskripsi,
+      color: COLOR_PALETTE[i % COLOR_PALETTE.length],
+    })),
+    accentColor: 'c',
+    compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { learningPhase: 'pendahuluan', interactionType: 'read', importance: 0.7 } satisfies SemanticHints,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INFOGRAFIS — Visual info cards (Phase 5-G)
+// ═══════════════════════════════════════════════════════════════════
+// Previously AuthoringStore Module type 'infografis'.
+// Now generates an InfografisBlock directly into schema.
+
+export function genInfografisSchema(
+  profil: string[],
+): InfografisBlock {
+  return {
+    type: 'infografis',
+    id: generateBlockId(),
+    title: 'Profil Pelajar Pancasila',
+    layoutVariant: 'grid',
+    intro: 'Dimensi Profil Pelajar Pancasila yang dikembangkan melalui kegiatan pembelajaran ini',
+    kartu: profil.map((p, i) => ({
+      icon: ['🌟', '🧠', '🤝', '🌍', '🎯', '💡'][i % 6],
+      judul: p,
+      isi: `Dimensi ${p} dikembangkan melalui kegiatan pembelajaran ini`,
+      warna: COLOR_PALETTE[i % COLOR_PALETTE.length],
+    })),
+    accentColor: 'p',
+    compression: { priority: 'medium', strategy: 'scroll' } satisfies CompressionHints,
+    semantic: { learningPhase: 'pendahuluan', interactionType: 'read', importance: 0.7 } satisfies SemanticHints,
   };
 }
 

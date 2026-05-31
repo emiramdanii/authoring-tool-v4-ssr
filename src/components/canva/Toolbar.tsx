@@ -11,62 +11,14 @@ import { triggerCanvaOrientation } from '@/components/shared/CanvaOrientationToo
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 // ═══════════════════════════════════════════════════════════════
-// TOOLBAR v8 — SILSE v4 Stitch Reference TopAppBar
+// TOOLBAR v9 — SILSE v4 Simplified TopAppBar
 // ═══════════════════════════════════════════════════════════════
+// Navigation is now handled by the Dashboard sidebar.
 // Layout (Left → Right):
-//   [← SILSE Authoring | Project Name] | [Dashboard] [Workspace] [Analytics] | [Cloud] [Help] [Preview] [Publish]
+//   [← SILSE Studio | Project Name] | [Cloud] [Help] [Preview] [Main] [Publish]
 // Edit mode: fixed top-0 left-0 w-full z-40 h-16
+// Sprint 2: Added 'Main' button to enter learn mode (interactive student experience)
 // ═══════════════════════════════════════════════════════════════
-
-// ── Navigation Tabs ──────────────────────────────────────────
-
-type NavTab = 'dashboard' | 'workspace' | 'analytics';
-
-function NavTabs() {
-  const panelRequest = useCanvaStore((s) => s.panelRequest);
-
-  // Determine active tab from current state
-  const activeTab: NavTab = panelRequest === 'dashboard'
-    ? 'dashboard'
-    : panelRequest === 'analytics'
-      ? 'analytics'
-      : 'workspace'; // default
-
-  const handleTabClick = (tab: NavTab) => {
-    if (tab === 'dashboard') {
-      useCanvaStore.setState({ panelRequest: 'dashboard' });
-    } else if (tab === 'analytics') {
-      useCanvaStore.setState({ panelRequest: 'analytics' });
-    } else {
-      // Workspace = stay in editor view
-      useCanvaStore.setState({ panelRequest: null });
-    }
-  };
-
-  const tabs: { id: NavTab; label: string }[] = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'workspace', label: 'Workspace' },
-    { id: 'analytics', label: 'Analytics' },
-  ];
-
-  return (
-    <nav className="hidden md:flex gap-8 items-center">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => handleTabClick(tab.id)}
-          className={`text-sm transition-colors ${
-            activeTab === tab.id
-              ? 'text-silse-primary border-b-2 border-silse-primary pb-1 font-bold'
-              : 'text-silse-on-surface-variant hover:text-silse-primary'
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </nav>
-  );
-}
 
 // ── Right Actions ────────────────────────────────────────────
 
@@ -107,6 +59,14 @@ function RightActions() {
           className="px-5 py-2 rounded-xl border border-silse-outline-variant/60 text-silse-primary text-[12px] font-bold hover:bg-silse-primary/5 transition-[background-color,color] duration-150"
         >
           Preview
+        </button>
+        <button
+          onClick={() => setAppMode('learn')}
+          className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-[12px] font-bold hover:bg-emerald-700 active:scale-[0.97] transition-all flex items-center gap-1.5"
+          title="Main sebagai Siswa — coba kuis, game, dan progress seperti siswa"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>play_circle</span>
+          Main
         </button>
         <button
           onClick={exportHtml}
@@ -196,6 +156,16 @@ export default function Toolbar() {
         <span className="material-symbols-outlined text-silse-secondary" style={{ fontSize: '14px' }}>visibility</span>
         <span className="text-[10px] font-semibold text-silse-secondary">Preview</span>
         <span className="text-[10px] text-silse-on-surface-variant ml-1">Esc → Edit</span>
+        <div className="h-5 w-px bg-silse-outline-variant mx-2" />
+        <Button
+          variant="ghost"
+          onClick={() => setAppMode('learn')}
+          className="focus-ring text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 h-7 px-2 gap-1"
+          title="Main sebagai Siswa (L)"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>play_circle</span>
+          <span className="text-[10px] font-semibold">Main</span>
+        </Button>
       </div>
     );
   }
@@ -209,8 +179,8 @@ export default function Toolbar() {
       {/* LEFT: Brand + Project */}
       <ToolbarNav />
 
-      {/* CENTER: Navigation Tabs — hidden on small screens */}
-      <NavTabs />
+      {/* Spacer */}
+      <div className="flex-1" />
 
       {/* RIGHT: Cloud + Help + Preview + Publish */}
       <RightActions />

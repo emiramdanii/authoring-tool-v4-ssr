@@ -65,4 +65,34 @@ if (typeof window !== 'undefined') {
       }
     }
   });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // AUTO-DERIVE GAMES FROM MODULES (Phase 5-H)
+  // ═══════════════════════════════════════════════════════════════════
+  // `games` is always a filtered subset of `modules`. Rather than
+  // manually setting it in preset-slice, persistence-slice, and
+  // import handlers, we auto-derive it whenever `modules` changes.
+  // This eliminates the redundant `games` field write and ensures
+  // consistency — games can never drift out of sync with modules.
+  // ═══════════════════════════════════════════════════════════════════
+  const { GAME_TYPES } = require('@/lib/canva-constants');
+  let prevModulesLength = -1;
+  let prevModulesHash = '';
+  useAuthoringStore.subscribe((state) => {
+    // Only recalculate when modules actually changes (shallow check via length + type hash)
+    const currentHash = state.modules.map(m => m._id + ':' + m.type).join('|');
+    if (state.modules.length !== prevModulesLength || currentHash !== prevModulesHash) {
+      prevModulesLength = state.modules.length;
+      prevModulesHash = currentHash;
+      const derivedGames = state.modules.filter((m: import('@/store/authoring/types').Module) =>
+        (GAME_TYPES as readonly string[]).includes(m.type)
+      );
+      // Only setState if games actually differs (prevent infinite loop)
+      const currentGames = useAuthoringStore.getState().games ?? [];
+      if (derivedGames.length !== currentGames.length ||
+          derivedGames.some((g, i) => g._id !== currentGames[i]?._id)) {
+        useAuthoringStore.setState({ games: derivedGames } as Partial<import('@/store/authoring/types').AuthoringState>);
+      }
+    }
+  });
 }

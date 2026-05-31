@@ -119,7 +119,7 @@ export default function WorkflowStepIndicator() {
                 }`}
               >
                 {isCompleted && !isCurrent ? (
-                  <Check size={10} />
+                  <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check</span>
                 ) : (
                   i + 1
                 )}

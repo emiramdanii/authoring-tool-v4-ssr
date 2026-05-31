@@ -1,7 +1,7 @@
 'use client';
 
 import { useCanvaStore } from '@/store/canva-store';
-import { Plus, ChevronDown, ChevronRight } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import AddBlockPanel from './AddBlockPanel';
 
 // ═══════════════════════════════════════════════════════════════
@@ -24,10 +24,10 @@ export function AddBlockSection({ addBlockOpen, onToggle }: AddBlockSectionProps
         className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-silse-secondary uppercase tracking-wider bg-silse-secondary/5 hover:bg-silse-secondary/10 transition-colors"
       >
         <span className="flex items-center gap-1.5">
-          <Plus size={10} />
+          <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>add</span>
           {sectionLabel}
         </span>
-        {addBlockOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        {addBlockOpen ? <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>expand_more</span> : <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>chevron_right</span>}
       </button>
       {addBlockOpen && (
         <div className="p-2 border-t border-silse-outline-variant/20">

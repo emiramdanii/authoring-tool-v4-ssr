@@ -70,7 +70,7 @@ export interface GuidedPatchArgs {
   /** What to do if the patch causes content overflow */
   overflowPolicy?: OverflowPolicy;
   /** Source of the edit — for edit bus tracking */
-  source?: 'user' | 'ai' | 'sync' | 'guided-form' | 'konten-tab';
+  source?: 'user' | 'ai' | 'sync' | 'guided-form' | 'konten-tab' | 'dokumen-tab';
 }
 
 /** Rich overflow check result from SceneOverflowEngine */
@@ -142,7 +142,7 @@ export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult
   // This ensures teachers see overflow warnings when adding content
   // that exceeds page capacity, without blocking the edit.
   const resolvedOverflowPolicy = args.overflowPolicy
-    ?? (args.source === 'konten-tab' ? 'warn' : 'none');
+    ?? (args.source === 'konten-tab' || args.source === 'dokumen-tab' ? 'warn' : 'none');
   const { pageId, blockId, patch, overflowPolicy = resolvedOverflowPolicy, source = 'user' } = args;
 
   const store = useCanvaStore.getState();
@@ -838,6 +838,250 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     fields: [
       { key: 'title', label: 'Judul', type: 'text' },
       { key: 'subtitle', label: 'Subjudul', type: 'text' },
+    ],
+  },
+
+  'cp': {
+    blockType: 'cp',
+    displayName: 'Capaian Pembelajaran',
+    description: 'Capaian pembelajaran dan profil pelajar Pancasila',
+    icon: '📋',
+    fields: [
+      { key: 'elemen', label: 'Elemen', type: 'text', required: true, placeholder: 'Pancasila' },
+      { key: 'subElemen', label: 'Sub-Elemen', type: 'text', placeholder: 'Pemahaman norma dan nilai' },
+      { key: 'capaianFase', label: 'Capaian Fase', type: 'textarea', required: true, helpText: 'Narasi lengkap capaian pembelajaran', placeholder: 'Peserta didik mampu…' },
+      { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'array', fields: [
+        { key: '', label: 'Profil', type: 'text', placeholder: 'Bernalar Kritis' },
+      ]},
+    ],
+  },
+
+  'tp': {
+    blockType: 'tp',
+    displayName: 'Tujuan Pembelajaran',
+    description: 'Tujuan pembelajaran per pertemuan',
+    icon: '🎯',
+    fields: [
+      { key: 'title', label: 'Judul', type: 'text' },
+      { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'text' },
+      {
+        key: 'items',
+        label: 'Tujuan',
+        type: 'array',
+        maxItems: 4,
+        helpText: 'STANDAR: Maksimal 4 tujuan per halaman',
+        fields: [
+          { key: 'verb', label: 'Kata Kerja', type: 'select', options: [
+            { label: 'Menjelaskan', value: 'Menjelaskan' },
+            { label: 'Menganalisis', value: 'Menganalisis' },
+            { label: 'Mengidentifikasi', value: 'Mengidentifikasi' },
+            { label: 'Membandingkan', value: 'Membandingkan' },
+            { label: 'Mengevaluasi', value: 'Mengevaluasi' },
+            { label: 'Menerapkan', value: 'Menerapkan' },
+            { label: 'Menyimpulkan', value: 'Menyimpulkan' },
+            { label: 'Mendemonstrasikan', value: 'Mendemonstrasikan' },
+          ]},
+          { key: 'desc', label: 'Deskripsi', type: 'textarea', required: true },
+          { key: 'pertemuan', label: 'Pertemuan ke-', type: 'number', min: 1, max: 10 },
+          { key: 'color', label: 'Warna', type: 'color' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['title', 'profil'] },
+      { key: 'items', label: 'Tujuan Pembelajaran', fieldKeys: ['items'] },
+    ],
+  },
+
+  'alur': {
+    blockType: 'alur',
+    displayName: 'Alur Kegiatan',
+    description: 'Langkah-langkah kegiatan pembelajaran',
+    icon: '🗺️',
+    fields: [
+      { key: 'title', label: 'Judul', type: 'text' },
+      {
+        key: 'steps',
+        label: 'Langkah Kegiatan',
+        type: 'array',
+        maxItems: 6,
+        fields: [
+          { key: 'fase', label: 'Fase', type: 'select', options: [
+            { label: 'Pendahuluan', value: 'Pendahuluan' },
+            { label: 'Inti', value: 'Inti' },
+            { label: 'Penutup', value: 'Penutup' },
+          ]},
+          { key: 'durasi', label: 'Durasi', type: 'text', placeholder: '10 menit' },
+          { key: 'judul', label: 'Nama Kegiatan', type: 'text', required: true, placeholder: 'Apersepsi' },
+          { key: 'deskripsi', label: 'Deskripsi', type: 'textarea', required: true, placeholder: 'Detail kegiatan…' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['title'] },
+      { key: 'steps', label: 'Langkah Kegiatan', fieldKeys: ['steps'] },
+    ],
+  },
+
+  'atp': {
+    blockType: 'atp',
+    displayName: 'Alur Tujuan Pembelajaran',
+    description: 'Rencana pertemuan dan tujuan pembelajaran',
+    icon: '📅',
+    fields: [
+      { key: 'namaBab', label: 'Nama Bab / Unit', type: 'text', required: true, placeholder: 'Bab 3 — Patuh terhadap Norma' },
+      { key: 'jumlahPertemuan', label: 'Jumlah Pertemuan', type: 'number', min: 1, max: 10 },
+      {
+        key: 'pertemuan',
+        label: 'Pertemuan',
+        type: 'array',
+        maxItems: 10,
+        fields: [
+          { key: 'judul', label: 'Judul Pertemuan', type: 'text', required: true },
+          { key: 'durasi', label: 'Durasi', type: 'text', placeholder: '2×40 menit' },
+          { key: 'tp', label: 'TP yang Dicapai', type: 'text' },
+          { key: 'kegiatan', label: 'Kegiatan Pembelajaran', type: 'textarea' },
+          { key: 'penilaian', label: 'Penilaian', type: 'text' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['namaBab', 'jumlahPertemuan'] },
+      { key: 'pertemuan', label: 'Daftar Pertemuan', fieldKeys: ['pertemuan'] },
+    ],
+  },
+
+  // ── Phase 5-G: Presentation Module Schema Blocks ─────────────
+  // Previously these were AuthoringStore Module types written directly.
+  // Now they are schema blocks with guided editor support.
+
+  'tab-icons': {
+    blockType: 'tab-icons',
+    displayName: 'Tab Interaktif',
+    description: 'Tab interaktif dengan ikon — tampilkan konten per tab',
+    icon: '📑',
+    fields: [
+      { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Tujuan Pembelajaran' },
+      { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum tab', placeholder: 'Eksplorasi tujuan pembelajaran hari ini' },
+      { key: 'layout', label: 'Tata Letak', type: 'select', options: [
+        { label: 'Horizontal', value: 'horizontal' },
+        { label: 'Vertikal', value: 'vertical' },
+        { label: 'Pills', value: 'pills' },
+      ]},
+      { key: 'animation', label: 'Animasi', type: 'select', options: [
+        { label: 'Fade', value: 'fade' },
+        { label: 'Slide Up', value: 'slide-up' },
+        { label: 'Zoom', value: 'zoom' },
+        { label: 'Bounce', value: 'bounce' },
+      ]},
+      {
+        key: 'tabs',
+        label: 'Tab',
+        type: 'array',
+        maxItems: 6,
+        helpText: 'STANDAR: Maksimal 6 tab per halaman',
+        fields: [
+          { key: 'icon', label: 'Ikon', type: 'icon' },
+          { key: 'judul', label: 'Judul Tab', type: 'text', required: true, placeholder: 'Tujuan 1' },
+          { key: 'warna', label: 'Warna', type: 'color' },
+          { key: 'isi', label: 'Isi Tab', type: 'textarea', required: true, placeholder: 'Konten tab...' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
+      { key: 'style', label: 'Gaya', fieldKeys: ['layout', 'animation'] },
+      { key: 'tabs', label: 'Daftar Tab', fieldKeys: ['tabs'] },
+    ],
+  },
+
+  'accordion': {
+    blockType: 'accordion',
+    displayName: 'Accordion',
+    description: 'Bagian yang bisa dikembangkan/dilipat — cocok untuk FAQ dan ringkasan',
+    icon: '🪗',
+    fields: [
+      { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Capaian Pembelajaran' },
+      { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum item accordion', placeholder: 'Klik setiap bagian untuk detail' },
+      {
+        key: 'items',
+        label: 'Item',
+        type: 'array',
+        maxItems: 8,
+        helpText: 'STANDAR: Maksimal 8 item per halaman',
+        fields: [
+          { key: 'icon', label: 'Ikon', type: 'icon' },
+          { key: 'judul', label: 'Judul', type: 'text', required: true, placeholder: 'Elemen' },
+          { key: 'isi', label: 'Isi', type: 'textarea', required: true, placeholder: 'Detail konten...' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
+      { key: 'items', label: 'Daftar Item', fieldKeys: ['items'] },
+    ],
+  },
+
+  'timeline': {
+    blockType: 'timeline',
+    displayName: 'Timeline',
+    description: 'Alur kegiatan dengan langkah-langkah berurutan',
+    icon: '🗺️',
+    fields: [
+      { key: 'title', label: 'Judul', type: 'text', placeholder: 'Alur Kegiatan Pembelajaran' },
+      {
+        key: 'steps',
+        label: 'Langkah',
+        type: 'array',
+        maxItems: 8,
+        helpText: 'STANDAR: Maksimal 8 langkah per halaman',
+        fields: [
+          { key: 'icon', label: 'Ikon', type: 'icon' },
+          { key: 'label', label: 'Judul Langkah', type: 'text', required: true, placeholder: 'Apersepsi' },
+          { key: 'description', label: 'Deskripsi', type: 'textarea', required: true, placeholder: 'Detail langkah...' },
+          { key: 'color', label: 'Warna', type: 'color' },
+        ],
+      },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['title'] },
+      { key: 'steps', label: 'Langkah-langkah', fieldKeys: ['steps'] },
+    ],
+  },
+
+  'infografis': {
+    blockType: 'infografis',
+    displayName: 'Infografis',
+    description: 'Kartu informasi visual — dimensi, profil, atau konsep',
+    icon: '📊',
+    fields: [
+      { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Profil Pelajar Pancasila' },
+      { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum kartu', placeholder: 'Dimensi yang dikembangkan...' },
+      { key: 'layout', label: 'Tata Letak', type: 'select', options: [
+        { label: 'Grid', value: 'grid' },
+        { label: 'List', value: 'list' },
+        { label: 'Timeline', value: 'timeline' },
+      ]},
+      {
+        key: 'kartu',
+        label: 'Kartu',
+        type: 'array',
+        maxItems: 8,
+        helpText: 'STANDAR: Maksimal 8 kartu per halaman',
+        fields: [
+          { key: 'icon', label: 'Ikon', type: 'icon' },
+          { key: 'judul', label: 'Judul Kartu', type: 'text', required: true, placeholder: 'Bernalar Kritis' },
+          { key: 'isi', label: 'Isi', type: 'textarea', required: true, placeholder: 'Deskripsi kartu...' },
+          { key: 'warna', label: 'Warna', type: 'color' },
+        ],
+      },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
+    ],
+    sections: [
+      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
+      { key: 'style', label: 'Gaya', fieldKeys: ['layout'] },
+      { key: 'kartu', label: 'Daftar Kartu', fieldKeys: ['kartu'] },
     ],
   },
 };

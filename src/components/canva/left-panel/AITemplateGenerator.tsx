@@ -17,18 +17,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { isEnabled } from '@/config/feature-flags';
-import {
-  Sparkles,
-  Loader2,
-  Wand2,
-  ChevronRight,
-  BookOpen,
-  GraduationCap,
-  LayoutTemplate,
-  Info,
-  CheckCircle2,
-  AlertCircle,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { toast } from 'sonner';
@@ -180,8 +169,8 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
       {/* Header */}
       <div className="flex items-center gap-2">
         <div className="relative">
-          <Wand2 size={14} className="text-violet-400" />
-          <Sparkles size={8} className="absolute -top-1 -right-1 text-amber-300" />
+          <span className="material-symbols-outlined text-violet-400" style={{ fontSize: '14px' }}>auto_fix</span>
+          <span className="material-symbols-outlined absolute -top-1 -right-1 text-amber-300" style={{ fontSize: '8px' }}>auto_awesome</span>
         </div>
         <div className="text-[9px] font-bold text-violet-400 uppercase tracking-wider">
           {isSederhana ? 'Buat Template AI' : 'AI Template Generator'}
@@ -219,7 +208,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
           {/* Topic input */}
           <div>
             <label className="text-[8px] text-app-muted font-bold uppercase tracking-wider flex items-center gap-1">
-              <BookOpen size={8} /> Topik / Judul Materi
+              <span className="material-symbols-outlined" style={{ fontSize: '8px' }}>menu_book</span> Topik / Judul Materi
             </label>
             <input
               type="text"
@@ -249,7 +238,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
             </div>
             <div className="w-20">
               <label className="text-[8px] text-app-muted font-bold uppercase tracking-wider flex items-center gap-1">
-                <GraduationCap size={8} /> Kelas
+                <span className="material-symbols-outlined" style={{ fontSize: '8px' }}>school</span> Kelas
               </label>
               <select
                 value={kelas}
@@ -281,7 +270,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
           {!isSederhana && (
             <div>
               <label className="text-[8px] text-app-muted font-bold uppercase tracking-wider flex items-center gap-1">
-                <LayoutTemplate size={8} /> Pola Pembelajaran
+                <span className="material-symbols-outlined" style={{ fontSize: '8px' }}>dashboard_customize</span> Pola Pembelajaran
               </label>
               <div className="grid grid-cols-2 gap-1.5 mt-1">
                 {(Object.entries(TEMPLATE_PATTERNS) as [TemplatePattern, typeof TEMPLATE_PATTERNS[TemplatePattern]][]).map(([key, pat]) => (
@@ -355,12 +344,12 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
           >
             {loading ? (
               <>
-                <Loader2 size={12} className="animate-spin" />
+                <span className="material-symbols-outlined animate-spin" style={{ fontSize: '12px' }}>progress_activity</span>
                 Membuat Template AI...
               </>
             ) : (
               <>
-                <Wand2 size={12} />
+                <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>auto_fix</span>
                 Buat Template dari AI
               </>
             )}
@@ -369,14 +358,14 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
           {/* Error display */}
           {error && (
             <div className="flex items-start gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20">
-              <AlertCircle size={12} className="text-red-400 flex-shrink-0 mt-0.5" />
+              <span className="material-symbols-outlined text-red-400 flex-shrink-0 mt-0.5" style={{ fontSize: '12px' }}>error</span>
               <div className="text-[9px] text-red-300">{error}</div>
             </div>
           )}
 
           {/* Info hint */}
           <div className="flex items-start gap-1.5 px-2 py-1.5 rounded-lg bg-app-elevated/20 border border-app-border/10">
-            <Info size={10} className="text-app-muted flex-shrink-0 mt-0.5" />
+            <span className="material-symbols-outlined text-app-muted flex-shrink-0 mt-0.5" style={{ fontSize: '10px' }}>info</span>
             <div className="text-[8px] text-app-muted leading-relaxed">
               AI akan membuat template lengkap berdasarkan topik yang kamu masukkan. Kamu bisa mengatur halaman mana yang ingin dimasukkan sebelum menerapkan.
             </div>
@@ -400,7 +389,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
                 </div>
               </div>
               <div className="flex-shrink-0 text-[8px] text-app-muted flex items-center gap-0.5">
-                <BookOpen size={8} />
+                <span className="material-symbols-outlined" style={{ fontSize: '8px' }}>description</span>
                 {generatedTemplate.estimatedPages} hal.
               </div>
             </div>
@@ -444,7 +433,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
 
           {/* Success indicator */}
           <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-            <CheckCircle2 size={12} className="text-emerald-400" />
+            <span className="material-symbols-outlined text-emerald-400" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>
             <span className="text-[9px] font-bold text-emerald-300">Template berhasil dibuat oleh AI</span>
           </div>
 
@@ -461,7 +450,7 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
               className="flex-1 py-2 rounded-lg text-[10px] font-bold bg-violet-500/15 border border-violet-500/30 text-violet-300 hover:bg-violet-500/25 transition-[transform,box-shadow,background-color] flex items-center justify-center gap-1"
             >
               Lanjut
-              <ChevronRight size={10} />
+              <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>chevron_right</span>
             </button>
           </div>
         </div>
@@ -488,9 +477,9 @@ Format as JSON: { "definitions": [...], "enumerations": [...], "functions": [...
               onClick={handleApply}
               className="flex-1 py-2.5 rounded-xl text-[11px] font-bold bg-violet-500/15 border border-violet-500/30 text-violet-300 hover:bg-violet-500/25 transition-[transform,box-shadow,background-color] active:scale-[0.97] flex items-center justify-center gap-1.5"
             >
-              <Sparkles size={12} />
+              <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>auto_awesome</span>
               Terapkan Template
-              <ChevronRight size={12} />
+              <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>chevron_right</span>
             </button>
           </div>
         </div>

@@ -7,7 +7,7 @@ import { RATIOS } from '../types';
 import { PageRenderer } from '../page-renderer';
 import { CanvasErrorBoundary } from '../CanvasErrorBoundary';
 import { StageElement } from './StageElement';
-import { Zap, Layout, Plus, Sparkles } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useStageKeyboard } from './use-stage-keyboard';
 import { useStageDrag } from './use-stage-drag';
 import { Z } from './constants';
@@ -353,6 +353,10 @@ export default function Stage() {
 
     selectElement(null);
     selectBlock(null);
+    // FIX: Stop any active inline editing when clicking stage background.
+    // This ensures the blur→save pipeline fires before deselecting,
+    // so the pending text edit is not lost.
+    stopEditing();
   };
 
   // ── Derived state ─────────────────────────────────────────────
@@ -371,7 +375,7 @@ export default function Stage() {
     <div
       ref={canvasAreaRef}
       id="cm-canvas-area"
-      className="flex-1 w-full bg-silse-surface-dim canvas-bg overflow-hidden flex items-center justify-center"
+      className="flex-1 w-full bg-silse-surface-dim canvas-bg overflow-hidden flex items-center justify-center shadow-[inset_0_1px_3px_rgba(0,0,0,0.04)]"
       style={{
         cursor: cursorStyle,
       }}
@@ -423,9 +427,8 @@ export default function Stage() {
           </CanvasErrorBoundary>
 
           {/* ══ Page Empty State — page exists but has no blocks ═════ */}
-          {/* Professional empty state with action buttons + keyboard hints */}
           {/* Shows for ANY page that has no blocks — not just custom pages */}
-          {/* FIX: Explicit boolean expression to avoid && / || precedence ambiguity */}
+          {/* NOTE: Auto-Generate button removed — AI Generator is a parked area (see PARKED_NOTES.md) */}
           {!canvasPreview && (
             isSchemaDriven
               ? (page.schema?.blocks?.length ?? 0) === 0
@@ -434,44 +437,25 @@ export default function Stage() {
             <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: Z.CANVAS_OVERLAY }}>
               <div className="bg-silse-surface-container-lowest/90 backdrop-blur-sm border border-silse-primary/20 rounded-2xl p-6 flex flex-col items-center gap-4 max-w-xs text-center shadow-lg">
                 <div className="w-14 h-14 rounded-2xl bg-silse-primary/10 border border-silse-primary/20 flex items-center justify-center">
-                  <Layout size={24} className="text-silse-primary/60" />
+                  <span className="material-symbols-outlined text-silse-primary/60" style={{ fontSize: '24px' }}>dashboard</span>
                 </div>
                 <div>
                   <p className="text-sm font-bold text-silse-on-surface/80 mb-1">
                     Halaman Kosong
                   </p>
                   <p className="text-xs text-silse-on-surface-variant/70">
-                    Mulai tambahkan konten atau generate otomatis dengan AI
+                    Tambahkan konten dari panel kiri untuk memulai
                   </p>
                 </div>
-                <div className="flex items-center gap-2 w-full">
-                  <button
-                    onClick={() => {
-                      useCanvaStore.getState().setLeftTab('add-block');
-                      if (!useCanvaStore.getState().leftPanelOpen) useCanvaStore.getState().toggleLeftPanel();
-                    }}
-                    className="flex-1 px-3 py-2.5 bg-silse-primary/10 hover:bg-silse-primary/20 border border-silse-primary/25 text-silse-primary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
-                  >
-                    <Plus size={13} /> Tambah Block
-                  </button>
-                  <button
-                    onClick={() => useCanvaStore.setState({ panelRequest: 'autogen' })}
-                    className="flex-1 px-3 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/25 text-purple-400 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
-                  >
-                    <Sparkles size={13} /> Auto-Generate
-                  </button>
-                </div>
-                {/* Keyboard shortcuts hint */}
-                <div className="w-full border-t border-silse-outline-variant/20 pt-3 space-y-1">
-                  <div className="flex items-center gap-2 text-[8px] text-silse-on-surface-variant">
-                    <kbd className="px-1.5 py-0.5 rounded bg-silse-surface-container-low/60 border border-silse-outline-variant/30 font-mono text-[7px] font-bold">Ctrl+Z</kbd>
-                    <span>Undo</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[8px] text-silse-on-surface-variant">
-                    <kbd className="px-1.5 py-0.5 rounded bg-silse-surface-container-low/60 border border-silse-outline-variant/30 font-mono text-[7px] font-bold">Del</kbd>
-                    <span>Hapus block terpilih</span>
-                  </div>
-                </div>
+                <button
+                  onClick={() => {
+                    useCanvaStore.getState().setLeftTab('add-block');
+                    if (!useCanvaStore.getState().leftPanelOpen) useCanvaStore.getState().toggleLeftPanel();
+                  }}
+                  className="w-full px-3 py-2.5 bg-silse-primary/10 hover:bg-silse-primary/20 border border-silse-primary/25 text-silse-primary text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 active:scale-[0.97]"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>add</span> Tambah Block
+                </button>
               </div>
             </div>
           )}
@@ -548,7 +532,7 @@ export default function Stage() {
                 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
                 : 'bg-silse-primary/20 text-silse-primary border-silse-primary/30'
             }`} style={{ zIndex: Z.INFO_BADGE }}>
-              <Zap size={10} /> {isSchemaDriven ? 'SCHEMA' : page.templateType}
+              <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>bolt</span> {isSchemaDriven ? 'SCHEMA' : page.templateType}
             </div>
           )}
 

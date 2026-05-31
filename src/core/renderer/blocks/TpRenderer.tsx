@@ -61,7 +61,7 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
             border: `1px solid ${edu.accentAlpha(0.3)}`,
             boxShadow: '0 0 12px ' + edu.accentAlpha(0.1),
           }}>
-          <Target size={16} style={{ color: edu.accent() }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>target</span>
         </div>
         <h2 className="font-black leading-tight min-w-0"
           style={{ ...edu.heading(), color: edu.textColor(), wordBreak: 'break-word', overflowWrap: 'break-word' }}>
@@ -184,7 +184,7 @@ export const TpRenderer = React.memo(function TpRenderer({ block, tokens, isComp
             wordBreak: 'break-word',
           }}>
           <div className="flex items-start gap-2">
-            <Link2 size={14} className="inline flex-shrink-0 mt-0.5" style={{ color: tokens.color('g') }} />
+            <span className="material-symbols-outlined inline flex-shrink-0 mt-0.5" style={ { fontSize: '14px' } }>link</span>
             <div>
               <PremiumBadge tokens={tokens} accent="g" variant="outline">Profil Pelajar Pancasila</PremiumBadge> <RichText content={block.profil ?? ''} style={{ wordBreak: 'break-word' }} />
             </div>

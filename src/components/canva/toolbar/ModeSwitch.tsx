@@ -1,16 +1,16 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Edit3, Eye, Presentation } from 'lucide-react';
+import { Edit3, Eye, Presentation, GraduationCap } from 'lucide-react';
 import type { AppMode } from '@/components/canva/types';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 // ═══════════════════════════════════════════════════════════════
-// MODE SWITCH — [EDIT] [PREVIEW] [PRESENT] pill toggle
+// MODE SWITCH — [EDIT] [PREVIEW] [PRESENT] [LEARN] pill toggle
 // ═══════════════════════════════════════════════════════════════
 // Teacher-mode aware labels:
-//   Sederhana: Edit → Sunting, Preview → Pratinjau, Present → Tayangkan
-//   Lengkap:   Edit, Preview, Present
+//   Sederhana: Edit → Sunting, Preview → Pratinjau, Present → Tayangkan, Learn → Belajar
+//   Lengkap:   Edit, Preview, Present, Learn
 
 interface ModeSwitchProps {
   appMode: AppMode;
@@ -24,6 +24,7 @@ export function ModeSwitch({ appMode, setAppMode }: ModeSwitchProps) {
     { id: 'edit', label: 'Edit', labelSederhana: 'Sunting', icon: <Edit3 size={12} /> },
     { id: 'preview', label: 'Preview', labelSederhana: 'Pratinjau', icon: <Eye size={12} /> },
     { id: 'present', label: 'Present', labelSederhana: 'Tayangkan', icon: <Presentation size={12} /> },
+    { id: 'learn', label: 'Learn', labelSederhana: 'Belajar', icon: <GraduationCap size={12} /> },
   ];
 
   return (

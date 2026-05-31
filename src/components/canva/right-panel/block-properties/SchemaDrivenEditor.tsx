@@ -47,11 +47,11 @@ export function SchemaDrivenEditor({ block, schema, onUpdate }: {
   // If this block type should redirect to authoring panel, show note
   if (schema.redirectToAuthoring) {
     return (
-      <div className="space-y-4" role="region" aria-label={`Properti ${schema.blockType}`}>
+      <div className="space-y-4 anim-enter-fade" role="region" aria-label={`Properti ${schema.blockType}`}>
         {schema.properties
           .filter(p => p.type === 'variant')
           .map(field => renderField(field, b, onUpdate))}
-        <div className="px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/50 text-[12px] text-on-surface-variant italic text-center">
+        <div className="px-4 py-3 rounded-xl bg-silse-surface-container-low border border-silse-outline-variant/50 text-[12px] text-silse-on-surface-variant italic text-center">
           {schema.redirectNote}
         </div>
       </div>
@@ -62,7 +62,7 @@ export function SchemaDrivenEditor({ block, schema, onUpdate }: {
   const groupOrder = schema.groups?.map(g => g.key) || Array.from(groupedFields.groups.keys());
 
   return (
-    <div className="space-y-4" role="region" aria-label={`Properti ${schema.blockType}`}>
+    <div className="space-y-4 anim-enter-fade" role="region" aria-label={`Properti ${schema.blockType}`}>
       {/* Ungrouped fields first — these are the primary content fields */}
       {groupedFields.ungrouped.length > 0 && (
         <div className="space-y-4">

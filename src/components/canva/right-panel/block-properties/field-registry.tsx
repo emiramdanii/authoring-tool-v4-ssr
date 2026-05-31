@@ -1,10 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
-import {
-  Type, AlignLeft, List, Palette, LayoutGrid, Hash, ToggleLeft, ChevronDown,
-  Plus, Trash2, GripVertical, X, RotateCcw, Bold, Italic, ListChecks,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import type { PropertyField } from '@/core/editor/types';
 import { getNestedValue, buildNestedUpdate } from './dot-notation';
 
@@ -154,7 +151,7 @@ export function renderField(
             helpText={field.helpText}
             label={field.label}
             value={String(value || '')}
-            icon={<Palette size={14} className="text-on-surface-variant" />}
+            icon={<span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>palette</span>}
             placeholder={field.placeholder || '🏠'}
             onChange={v => handleUpdate(v)}
           />
@@ -184,8 +181,8 @@ export function renderField(
 // SHARED STITCH STYLES
 // ═══════════════════════════════════════════════════════════════
 
-const INPUT_BASE = 'w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-bright text-on-surface font-body-md text-sm focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:outline-none transition-all duration-200';
-const LABEL_BASE = 'text-[12px] font-bold text-on-surface-variant mb-2 block';
+const INPUT_BASE = 'w-full px-4 py-3 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-silse-on-surface font-body-md text-sm focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200';
+const LABEL_BASE = 'text-[12px] font-bold text-silse-on-surface mb-2 block';
 
 // ═══════════════════════════════════════════════════════════════
 // FIELD WITH RESET
@@ -211,7 +208,7 @@ function FieldWithReset({ defaultValue, value, onReset, children }: {
           className="absolute top-8 right-2 h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 text-on-surface-variant hover:text-secondary hover:bg-secondary/10"
           title="Reset ke default"
         >
-          <RotateCcw size={14} />
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>refresh</span>
         </button>
       )}
     </div>
@@ -271,20 +268,20 @@ function RichTextareaField({ label, value, onChange, placeholder, rows = 4, fiel
     <div>
       <label htmlFor={fieldId} className={LABEL_BASE}>
         <span className="flex items-center gap-1.5">
-          <AlignLeft size={14} className="text-on-surface-variant" /> {label}
+          <span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>format_align_left</span> {label}
         </span>
       </label>
-      <div className="border border-outline-variant rounded-xl overflow-hidden bg-surface-bright focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary/20 transition-all duration-200">
+      <div className="border border-silse-outline-variant/40 rounded-xl overflow-hidden bg-silse-surface-container-low focus-within:border-silse-secondary focus-within:ring-2 focus-within:ring-silse-secondary/20 transition-all duration-200">
         {/* Mini toolbar — stitch spec */}
-        <div className="flex gap-1 p-2 border-b border-outline-variant bg-surface-container-low">
+        <div className="flex gap-1 p-2 border-b border-silse-outline-variant/30 bg-silse-surface-container">
           <button className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface" title="Tebal">
-            <Bold size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>format_bold</span>
           </button>
           <button className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface" title="Miring">
-            <Italic size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>format_italic</span>
           </button>
           <button className="p-1.5 hover:bg-white rounded-lg transition-colors text-on-surface-variant hover:text-on-surface" title="Daftar">
-            <ListChecks size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>checklist</span>
           </button>
         </div>
         <textarea
@@ -321,7 +318,7 @@ function NumberField({ label, value, min, max, step, onChange, fieldId, helpId, 
     <div>
       <label htmlFor={fieldId} className={LABEL_BASE}>
         <span className="flex items-center gap-1.5">
-          <Hash size={14} className="text-on-surface-variant" /> {label}
+          <span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>tag</span> {label}
         </span>
       </label>
       <input
@@ -366,7 +363,7 @@ function ColorTokenField({ label, value, onChange, fieldId }: {
     <div>
       <label className={LABEL_BASE} id={fieldId}>
         <span className="flex items-center gap-1.5">
-          <Palette size={14} className="text-on-surface-variant" /> {label}
+          <span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>palette</span> {label}
         </span>
         {/* Inline color swatch preview */}
         {currentToken && (
@@ -417,7 +414,7 @@ function SelectField({ label, value, options, onChange, fieldId, helpId, helpTex
     <div>
       <label htmlFor={fieldId} className={LABEL_BASE}>
         <span className="flex items-center gap-1.5">
-          <ChevronDown size={14} className="text-on-surface-variant" /> {label}
+          <span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>expand_more</span> {label}
         </span>
       </label>
       <div className="relative">
@@ -432,7 +429,7 @@ function SelectField({ label, value, options, onChange, fieldId, helpId, helpTex
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
-        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style={ { fontSize: '16px' } }>expand_more</span>
       </div>
       {helpText && <span id={helpId} className="text-[10px] text-on-surface-variant mt-1 block">{helpText}</span>}
     </div>
@@ -453,10 +450,10 @@ function BooleanField({ label, value, onChange, fieldId, helpId, helpText }: {
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary-container/10 border border-secondary/20">
+      <div className="flex items-center justify-between p-3 rounded-xl bg-silse-surface-container-low border border-silse-outline-variant/30">
         <div className="flex items-center gap-2">
-          <ToggleLeft size={16} className="text-secondary" />
-          <span className="text-[12px] font-bold text-on-secondary-fixed-variant">{label}</span>
+          <span className="material-symbols-outlined text-silse-on-surface-variant" style={ { fontSize: '16px' } }>toggle_on</span>
+          <span className="text-[12px] font-bold text-silse-on-surface">{label}</span>
         </div>
         <button
           id={fieldId}
@@ -465,9 +462,9 @@ function BooleanField({ label, value, onChange, fieldId, helpId, helpText }: {
           aria-checked={value}
           aria-label={label}
           aria-describedby={helpId}
-          className={`relative w-11 h-6 rounded-full transition-all duration-200 ${value ? 'bg-secondary' : 'bg-outline-variant'}`}
+          className={`relative w-11 h-6 rounded-full transition-all duration-200 ${value ? 'bg-silse-primary' : 'bg-silse-surface-container-high'}`}
         >
-          <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 ${value ? 'left-5.5' : 'left-0.5'}`} />
+          <div className={`absolute top-0.5 w-5 h-5 rounded-full shadow-sm transition-all duration-200 ${value ? 'left-5.5 bg-silse-on-primary' : 'left-0.5 bg-silse-surface-container-lowest'}`} />
         </button>
       </div>
       {helpText && <span id={helpId} className="text-[10px] text-on-surface-variant mt-1 block">{helpText}</span>}
@@ -491,7 +488,7 @@ function VariantField({ label, value, onChange, fieldId }: {
     <div>
       <div className={LABEL_BASE} id={fieldId}>
         <span className="flex items-center gap-1.5">
-          <LayoutGrid size={14} className="text-on-surface-variant" /> {label}
+          <span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>grid_view</span> {label}
         </span>
       </div>
       <div className="flex gap-2" role="group" aria-labelledby={fieldId}>
@@ -591,7 +588,7 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
       <div className="flex items-center justify-between">
         <label className={LABEL_BASE.replace('mb-2', 'mb-0')}>
           <span className="flex items-center gap-1.5">
-            <List size={14} className="text-on-surface-variant" /> {label}
+            <span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>list</span> {label}
             <span className="text-on-surface-variant font-normal">({items.length})</span>
           </span>
         </label>
@@ -600,7 +597,7 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
           disabled={maxItems ? items.length >= maxItems : false}
           className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-secondary hover:bg-secondary/10 rounded-lg transition-colors disabled:opacity-40"
         >
-          <Plus size={12} /> Tambah
+          <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>add</span> Tambah
         </button>
       </div>
       <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar pr-1">
@@ -608,7 +605,7 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
           <div key={idx} className="bg-surface-container-low rounded-xl border border-outline-variant/50 p-3 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <GripVertical size={14} className="text-on-surface-variant/40 cursor-grab" />
+                <span className="material-symbols-outlined text-on-surface-variant/40 cursor-grab" style={ { fontSize: '14px' } }>drag_indicator</span>
                 <span className="text-[12px] font-bold text-on-surface-variant">#{idx + 1}</span>
                 <div className="flex gap-0.5">
                   {idx > 0 && (
@@ -628,7 +625,7 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
                 className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-error/70 hover:text-error hover:bg-error/10 rounded-lg transition-colors"
                 title="Hapus item"
               >
-                <Trash2 size={12} /> Hapus
+                <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>delete</span> Hapus
               </button>
             </div>
             {fieldDefs.map((fieldDef) => (
@@ -782,7 +779,7 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
     <div className="mt-1">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[11px] font-bold text-on-surface-variant flex items-center gap-1">
-          <GripVertical size={10} className="text-on-surface-variant/40" />
+          <span className="material-symbols-outlined text-on-surface-variant/40" style={ { fontSize: '10px' } }>drag_indicator</span>
           {label} ({items.length})
         </span>
         <button
@@ -790,7 +787,7 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
           disabled={maxItems ? items.length >= maxItems : false}
           className="flex items-center gap-0.5 text-[10px] font-bold text-secondary hover:bg-secondary/10 px-2 py-1 rounded-md transition-colors disabled:opacity-40"
         >
-          <Plus size={10} /> Tambah
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>add</span> Tambah
         </button>
       </div>
       <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
@@ -811,7 +808,7 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
                 className="flex items-center gap-0.5 text-[9px] text-error/60 hover:text-error transition-colors"
                 title="Hapus item"
               >
-                <Trash2 size={9} /> Hapus
+                <span className="material-symbols-outlined" style={ { fontSize: '9px' } }>delete</span> Hapus
               </button>
             </div>
             {fieldDefs.map((fieldDef) => (
@@ -888,7 +885,7 @@ function JsonFieldEditor({ label, value, defaultValue, onChange, fieldId, helpId
             className="absolute top-8 right-2 h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all text-on-surface-variant hover:text-secondary hover:bg-secondary/10"
             title="Reset ke default"
           >
-            <RotateCcw size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>refresh</span>
           </button>
         )}
       </div>
@@ -906,7 +903,7 @@ function JsonFieldEditor({ label, value, defaultValue, onChange, fieldId, helpId
             className="absolute top-8 right-2 h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all text-on-surface-variant hover:text-secondary hover:bg-secondary/10"
             title="Reset ke default"
           >
-            <RotateCcw size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>refresh</span>
           </button>
         )}
       </div>
@@ -922,7 +919,7 @@ function JsonFieldEditor({ label, value, defaultValue, onChange, fieldId, helpId
           className="absolute top-8 right-2 h-7 w-7 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-all text-on-surface-variant hover:text-secondary hover:bg-secondary/10"
           title="Reset ke default"
         >
-          <RotateCcw size={14} />
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>refresh</span>
         </button>
       )}
     </div>
@@ -968,7 +965,7 @@ function StringArrayEditor({ label, items, onChange }: {
     <div className="space-y-2">
       <label className={LABEL_BASE}>
         <span className="flex items-center gap-1.5">
-          <List size={14} className="text-on-surface-variant" /> {label}
+          <span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>list</span> {label}
           <span className="text-on-surface-variant font-normal">({items.length})</span>
         </span>
       </label>
@@ -989,7 +986,7 @@ function StringArrayEditor({ label, items, onChange }: {
             </span>
             {item}
             <button onClick={() => removeItem(idx)} className="text-on-surface-variant/50 hover:text-error transition-colors ml-0.5" title="Hapus">
-              <X size={12} />
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>close</span>
             </button>
           </span>
         ))}
@@ -1009,7 +1006,7 @@ function StringArrayEditor({ label, items, onChange }: {
           disabled={!inputValue.trim()}
           className="flex items-center gap-1 px-4 py-3 text-[12px] font-bold text-secondary bg-secondary/10 hover:bg-secondary/20 rounded-xl transition-colors disabled:opacity-40"
         >
-          <Plus size={14} /> Tambah
+          <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>add</span> Tambah
         </button>
       </div>
     </div>
@@ -1056,12 +1053,12 @@ function ObjectArrayEditor({ label, items, onChange }: {
       <div className="flex items-center justify-between">
         <label className={LABEL_BASE.replace('mb-2', 'mb-0')}>
           <span className="flex items-center gap-1.5">
-            <List size={14} className="text-on-surface-variant" /> {label}
+            <span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>list</span> {label}
             <span className="text-on-surface-variant font-normal">({items.length})</span>
           </span>
         </label>
         <button onClick={addItem} className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-secondary hover:bg-secondary/10 rounded-lg transition-colors">
-          <Plus size={12} /> Tambah
+          <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>add</span> Tambah
         </button>
       </div>
       <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
@@ -1069,7 +1066,7 @@ function ObjectArrayEditor({ label, items, onChange }: {
           <div key={idx} className="bg-surface-container-low rounded-xl border border-outline-variant/50 p-3 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <GripVertical size={12} className="text-on-surface-variant/40 cursor-grab" />
+                <span className="material-symbols-outlined text-on-surface-variant/40 cursor-grab" style={ { fontSize: '12px' } }>drag_indicator</span>
                 <span className="text-[11px] font-bold text-on-surface-variant">#{idx + 1}</span>
                 <div className="flex gap-0.5">
                   {idx > 0 && <button onClick={() => moveItem(idx, 'up')} className="text-[10px] text-on-surface-variant hover:text-secondary transition-colors">↑</button>}
@@ -1077,7 +1074,7 @@ function ObjectArrayEditor({ label, items, onChange }: {
                 </div>
               </div>
               <button onClick={() => removeItem(idx)} className="flex items-center gap-0.5 text-[10px] text-error/60 hover:text-error transition-colors">
-                <Trash2 size={10} /> Hapus
+                <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>delete</span> Hapus
               </button>
             </div>
             {Object.entries(item).map(([key, val]) => (
@@ -1131,7 +1128,7 @@ function JsonTextarea({ label, value, onChange, fieldId, helpId, helpText }: {
     <div>
       <label htmlFor={fieldId} className={LABEL_BASE}>
         <span className="flex items-center gap-1.5">
-          <Type size={14} className="text-on-surface-variant" /> {label}
+          <span className="material-symbols-outlined text-on-surface-variant" style={ { fontSize: '14px' } }>text_fields</span> {label}
         </span>
       </label>
       <textarea

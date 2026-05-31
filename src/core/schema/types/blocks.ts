@@ -75,6 +75,42 @@ export interface TpBlock extends BaseBlock {
   profilColor?: string;
 }
 
+// ── CP (Capaian Pembelajaran) Schema ────────────────────────────
+
+export interface CpBlock extends BaseBlock {
+  type: 'cp';
+  /** Elemen CP (e.g., "Pancasila") */
+  elemen: string;
+  /** Sub-elemen (e.g., "Pemahaman norma dan nilai") */
+  subElemen: string;
+  /** Full capaian fase narrative */
+  capaianFase: string;
+  /** Profil Pelajar Pancasila tags */
+  profil: string[];
+  /** Fase (e.g., "D") */
+  fase?: string;
+  /** Kelas (e.g., "VII") */
+  kelas?: string;
+}
+
+// ── ATP (Alur Tujuan Pembelajaran) Schema ──────────────────────
+
+export interface AtpBlock extends BaseBlock {
+  type: 'atp';
+  /** Nama bab / unit */
+  namaBab: string;
+  /** Jumlah pertemuan */
+  jumlahPertemuan: number;
+  /** Detail per pertemuan */
+  pertemuan: Array<{
+    judul: string;
+    tp: string;
+    durasi: string;
+    kegiatan: string;
+    penilaian: string;
+  }>;
+}
+
 // ── Alur Schema ────────────────────────────────────────────────
 
 export interface AlurBlock extends BaseBlock {
@@ -283,6 +319,10 @@ export interface SortirGameBlock extends BaseBlock {
 export interface RodaGameBlock extends BaseBlock {
   type: 'roda-game';
   title: string;
+  /** Whether to show one question at a time ('single') or all at once ('all') */
+  stepMode?: 'single' | 'all';
+  /** Starting question index (0-based). Runtime tracks progress via interactive store. */
+  currentQuestionIndex?: number;
   questions: Array<{
     q: string;
     diskusiHint?: string;
@@ -630,6 +670,66 @@ export interface StudiBlock extends BaseBlock {
   situasi: string;
   pertanyaan?: string;
   pesan?: string;
+  accentColor?: string;
+}
+
+// ── Tab Icons Schema (Interactive tabs with icons) ────────────
+// Phase 5-G: Presentation module — previously AuthoringStore Module type 'tab-icons'.
+// Different from FtabBlock which uses nested SchemaBlock[] content;
+// this uses flat text fields (isi, poin, refleksi) per tab.
+
+export interface TabIconsBlock extends BaseBlock {
+  type: 'tab-icons';
+  title: string;
+  intro?: string;
+  /** Layout variant: horizontal, vertical, pills */
+  layoutVariant?: 'horizontal' | 'vertical' | 'pills';
+  /** Animation style for tab switching */
+  animation?: 'fade' | 'slide-up' | 'zoom' | 'bounce';
+  tabs: Array<{
+    icon: string;
+    judul: string;
+    warna: string;
+    isi: string;
+    poin?: string[];
+    refleksi?: string;
+  }>;
+  accentColor?: string;
+}
+
+// ── Accordion Schema (Expandable sections) ────────────────────
+// Phase 5-G: Presentation module — previously AuthoringStore Module type 'accordion'.
+// Different from TabelAccordionBlock which has table-like label/value details;
+// this uses simple icon/judul/isi items.
+
+export interface AccordionBlock extends BaseBlock {
+  type: 'accordion';
+  title: string;
+  intro?: string;
+  items: Array<{
+    icon: string;
+    judul: string;
+    isi: string;
+  }>;
+  accentColor?: string;
+}
+
+// ── Infografis Schema (Visual info cards) ─────────────────────
+// Phase 5-G: Presentation module — previously AuthoringStore Module type 'infografis'.
+// No prior schema equivalent — this is a brand new block type.
+
+export interface InfografisBlock extends BaseBlock {
+  type: 'infografis';
+  title: string;
+  intro?: string;
+  /** Layout variant: grid, list, timeline */
+  layoutVariant?: 'grid' | 'list' | 'timeline';
+  kartu: Array<{
+    icon: string;
+    judul: string;
+    isi: string;
+    warna?: string;
+  }>;
   accentColor?: string;
 }
 

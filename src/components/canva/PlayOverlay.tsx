@@ -9,7 +9,7 @@ import { RATIOS } from './types';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { COLORS } from '@/lib/color-palette';
 import { TEMPLATE_ICON_MAP } from '@/lib/canva-icon-maps';
-import { Gamepad2, Trophy, X, Grid3X3, Maximize2, Minimize2, ChevronLeft, ChevronRight, RotateCcw, Star } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import { getScoreTier } from './page-renderer/PageFrame';
 import { ScoreDisplay } from './page-renderer/ScoreDisplay';
@@ -72,7 +72,7 @@ function PlayOverlayHeader() {
   return (
     <div className="bg-app-surface flex items-center justify-between px-4 py-2 border-b border-app-border">
       <div className="flex items-center gap-3">
-        <Gamepad2 size={14} className="text-emerald-400" />
+        <span className="material-symbols-outlined text-emerald-400" style={{ fontSize: '14px' }}>sports_esports</span>
         <span className="text-xs font-bold text-emerald-400">Mode Interaktif</span>
         <span className="text-[10px] text-app-muted">•</span>
         <span className="text-[10px] text-app-primary font-semibold truncate max-w-[200px]">
@@ -94,13 +94,17 @@ function PlayOverlayHeader() {
             {/* Star rating in header */}
             <div className="flex items-center gap-0.5">
               {[1, 2, 3].map(star => (
-                <Star
+                <span
                   key={`hdr-star-${star}`}
-                  size={10}
-                  fill={totalPctVal >= star * 33 ? '#fbbf24' : 'none'}
-                  stroke={totalPctVal >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)'}
-                  strokeWidth={2}
-                />
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: '10px',
+                    fontVariationSettings: totalPctVal >= star * 33 ? "'FILL' 1, 'wght' 500" : "'FILL' 0, 'wght' 400",
+                    color: totalPctVal >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)',
+                  }}
+                >
+                  star
+                </span>
               ))}
             </div>
             {/* Tier label */}
@@ -125,7 +129,7 @@ function PlayOverlayHeader() {
           onClick={closePlay}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold"
         >
-          <X size={14} />
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
           <span>Tutup</span>
         </Button>
       </div>
@@ -330,7 +334,7 @@ function PlayCanvas() {
               className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-30 active:scale-95 transition-transform"
               title="Halaman sebelumnya (←)"
             >
-              <ChevronLeft size={14} />
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_left</span>
               <span className="hidden sm:inline">Prev</span>
             </Button>
 
@@ -398,7 +402,7 @@ function PlayCanvas() {
               title="Halaman berikutnya (→)"
             >
               <span className="hidden sm:inline">Next</span>
-              <ChevronRight size={14} />
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_right</span>
             </Button>
           </div>
 
@@ -410,7 +414,7 @@ function PlayCanvas() {
               className="px-2 py-1 rounded-lg text-[10px] font-bold gap-1 text-app-muted hover:text-emerald-300"
               title="Overview (O)"
             >
-              <Grid3X3 size={10} /> Overview
+              <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>grid_view</span> Overview
             </Button>
             <Button
               variant="ghost"
@@ -418,7 +422,7 @@ function PlayCanvas() {
               className="px-2 py-1 rounded-lg text-[10px] font-bold gap-1 text-app-muted hover:text-amber-300"
               title="Ulangi semua (reset skor)"
             >
-              <RotateCcw size={10} /> Ulangi
+              <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>refresh</span> Ulangi
             </Button>
             <Button
               variant="ghost"
@@ -434,7 +438,7 @@ function PlayCanvas() {
               className="px-2 py-1 rounded-lg text-[10px] font-bold gap-1 text-app-muted hover:text-cyan-300"
               title="Fullscreen (F)"
             >
-              {isFullscreen ? <Minimize2 size={10} /> : <Maximize2 size={10} />}
+              {isFullscreen ? <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>close_fullscreen</span> : <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>open_in_full</span>}
               {isFullscreen ? 'Exit' : 'Fullscreen'}
             </Button>
           </div>
@@ -496,13 +500,17 @@ function OverviewGrid({ onClose }: { onClose: () => void }) {
             </span>
             <div className="flex items-center gap-0.5">
               {[1, 2, 3].map(star => (
-                <Star
+                <span
                   key={`overview-star-${star}`}
-                  size={10}
-                  fill={totalPctVal >= star * 33 ? '#fbbf24' : 'none'}
-                  stroke={totalPctVal >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)'}
-                  strokeWidth={2}
-                />
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: '10px',
+                    fontVariationSettings: totalPctVal >= star * 33 ? "'FILL' 1, 'wght' 500" : "'FILL' 0, 'wght' 400",
+                    color: totalPctVal >= star * 33 ? '#fbbf24' : 'rgba(255,255,255,0.15)',
+                  }}
+                >
+                  star
+                </span>
               ))}
             </div>
           </div>

@@ -112,8 +112,18 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
       // FASE 3: Schema-first — set page.schema directly.
       // No need to store in templateData and promote on read.
       schema: stabilizedScreen,
-      // STANDAR: Golden contract enforcement on every page
-      contractId: 'golden-pertemuan',
+      // STANDAR: Contract enforcement on every page
+      // Map themeId → contractId: 'macam-norma' theme uses the 'macam-norma' contract
+      // (teal accent, solid dark cards), everything else uses golden-pertemuan
+      contractId: schema.themeId === 'macam-norma' ? 'macam-norma' : 'golden-pertemuan',
+      // Navigation config: cover pages hide navbar, all others show it
+      navConfig: {
+        showNavbar: screen.templateType !== 'cover',
+        showPrevNext: true,
+        showScore: screen.templateType === 'game' || screen.templateType === 'kuis' || screen.templateType === 'hasil',
+        showProgress: true,
+        navbarStyle: 'colorful' as const,
+      },
     };
   });
 }

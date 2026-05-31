@@ -219,8 +219,12 @@ interface PageBlockSectionProps {
 }
 
 function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect }: PageBlockSectionProps) {
-  const [expanded, setExpanded] = useState(isActive); // Auto-expand active page
-  const blocks = useMemo(() => getPageBlocks(page), [page]);
+  const [expanded, setExpanded] = useState(isActive); // Auto-expand active page on initial render
+  // Subscribe to schema changes reactively — re-compute blocks when schema content changes.
+  // Previously, [page] alone could miss updates when Zustand/immer patches deep schema fields
+  // without creating a new page reference. Adding page.schema and block count ensures reactivity.
+  const schemaBlocksLength = page.schema?.blocks?.length ?? 0;
+  const blocks = useMemo(() => getPageBlocks(page), [page, page.schema, schemaBlocksLength]);
   const isSchemaDriven = !!page.schema;
 
   if (!isSchemaDriven || blocks.length === 0) {
@@ -281,7 +285,10 @@ export function SchemaBlockTree() {
     selectBlock(blockId, blockType);
   }, [pages, currentPageIndex, goPage, selectBlock]);
 
-  // Only show schema-driven pages that have blocks
+  // Only show schema-driven pages that have blocks.
+  // Stable key: compute block count from each page's schema to ensure re-render
+  // when blocks are added/removed/edited, even if the pages array reference is the same.
+  const schemaBlockCounts = pages.map(p => p.schema?.blocks?.length ?? 0).join(',');
   const schemaPages = useMemo(() => {
     return pages
       .map((page, index) => ({ page, index }))
@@ -290,7 +297,7 @@ export function SchemaBlockTree() {
         const blocks = getPageBlocks(page);
         return blocks.length > 0;
       });
-  }, [pages]);
+  }, [pages, schemaBlockCounts]);
 
   if (schemaPages.length === 0) {
     return null;
@@ -300,7 +307,7 @@ export function SchemaBlockTree() {
     <div className="space-y-0.5">
       <div className="flex items-center gap-1.5 px-1 py-1">
         <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>account_tree</span>
-        <span className="text-[10px] font-bold text-silse-outline uppercase tracking-widest">
+        <span className="text-[11px] font-bold text-silse-outline uppercase tracking-widest">
           Schema
         </span>
       </div>
@@ -334,7 +341,9 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
   const selectedBlockId = useInteractionStore(s => s.selectedBlockId);
   const [expanded, setExpanded] = useState(false);
 
-  const blocks = useMemo(() => getPageBlocks(page), [page]);
+  // Reactive: re-compute blocks when schema changes (not just page reference)
+  const schemaBlocksLength = page.schema?.blocks?.length ?? 0;
+  const blocks = useMemo(() => getPageBlocks(page), [page, page.schema, schemaBlocksLength]);
   const isSchemaDriven = !!page.schema;
 
   const handleSelect = useCallback((pageId: string, blockId: string, blockType: string) => {
@@ -350,7 +359,7 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
     <div className="ml-4">
       <button
         onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-        className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
+        className="flex items-center gap-1 text-[10px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
       >
         <span className={`material-symbols-outlined transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} style={{ fontSize: '9px' }}>chevron_right</span>
         <span className="material-symbols-outlined text-silse-primary-container/50" style={{ fontSize: '9px' }}>bolt</span>

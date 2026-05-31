@@ -7,7 +7,6 @@ import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { CanvaPage, CanvaElement, PageTemplateType } from '@/components/canva/types';
 import type { SchemaBlock } from '@/core/schema/types';
-import { useAuthoringStore } from '@/store/authoring-store';
 import {
   populateTemplateElements,
 } from '@/lib/canva-constants';

@@ -5,7 +5,6 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
 import ExportApp from './ExportApp';
 import './export.css';
@@ -16,7 +15,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import type { AuthoringState } from '@/store/authoring/types';
 import { useCanvaStore } from '@/store/canva-store';
 import type { CanvaState } from '@/store/canva/types';
-import { useInteractiveStore } from '@/store/interactive-store';
+import { useInteractiveStore, setCanvaStoreRef } from '@/store/interactive-store';
 
 // ── Error Boundary for export mode ────────────────────────────────
 // Catches render errors in any template component and shows a
@@ -57,7 +56,7 @@ class ExportErrorBoundary extends React.Component<
           fontFamily: "'Nunito', sans-serif",
         }}>
           <div style={{ textAlign: 'center', maxWidth: 400 }}>
-            <AlertTriangle size={48} className="text-amber-400" />
+            <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '48px' } }>warning</span>
             <div style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>
               Terjadi Kesalahan
             </div>
@@ -137,12 +136,20 @@ if (exportData) {
     useCanvaStore.setState(canvaPartial);
   }
 
-  // 3. Set interactive store to interactive mode
+  // 3. Set interactive store canva ref — breaks circular dependency
+  //    This is essential for interactive-store's syncTotalPages() to work,
+  //    which is called by navigation methods (goInteractivePage, etc.).
+  //    Without this, those methods would throw errors.
+  setCanvaStoreRef(useCanvaStore);
+
+  // 4. Set interactive store to interactive mode with fresh state
+  //    Clear scores and reset so each export session starts clean.
   useInteractiveStore.setState({
     mode: 'interactive',
     interactivePageIdx: 0,
     totalPages: exportData.pages?.length || 0,
     scores: [],
+    replayGeneration: 0,
   });
 } else {
   logger.error('Export', 'window.__EXPORT_DATA__ is missing. Export data was not injected by the API route.');

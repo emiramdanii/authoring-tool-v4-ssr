@@ -25,6 +25,16 @@ export interface BlockLayout {
   rotation?: number;
 }
 
+// ── Type Guard ────────────────────────────────────────────────────
+// Some block types (TabIconsBlock, InfografisBlock) override `layout`
+// with a string union like 'horizontal' | 'grid'. This type guard
+// safely checks if a block's layout is a spatial BlockLayout object
+// (with position/x/y) vs a visual variant string.
+
+export function isSpatialLayout(layout: unknown): layout is BlockLayout {
+  return typeof layout === 'object' && layout !== null && 'position' in layout;
+}
+
 // ── Compression Hints ────────────────────────────────────────────
 // Intelligence that the layout/compression engine uses BEFORE render.
 // The renderer is pure + dumb — all intelligence lives here.

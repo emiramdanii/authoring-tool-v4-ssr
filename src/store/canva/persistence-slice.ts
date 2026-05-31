@@ -11,9 +11,8 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 // See: src/lib/use-vite-export.ts and src/app/api/export/route.ts
 import { CANVA_STORAGE_KEY } from './constants';
 import { hasCrashRecovery, loadCrashRecovery, clearCrashRecovery, safeBootFromStorage, repairSchema, validateAndRepairPages, computePagesHash } from '@/core/recovery';
-import { ensurePageSchema, migrateAllPages } from '@/core/schema/ensure-schema';
+import { migrateAllPages } from '@/core/schema/ensure-schema';
 import { migrateAllSchemas } from '@/core/schema/schema-migration';
-import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
 import { assertDocumentPurity, clearCompressedHeightCache } from '@/core/schema/session-state';
 import { clearMeasurementCache } from '@/core/layout/BlockMeasurer';
 import { useAuthoringStore } from '@/store/authoring-store';
@@ -105,7 +104,6 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       // Uses a path-based depth limiter to prevent stack overflow
       // on deeply nested or corrupted schema data.
       const seen = new WeakSet();
-      const MAX_PATH_DEPTH = 80; // Max nesting depth before truncating
       const safeStringify = (obj: unknown): string => {
         return JSON.stringify(obj, function(this: unknown, _key: string, value: unknown): unknown {
           if (typeof value === 'object' && value !== null) {
@@ -274,33 +272,12 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           }
         }
 
-        // Derive EditorProjectionStore from schema (write-through)
-        // After loading pages, the projection store auto-syncs from schema
-        try {
-          const projection = deriveProjectionFromPages(cleanPages);
-          if (Object.keys(projection).length > 0) {
-            // Spread only defined fields to satisfy AuthoringState type
-            const patch: Record<string, unknown> = { dirty: false };
-            if (projection.tp) patch.tp = projection.tp;
-            if (projection.alur) patch.alur = projection.alur;
-            if (projection.kuis) patch.kuis = projection.kuis;
-            if (projection.materi) patch.materi = projection.materi;
-            if (projection.diskusi) patch.diskusi = projection.diskusi;
-            if (projection.refleksi) patch.refleksi = projection.refleksi;
-            if (projection.skenario) patch.skenario = projection.skenario;
-            if (projection.motivasi) patch.motivasi = projection.motivasi;
-            if (projection.rangkuman) patch.rangkuman = projection.rangkuman;
-            if (projection.meta) {
-              // Merge partial meta into existing meta (keep defaults for missing fields)
-              const currentMeta = useAuthoringStore.getState().meta;
-              patch.meta = { ...currentMeta, ...projection.meta };
-            }
-            useAuthoringStore.setState(patch as Partial<import('@/store/authoring/types').AuthoringState>);
-          }
-        } catch (err) {
-          // Projection derivation is best-effort — don't break load on error
-          logger.warn('Persistence', 'Failed to derive projection from schema: ' + String(err));
-        }
+        // ── Projection sync: Let reactive startProjectionSync() handle this ──
+        // Previously we derived projection manually here AND the reactive subscription
+        // also fires when pages change → double-write. Now we only set dirty:false
+        // and let the 300ms-debounced reactive sync handle the actual projection fields.
+        // This eliminates redundant work and potential race conditions on load.
+        useAuthoringStore.setState({ dirty: false });
 
         // Migrate legacy leftTab names
         let leftTab: LeftTab = 'pages';
@@ -309,7 +286,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         }
         set({
           pages: cleanPages,
-          ratioId: data.ratioId || '9:16',
+          ratioId: data.ratioId || '16:9',
           currentPageIndex: 0,
           kontenTabRequest: null, // Phase 3: reset ephemeral nav
           kontenPanelRequest: false,
@@ -423,35 +400,19 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         const cleanPages = stripRuntimeFieldsFromPages(pages);
 
         // ── Purity Guard: Check loaded data for runtime state leakage ──
-        for (const page of cleanPages) {
-          if (page.schema) {
-            assertDocumentPurity(page.schema, `loadFromDB page=${page.id}`);
+        try {
+          for (const page of cleanPages) {
+            if (page.schema) {
+              assertDocumentPurity(page.schema, `loadFromDB page=${page.id}`);
+            }
           }
+        } catch (purityErr) {
+          logger.warn('CanvaStore', 'Purity check on DB load failed: ' + String(purityErr));
         }
 
-        // Derive EditorProjectionStore from schema (write-through)
-        try {
-          const projection = deriveProjectionFromPages(cleanPages);
-          if (Object.keys(projection).length > 0) {
-            const patch: Record<string, unknown> = { dirty: false };
-            if (projection.tp) patch.tp = projection.tp;
-            if (projection.alur) patch.alur = projection.alur;
-            if (projection.kuis) patch.kuis = projection.kuis;
-            if (projection.materi) patch.materi = projection.materi;
-            if (projection.diskusi) patch.diskusi = projection.diskusi;
-            if (projection.refleksi) patch.refleksi = projection.refleksi;
-            if (projection.skenario) patch.skenario = projection.skenario;
-            if (projection.motivasi) patch.motivasi = projection.motivasi;
-            if (projection.rangkuman) patch.rangkuman = projection.rangkuman;
-            if (projection.meta) {
-              const currentMeta = useAuthoringStore.getState().meta;
-              patch.meta = { ...currentMeta, ...projection.meta };
-            }
-            useAuthoringStore.setState(patch as Partial<import('@/store/authoring/types').AuthoringState>);
-          }
-        } catch (err) {
-          logger.warn('Persistence:DB', 'Failed to derive projection from schema: ' + String(err));
-        }
+        // ── Projection sync: Let reactive startProjectionSync() handle this ──
+        // Same as loadFromStorage — only set dirty:false, let reactive sync handle projection
+        useAuthoringStore.setState({ dirty: false });
 
         set({
           pages: cleanPages,
@@ -501,7 +462,6 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
     }
 
     // Reset store to default state (empty — user sees CanvasEmptyState)
-    const { createPage: makePage } = require('./constants');
     set({
       pages: [],
       currentPageIndex: -1,
@@ -522,8 +482,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
 
     // Import toast here to avoid circular deps at module level
     try {
-      const { toast } = require('sonner');
-      toast.success('Data direset ke default');
+      import('sonner').then(({ toast }) => toast.success('Data direset ke default')).catch(() => {});
     } catch {}
   },
 

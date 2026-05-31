@@ -25,19 +25,19 @@ import { PremiumBlockWrapper, PremiumBadge, MicroInteraction } from './PremiumBl
 
 // ── Type badge colors and labels per tipe ────────────────────────
 const TIPE_META: Record<MateriBlokTipe, { label: string; color: string; icon: React.ReactNode }> = {
-  teks:      { label: 'Paragraf',  color: 'y', icon: <Type size={10} /> },
-  definisi:  { label: 'Definisi',  color: 'y', icon: <BookOpen size={10} /> },
-  poin:      { label: 'Poin',      color: 'c', icon: <List size={10} /> },
+  teks:      { label: 'Paragraf',  color: 'y', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>text_fields</span> },
+  definisi:  { label: 'Definisi',  color: 'y', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>menu_book</span> },
+  poin:      { label: 'Poin',      color: 'c', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>list</span> },
   tabel:     { label: 'Tabel',     color: 'p', icon: <Table2 size={10} /> },
-  kutipan:   { label: 'Kutipan',   color: 'g', icon: <Quote size={10} /> },
-  gambar:    { label: 'Gambar',    color: 'c', icon: <Image size={10} /> },
-  timeline:  { label: 'Timeline',  color: 'c', icon: <Clock size={10} /> },
-  highlight: { label: 'Highlight', color: 'y', icon: <Zap size={10} /> },
+  kutipan:   { label: 'Kutipan',   color: 'g', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>format_quote</span> },
+  gambar:    { label: 'Gambar',    color: 'c', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>image</span> },
+  timeline:  { label: 'Timeline',  color: 'c', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>schedule</span> },
+  highlight: { label: 'Highlight', color: 'y', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>bolt</span> },
   compare:   { label: 'Perbandingan', color: 'p', icon: <GitCompare size={10} /> },
-  infobox:   { label: 'Info',      color: 'c', icon: <Info size={10} /> },
-  checklist: { label: 'Checklist', color: 'g', icon: <CheckSquare size={10} /> },
-  statistik: { label: 'Statistik', color: 'c', icon: <TrendingUp size={10} /> },
-  studi:     { label: 'Studi Kasus', color: 'r', icon: <BookMarked size={10} /> },
+  infobox:   { label: 'Info',      color: 'c', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>info</span> },
+  checklist: { label: 'Checklist', color: 'g', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>check_box</span> },
+  statistik: { label: 'Statistik', color: 'c', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>trending_up</span> },
+  studi:     { label: 'Studi Kasus', color: 'r', icon: <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>menu_book</span> },
 };
 
 // ── 1. TEKS — Card dengan paragraf ──────────────────────────────
@@ -67,7 +67,7 @@ function RenderDefinisi({ block, tokens, isCompact }: { block: MateriBlokBlock; 
         <div className="flex items-center gap-2 mb-2">
           <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
             style={{ background: tokens.colorAlpha(colorKey, 0.2) }}>
-            <BookOpen size={10} style={{ color: tokens.color(colorKey) }} />
+            <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>menu_book</span>
           </div>
           <PremiumBadge tokens={tokens} accent={colorKey} variant="glass">
             Definisi
@@ -157,7 +157,7 @@ function RenderKutipan({ block, tokens, isCompact }: { block: MateriBlokBlock; t
   return (
     <div className="rounded-xl" style={{ background: tokens.colorAlpha('g', 0.06), border: `1px solid ${tokens.colorAlpha('g', 0.15)}`, borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('g')}` }}>
       <div style={{ ...edu.componentPadding() }}>
-        <Quote size={isCompact ? 16 : 22} style={{ color: tokens.colorAlpha('g', 0.4), marginBottom: '8px' }} />
+        <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>format_quote</span>
         <div style={{ ...edu.bodyLg(), fontStyle: 'italic', color: edu.textColor() }}>
           &ldquo;<RichText content={block.isi || ''} />&rdquo;
         </div>
@@ -178,7 +178,7 @@ function RenderGambar({ block, tokens, isCompact }: { block: MateriBlokBlock; to
   if (!url) return (
     <div className="rounded-xl flex items-center justify-center" style={{ background: tokens.colorAlpha('c', 0.06), border: `1px dashed ${tokens.colorAlpha('c', 0.2)}`, height: isCompact ? '80px' : '160px' }}>
       <div className="text-center">
-        <Image size={isCompact ? 20 : 32} style={{ color: edu.mutedText(0.4), margin: '0 auto' }} />
+        <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>image</span>
         <div style={{ ...edu.caption(), color: edu.mutedText(0.5), marginTop: '4px' }}>Masukkan URL gambar</div>
       </div>
     </div>
@@ -203,7 +203,7 @@ function RenderTimeline({ block, tokens, isCompact }: { block: MateriBlokBlock; 
     <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha('c', 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
         <div className="font-bold flex items-center gap-2" style={{ ...edu.componentPadding(), paddingBottom: isCompact ? 6 : 8, ...edu.bodyLg(), fontWeight: 700, color: edu.textColor() }}>
-          <Clock size={isCompact ? 12 : 14} style={{ color: tokens.color('c') }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>schedule</span>
           {block.judul}
         </div>
       )}
@@ -302,7 +302,7 @@ function RenderInfobox({ block, tokens, isCompact }: { block: MateriBlokBlock; t
     <div className="rounded-xl" style={{ background: tokens.colorAlpha(colorKey, 0.08), border: `1px solid ${tokens.colorAlpha(colorKey, 0.2)}`, borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}` }}>
       <div style={{ ...edu.componentPadding() }}>
         <div className="flex items-center gap-2 mb-2">
-          <Info size={isCompact ? 12 : 14} style={{ color: tokens.color(colorKey) }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>info</span>
           <span className="font-bold uppercase" style={{ ...edu.micro(), letterSpacing: '0.05em', color: tokens.color(colorKey) }}>
             {styleKey === 'tip' ? 'Tips' : styleKey === 'warning' ? 'Perhatian' : 'Info'}
           </span>
@@ -328,7 +328,7 @@ function RenderChecklist({ block, tokens, isCompact }: { block: MateriBlokBlock;
     <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha('g', 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
         <div className="font-bold flex items-center gap-2" style={{ ...edu.componentPadding(), paddingBottom: isCompact ? 6 : 8, ...edu.bodyLg(), fontWeight: 700, color: edu.textColor() }}>
-          <CheckSquare size={isCompact ? 12 : 14} style={{ color: tokens.color('g') }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>check_box</span>
           {block.judul}
         </div>
       )}
@@ -354,7 +354,7 @@ function RenderStatistik({ block, tokens, isCompact }: { block: MateriBlokBlock;
     <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha('c', 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
         <div className="font-bold flex items-center gap-2" style={{ ...edu.componentPadding(), paddingBottom: isCompact ? 6 : 8, ...edu.bodyLg(), fontWeight: 700, color: edu.textColor() }}>
-          <TrendingUp size={isCompact ? 12 : 14} style={{ color: tokens.color('c') }} />
+          <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>trending_up</span>
           {block.judul}
         </div>
       )}

@@ -40,6 +40,11 @@ const PlayOverlay = dynamic(() => import('./PlayOverlay'), {
   loading: () => null,
 });
 
+const LearningMediaShell = dynamic(() => import('./LearningMediaShell'), {
+  ssr: false,
+  loading: () => null,
+});
+
 const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette').then(mod => ({ default: mod.default })), {
   ssr: false,
   loading: () => null,
@@ -49,10 +54,11 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 // CANVA BUILDER v8 — SILSE v4 Resizable Panel Layout
 // ═══════════════════════════════════════════════════════════════
 // Architecture:
+//   appMode === 'learn'    → LearningMediaShell (student-facing, screen nav, score)
 //   appMode === 'present'  → PresentMode (fullscreen stage only)
 //   appMode === 'preview'  → PreviewMode (stage + floating nav, no panels)
-//   appMode === 'edit'     → Fixed header (h-14) + resizable 3-panel
-//     [Fixed Toolbar h-14]
+//   appMode === 'edit'     → Fixed header (h-16) + resizable 3-panel
+//     [Fixed Toolbar h-16]
 //     [Resizable: Left 20% | Stage auto | Right 25%]
 //     [SceneTabBar + StatusBar]
 // Panel persistence: sizes stored in canva-store for session continuity
@@ -61,10 +67,21 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
   const appMode = useCanvaStore((s) => s.appMode);
+  const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
+  const selectedElId = useCanvaStore((s) => s.selectedElId);
   const commandPalette = useCommandPalette();
 
   // ── Export success dialog ───────────────────────────────────
   const [showExportSuccess, setShowExportSuccess] = useState(false);
+
+  // ── Auto-open right panel when a block or element is selected ──
+  // If user selects something and the right panel is closed, open it
+  // so they can see the properties panel immediately.
+  useEffect(() => {
+    if ((selectedBlockId || selectedElId) && !rightPanelOpen) {
+      useCanvaStore.setState({ rightPanelOpen: true });
+    }
+  }, [selectedBlockId, selectedElId, rightPanelOpen]);
 
   useEffect(() => {
     const handler = () => setShowExportSuccess(true);
@@ -101,17 +118,25 @@ export default function CanvaBuilder() {
       getCanvaState: useCanvaStore.getState,
       setCanvaState: useCanvaStore.setState,
       getInteractiveState: useInteractiveStore.getState,
-      openAIAssistant: () => {
-        if (!isEnabled('aiAssistant')) return;
-        const store = useCanvaStore.getState();
-        if (!store.rightPanelOpen) {
-          useCanvaStore.setState({ rightPanelOpen: true });
-        }
-        window.dispatchEvent(new CustomEvent('open-ai-assistant'));
-      },
+      // AI Assistant shortcut removed — AI Generator is a parked area per CORE_SCOPE.md
     }),
     [],
   );
+
+  // ── Learn mode: student-facing interactive learning ──────────
+  if (appMode === 'learn') {
+    return (
+      <MobileGuard>
+        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-slate-100 text-slate-800">
+          <UndoRedoToast />
+          <CanvaAutoSaveSync />
+          <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
+          <LearningMediaShell />
+          <OfflineIndicator />
+        </div>
+      </MobileGuard>
+    );
+  }
 
   // ── Present mode: fullscreen stage only ──────────────────────
   if (appMode === 'present') {
@@ -150,13 +175,13 @@ export default function CanvaBuilder() {
   // ── EDIT mode: Fixed header + resizable 3-panel layout (SILSE v4) ──
   return (
     <MobileGuard>
-      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface focus-ring pt-14" id="main-content" data-testid="canva-builder">
+      <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface focus-ring pt-16" id="main-content" data-testid="canva-builder">
         <UndoRedoToast />
         <CanvaAutoSaveSync />
 
         <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
 
-        {/* Fixed Top Toolbar — SILSE v4: h-14 fixed top-0 z-40 */}
+        {/* Fixed Top Toolbar — SILSE v4: h-16 fixed top-0 z-40 */}
         <div data-tour="toolbar" data-testid="toolbar" role="toolbar" aria-label="Toolbar editor">
           <ProfilerWrapper id="Toolbar">
             <Toolbar />
@@ -165,7 +190,7 @@ export default function CanvaBuilder() {
 
         {/* Main builder row — Resizable 3-panel layout */}
         <ResizablePanelGroup
-          direction="horizontal"
+          orientation="horizontal"
           className="flex-1 min-h-0"
         >
           {/* Left Panel — Resizable, default 20%, min 220px */}

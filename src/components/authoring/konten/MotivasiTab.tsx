@@ -15,7 +15,7 @@
 //   MotivasiBlock.visual.emoji → MotivasiData.visual
 // ═══════════════════════════════════════════════════════════════
 
-import { Sparkles, Lightbulb, Link2, Activity } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useSchemaMotivasi } from '@/hooks/use-schema-navigator';
 import { INPUT_CLS, TEXTAREA_CLS, FieldLabel, MAX_TITLE, MAX_BODY, MAX_SHORT_TEXT } from './shared';
 
@@ -40,7 +40,7 @@ export function MotivasiTab() {
     return (
       <div className="text-center py-10 bg-app-surface border border-dashed border-app-border/40 rounded-xl">
         <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
-          <Sparkles size={24} className="text-amber-400" />
+          <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '24px' } }>auto_awesome</span>
         </div>
         <p className="text-sm font-medium text-app-primary mb-1">Belum ada blok motivasi</p>
         <p className="text-xs text-app-muted">Tambahkan halaman motivasi di Canva untuk mengedit di sini.</p>
@@ -84,7 +84,7 @@ export function MotivasiTab() {
       <div className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <Sparkles size={16} className="text-amber-400" />
+            <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>auto_awesome</span>
           </div>
           <div>
             <h4 className="text-sm font-semibold text-app-primary">Pertanyaan Pemicu</h4>
@@ -105,7 +105,7 @@ export function MotivasiTab() {
       <div className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-            <Link2 size={16} className="text-cyan-400" />
+            <span className="material-symbols-outlined text-cyan-400" style={ { fontSize: '16px' } }>link</span>
           </div>
           <div>
             <h4 className="text-sm font-semibold text-app-primary">Koneksi</h4>
@@ -126,7 +126,7 @@ export function MotivasiTab() {
       <div className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
-            <Activity size={16} className="text-green-400" />
+            <span className="material-symbols-outlined text-green-400" style={ { fontSize: '16px' } }>monitoring</span>
           </div>
           <div>
             <h4 className="text-sm font-semibold text-app-primary">Aktivitas</h4>
@@ -147,7 +147,7 @@ export function MotivasiTab() {
       <div className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
-            <Lightbulb size={16} className="text-purple-400" />
+            <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>lightbulb</span>
           </div>
           <div>
             <h4 className="text-sm font-semibold text-app-primary">Visual / Ikon</h4>

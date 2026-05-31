@@ -14,17 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { useCallback, useMemo } from 'react';
-import {
-  Trash2,
-  Copy,
-  LayoutTemplate,
-  ArrowRightLeft,
-  Minimize2,
-  Maximize2,
-  X,
-  CheckSquare,
-  Layers,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
@@ -94,7 +84,7 @@ export default function BatchActionBar() {
       <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-app-surface/95 backdrop-blur-sm border border-app-border shadow-2xl">
         {/* Selection count */}
         <div className="flex items-center gap-1.5 pr-2 border-r border-app-border/30 mr-1">
-          <CheckSquare size={12} className="text-app-accent" />
+          <span className="material-symbols-outlined text-app-accent" style={{ fontSize: '12px' }}>check_box</span>
           <span className="text-[10px] font-bold text-app-accent">
             {selectedBlockIds.length}
           </span>
@@ -126,7 +116,7 @@ export default function BatchActionBar() {
             className="p-1.5 rounded-lg text-app-secondary hover:text-app-accent hover:bg-app-accent/10 transition-all active:scale-90"
             title={isSederhana ? 'Duplikat' : 'Duplicate Blocks'}
           >
-            <Copy size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>content_copy</span>
           </button>
 
           {/* Toggle Compression */}
@@ -135,7 +125,7 @@ export default function BatchActionBar() {
             className="p-1.5 rounded-lg text-app-secondary hover:text-app-accent hover:bg-app-accent/10 transition-all active:scale-90"
             title="Toggle Compression"
           >
-            <Minimize2 size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close_fullscreen</span>
           </button>
 
           {/* Delete */}
@@ -144,7 +134,7 @@ export default function BatchActionBar() {
             className="p-1.5 rounded-lg text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-all active:scale-90"
             title={isSederhana ? 'Hapus' : 'Delete Blocks'}
           >
-            <Trash2 size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
           </button>
         </div>
 
@@ -157,7 +147,7 @@ export default function BatchActionBar() {
           className="p-1.5 rounded-lg text-app-muted hover:text-app-primary hover:bg-app-elevated/60 transition-all active:scale-90"
           title="Clear Selection"
         >
-          <X size={14} />
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
         </button>
       </div>
     </div>

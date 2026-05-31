@@ -1,5 +1,5 @@
 # STATUS.md — Sumber Kebenaran Proyek SILSE
-> Terakhir diperbarui: 2026-05-28
+> Terakhir diperbarui: 2026-05-30
 > Prinsip: **Selesai satu, baru lanjut satu. Tidak numpuk.**
 
 ---
@@ -30,7 +30,18 @@
 | 7. Konten.tsx → Schema Navigator (KuisTab, MotivasiTab, RangkumanTab) | ✅ DONE | Phase 3 |
 | 8. Konten.tsx → Schema Navigator (MateriTab — most complex) | ✅ DONE | Phase 3 |
 | 9. Safe Page Split / Overflow Policy | ✅ DONE | Phase 4 |
-| 10. Cleanup dual source | 🔄 IN PROGRESS | Phase 5 |
+| 10. Cleanup dual source | ✅ DONE | Phase 5 |
+| 11. P0: Delete dead code (sync-projection.ts + deprecated slices) | ✅ DONE | Phase 5 |
+| 12. P0: Fix SchemaBlockTree typo (sateri → skenario) | ✅ DONE | Phase 5 |
+| 13. P1: Schema migration CP/TP/ATP/Alur (hooks + Dokumen.tsx) | ✅ DONE | Phase 5 |
+| 14. P2: Modules projection sync (SchemaProjection.modules) | ✅ DONE | Phase 5 |
+| 15. Fix: Cover invisible bug (zIndex:0 → zIndex:1) | ✅ DONE | Bug Fix |
+| 16. P3: Migrate matching+truefalse → schema game blocks | ✅ DONE | Phase 5 |
+| 17. P4: Remove module-slice write actions (read-only projection) | ✅ DONE | Phase 5 |
+| 18. P5: Fix double-write on load (system-slice vs persistence-slice) | ✅ DONE | Phase 5 |
+| 19. P6: Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis) | ✅ DONE | Phase 5 |
+| 20. Phase 5-I: Schema-first reads for BsnpCompliancePanel + dead import cleanup | ✅ DONE | Phase 5 |
+| 21. Bug sweep: Unused imports + type error fixes | ✅ DONE | Bug Fix |
 
 ---
 
@@ -47,7 +58,7 @@
 | applyGuidedSchemaPatch() | `src/core/schema/guided-patch.ts` | Single write path ke schema, 12 block type registry |
 | getEditableSchemaBlocks() | `src/core/schema/guided-patch.ts` | List editable blocks dari schema |
 | getGuidedEditorSchema() | `src/core/schema/guided-patch.ts` | Field definitions per block type |
-| Deprecated sync-projection.ts | `src/core/schema/sync-projection.ts` | @deprecated + console.warn |
+| ~~sync-projection.ts~~ | `src/core/schema/sync-projection.ts` | DELETED — zero importers, all sync* functions dead code |
 | BlockPropertiesPanel (stitch v4) | `src/components/canva/right-panel/BlockPropertiesPanel.tsx` | Guided form routing |
 | GuidedFormEditor | `src/components/canva/right-panel/block-properties/GuidedFormEditor.tsx` | Teacher-friendly content editor |
 | Guided Field Renderer | `src/components/canva/right-panel/block-properties/guided-field-renderer.tsx` | text/textarea/richtext/color/array/boolean/select/number/icon |
@@ -61,10 +72,10 @@
 
 ## Masalah yang Belum Diperbaiki
 
-### Dual Source of Truth (SEMI-RESOLVED)
+### Dual Source of Truth (RESOLVED)
 - **Arah sekarang**: Konten Tab → Schema (TULIS via applyGuidedSchemaPatch) → startProjectionSync → AuthoringStore (auto-derived, READ-ONLY)
-- **Sisa masalah**: AuthoringStore masih writable — code lama bisa langsung tulis ke situ, bypassing schema
-- **Phase 5 target**: AuthoringStore jadi fully derived (read-only mirror of schema)
+- **Sisa masalah**: Non-schema fields (cp, atp, petunjuk, penutup, suara) masih ditulis langsung ke AuthoringStore — ini by design karena fields ini adalah project metadata
+- **Status**: Phase 5 cleanup selesai. BsnpCompliancePanel sekarang baca dari schema projection, bukan AuthoringStore
 
 ---
 
@@ -72,11 +83,11 @@
 
 | ID | Masalah | Ditemukan Saat |
 |---|---|---|
-| P1 | Cover invisible bug — zIndex:0 di SceneLayoutEngine | Audit sebelumnya |
-| P2 | Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors | Diskusi STANDAR |
-| P3 | Font size violations di block renderers lainnya | Audit sebelumnya |
-| P4 | NcGridRenderer card body "Bagian dari materi" — placeholder text | Review norma-golden |
-| P5 | syncMateriToSchema generate new IDs setiap sync — menyebabkan re-render | Analisis sync-projection |
+| P1 | ~~Cover invisible bug — zIndex:0 di SceneLayoutEngine~~ ✅ FIXED (Task 5) | Audit sebelumnya |
+| P2 | ~~Multiple visual systems fighting — Tailwind vs edu tokens vs schema colors~~ ✅ FIXED — edu.pageBg()/pageBg2() used consistently in renderers | Diskusi STANDAR |
+| P3 | ~~Font size violations di block renderers lainnya~~ ✅ FIXED — edu token floor raised + CrosswordGameRenderer clue text fixed | Audit sebelumnya |
+| P4 | ~~NcGridRenderer card body "Bagian dari materi"~~ ✅ RESOLVED — placeholder not found in codebase | Review norma-golden |
+| P5 | ~~syncMateriToSchema generate new IDs setiap sync~~ ✅ RESOLVED — function dihapus, MateriTab pakai useSchemaMateri() langsung | Analisis sync-projection |
 
 ---
 
@@ -145,7 +156,7 @@
 - SceneList overflow indicator — amber AlertTriangle icon on overflowing pages
   - Reads from pageOverflowStatus store
 
-### Phase 5 — Cleanup Dual Source (IN PROGRESS)
+### Phase 5 — Cleanup Dual Source ✅ DONE
 **Goal**: Hapus old write paths, schema-only untuk save/export
 
 **Completed**:
@@ -168,9 +179,52 @@
   - Phase 3's panelRequest pattern works for cross-panel navigation
   - Direct reads/writes still in AuthoringStore (requires AuthoringTool.tsx refactor)
 
+**This Session's Progress**:
+- P0: Deleted `sync-projection.ts` (zero importers), removed deprecated slice actions from 5 authoring store slices (kuis, materi, skenario, diskusi-refleksi, motivasi-rangkuman), fixed SchemaBlockTree typo ('sateri' → 'skenario')
+- P1: Created CpBlock + AtpBlock schema types, added to SchemaBlock union, added guided editor registry entries for cp/tp/alur/atp, created useSchemaCp/useSchemaTp/useSchemaAlur/useSchemaAtp hooks with dual-write pattern, migrated Dokumen.tsx sections from AuthoringStore to schema hooks
+- P2: Added `modules` to SchemaProjection + deriveGameBlockToModules() — game blocks now auto-sync to AuthoringStore via startProjectionSync()
+- Bug fix: Cover invisible bug (zIndex:0 → zIndex:1 in SceneLayoutEngine)
+- P3: Migrated matching+truefalse in use-auto-generate.ts from AuthoringStore module-slice actions → schema game blocks via applyBlockToPages(). Added genMatchingSchema() and genTrueFalseSchema() to generators.ts. Migrated memory module in autoGenerateContent() from projection → memory-game schema block.
+- P4: Removed all 7 write actions from module-slice.ts (addModule, removeModule, updateModuleField, moveModule, addModuleItem, removeModuleItem, updateModuleItem). Zero callers remain. modules field is now a read-only projection derived from schema via startProjectionSync().
+- P5: Fixed double-write on load — system-slice.loadFromStorage() now only loads non-schema fields (cp, atp, petunjuk, penutup, suara, guruPw). Schema-backed fields are derived from schema via persistence-slice + startProjectionSync(). Added modules+games to projection patch. Removed duplicate CanvaStore.loadFromStorage() call from AuthoringTool.tsx. Fixed loadProject() to not overwrite schema-backed fields.
+- **Phase 5-H: Games field auto-derivation**
+  - Added Zustand subscription in store/authoring/index.ts that auto-derives games from modules
+  - Removed manual games writes from: preset-slice (applyFullPreset, newProject), persistence-slice (loadFromStorage, loadFromDB), import handler (handleImportJSON)
+  - games can never drift out of sync with modules
+- **P2: Visual system unification**
+  - Replaced tokens.color('bg') → edu.pageBg()/modeBg.bg in 11 game/renderer files
+  - Replaced tokens.color('bg2') → edu.pageBg2()/modeBg.bg2 in background gradients
+  - Contrast text on accent (color: tokens.color('bg')) left as-is — intentional for WCAG contrast
+- **BlockLayout type system fix** (pre-existing TS errors)
+  - Added isSpatialLayout() type guard in schema/types/base.ts
+  - Renamed TabIconsBlock/InfografisBlock.layout → layoutVariant (backward compat with layout fallback)
+  - Updated 8+ files to use isSpatialLayout guard: command-engine, normalize, render-determinism, TransformHandles, LayerPanel, SceneOverflowEngine, SceneLayoutEngine, scene-transaction, TemplateValidator, generators
+  - Fixed CanvaBuilder: direction → orientation (react-resizable-panels v4 API)
+  - Fixed Dashboard: 'settings' → 'dokumen' (PanelId type mismatch)
+  - Fixed CourseTemplateRegistry: added missing presetId field
+  - Result: 0 new TS errors (only pre-existing missing npm packages remain)
+
+**Phase 5-I: Schema-first reads for compliance panel + dead code cleanup**
+- BsnpCompliancePanel: Migrated kuis/modules/materi reads from useAuthoringStore → useSchemaKuisProjection/useSchemaModulesProjection + schema-based materi counting
+- games: Now auto-derived from modules (same logic as Phase 5-H subscription)
+- OfflineIndicator: teacherMode migrated from useAuthoringStore → useCanvaStore
+- StatusToast.AutoSaveIndicator: teacherMode migrated from useAuthoringStore → useCanvaStore
+- use-excel-import.ts: setActivePanel migrated → panelRequest pattern
+- import-export-component.tsx: Removed unused useAuthoringStore + useCanvaStore imports
+- use-project-manager.tsx: setActivePanel migrated → panelRequest pattern
+- preset-slice.ts: Marked 6 dead preset actions (applyKuisPreset, applyTpPreset, etc.) as @deprecated — zero callers exist
+- Bug sweep: Removed 4 unused useAuthoringStore imports (CanvaBuilder, auto-generate/index, use-preview-navigation, page-slice)
+- Bug sweep: Fixed use-toast.ts implicit any type → explicit boolean
+- MD3 token migration for 34 renderer files: VERIFIED — accent colors (g/r/y/c/p/o) are semantic and intentional, NOT legacy tokens. No migration needed.
+
 **Remaining (Future Work)**:
-- Convert Dokumen.tsx writes (meta, tp, alur) to schema patches — needs CpBlock/AtpBlock schema types
-- Convert auto-generate setSkenario() to schema write
+- ~~Create schema block types for presentation modules (tab-icons, accordion, timeline, infografis)~~ ✅ DONE (Phase 5-G)
+- ~~Create dedicated renderers for tab-icons, accordion, infografis~~ ✅ DONE (commit 896bd52)
+- ~~P3: Font size violations in block renderers~~ ✅ DONE — edu.micro() floor 11→14px, edu.caption() floor 14→16px, CrosswordGameRenderer clue text fixed
+- ~~P4: NcGridRenderer card body placeholder text~~ ✅ RESOLVED — placeholder text not found in codebase, likely already fixed
+- ~~Eliminate redundant `games` field~~ ✅ DONE — Phase 5-H: games auto-derived from modules via Zustand subscription
+- ~~P2: Multiple visual systems fighting~~ ✅ PARTIALLY FIXED — edu.pageBg()/pageBg2() now used in all game renderers + SchemaRenderer + PageFrame; contrast text on accent (color: tokens.color('bg')) still uses tokens directly which is intentional for WCAG
+- ~~BlockLayout type system errors~~ ✅ FIXED — added isSpatialLayout() type guard, renamed TabIconsBlock/InfografisBlock.layout → layoutVariant, fixed 8+ files
+- Migrate preset-slice writes (applyFullPreset) to schema-first (requires preset format refactor)
 - Convert import/restore bulk writes to schema-first
-- Make AuthoringStore fully read-only for Tier 1 fields (remove write actions after all consumers migrated)
 - Full activePanel extraction from AuthoringStore to dedicated navigation store

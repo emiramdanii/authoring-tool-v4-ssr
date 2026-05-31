@@ -15,7 +15,7 @@ import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { RATIOS } from '@/components/canva/types';
 import type { CanvaState } from './types';
-import { createPage } from './constants';
+
 import { createHistorySlice } from './history-slice';
 import { createPageSlice } from './page-slice';
 import { createElementSlice } from './element-slice';

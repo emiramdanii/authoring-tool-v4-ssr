@@ -29,7 +29,7 @@ import { EDU_MODE_BG } from '@/core/edu/education-colors';
 //   - 'glass': Glassmorphism, gradient borders, glowing accents
 // ═══════════════════════════════════════════════════════════════
 
-export type PageFrameMode = 'canvas' | 'preview' | 'export';
+export type PageFrameMode = 'canvas' | 'preview' | 'export' | 'learn';
 
 export interface PageFrameProps {
   /** Which render context is using this frame */
@@ -354,9 +354,23 @@ export const PageFrame = React.memo(function PageFrame({
   const showPrevNext = navConfig.showPrevNext !== false;
   // Schema-driven cover pages don't show top nav — the CoverRenderer has its own background
   const isSchemaCover = isSchemaDriven && page.templateType === 'cover';
-  const showTopNav = !isSchemaCover && page.templateType !== 'cover' && showNavbar;
   const isCoverPage = page.templateType === 'cover';
-  const showBottomNav = showNavbar && !isCoverPage;
+
+  // ═══ Sprint 4 (Engine): Hide PageFrame navbars when external navigation exists ═══
+  // In learn mode: LearningMediaShell provides TopNavbar + BottomNav
+  // In preview mode: PreviewMode provides floating navigation bar
+  // In canvas mode: PageFrame navbars are needed for editing context
+  // In export mode: PageFrame navbars are the primary navigation (no external nav)
+  //
+  // When isSchemaDriven is true AND mode is 'learn'/'preview', the ScreenAdapter
+  // system provides page-level chrome (ScreenShell with progress bar, section label,
+  // page counter). PageFrame's navbars would be duplicate and should be hidden.
+  //
+  // For legacy (non-schema) pages, keep navbars in all modes since there's no
+  // ScreenAdapter chrome to replace them.
+  const externalNavigation = isSchemaDriven && (mode === 'learn' || mode === 'preview');
+  const showTopNav = !isSchemaCover && !isCoverPage && showNavbar && !externalNavigation;
+  const showBottomNav = showNavbar && !isCoverPage && !externalNavigation;
 
   // Use shared TokenResolver from PageRenderer (ensures palette overrides are consistent)
   const themeId = (page.templateData?.schemaThemeId as string) || undefined;
@@ -422,16 +436,16 @@ export const PageFrame = React.memo(function PageFrame({
           )}
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{ background: `${alpha(tokens.color('bg'), 0.8)}` }}
+            style={{ background: `${alpha(modeBg.bg, 0.8)}` }}
           />
         </>
       )}
       {isSchemaDriven && (() => {
         const schemaBg = page.schema?.background;
-        let baseBg = tokens.color('bg');
+        let baseBg = modeBg.bg;
         if (schemaBg?.type === 'solid') baseBg = displayMode === 'print' ? modeBg.bg : tokens.color(schemaBg.color1 || 'bg');
         else if (schemaBg?.type === 'gradient') baseBg = `linear-gradient(180deg, ${tokens.color(schemaBg.color1 || 'y')}, ${tokens.color(schemaBg.color2 || 'bg')})`;
-        else if (schemaBg?.type === 'radial') baseBg = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(schemaBg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(schemaBg.color2 || 'bg')}, ${tokens.color('bg2')})`;
+        else if (schemaBg?.type === 'radial') baseBg = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(schemaBg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(schemaBg.color2 || 'bg')}, ${modeBg.bg2})`;
         else baseBg = page.bgColor || modeBg.bg;
 
         return (

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { WifiOff, Wifi, CloudOff, RefreshCw } from 'lucide-react';
 import { useServiceWorker } from '@/hooks/use-service-worker';
 import { getQueueStatus, type SyncQueueStatus } from '@/lib/offline-sync';
-import { useAuthoringStore } from '@/store/authoring-store';
+import { useCanvaStore } from '@/store/canva-store';
 import { cn } from '@/lib/utils';
 
 /**
@@ -24,7 +24,7 @@ export function OfflineIndicator() {
   const { isOnline } = useServiceWorker();
   const [queueStatus, setQueueStatus] = useState<SyncQueueStatus>({ pending: 0 });
   const [isSyncing, setIsSyncing] = useState(false);
-  const teacherMode = useAuthoringStore(s => s.teacherMode);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
   const isSederhana = teacherMode;
 
   // Poll queue status periodically when offline
@@ -79,7 +79,7 @@ export function OfflineIndicator() {
           <Wifi className="h-4 w-4" />
           {queueStatus.pending > 0 ? (
             <span className="flex items-center gap-1.5">
-              <RefreshCw className={cn('h-3.5 w-3.5', isSyncing && 'animate-spin')} />
+              <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>refresh</span>
               {isSederhana ? `Menyinkronkan (${queueStatus.pending})` : `Menyinkronkan (${queueStatus.pending})`}
             </span>
           ) : (

@@ -33,8 +33,8 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
 import type { SchemaBlock } from '@/core/schema/types';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
-import type { DiskusiData, RefleksiData, MotivasiData, RangkumanData, KuisItem, MateriBlok, Module, SkenarioChapter } from '@/store/authoring/types';
-import type { MateriBlokBlock, SkenarioBlock } from '@/core/schema/types/blocks';
+import type { DiskusiData, RefleksiData, MotivasiData, RangkumanData, KuisItem, MateriBlok, Module, SkenarioChapter, CpState, TpItem, AlurItem, AtpState } from '@/store/authoring/types';
+import type { MateriBlokBlock, SkenarioBlock, CpBlock, AtpBlock } from '@/core/schema/types/blocks';
 import { generateBlockId, generatePageId } from '@/core/schema/ensure-schema';
 import type { CanvaPage } from '@/components/canva/types';
 import { nanoid } from 'nanoid';
@@ -1870,4 +1870,593 @@ export function getKontenTabForBlockType(blockType: string): import('@/component
     'spinwheel-game': 'modules',
   };
   return mapping[blockType] || null;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PHASE 5 P1 — Dokumen Panel Schema Hooks (CP, TP, Alur, ATP)
+// ═══════════════════════════════════════════════════════════════════
+// These hooks bridge between the Dokumen panel (AuthoringStore shape)
+// and the schema (CpBlock, TpBlock, AlurBlock, AtpBlock).
+//
+// READ:  Schema blocks (if they exist) → project to AuthoringStore shape
+//        Fallback: AuthoringStore if no schema blocks exist yet
+//
+// WRITE: applyGuidedSchemaPatch() if schema block exists
+//        + AuthoringStore direct write for backward compatibility
+//        (auto-generate still reads from AuthoringStore)
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Fase → dot color mapping for Alur ──
+const FASE_TO_DOT: Record<string, string> = {
+  Pendahuluan: 'y',
+  Inti: 'c',
+  Penutup: 'g',
+};
+const DOT_TO_FASE: Record<string, string> = {
+  y: 'Pendahuluan',
+  c: 'Inti',
+  g: 'Penutup',
+};
+
+// ── CP Hook ─────────────────────────────────────────────────────
+
+/**
+ * Schema-first hook for Capaian Pembelajaran (CP) section.
+ *
+ * Shape mapping (CpBlock → CpState):
+ *   Schema.elemen       → CpState.elemen
+ *   Schema.subElemen    → CpState.subElemen
+ *   Schema.capaianFase  → CpState.capaianFase
+ *   Schema.profil       → CpState.profil
+ *   Schema.fase         → CpState.fase
+ *   Schema.kelas        → CpState.kelas
+ *
+ * Dual-write: applyGuidedSchemaPatch() + AuthoringStore for backward compat.
+ */
+export function useSchemaCp(): {
+  data: CpState;
+  locations: SchemaBlockLocation[];
+  updateField: (key: string, value: unknown) => void;
+  addProfil: (value: string) => void;
+  removeProfil: (index: number) => void;
+  replaceAll: (cp: CpState) => void;
+} {
+  const locations = useSchemaBlocksByType('cp');
+  const cpFromStore = useAuthoringStore((s) => s.cp);
+
+  const data = useMemo<CpState>(() => {
+    if (locations.length === 0) {
+      return cpFromStore;
+    }
+    const block = locations[0]!.block as unknown as CpBlock;
+    return {
+      elemen: block.elemen || '',
+      subElemen: block.subElemen || '',
+      capaianFase: block.capaianFase || '',
+      profil: block.profil || [],
+      fase: block.fase || '',
+      kelas: block.kelas || '',
+    };
+  }, [locations, cpFromStore]);
+
+  const updateField = useCallback((key: string, value: unknown) => {
+    // Write to AuthoringStore for backward compat (auto-generate reads from here)
+    useAuthoringStore.getState().updateCp(key, value);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      applyGuidedSchemaPatch({
+        pageId: loc.pageId,
+        blockId: loc.blockId,
+        patch: { [key]: value },
+        source: 'dokumen-tab',
+      });
+    }
+  }, [locations]);
+
+  const addProfil = useCallback((value: string) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().addProfil(value);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as CpBlock;
+      applyGuidedSchemaPatch({
+        pageId: loc.pageId,
+        blockId: loc.blockId,
+        patch: { profil: [...(block.profil || []), value] },
+        source: 'dokumen-tab',
+      });
+    }
+  }, [locations]);
+
+  const removeProfil = useCallback((index: number) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().removeProfil(index);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as CpBlock;
+      const newProfil = (block.profil || []).filter((_, i) => i !== index);
+      applyGuidedSchemaPatch({
+        pageId: loc.pageId,
+        blockId: loc.blockId,
+        patch: { profil: newProfil },
+        source: 'dokumen-tab',
+      });
+    }
+  }, [locations]);
+
+  const replaceAll = useCallback((cp: CpState) => {
+    // Write to AuthoringStore
+    const store = useAuthoringStore.getState();
+    for (const key of Object.keys(cp) as (keyof CpState)[]) {
+      store.updateCp(key, cp[key]);
+    }
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      applyGuidedSchemaPatch({
+        pageId: loc.pageId,
+        blockId: loc.blockId,
+        patch: {
+          elemen: cp.elemen,
+          subElemen: cp.subElemen,
+          capaianFase: cp.capaianFase,
+          profil: cp.profil,
+          fase: cp.fase,
+          kelas: cp.kelas,
+        },
+        source: 'dokumen-tab',
+      });
+    }
+  }, [locations]);
+
+  return { data, locations, updateField, addProfil, removeProfil, replaceAll };
+}
+
+// ── TP Hook ─────────────────────────────────────────────────────
+
+/**
+ * Schema-first hook for Tujuan Pembelajaran (TP) section.
+ *
+ * Shape mapping (TpBlock.items → TpItem[]):
+ *   TpBlock.items[].verb       → TpItem.verb
+ *   TpBlock.items[].desc       → TpItem.desc
+ *   TpBlock.items[].num        → TpItem.pertemuan (num IS the pertemuan number)
+ *   TpBlock.items[].color      → TpItem.color
+ *
+ * Reverse mapping (TpItem → TpBlock.items[]):
+ *   TpItem.pertemuan → items[].num
+ *   TpItem.verb      → items[].verb
+ *   TpItem.desc      → items[].desc
+ *   TpItem.color     → items[].color
+ *
+ * Dual-write: applyGuidedSchemaPatch() + AuthoringStore for backward compat.
+ */
+export function useSchemaTp(): {
+  data: TpItem[];
+  locations: SchemaBlockLocation[];
+  addTp: () => void;
+  deleteTp: (index: number) => void;
+  updateTp: (index: number, key: string, value: unknown) => void;
+  reorderTp: (fromIndex: number, toIndex: number) => void;
+} {
+  const locations = useSchemaBlocksByType('tp');
+  const tpFromStore = useAuthoringStore((s) => s.tp);
+
+  const data = useMemo<TpItem[]>(() => {
+    if (locations.length === 0) {
+      return tpFromStore;
+    }
+    // Merge items from all tp blocks
+    const allItems: TpItem[] = [];
+    for (const loc of locations) {
+      const block = loc.block as unknown as {
+        items?: Array<{ verb?: string; desc?: string; num?: number; color?: string }>;
+      };
+      if (block.items) {
+        for (const item of block.items) {
+          allItems.push({
+            verb: item.verb || 'Menjelaskan',
+            desc: item.desc || '',
+            pertemuan: item.num || 1,
+            color: item.color || '#f9c82e',
+          });
+        }
+      }
+    }
+    return allItems;
+  }, [locations, tpFromStore]);
+
+  const addTp = useCallback(() => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().addTp();
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as {
+        items?: Array<{ verb?: string; desc?: string; num?: number; color?: string }>;
+      };
+      const colorForIdx = (i: number) => ['#f9c82e', '#3ecfcf', '#a78bfa', '#34d399', '#ff6b6b', '#fb923c'][i % 6];
+      const newItem = {
+        verb: 'Menjelaskan',
+        desc: '',
+        num: data.length + 1,
+        color: colorForIdx(data.length),
+      };
+      applyGuidedSchemaPatch({
+        pageId: loc.pageId,
+        blockId: loc.blockId,
+        patch: { items: [...(block.items || []), newItem] },
+        source: 'dokumen-tab',
+      });
+    }
+  }, [locations, data]);
+
+  const deleteTp = useCallback((index: number) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().deleteTp(index);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as {
+        items?: Array<Record<string, unknown>>;
+      };
+      const items = block.items || [];
+      if (index >= 0 && index < items.length) {
+        const newItems = items.filter((_, i) => i !== index);
+        applyGuidedSchemaPatch({
+          pageId: loc.pageId,
+          blockId: loc.blockId,
+          patch: { items: newItems },
+          source: 'dokumen-tab',
+        });
+      }
+    }
+  }, [locations]);
+
+  const updateTp = useCallback((index: number, key: string, value: unknown) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().updateTp(index, key as keyof TpItem, value);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as {
+        items?: Array<Record<string, unknown>>;
+      };
+      const items = [...(block.items || [])];
+      if (index >= 0 && index < items.length) {
+        // Map TpItem key → TpBlock.items key
+        const schemaKey = key === 'pertemuan' ? 'num' : key;
+        items[index] = { ...items[index], [schemaKey]: value };
+        applyGuidedSchemaPatch({
+          pageId: loc.pageId,
+          blockId: loc.blockId,
+          patch: { items },
+          source: 'dokumen-tab',
+        });
+      }
+    }
+  }, [locations]);
+
+  const reorderTp = useCallback((fromIndex: number, toIndex: number) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().reorderTp(fromIndex, toIndex);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as {
+        items?: Array<Record<string, unknown>>;
+      };
+      const items = [...(block.items || [])];
+      if (fromIndex >= 0 && fromIndex < items.length && toIndex >= 0 && toIndex < items.length) {
+        const [moved] = items.splice(fromIndex, 1);
+        items.splice(toIndex, 0, moved!);
+        applyGuidedSchemaPatch({
+          pageId: loc.pageId,
+          blockId: loc.blockId,
+          patch: { items },
+          source: 'dokumen-tab',
+        });
+      }
+    }
+  }, [locations]);
+
+  return { data, locations, addTp, deleteTp, updateTp, reorderTp };
+}
+
+// ── Alur Hook ───────────────────────────────────────────────────
+
+/**
+ * Schema-first hook for Alur Kegiatan section.
+ *
+ * Shape mapping (AlurBlock.steps → AlurItem[]):
+ *   AlurBlock.steps[].dot       → AlurItem.fase (via DOT_TO_FASE mapping)
+ *   AlurBlock.steps[].durasi    → AlurItem.durasi
+ *   AlurBlock.steps[].judul     → AlurItem.judul
+ *   AlurBlock.steps[].deskripsi → AlurItem.deskripsi
+ *
+ * Reverse mapping (AlurItem → AlurBlock.steps[]):
+ *   AlurItem.fase      → steps[].dot (via FASE_TO_DOT mapping)
+ *   AlurItem.durasi    → steps[].durasi
+ *   AlurItem.judul     → steps[].judul
+ *   AlurItem.deskripsi → steps[].deskripsi
+ *
+ * Dual-write: applyGuidedSchemaPatch() + AuthoringStore for backward compat.
+ */
+export function useSchemaAlur(): {
+  data: AlurItem[];
+  locations: SchemaBlockLocation[];
+  addAlur: () => void;
+  deleteAlur: (index: number) => void;
+  updateAlur: (index: number, key: string, value: string) => void;
+  reorderAlur: (fromIndex: number, toIndex: number) => void;
+} {
+  const locations = useSchemaBlocksByType('alur');
+  const alurFromStore = useAuthoringStore((s) => s.alur);
+
+  const data = useMemo<AlurItem[]>(() => {
+    if (locations.length === 0) {
+      return alurFromStore;
+    }
+    // Merge steps from all alur blocks
+    const allSteps: AlurItem[] = [];
+    for (const loc of locations) {
+      const block = loc.block as unknown as {
+        steps?: Array<{ dot?: string; durasi?: string; judul?: string; deskripsi?: string }>;
+      };
+      if (block.steps) {
+        for (const step of block.steps) {
+          allSteps.push({
+            fase: DOT_TO_FASE[step.dot || ''] || step.dot || 'Inti',
+            durasi: step.durasi || '',
+            judul: step.judul || '',
+            deskripsi: step.deskripsi || '',
+          });
+        }
+      }
+    }
+    return allSteps;
+  }, [locations, alurFromStore]);
+
+  const addAlur = useCallback(() => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().addAlur();
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as {
+        steps?: Array<Record<string, unknown>>;
+      };
+      const newStep = {
+        dot: 'c',
+        durasi: '15 menit',
+        judul: '',
+        deskripsi: '',
+      };
+      applyGuidedSchemaPatch({
+        pageId: loc.pageId,
+        blockId: loc.blockId,
+        patch: { steps: [...(block.steps || []), newStep] },
+        source: 'dokumen-tab',
+      });
+    }
+  }, [locations]);
+
+  const deleteAlur = useCallback((index: number) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().deleteAlur(index);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as {
+        steps?: Array<Record<string, unknown>>;
+      };
+      const steps = block.steps || [];
+      if (index >= 0 && index < steps.length) {
+        const newSteps = steps.filter((_, i) => i !== index);
+        applyGuidedSchemaPatch({
+          pageId: loc.pageId,
+          blockId: loc.blockId,
+          patch: { steps: newSteps },
+          source: 'dokumen-tab',
+        });
+      }
+    }
+  }, [locations]);
+
+  const updateAlur = useCallback((index: number, key: string, value: string) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().updateAlur(index, key as keyof AlurItem, value);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as {
+        steps?: Array<Record<string, unknown>>;
+      };
+      const steps = [...(block.steps || [])];
+      if (index >= 0 && index < steps.length) {
+        // Map AlurItem key → AlurBlock.steps key
+        const schemaKey = key === 'fase' ? 'dot' : key;
+        const schemaValue = key === 'fase' ? (FASE_TO_DOT[value] || 'c') : value;
+        steps[index] = { ...steps[index], [schemaKey]: schemaValue };
+        applyGuidedSchemaPatch({
+          pageId: loc.pageId,
+          blockId: loc.blockId,
+          patch: { steps },
+          source: 'dokumen-tab',
+        });
+      }
+    }
+  }, [locations]);
+
+  const reorderAlur = useCallback((fromIndex: number, toIndex: number) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().reorderAlur(fromIndex, toIndex);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as {
+        steps?: Array<Record<string, unknown>>;
+      };
+      const steps = [...(block.steps || [])];
+      if (fromIndex >= 0 && fromIndex < steps.length && toIndex >= 0 && toIndex < steps.length) {
+        const [moved] = steps.splice(fromIndex, 1);
+        steps.splice(toIndex, 0, moved!);
+        applyGuidedSchemaPatch({
+          pageId: loc.pageId,
+          blockId: loc.blockId,
+          patch: { steps },
+          source: 'dokumen-tab',
+        });
+      }
+    }
+  }, [locations]);
+
+  return { data, locations, addAlur, deleteAlur, updateAlur, reorderAlur };
+}
+
+// ── ATP Hook ────────────────────────────────────────────────────
+
+/**
+ * Schema-first hook for Alur Tujuan Pembelajaran (ATP) section.
+ *
+ * Shape mapping (AtpBlock → AtpState):
+ *   AtpBlock.namaBab           → AtpState.namaBab
+ *   AtpBlock.jumlahPertemuan   → AtpState.jumlahPertemuan
+ *   AtpBlock.pertemuan[]       → AtpState.pertemuan[] (1:1 mapping)
+ *
+ * Dual-write: applyGuidedSchemaPatch() + AuthoringStore for backward compat.
+ */
+export function useSchemaAtp(): {
+  data: AtpState;
+  locations: SchemaBlockLocation[];
+  updateNamaBab: (value: string) => void;
+  addPertemuan: () => void;
+  deletePertemuan: (index: number) => void;
+  updatePertemuan: (index: number, key: string, value: string) => void;
+} {
+  const locations = useSchemaBlocksByType('atp');
+  const atpFromStore = useAuthoringStore((s) => s.atp);
+
+  const data = useMemo<AtpState>(() => {
+    if (locations.length === 0) {
+      return atpFromStore;
+    }
+    const block = locations[0]!.block as unknown as AtpBlock;
+    return {
+      namaBab: block.namaBab || '',
+      jumlahPertemuan: block.jumlahPertemuan || 0,
+      pertemuan: (block.pertemuan || []).map(p => ({
+        judul: p.judul || '',
+        tp: p.tp || '',
+        durasi: p.durasi || '',
+        kegiatan: p.kegiatan || '',
+        penilaian: p.penilaian || '',
+      })),
+    };
+  }, [locations, atpFromStore]);
+
+  const updateNamaBab = useCallback((value: string) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().updateAtpNamaBab(value);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      applyGuidedSchemaPatch({
+        pageId: loc.pageId,
+        blockId: loc.blockId,
+        patch: { namaBab: value },
+        source: 'dokumen-tab',
+      });
+    }
+  }, [locations]);
+
+  const addPertemuan = useCallback(() => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().addAtpPertemuan();
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as AtpBlock;
+      const newPertemuan = {
+        judul: '',
+        tp: '',
+        durasi: '2×40 menit',
+        kegiatan: '',
+        penilaian: '',
+      };
+      applyGuidedSchemaPatch({
+        pageId: loc.pageId,
+        blockId: loc.blockId,
+        patch: {
+          pertemuan: [...(block.pertemuan || []), newPertemuan],
+          jumlahPertemuan: (block.pertemuan || []).length + 1,
+        },
+        source: 'dokumen-tab',
+      });
+    }
+  }, [locations]);
+
+  const deletePertemuan = useCallback((index: number) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().deleteAtpPertemuan(index);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as AtpBlock;
+      const pertemuan = block.pertemuan || [];
+      if (index >= 0 && index < pertemuan.length) {
+        const newPertemuan = pertemuan.filter((_, i) => i !== index);
+        applyGuidedSchemaPatch({
+          pageId: loc.pageId,
+          blockId: loc.blockId,
+          patch: {
+            pertemuan: newPertemuan,
+            jumlahPertemuan: newPertemuan.length,
+          },
+          source: 'dokumen-tab',
+        });
+      }
+    }
+  }, [locations]);
+
+  const updatePertemuan = useCallback((index: number, key: string, value: string) => {
+    // Write to AuthoringStore for backward compat
+    useAuthoringStore.getState().updateAtpPertemuan(index, key as any, value);
+
+    // Write to schema if block exists
+    if (locations.length > 0) {
+      const loc = locations[0]!;
+      const block = loc.block as unknown as AtpBlock;
+      const pertemuan = [...(block.pertemuan || [])];
+      if (index >= 0 && index < pertemuan.length) {
+        pertemuan[index] = { ...pertemuan[index]!, [key]: value };
+        applyGuidedSchemaPatch({
+          pageId: loc.pageId,
+          blockId: loc.blockId,
+          patch: { pertemuan },
+          source: 'dokumen-tab',
+        });
+      }
+    }
+  }, [locations]);
+
+  return { data, locations, updateNamaBab, addPertemuan, deletePertemuan, updatePertemuan };
 }

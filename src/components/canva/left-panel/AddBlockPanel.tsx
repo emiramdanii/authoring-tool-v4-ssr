@@ -14,7 +14,7 @@
 // and "Block" terminology is replaced with "Konten".
 
 import { useState, useMemo, useCallback } from 'react';
-import { Search, Plus, Blocks, ArrowDownToLine, Zap, Star } from 'lucide-react';
+// No lucide-react imports — all icons use Material Symbols Outlined per v4 spec
 import { useCanvaStore } from '@/store/canva-store';
 import { toast } from 'sonner';
 import {
@@ -199,15 +199,15 @@ export default function AddBlockPanel() {
     return (
       <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
         <div className="text-2xl mb-2 opacity-40">📦</div>
-        <div className="text-[10px] text-app-muted">
+        <div className="text-[10px] text-silse-on-surface-variant">
           Tidak dapat menambah {blockLabel.toLowerCase()}
         </div>
-        <div className="text-[8px] text-app-muted mt-1">
+        <div className="text-[8px] text-silse-on-surface-variant mt-1">
           {isSederhana
             ? 'Konten hanya bisa ditambahkan ke halaman kosong atau template'
             : 'Block hanya bisa ditambahkan ke halaman kosong atau template/schema'}
         </div>
-        <div className="text-[8px] text-app-muted mt-0.5">
+        <div className="text-[8px] text-silse-on-surface-variant mt-0.5">
           {page && page.templateType === 'custom' && page.elements && page.elements.length > 0
             ? 'Halaman ini memiliki elemen legacy — hapus elemen terlebih dahulu'
             : 'Gunakan tab Halaman untuk menambah template terlebih dahulu'}
@@ -219,17 +219,17 @@ export default function AddBlockPanel() {
   return (
     <div className="space-y-3" data-testid="add-block-panel">
       {/* Header */}
-      <div className="text-[9px] font-bold text-app-secondary uppercase tracking-wider flex items-center gap-1.5">
-        <Blocks size={10} />
+      <div className="text-[11px] font-bold text-silse-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>widgets</span>
         {isSederhana ? 'Tambah Konten' : 'Tambah Block'}
-        <span className="text-app-muted">({allBlocks.length})</span>
+        <span className="text-silse-on-surface-variant/60">({allBlocks.length})</span>
       </div>
 
       {/* ── Paling Sering Digunakan (Sederhana only) ── */}
       {isSederhana && popularBlocks.length > 0 && !search.trim() && (
         <div className="space-y-1.5">
-          <div className="text-[8px] font-bold text-silse-tertiary uppercase tracking-wider flex items-center gap-1">
-            <Star size={8} />
+          <div className="text-[10px] font-bold text-silse-tertiary uppercase tracking-wider flex items-center gap-1">
+            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>star</span>
             Paling Sering Digunakan
           </div>
           <div className="grid grid-cols-3 gap-1">
@@ -237,11 +237,11 @@ export default function AddBlockPanel() {
               <button
                 key={block.type}
                 onClick={() => handleAddBlock(block)}
-                className="flex flex-col items-center gap-1 p-2 rounded-lg border border-app-accent/15 bg-app-accent/5 hover:bg-app-accent/10 hover:border-app-accent/30 transition-[background-color,border-color] active:scale-[0.96] text-center group"
+                className="flex flex-col items-center gap-1 p-2 rounded-xl border border-dashed border-silse-outline-variant bg-silse-surface-container-low hover:bg-white hover:border-silse-primary transition-[background-color,border-color] active:scale-[0.96] text-center group"
                 title={`${teacherTerm(block.name, 'sederhana')} — ${block.description}`}
               >
                 <span className="text-lg group-hover:scale-[1.1] transition-transform" aria-hidden="true">{block.icon}</span>
-                <span className="text-[8px] font-semibold text-app-primary leading-tight line-clamp-2 group-hover:text-app-accent transition-colors">
+                <span className="text-[10px] font-semibold text-silse-on-surface leading-tight line-clamp-2 group-hover:text-silse-primary transition-colors">
                   {teacherTerm(block.name, 'sederhana')}
                 </span>
               </button>
@@ -252,31 +252,31 @@ export default function AddBlockPanel() {
 
       {/* Quick Insert Fragments — Phase F.4 */}
       <div className="space-y-2">
-        <div className="text-[8px] font-bold text-silse-tertiary uppercase tracking-wider flex items-center gap-1">
-          <Zap size={8} />
+        <div className="text-[10px] font-bold text-silse-tertiary uppercase tracking-wider flex items-center gap-1">
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>bolt</span>
           {isSederhana ? 'Sisipkan Cepat' : 'Quick Insert'}
-          <span className="text-app-muted">({filteredFragments.length})</span>
+          <span className="text-silse-on-surface-variant">({filteredFragments.length})</span>
         </div>
 
         {/* Context-aware suggestions — Phase F.4 */}
         {suggestedFragments.length > 0 && (
           <div className="space-y-1">
-            <div className="text-[7px] text-app-accent font-bold uppercase tracking-wider flex items-center gap-1">
-              💡 {isSederhana ? 'Cocok untuk halaman ini' : 'Suggested for this page'}
+            <div className="text-[9px] text-silse-primary font-bold uppercase tracking-wider flex items-center gap-1">
+              <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>lightbulb</span> {isSederhana ? 'Cocok untuk halaman ini' : 'Suggested for this page'}
             </div>
             {suggestedFragments.map(fragment => (
               <button
                 key={fragment.id}
                 onClick={() => handleInsertFragment(fragment.id)}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-accent/20 bg-app-accent/5 hover:bg-app-accent/10 text-left transition-[transform,box-shadow,background-color] active:scale-[0.98] group"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl border border-silse-outline-variant/50 bg-silse-surface-container-low hover:bg-silse-surface-container-lowest hover:border-silse-primary/30 text-left transition-[transform,box-shadow,background-color] active:scale-[0.98] group"
                 title={fragment.description}
               >
                 <span className="text-base flex-shrink-0 group-hover:scale-[1.05] transition-transform">{fragment.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[9px] font-bold text-app-accent truncate group-hover:text-app-primary transition-colors">
+                  <div className="text-[11px] font-bold text-silse-primary truncate group-hover:text-silse-on-surface transition-colors">
                     {fragment.title}
                   </div>
-                  <div className="text-[7px] text-app-muted truncate">
+                  <div className="text-[9px] text-silse-on-surface-variant truncate">
                     {fragment.description}
                   </div>
                 </div>
@@ -289,10 +289,10 @@ export default function AddBlockPanel() {
         <div className="flex flex-wrap gap-1">
           <button
             onClick={() => setFragmentFilter('all')}
-            className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-[background-color,border-color,color] ${
+            className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-[background-color,border-color,color] ${
               fragmentFilter === 'all'
                 ? 'bg-silse-tertiary-container/15 border border-silse-tertiary-container/30 text-silse-tertiary'
-                : 'bg-app-elevated/30 border border-app-border/20 text-app-muted hover:text-app-secondary'
+                : 'bg-silse-surface-container-high/50 border border-silse-outline-variant/40 text-silse-on-surface-variant hover:text-silse-on-surface'
             }`}
           >
             Semua
@@ -303,10 +303,10 @@ export default function AddBlockPanel() {
               <button
                 key={catKey}
                 onClick={() => setFragmentFilter(catKey)}
-                className={`px-1.5 py-0.5 rounded-md text-[7px] font-bold transition-[background-color,border-color,color] flex items-center gap-0.5 ${
+                className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-[background-color,border-color,color] flex items-center gap-0.5 ${
                   fragmentFilter === catKey
                     ? 'bg-silse-tertiary-container/15 border border-silse-tertiary-container/30 text-silse-tertiary'
-                    : 'bg-app-elevated/30 border border-app-border/20 text-app-muted hover:text-app-secondary'
+                    : 'bg-silse-surface-container-high/50 border border-silse-outline-variant/40 text-silse-on-surface-variant hover:text-silse-on-surface'
                 }`}
               >
                 <span className="text-[8px]">{cat.icon}</span>
@@ -324,23 +324,23 @@ export default function AddBlockPanel() {
               <button
                 key={fragment.id}
                 onClick={() => handleInsertFragment(fragment.id)}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-border/15 bg-app-elevated/20 hover:bg-app-elevated/40 hover:border-app-accent/25 text-left transition-[transform,box-shadow,background-color] active:scale-[0.98] group"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low hover:bg-silse-surface-container-lowest hover:border-silse-primary/30 text-left transition-[transform,box-shadow,background-color] active:scale-[0.98] group"
                 title={fragment.description}
               >
                 <span className="text-base flex-shrink-0 group-hover:scale-[1.05] transition-transform">{fragment.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[9px] font-bold text-app-primary truncate group-hover:text-app-accent transition-colors">
+                  <div className="text-[11px] font-bold text-silse-on-surface truncate group-hover:text-silse-primary transition-colors">
                     {fragment.title}
                   </div>
-                  <div className="text-[7px] text-app-muted truncate">
+                  <div className="text-[9px] text-silse-on-surface-variant truncate">
                     {fragment.description}
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-                  <span className="text-[6px] px-1 py-0 rounded bg-app-elevated/40 text-app-muted border border-app-border/15">
+                  <span className="text-[8px] px-1 py-0 rounded bg-silse-surface-container-high/50 text-silse-on-surface-variant border border-silse-outline-variant/30">
                     {cat?.label.split(' ')[0] || fragment.category}
                   </span>
-                  <span className="text-[6px] text-app-muted">
+                  <span className="text-[8px] text-silse-on-surface-variant">
                     {fragment.blockCount} {isSederhana ? 'konten' : 'block'}
                   </span>
                 </div>
@@ -350,7 +350,7 @@ export default function AddBlockPanel() {
         </div>
 
         {filteredFragments.length === 0 && (
-          <div className="text-[8px] text-app-muted text-center py-2">
+          <div className="text-[8px] text-silse-on-surface-variant text-center py-2">
             Tidak ada fragment untuk kategori ini
           </div>
         )}
@@ -358,8 +358,8 @@ export default function AddBlockPanel() {
 
       {/* Insertion point indicator — shows when a block is selected */}
       {selectedBlockName && (
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-app-accent/10 border border-app-accent/20 text-[9px] text-app-accent font-semibold">
-          <ArrowDownToLine size={10} />
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-silse-primary-container/10 border border-silse-primary-container/25 text-[10px] text-silse-primary font-semibold">
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>arrow_downward</span>
           <span>Sisipkan setelah:</span>
           <span className="font-bold truncate">{selectedBlockName}</span>
         </div>
@@ -367,7 +367,7 @@ export default function AddBlockPanel() {
 
       {/* Search input */}
       <div className="relative">
-        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-app-muted" aria-hidden="true" />
+        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-silse-on-surface-variant" style={{ fontSize: '14px' }} aria-hidden="true">search</span>
         <input
           id="add-block-search"
           type="text"
@@ -376,7 +376,7 @@ export default function AddBlockPanel() {
           placeholder={isSederhana ? 'Cari konten...' : 'Cari block...'}
           aria-label={isSederhana ? 'Cari konten' : 'Cari block'}
           aria-describedby="add-block-search-help"
-          className="w-full h-7 pl-7 pr-2 text-[10px] text-app-primary bg-app-elevated/60 border border-app-border/30 rounded-lg focus:border-app-accent/50 focus:outline-none placeholder:text-app-muted"
+          className="w-full h-7 pl-7 pr-2 text-[11px] text-silse-on-surface bg-silse-surface-container-low border border-silse-outline-variant/50 rounded-xl focus:border-silse-primary/50 focus:ring-1 focus:ring-silse-primary/20 focus:outline-none placeholder:text-silse-on-surface-variant/50"
         />
         <span id="add-block-search-help" className="sr-only">
           Ketik untuk mencari {blockLabel.toLowerCase()} berdasarkan nama, tipe, atau deskripsi
@@ -399,9 +399,9 @@ export default function AddBlockPanel() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1">
                       <span className={`text-[10px] font-bold ${config.colorClass}`}>{config.label}</span>
-                      <span className="text-[8px] text-app-muted">({blocks.length})</span>
+                      <span className="text-[8px] text-silse-on-surface-variant">({blocks.length})</span>
                     </div>
-                    <div className="text-[7px] text-app-muted leading-tight">{config.desc}</div>
+                    <div className="text-[7px] text-silse-on-surface-variant leading-tight">{config.desc}</div>
                   </div>
                 </div>
 
@@ -413,24 +413,20 @@ export default function AddBlockPanel() {
                       data-testid={`add-block-btn-${block.type}`}
                       onClick={() => handleAddBlock(block)}
                       aria-label={`Tambah ${teacherTerm(block.name, 'sederhana')} — ${block.description}`}
-                      className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
+                      className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-silse-surface-container-low border border-silse-outline-variant/40 hover:border-silse-primary/30 active:scale-[0.97] transition-all text-left group"
                     >
                       <span className="text-lg flex-shrink-0 group-hover:scale-[1.05] transition-transform" aria-hidden="true">
                         {block.icon}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[11px] font-bold text-app-primary truncate group-hover:text-app-accent transition-colors">
+                        <div className="text-[11px] font-bold text-silse-on-surface truncate group-hover:text-silse-primary transition-colors">
                           {teacherTerm(block.name, 'sederhana')}
                         </div>
-                        <div className="text-[8px] text-app-muted leading-tight line-clamp-2">
+                        <div className="text-[8px] text-silse-on-surface-variant leading-tight line-clamp-2">
                           {block.description}
                         </div>
                       </div>
-                      <Plus
-                        size={14}
-                        className="text-app-muted group-hover:text-app-accent transition-colors flex-shrink-0"
-                        aria-hidden="true"
-                      />
+                      <span className="material-symbols-outlined text-silse-on-surface-variant group-hover:text-silse-primary transition-colors flex-shrink-0" style={{ fontSize: '16px' }}>add_circle_outline</span>
                     </button>
                   ))}
                 </div>
@@ -451,9 +447,9 @@ export default function AddBlockPanel() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1">
                       <span className={`text-[10px] font-bold ${config.colorClass}`}>{config.label}</span>
-                      <span className="text-[8px] text-app-muted">({blocks.length})</span>
+                      <span className="text-[8px] text-silse-on-surface-variant">({blocks.length})</span>
                     </div>
-                    <div className="text-[7px] text-app-muted leading-tight">{config.description}</div>
+                    <div className="text-[7px] text-silse-on-surface-variant leading-tight">{config.description}</div>
                   </div>
                 </div>
 
@@ -465,16 +461,16 @@ export default function AddBlockPanel() {
                       data-testid={`add-block-btn-${block.type}`}
                       onClick={() => handleAddBlock(block)}
                       aria-label={`Tambah ${block.name} — ${block.description}`}
-                      className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-app-elevated/40 border border-app-border/20 active:scale-[0.97] transition-transform text-left group"
+                      className="card-hover w-full flex items-center gap-2.5 p-2 rounded-xl bg-silse-surface-container-low border border-silse-outline-variant/40 hover:border-silse-primary/30 active:scale-[0.97] transition-all text-left group"
                     >
                       <span className="text-lg flex-shrink-0 group-hover:scale-[1.05] transition-transform" aria-hidden="true">
                         {block.icon}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[11px] font-bold text-app-primary truncate group-hover:text-app-accent transition-colors">
+                        <div className="text-[11px] font-bold text-silse-on-surface truncate group-hover:text-silse-primary transition-colors">
                           {block.name}
                         </div>
-                        <div className="text-[8px] text-app-muted leading-tight line-clamp-2">
+                        <div className="text-[8px] text-silse-on-surface-variant leading-tight line-clamp-2">
                           {block.description}
                         </div>
                         {block.usedInTemplates.length > 0 && (
@@ -482,7 +478,7 @@ export default function AddBlockPanel() {
                             {block.usedInTemplates.slice(0, 3).map((t) => (
                               <span
                                 key={t}
-                                className="text-[7px] px-1 py-0 rounded bg-app-elevated/40 text-app-muted"
+                                className="text-[7px] px-1 py-0 rounded bg-silse-surface-container-high/50 text-silse-on-surface-variant"
                               >
                                 {t}
                               </span>
@@ -490,11 +486,7 @@ export default function AddBlockPanel() {
                           </div>
                         )}
                       </div>
-                      <Plus
-                        size={14}
-                        className="text-app-muted group-hover:text-app-accent transition-colors flex-shrink-0"
-                        aria-hidden="true"
-                      />
+                      <span className="material-symbols-outlined text-silse-on-surface-variant group-hover:text-silse-primary transition-colors flex-shrink-0" style={{ fontSize: '16px' }}>add_circle_outline</span>
                     </button>
                   ))}
                 </div>
@@ -507,14 +499,14 @@ export default function AddBlockPanel() {
       {/* Empty search state */}
       {filteredBlocks.length === 0 && search.trim() && (
         <div className="text-center py-4">
-          <div className="text-[10px] text-app-muted">
+          <div className="text-[10px] text-silse-on-surface-variant">
             Tidak ada {blockLabel.toLowerCase()} yang cocok dengan &quot;{search}&quot;
           </div>
         </div>
       )}
 
       {/* Footer hint */}
-      <div className="text-[8px] text-app-muted mt-2 pt-2 border-t border-app-border/20">
+      <div className="text-[8px] text-silse-on-surface-variant mt-2 pt-2 border-t border-silse-outline-variant/40">
         {selectedBlockName
           ? `${blockLabel} baru akan disisipkan setelah "${selectedBlockName}"`
           : `Klik ${blockLabel.toLowerCase()} untuk menambahkan ke halaman saat ini`}

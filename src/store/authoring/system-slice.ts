@@ -1,10 +1,14 @@
 // ── System Slice ──────────────────────────────────────────────────
+// Phase 5-F: loadFromStorage() now ONLY writes non-schema fields.
+// Schema-backed fields (tp, alur, kuis, skenario, materi, diskusi,
+// refleksi, motivasi, rangkuman, modules, meta) are derived from
+// schema via startProjectionSync() in init.ts. Writing them here
+// causes a double-write conflict where raw storage data overwrites
+// the schema-derived projection.
 import type { StateCreator } from 'zustand';
 import { toast } from 'sonner';
-import type { AuthoringState, KuisItem, Module } from './types';
+import type { AuthoringState } from './types';
 import { STORAGE_KEY } from './types';
-import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
-import { GAME_TYPES } from '@/lib/canva-constants';
 
 export type SystemSlice = Pick<AuthoringState, 'dirty' | 'guruPw' | 'teacherMode' | 'markDirty' | 'markClean' | 'saveToStorage' | 'loadFromStorage' | 'calcCompleteness' | 'toggleSuaraAll' | 'setTeacherMode'>;
 
@@ -66,32 +70,24 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return false;
       const data = JSON.parse(raw);
+      // Phase 5-F: Only load non-schema fields here.
+      // Schema-backed fields (tp, alur, kuis, skenario, materi, diskusi,
+      // refleksi, motivasi, rangkuman, modules, meta) are derived from
+      // schema via startProjectionSync() — writing them here would
+      // overwrite the schema-derived projection with stale data.
       set({
         activePreset: null,
-        meta: data.meta || get().meta,
+        // Non-schema fields — these have no schema block representation
         cp: data.cp || get().cp,
-        tp: data.tp || [],
         atp: data.atp || get().atp,
-        alur: data.alur || [],
-        skenario: data.skenario || [],
-        kuis: ensureKuisIds((data.kuis || []) as KuisItem[]),
-        modules: ensureModuleIds(data.modules || []) as Module[],
-        // Derive games from modules — no longer stored separately
-        games: (ensureModuleIds(
-          (data.modules || []).filter((m: Record<string, unknown>) =>
-            (GAME_TYPES as readonly string[]).includes(m.type as string)
-          )
-        ) as Module[]),
-        materi: data.materi || { blok: [] },
-        guruPw: data.guruPw || 'guru123',
         petunjuk: data.petunjuk || get().petunjuk,
-        diskusi: data.diskusi || get().diskusi,
-        refleksi: data.refleksi || get().refleksi,
-        motivasi: data.motivasi || get().motivasi,
-        rangkuman: data.rangkuman || get().rangkuman,
         penutup: data.penutup || get().penutup,
         suara: data.suara || get().suara,
+        guruPw: data.guruPw || 'guru123',
         dirty: false,
+        // Schema-backed fields — loaded by persistence-slice + startProjectionSync()
+        // (tp, alur, kuis, skenario, materi, diskusi, refleksi, motivasi,
+        //  rangkuman, modules, games, meta — all derived from schema)
       });
       return true;
     } catch {

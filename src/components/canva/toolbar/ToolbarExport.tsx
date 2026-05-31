@@ -5,22 +5,7 @@ import { isEnabled } from '@/config/feature-flags';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useExportActions } from './use-export-actions';
-import {
-  Eye,
-  Download,
-  Film,
-  Trash2,
-  ChevronDown,
-  Loader2,
-  MonitorPlay,
-  Printer,
-  Share2,
-  FileJson,
-  Settings2,
-  Volume2,
-  VolumeX,
-  Package,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -65,9 +50,9 @@ export function ToolbarExport() {
             disabled={isExporting}
             className={`focus-ring flex items-center gap-1 h-7 px-2 ${isExporting ? 'opacity-50' : ''}`}
           >
-            {isExporting ? <Loader2 size={13} className="animate-spin" /> : <Share2 size={13} />}
+            {isExporting ? <span className="material-symbols-outlined animate-spin" style={{ fontSize: '13px' }}>progress_activity</span> : <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>share</span>}
             <span className="hidden sm:inline text-[10px] font-semibold">Ekspor</span>
-            <ChevronDown size={8} />
+            <span className="material-symbols-outlined" style={{ fontSize: '8px' }}>expand_more</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -76,13 +61,13 @@ export function ToolbarExport() {
         >
           {/* ── Preview Section ── */}
           <DropdownMenuLabel className="px-3 py-1.5 bg-teal-500/10 border-b border-teal-500/20 text-[9px] font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1">
-            <Eye size={11} /> Preview
+            <span className="material-symbols-outlined" style={{ fontSize: '11px' }}>visibility</span> Preview
           </DropdownMenuLabel>
           <DropdownMenuItem
             onClick={previewTab}
             className="px-3 py-2.5 gap-2.5 focus:bg-teal-500/10 cursor-pointer"
           >
-            <Film size={14} className="text-teal-400 flex-shrink-0" />
+            <span className="material-symbols-outlined text-teal-400 flex-shrink-0" style={ { fontSize: '14px' } }>movie</span>
             <div className="flex-1 min-w-0">
               <div className="text-[11px] font-semibold text-teal-300">Preview Tab Baru</div>
               <div className="text-[8px] text-app-muted">Lihat tampilan siswa di tab baru</div>
@@ -92,7 +77,7 @@ export function ToolbarExport() {
             onClick={() => useCanvaStore.setState({ panelRequest: 'preview' })}
             className="px-3 py-2.5 gap-2.5 focus:bg-cyan-500/10 cursor-pointer"
           >
-            <MonitorPlay size={14} className="text-cyan-400 flex-shrink-0" />
+            <span className="material-symbols-outlined text-cyan-400 flex-shrink-0" style={ { fontSize: '14px' } }>smart_display</span>
             <div className="flex-1 min-w-0">
               <div className="text-[11px] font-semibold text-cyan-300">Live Preview</div>
               <div className="text-[8px] text-app-muted">Panel lengkap di samping canvas</div>
@@ -103,7 +88,7 @@ export function ToolbarExport() {
 
           {/* ── Download Section ── */}
           <DropdownMenuLabel className="px-3 py-1.5 bg-emerald-500/10 border-y border-emerald-500/20 text-[9px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-            <Download size={11} /> Unduh
+            <span className="material-symbols-outlined" style={{ fontSize: '11px' }}>download</span> Unduh
           </DropdownMenuLabel>
           <DropdownMenuItem
             onClick={exportHtml}
@@ -111,8 +96,8 @@ export function ToolbarExport() {
             className="px-3 py-2.5 gap-2.5 focus:bg-emerald-500/10 cursor-pointer"
           >
             {isExporting
-              ? <Loader2 size={14} className="animate-spin text-emerald-400 flex-shrink-0" />
-              : <Download size={14} className="text-emerald-400 flex-shrink-0" />
+              ? <span className="material-symbols-outlined animate-spin text-emerald-400 flex-shrink-0" style={{ fontSize: '14px' }}>progress_activity</span>
+              : <span className="material-symbols-outlined text-emerald-400 flex-shrink-0" style={{ fontSize: '14px' }}>download</span>
             }
             <div className="flex-1 min-w-0">
               <div className="text-[11px] font-semibold text-emerald-300">
@@ -128,8 +113,8 @@ export function ToolbarExport() {
               className="px-3 py-2.5 gap-2.5 focus:bg-orange-500/10 cursor-pointer"
             >
               {isExporting
-                ? <Loader2 size={14} className="animate-spin text-orange-400 flex-shrink-0" />
-                : <Package size={14} className="text-orange-400 flex-shrink-0" />
+                ? <span className="material-symbols-outlined animate-spin text-orange-400 flex-shrink-0" style={{ fontSize: '14px' }}>progress_activity</span>
+                : <span className="material-symbols-outlined text-orange-400 flex-shrink-0" style={ { fontSize: '14px' } }>inventory_2</span>
               }
               <div className="flex-1 min-w-0">
                 <div className="text-[11px] font-semibold text-orange-300">
@@ -144,13 +129,13 @@ export function ToolbarExport() {
 
           {/* ── Cetak Section ── */}
           <DropdownMenuLabel className="px-3 py-1.5 bg-amber-500/10 border-y border-amber-500/20 text-[9px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
-            <Printer size={11} /> Cetak
+            <span className="material-symbols-outlined" style={{ fontSize: '11px' }}>print</span> Cetak
           </DropdownMenuLabel>
           <DropdownMenuItem
             onClick={print}
             className="px-3 py-2.5 gap-2.5 focus:bg-amber-500/10 cursor-pointer"
           >
-            <Printer size={14} className="text-amber-400 flex-shrink-0" />
+            <span className="material-symbols-outlined text-amber-400 flex-shrink-0" style={{ fontSize: '14px' }}>print</span>
             <div className="flex-1 min-w-0">
               <div className="text-[11px] font-semibold text-amber-300">Cetak (Print)</div>
               <div className="text-[8px] text-app-muted">Cetak halaman MPI via browser</div>
@@ -162,7 +147,7 @@ export function ToolbarExport() {
           {/* ── Lanjutan (Advanced) Submenu ── */}
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="px-3 py-2 gap-2 text-[11px] font-semibold text-app-muted hover:text-app-secondary cursor-pointer">
-              <Settings2 size={14} />
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>settings</span>
               <span>Lanjutan</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="bg-app-surface border border-app-border shadow-md rounded-xl p-1 min-w-[180px]">
@@ -170,14 +155,14 @@ export function ToolbarExport() {
                 onClick={clearCanvas}
                 className="px-2.5 py-2 gap-2 cursor-pointer"
               >
-                <Trash2 size={14} className="text-red-400/60" />
+                <span className="material-symbols-outlined text-red-400/60" style={{ fontSize: '14px' }}>delete</span>
                 <span className="text-[11px] text-red-400/80">Bersihkan Canvas</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={exportJson}
                 className="px-2.5 py-2 gap-2 cursor-pointer"
               >
-                <FileJson size={14} className="text-app-secondary" />
+                <span className="material-symbols-outlined text-app-secondary" style={ { fontSize: '14px' } }>data_object</span>
                 <span className="text-[11px]">Export JSON</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-app-border/30" />
@@ -186,8 +171,8 @@ export function ToolbarExport() {
                 className="px-2.5 py-2 gap-2 cursor-pointer"
               >
                 {soundOn
-                  ? <Volume2 size={14} className="text-emerald-400" />
-                  : <VolumeX size={14} className="text-app-muted" />
+                  ? <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '14px' } }>volume_up</span>
+                  : <span className="material-symbols-outlined text-app-muted" style={ { fontSize: '14px' } }>volume_off</span>
                 }
                 <span className="text-[11px]">{soundOn ? 'Matikan Suara' : 'Nyalakan Suara'}</span>
               </DropdownMenuItem>

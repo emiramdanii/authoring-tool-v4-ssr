@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { isEnabled } from '@/config/feature-flags';
-import { Zap, Loader2 } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { useSchemaContext } from '@/hooks/use-schema-navigator';
 import { canRegenerate, getStoredText } from '../auto-generate/regenerate';
 
@@ -72,9 +72,9 @@ export function RegenerateButton({
       title={storedText ? `Regenerate ${label} dari teks sumber` : `Buka Auto-Generate untuk mengisi teks sumber`}
     >
       {loading ? (
-        <Loader2 size={13} className="animate-spin" />
+        <span className="material-symbols-outlined animate-spin" style={ { fontSize: '13px' } }>progress_activity</span>
       ) : (
-        <Zap size={13} />
+        <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>bolt</span>
       )}
       {loading ? 'Generating...' : 'Regenerate'}
     </button>

@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useSchemaSkenario, useSchemaContext } from '@/hooks/use-schema-navigator';
 import type { SkenarioChapter } from '@/store/authoring/types';
-import { Drama, Trash2, Pencil, Zap } from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { COLORS } from '@/lib/color-palette';
 import { RegenerateButton } from './konten/RegenerateButton';
 import { regenerateSkenario } from './auto-generate/regenerate';
@@ -102,13 +102,13 @@ function ChapterCard({
             onClick={onEdit}
             className="px-2.5 py-1.5 text-xs text-app-secondary hover:text-app-accent hover:bg-app-accent/10 rounded-md transition-colors"
           >
-            <Pencil size={12} className="inline" /> Edit
+            <span className="material-symbols-outlined inline" style={ { fontSize: '12px' } }>edit</span> Edit
           </button>
           <button
             onClick={onRemove}
             className="px-2.5 py-1.5 text-xs text-app-secondary hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
           >
-            <Trash2 size={14} />
+            <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>delete</span>
           </button>
         </div>
       </div>
@@ -587,7 +587,7 @@ export default function Skenario() {
     <div className="p-6 space-y-5 max-w-5xl">
       <div>
         <h2 className="text-xl font-bold text-app-primary flex items-center gap-2">
-          <Drama size={16} className="inline" /> Skenario Interaktif
+          <span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>theater_comedy</span> Skenario Interaktif
         </h2>
         <p className="text-sm text-app-secondary mt-1">
           Buat cerita bercabang untuk siswa belajar tentang norma dan nilai.
@@ -610,7 +610,7 @@ export default function Skenario() {
       {chapters.length === 0 ? (
         <div className="text-center py-10 px-4 bg-app-elevated/20 border border-dashed border-app-border/50 rounded-xl">
           <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mx-auto mb-3">
-            <Drama size={24} className="text-purple-400/70" />
+            <span className="material-symbols-outlined text-purple-400/70" style={ { fontSize: '24px' } }>theater_comedy</span>
           </div>
           <p className="text-sm font-medium text-app-primary mb-1">Belum ada skenario pembelajaran</p>
           <p className="text-xs text-app-muted mb-4">Generate dari materi yang sudah dimasukkan.</p>
@@ -619,7 +619,7 @@ export default function Skenario() {
               onClick={handleRegenerateSkenario}
               className="px-3 py-1.5 bg-app-accent hover:bg-app-accent/90 text-app-inverse text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
             >
-              <Zap size={12} /> Auto-Generate
+              <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>bolt</span> Auto-Generate
             </button>
             <button
               onClick={handleAdd}

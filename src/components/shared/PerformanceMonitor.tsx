@@ -202,8 +202,8 @@ function PerformancePanel() {
 
   // Leak status icon + color
   const leakStatusConfig = {
-    healthy: { icon: <CheckCircle2 size={10} className="text-emerald-400" />, label: 'Healthy', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    growing: { icon: <AlertTriangle size={10} className="text-amber-400" />, label: 'Growing', color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    healthy: { icon: <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '10px' } }>check_circle</span>, label: 'Healthy', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    growing: { icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '10px' } }>warning</span>, label: 'Growing', color: 'text-amber-400', bg: 'bg-amber-500/10' },
     leaking: { icon: <ShieldAlert size={10} className="text-red-400" />, label: 'Leaking!', color: 'text-red-400', bg: 'bg-red-500/10' },
   };
   const leakConfig = leakStatusConfig[memData.leakStatus];
@@ -217,7 +217,7 @@ function PerformancePanel() {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-app-border/30 bg-app-elevated/50">
         <div className="flex items-center gap-2">
-          <Activity size={12} className="text-emerald-400" />
+          <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '12px' } }>monitoring</span>
           <span className="text-[10px] font-bold text-app-primary">Performance</span>
           <span className={`text-[10px] font-mono font-bold ${fpsColor}`}>{fps} FPS</span>
           {/* [G.4] Leak status badge */}
@@ -232,13 +232,13 @@ function PerformancePanel() {
             className="p-1 rounded hover:bg-app-elevated/60 text-app-muted hover:text-app-secondary transition-colors"
             title="Clear data"
           >
-            <RotateCcw size={10} />
+            <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>refresh</span>
           </button>
           <button
             onClick={() => setExpanded(!expanded)}
             className="p-1 rounded hover:bg-app-elevated/60 text-app-muted hover:text-app-secondary transition-colors"
           >
-            {expanded ? <ChevronDown size={10} /> : <ChevronUp size={10} />}
+            {expanded ? <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>expand_more</span> : <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>expand_less</span>}
           </button>
         </div>
       </div>
@@ -305,7 +305,7 @@ function PerformancePanel() {
               <div className="p-2">
                 {sortedCounts.length === 0 ? (
                   <div className="text-center py-4">
-                    <Activity size={16} className="mx-auto text-app-muted/40 mb-1" />
+                    <span className="material-symbols-outlined mx-auto text-app-muted/40 mb-1" style={ { fontSize: '16px' } }>monitoring</span>
                     <p className="text-[9px] text-app-muted">No render data yet</p>
                     <p className="text-[8px] text-app-muted/60">Interact with the app to collect data</p>
                   </div>

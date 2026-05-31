@@ -5,18 +5,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { patchHistory } from '@/core/editor/patch-history';
 import { showUndoRedoToast } from '@/components/shared/StatusToast';
-import {
-  Play,
-  Undo2,
-  Redo2,
-  MousePointer2,
-  Type,
-  PlusCircle,
-  Store,
-  Sparkles,
-  Eye,
-  EyeOff,
-} from 'lucide-react';
+// All icons migrated to Material Symbols Outlined
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -77,7 +66,7 @@ export function ToolbarActions() {
         data-tour="play-button"
         className="focus-ring text-emerald-400 border-emerald-500/25 bg-emerald-500/15 hover:bg-emerald-500/25 hover:border-emerald-500/40 font-bold h-7 px-3 gap-1.5 shadow-sm shadow-emerald-500/10"
       >
-        <Play size={14} fill="currentColor" />
+        <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>play_arrow</span>
         <span className="text-[11px]">Play</span>
       </Button>
 
@@ -94,7 +83,7 @@ export function ToolbarActions() {
             }`}
             title={canvasPreview ? 'Kembali ke Edit (Esc)' : 'Preview — Lihat tampilan siswa'}
           >
-            {canvasPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+            {canvasPreview ? <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>visibility_off</span> : <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>visibility</span>}
             <span className="hidden sm:inline text-[10px] font-semibold">
               {canvasPreview ? 'Edit' : 'Preview'}
             </span>
@@ -121,7 +110,7 @@ export function ToolbarActions() {
             className="focus-ring gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:hover:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800 h-7 px-2.5"
             title="AI Content Assistant (Ctrl+I)"
           >
-            <Sparkles className="h-3.5 w-3.5" />
+            <span className="material-symbols-outlined h-3.5 w-3.5" style={ { fontSize: '16px' } }>auto_awesome</span>
             <span className="hidden sm:inline text-[10px] font-semibold">AI</span>
           </Button>
         </TooltipTrigger>
@@ -138,7 +127,7 @@ export function ToolbarActions() {
             onClick={openAddBlock}
             className="focus-ring text-app-accent border-app-accent/20 bg-app-accent/8 hover:bg-app-accent/15 hover:border-app-accent/30 gap-1 h-7 px-2.5"
           >
-            <PlusCircle size={14} />
+            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add_circle</span>
             <span className="hidden sm:inline text-[10px] font-semibold">Tambah</span>
           </Button>
         </TooltipTrigger>
@@ -159,7 +148,7 @@ export function ToolbarActions() {
             disabled={!canUndo}
             className={`focus-ring h-7 w-7 ${!canUndo ? 'opacity-30 cursor-not-allowed' : ''}`}
           >
-            <Undo2 size={13} />
+            <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>undo</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">
@@ -176,7 +165,7 @@ export function ToolbarActions() {
             disabled={!canRedo}
             className={`focus-ring h-7 w-7 ${!canRedo ? 'opacity-30 cursor-not-allowed' : ''}`}
           >
-            <Redo2 size={13} />
+            <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>redo</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">
@@ -195,7 +184,7 @@ export function ToolbarActions() {
             onClick={() => setTool('select')}
             className={`focus-ring h-7 w-7 ${tool === 'select' ? 'nav-active' : ''}`}
           >
-            <MousePointer2 size={13} />
+            <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>arrow_selector_tool</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">
@@ -211,7 +200,7 @@ export function ToolbarActions() {
             onClick={() => setTool('text')}
             className={`focus-ring h-7 w-7 ${tool === 'text' ? 'nav-active' : ''}`}
           >
-            <Type size={13} />
+            <span className="material-symbols-outlined" style={ { fontSize: '13px' } }>text_fields</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-[10px]">

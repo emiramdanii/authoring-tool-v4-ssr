@@ -145,7 +145,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
 
     get()._pushHistory();
 
-    let deletedBlock: SchemaBlock;
+    let deletedBlock: SchemaBlock | undefined;
     const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
       if (owner.kind === 'top-level') {
         deletedBlock = draft[owner.index] as SchemaBlock;
@@ -164,12 +164,15 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
       }
     });
 
-    const blockName = ((deletedBlock! as unknown) as Record<string, unknown>).title as string || deletedBlock!.type || 'Block';
+    // Safety guard: deletedBlock may be undefined if produceWithPatches didn't execute
+    // the matching branch (should never happen, but prevents runtime crash)
+    const safeDeletedBlock = deletedBlock ?? { type: 'unknown', id: blockId } as SchemaBlock;
+    const blockName = ((safeDeletedBlock as unknown) as Record<string, unknown>).title as string || safeDeletedBlock.type || 'Block';
 
     editBus.emit({
       type: 'patch',
       patch: {
-        blockId, blockType: deletedBlock!.type, pageIndex: currentPageIndex,
+        blockId, blockType: safeDeletedBlock.type, pageIndex: currentPageIndex,
         patch: { _deleted: true }, timestamp: Date.now(), source: 'user',
         _immerPatches: { forward: forwardPatches, inverse: inversePatches, pageIndex: currentPageIndex },
       },

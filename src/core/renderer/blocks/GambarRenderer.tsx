@@ -68,7 +68,7 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
                 className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: accentAlpha(0.2) }}
               >
-                <ImageIcon size={10} style={{ color: accentColor }} />
+                <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>image</span>
               </div>
             </MicroInteraction>
             <PremiumBadge tokens={tokens} accent={colorKey} variant="glass">
@@ -135,10 +135,7 @@ export const GambarRenderer = React.memo(function GambarRenderer({ block, tokens
                   background: accentAlpha(0.12),
                 }}
               >
-                <ImageIcon
-                  size={isCompact ? 16 : 22}
-                  style={{ color: accentAlpha(0.5) }}
-                />
+                <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>image</span>
               </div>
               <span
                 style={{

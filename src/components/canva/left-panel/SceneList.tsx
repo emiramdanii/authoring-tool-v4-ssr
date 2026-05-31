@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useLearningMediaStore } from '@/store/learning-media-store';
 import { useOverflowWarningStore } from '@/store/overflow-warning-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
+import { getPageContract, type PageCompletionStatus } from '@/core/edu/page-runtime-contract';
+import { validateSinglePage } from '@/core/template/health-check/template-health-check';
 import { Button } from '@/components/ui/button';
 
 // ═══════════════════════════════════════════════════════════════
-// SCENE LIST v2 — SILSE v4 Stitch Reference Page Navigator
+// SCENE LIST v3 — SILSE v4 Stitch Reference Page Navigator
 // ═══════════════════════════════════════════════════════════════
 // Stitch spec:
 //   - Active: bg-silse-primary-container text-silse-on-primary-container rounded-xl px-3 py-2 border border-silse-primary/20
@@ -15,6 +18,7 @@ import { Button } from '@/components/ui/button';
 //   - Scene thumbnail: w-12 h-8 rounded with scene number
 //   - "Scenes" uppercase label above list
 //   - Drag reorder functionality
+//   - Page completion indicators (✓ / ○ / 🔒) from PageRuntimeContract
 // ═══════════════════════════════════════════════════════════════
 
 // Badge color map using semantic tokens instead of hardcoded Tailwind colors
@@ -35,7 +39,47 @@ const BADGE_COLOR_MAP: Record<string, string> = {
   custom: 'bg-silse-surface-container/50 text-silse-on-surface-variant border-silse-outline-variant/30',
 };
 
-export function SceneList() {
+// ── Completion indicator icon per status ─────────────────────
+function CompletionIndicator({ status }: { status: PageCompletionStatus }) {
+  switch (status) {
+    case 'completed':
+      return (
+        <span
+          className="material-symbols-outlined text-emerald-500"
+          style={{ fontSize: '14px' }}
+          aria-label="Selesai"
+          title="Selesai"
+        >
+          check_circle
+        </span>
+      );
+    case 'locked':
+      return (
+        <span
+          className="material-symbols-outlined text-amber-500"
+          style={{ fontSize: '14px' }}
+          aria-label="Terkunci"
+          title="Terkunci — selesaikan dulu"
+        >
+          lock
+        </span>
+      );
+    case 'incomplete':
+    default:
+      return (
+        <span
+          className="material-symbols-outlined text-slate-400"
+          style={{ fontSize: '14px' }}
+          aria-label="Belum selesai"
+          title="Belum selesai"
+        >
+          radio_button_unchecked
+        </span>
+      );
+  }
+}
+
+export function SceneList({ searchFilter = '' }: { searchFilter?: string } = {}) {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const goPage = useCanvaStore(s => s.goPage);
@@ -46,6 +90,29 @@ export function SceneList() {
   const ratio = useCanvaStore(s => s.currentRatio());
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const pageOverflowStatus = useOverflowWarningStore(s => s.pageOverflowStatus);
+
+  // ── Learning progress (from PageRuntimeContract) ──
+  // Only shown when a learning session has been initialized.
+  const sessionInitialized = useLearningMediaStore(s => s.sessionInitialized);
+  const getPageStatus = useLearningMediaStore(s => s.getPageStatus);
+  const totalScreens = useLearningMediaStore(s => s.totalScreens);
+
+  // Compute page statuses for completion indicators
+  const pageStatuses = useMemo(() => {
+    if (!sessionInitialized) return [];
+    return pages.map((_, i) => getPageStatus(i));
+  }, [sessionInitialized, pages.length, getPageStatus]);
+
+  // Compute page health indicators (validation errors per page)
+  const pageHealthIssues = useMemo(() => {
+    return pages.map((page, i) => {
+      const issues = validateSinglePage(page, i);
+      const errors = issues.filter(issue => issue.severity === 'error').length;
+      const warnings = issues.filter(issue => issue.severity === 'warning').length;
+      return { errors, warnings, hasIssues: errors > 0 || warnings > 0 };
+    });
+  }, [pages]);
+
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
@@ -60,11 +127,19 @@ export function SceneList() {
     }
   }, [currentPageIndex]);
 
+  const filteredPages = useMemo(() => {
+    if (!searchFilter) return pages;
+    const lower = searchFilter.toLowerCase();
+    return pages.filter(p => p.label.toLowerCase().includes(lower));
+  }, [pages, searchFilter]);
+
   return (
     <div className="flex flex-col gap-1">
       {/* Scenes label — now handled by LeftPanel, but keep for standalone use */}
-      {pages.map((p, i) => {
-        const isActive = i === currentPageIndex;
+      {filteredPages.map((p, i) => {
+        // Find the original index in the full pages array
+        const originalIndex = pages.indexOf(p);
+        const isActive = originalIndex === currentPageIndex;
         const badge = TEMPLATE_BADGE_MAP[p.templateType || 'custom'] || TEMPLATE_BADGE_MAP.custom;
         const bgStyle = p.bgDataUrl
           ? { backgroundImage: `url('${p.bgDataUrl}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -80,22 +155,22 @@ export function SceneList() {
             key={p.id}
             ref={isActive ? activeRef : undefined}
             data-testid={`page-tab-${i}`}
-            onClick={() => goPage(i)}
+            onClick={() => goPage(originalIndex)}
             draggable
-            onDragStart={() => setDragIdx(i)}
-            onDragOver={(e) => { e.preventDefault(); setDragOverIdx(i); }}
+            onDragStart={() => setDragIdx(originalIndex)}
+            onDragOver={(e) => { e.preventDefault(); setDragOverIdx(originalIndex); }}
             onDragLeave={() => setDragOverIdx(null)}
             onDrop={(e) => {
               e.preventDefault();
-              if (dragIdx !== null && dragIdx !== i) { reorderPage(dragIdx, i); }
+              if (dragIdx !== null && dragIdx !== originalIndex) { reorderPage(dragIdx, originalIndex); }
               setDragIdx(null);
               setDragOverIdx(null);
             }}
             onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-            className={`w-full text-left flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
-              dragIdx === i
+            className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+              dragIdx === originalIndex
                 ? 'opacity-40 scale-95'
-                : dragOverIdx === i
+                : dragOverIdx === originalIndex
                   ? 'ring-2 ring-silse-primary/40 bg-silse-surface-container-high'
                   : isActive
                     ? 'bg-silse-primary-container text-silse-on-primary-container border border-silse-primary/20'
@@ -104,35 +179,48 @@ export function SceneList() {
           >
             {/* Scene Number Thumbnail — SILSE v4 reference style */}
             <div
-              className={`w-10 h-7 rounded-md flex items-center justify-center text-[9px] flex-shrink-0 ${
+              className={`w-12 h-8 rounded flex items-center justify-center text-[10px] flex-shrink-0 ${
                 isActive
-                  ? 'bg-silse-on-surface/10'
+                  ? 'bg-black/10'
                   : 'bg-silse-surface-container-highest'
               }`}
               style={isActive ? {} : bgStyle}
             >
-              {isActive ? <span className="font-bold">{i + 1}</span> : <span className="text-silse-on-surface-variant font-medium">{i + 1}</span>}
+              {isActive ? <span className="font-bold">{originalIndex + 1}</span> : <span className="text-silse-on-surface-variant font-medium">{originalIndex + 1}</span>}
             </div>
 
-            {/* Scene Label */}
+            {/* Scene Label + Completion Indicator */}
             <div className="flex-1 min-w-0">
-              <span className={`text-[11px] font-medium truncate block ${
+              <span className={`text-[12px] font-medium truncate block ${
                 isActive ? 'font-bold' : ''
               }`}>
                 {isSchemaDriven && <span className="material-symbols-outlined inline mr-0.5" style={{ fontSize: '12px' }}>bolt</span>}
-                Scene {i + 1}: {p.label}
+                Scene {originalIndex + 1}: {p.label}
                 {pageOverflowStatus[p.id]?.hasOverflow && (
                   <span className="material-symbols-outlined inline ml-1 text-silse-tertiary" style={{ fontSize: '12px' }} aria-label="Konten melebihi kapasitas">warning</span>
                 )}
+                {/* Health check indicator — show if page has validation issues */}
+                {pageHealthIssues[i]?.hasIssues && !sessionInitialized && (
+                  <span
+                    className={`inline ml-1 w-1.5 h-1.5 rounded-full ${pageHealthIssues[i]!.errors > 0 ? 'bg-silse-error' : 'bg-amber-500'}`}
+                    title={`${pageHealthIssues[i]!.errors} error, ${pageHealthIssues[i]!.warnings} warning — lihat panel Validasi`}
+                    aria-label="Ada masalah validasi"
+                  />
+                )}
               </span>
             </div>
+
+            {/* Completion Indicator — only shown if learning session exists */}
+            {sessionInitialized && pageStatuses[i] && (
+              <CompletionIndicator status={pageStatuses[i]!} />
+            )}
           </button>
         );
       })}
 
       {pages.length > 0 && (
         <div className="flex gap-1 pt-1">
-          <Button variant="ghost" onClick={duplicatePage} className="flex-1 py-1.5 rounded-lg text-[10px] gap-1">
+          <Button variant="ghost" onClick={duplicatePage} className="flex-1 py-1.5 rounded-lg text-[11px] gap-1">
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>content_copy</span> Duplikat
           </Button>
           <Button
@@ -141,7 +229,7 @@ export function SceneList() {
               if (pages.length <= 1) return;
               if (confirm(`Hapus "${pages[currentPageIndex]!.label}"?`)) deletePage();
             }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] gap-1 text-silse-error/70 hover:text-silse-error bg-silse-error-container/10"
+            className="flex-1 py-1.5 rounded-lg text-[11px] gap-1 text-silse-error/70 hover:text-silse-error bg-silse-error-container/10"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span> Hapus
           </Button>
@@ -151,14 +239,14 @@ export function SceneList() {
       {/* Add page button */}
       <button
         onClick={() => addPage()}
-        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[10px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
+        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[11px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
       >
         <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span> Tambah Halaman
       </button>
 
       {/* Drag hint */}
       {pages.length > 1 && (
-        <div className="text-[7px] text-silse-on-surface-variant/50 text-center pt-0.5">
+        <div className="text-[9px] text-silse-on-surface-variant/50 text-center pt-0.5">
           Drag halaman untuk mengubah urutan
         </div>
       )}

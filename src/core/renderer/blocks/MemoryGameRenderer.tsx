@@ -330,9 +330,9 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
  {/* Tiered icon */}
  <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
  {pct >= 80
- ? <Trophy size={28} className="inline text-app-accent" />
+ ? <span className="material-symbols-outlined inline text-app-accent" style={ { fontSize: '28px' } }>emoji_events</span>
  : pct >= 50
- ? <Star size={28} className="inline text-app-accent" />
+ ? <span className="material-symbols-outlined inline text-app-accent" style={ { fontSize: '28px' } }>star</span>
  : <Dumbbell size={28} className="inline text-app-accent" />}
  </div>
 
@@ -368,7 +368,7 @@ export const MemoryGameRenderer = React.memo(function MemoryGameRenderer({ block
  color: tokens.color('bg'),
  boxShadow: '0 4px 16px ' + edu.accentAlpha(0.35),
  }}>
- <RotateCcw size={14} className="inline" /> Ulangi
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi
  </button>
  </MicroInteraction>
  )}

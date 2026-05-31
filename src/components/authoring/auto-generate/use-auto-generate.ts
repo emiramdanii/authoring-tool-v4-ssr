@@ -46,6 +46,8 @@ import {
   genHasilSchema,
   genPenutupSchema,
   genCoverSchema,
+  genMatchingSchema,
+  genTrueFalseSchema,
   genFullLessonSchema,
 } from '@/core/schema/generators';
 import { applyBlocksToPages, applyBlockToPages } from '@/core/schema/schema-apply';
@@ -370,33 +372,32 @@ export function useAutoGenerate() {
           break;
         }
         case 'matching': {
-          // Matching/TrueFalse: projection-only until schema game blocks are fully wired
-          const matchData = preview.data as MatchingPair[];
-          const s = store.getState();
-          const existingIdx = s.modules.findIndex((m) => m.type === 'matching');
-          if (existingIdx >= 0) s.removeModule(existingIdx);
-          s.addModule('matching');
-          const newIdx = store.getState().modules.findIndex((m) => m.type === 'matching');
-          if (newIdx >= 0) {
-            store.getState().updateModuleField(newIdx, 'pasangan', matchData);
-            store.getState().updateModuleField(newIdx, 'title', 'Matching Game');
-          }
-          toast.success(`🔀 ${matchData.length} pasangan matching diterapkan`);
+          // Phase 5-C: Schema-only — write matching-game block to schema
+          // Previously wrote to AuthoringStore.addModule('matching') — now deprecated.
+          applySchemaOnly(
+            () => {
+              if (parsed) {
+                const matchingBlock = genMatchingSchema(parsed);
+                applyBlockToPages('game', [matchingBlock]);
+              }
+            },
+          );
+          toast.success(`🔀 ${(preview.data as MatchingPair[]).length} pasangan matching diterapkan`);
           applySucceeded = true;
           break;
         }
         case 'truefalse': {
-          const tfData = preview.data as TrueFalseItem[];
-          const s = store.getState();
-          const existingIdx = s.modules.findIndex((m) => m.type === 'truefalse');
-          if (existingIdx >= 0) s.removeModule(existingIdx);
-          s.addModule('truefalse');
-          const newIdx = store.getState().modules.findIndex((m) => m.type === 'truefalse');
-          if (newIdx >= 0) {
-            store.getState().updateModuleField(newIdx, 'soal', tfData);
-            store.getState().updateModuleField(newIdx, 'title', 'Benar/Salah');
-          }
-          toast.success(`✅ ${tfData.length} soal benar/salah diterapkan`);
+          // Phase 5-C: Schema-only — write true-false-game block to schema
+          // Previously wrote to AuthoringStore.addModule('truefalse') — now deprecated.
+          applySchemaOnly(
+            () => {
+              if (parsed) {
+                const tfBlock = genTrueFalseSchema(parsed);
+                applyBlockToPages('game', [tfBlock]);
+              }
+            },
+          );
+          toast.success(`✅ ${(preview.data as TrueFalseItem[]).length} soal benar/salah diterapkan`);
           applySucceeded = true;
           break;
         }
