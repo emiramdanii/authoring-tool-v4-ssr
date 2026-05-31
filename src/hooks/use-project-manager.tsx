@@ -51,16 +51,20 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const lastSaveRef = useRef<number>(0);
 
-  // Load projects list from DB
+  // Load projects list from DB (with timeout — API may be unavailable in sandbox)
   const loadProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/projects?limit=50');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch('/api/projects?limit=50', { signal: controller.signal });
+      clearTimeout(timeout);
       if (!res.ok) throw new Error('Failed to load projects');
       const json = await res.json();
       setProjects(json.data || []);
     } catch (error) {
-      logger.error('ProjectProvider', error);
+      // Graceful fallback — app works without API (uses localStorage)
+      logger.warn('ProjectProvider', 'API unavailable, using offline mode: ' + String(error));
     } finally {
       setLoading(false);
     }
