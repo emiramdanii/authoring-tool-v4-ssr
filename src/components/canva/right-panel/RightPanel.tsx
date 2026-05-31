@@ -76,7 +76,8 @@ export default function RightPanel() {
   // Teacher-mode aware tab configuration
   const TABS: { id: RightPanelTab; label: string; icon: string }[] = [
     { id: 'properties', label: 'Properti', icon: 'tune' },
-    ...(aiEnabled ? [{ id: 'ai' as RightPanelTab, label: 'AI', icon: 'auto_awesome' }] : []),
+    // AI tab parked — hidden from main flow (Sprint 1C.1)
+    // ...(aiEnabled ? [{ id: 'ai' as RightPanelTab, label: 'AI', icon: 'auto_awesome' }] : []),
     // Layer tab only in advanced mode
     ...(!isSederhana ? [{ id: 'layer' as RightPanelTab, label: 'Layer', icon: 'layers' }] : []),
   ];

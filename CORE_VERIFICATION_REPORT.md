@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-05-31 (Ronde 9 — Sprint 1B Teacher Flow Label Fix)
+Tanggal: 2026-05-31 (Ronde 10 — Sprint 1C.1 Workspace Labels & AI Tab Hide)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -14,9 +14,18 @@ Sprint 0 — Base App Stability (curl/HTTP): PASS — server hidup setelah 5+ re
 Sprint 0B — Browser Chunk Stability: PASS — Dashboard hydrate OK, Canvas Workspace chunks load OK (setelah BUG-6 fix)
 Sprint 1A — Workspace Gutter: PASS — gutter 16-24px terbukti via Playwright measurement, panel 20%/55%/25% benar
 Sprint 1B — Teacher Flow Label: PASS — navigasi label diperbaiki, guru tahu tombol masuk workspace
+Sprint 1C.1 — Workspace Labels & AI Tab: PASS — label tombol/panel disederhanakan, AI tab disembunyikan
 Sprint 1 — Teacher Flow Entry: NOT VERIFIED — Template preview belum ada
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 10:**
+
+1. Sprint 1C.1 FIX: Toolbar.tsx — label "Main" → "Coba Siswa" (edit mode + preview mode)
+2. Sprint 1C.1 FIX: Toolbar.tsx — label "Publish" → "Export HTML", "Publishing…" → "Mengekspor…"
+3. Sprint 1C.1 FIX: LeftPanel.tsx — header "Workspace" → "Halaman Media"
+4. Sprint 1C.1 FIX: LeftPanel.tsx — section label "Scenes" → "Halaman"
+5. Sprint 1C.1 FIX: RightPanel.tsx — AI tab disembunyikan dari TABS array (area PARKIR)
 
 **PERUBAHAN RONDE 9:**
 
@@ -57,6 +66,7 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 | BUG-7: StatusBar elements.length crash | **FIXED** | `page?.elements.length` → `page?.elements?.length` di `StatusBar.tsx:163`. Saat `elements` undefined, `.length` crash |
 | BUG-8: ResizablePanel sizes as pixels | **FIXED** | `react-resizable-panels` v4 menginterpretasikan angka sebagai pixel bukan persen. `defaultSize={20}` → `defaultSize="20%"` di `CanvaBuilder.tsx`. Panel kiri hanya 30px (seharusnya 288px) |
 | BUG-9: Navigasi label membingungkan guru | **FIXED** | Sidebar "Analytics" → "Edit Media", "Workspace" → "RPP & Dokumen". Dashboard "Analytics" → "Pratinjau". Preview highlight sekarang benar. 6 perubahan di 2 file. |
+| BUG-10: Istilah teknis di workspace | **FIXED** | Toolbar "Main" → "Coba Siswa", "Publish" → "Export HTML". LeftPanel "Workspace" → "Halaman Media", "Scenes" → "Halaman". AI tab disembunyikan. 5 perubahan di 3 file. |
 
 ### Base App Stability Test — Ronde 5
 
@@ -347,6 +357,42 @@ hapus `SANDBOX_MODE=1` dari `.env` untuk mengaktifkan kembali database.
 | Dashboard preview | "Analytics" → preview | "Pratinjau" → preview |
 | Preview highlight | highlights "Analytics" | highlights "Pratinjau" |
 
+### Sprint 1C.1 — Workspace Labels & AI Tab: PASS ✅ (Ronde 10)
+
+**Label tombol dan panel disederhanakan:**
+- Toolbar: "Main" → "Coba Siswa" ✅ (edit mode + preview mode)
+- Toolbar: "Publish" → "Export HTML" ✅
+- Toolbar: "Publishing…" → "Mengekspor…" ✅
+- LeftPanel header: "Workspace" → "Halaman Media" ✅
+- LeftPanel section: "Scenes" → "Halaman" ✅
+- RightPanel: AI tab disembunyikan dari flow utama ✅ (area PARKIR)
+- Build: PASS ✅
+
+**Sebelum/Sesudah workspace:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| Toolbar tombol play | "Main" | "Coba Siswa" |
+| Toolbar tombol export | "Publish" | "Export HTML" |
+| Toolbar loading text | "Publishing…" | "Mengekspor…" |
+| LeftPanel header | "Workspace" | "Halaman Media" |
+| LeftPanel section | "Scenes" | "Halaman" |
+| RightPanel tab | "AI" tab visible | AI tab hidden (PARKIR) |
+
+**Workspace guru sekarang:**
+```
+Atas:    Preview | Coba Siswa | Export HTML
+Kiri:    Halaman Media → Halaman (daftar)
+Tengah:  media canvas
+Kanan:   Properti (tanpa AI tab)
+```
+
+### Sprint 1C.2 — Right Panel Simplification: NEXT
+- ValidationSection: tetap terlihat atau masuk "Lanjutan"
+- Scene Type: disembunyikan atau tidak
+- DisplayModeSelector: diparkir
+- Theme tools: dipindah ke pengaturan
+
 ### Sprint 1C — Template Entry Point: NOT STARTED
 
 - Template preview belum ada (regresi: TemplateMarketplace dihapus dari UI)
@@ -512,6 +558,11 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 1. `src/components/canva/CanvaBuilder.tsx` — BUG-8 fix: `defaultSize={20}` → `defaultSize="20%"`, `minSize={15}` → `minSize="15%"`, `maxSize={30}` → `maxSize="30%"`, dll.
 2. `src/components/canva/StatusBar.tsx` — BUG-7 fix: `page?.elements.length` → `page?.elements?.length`
 
+### Sejak Ronde 10 (Sprint 1C.1 Workspace Labels & AI Tab Hide)
+1. `src/components/canva/Toolbar.tsx` — BUG-10 fix: label "Main"→"Coba Siswa" (edit mode + preview mode), "Publish"→"Export HTML", "Publishing…"→"Mengekspor…", title attributes + comments updated
+2. `src/components/canva/LeftPanel.tsx` — BUG-10 fix: header "Workspace"→"Halaman Media", section "Scenes"→"Halaman"
+3. `src/components/canva/right-panel/RightPanel.tsx` — BUG-10 fix: AI tab disembunyikan dari TABS array (commented out, area PARKIR)
+
 ### Sejak Ronde 9 (Sprint 1B Teacher Flow Label Fix)
 1. `src/components/authoring/AuthoringTool.tsx` — BUG-9 fix: nav `canva` label "Analytics"→"Edit Media", icon `analytics`→`palette`; nav `dokumen` label "Workspace"→"RPP & Dokumen"; `getActiveNavId()` preview tidak lagi highlight canva
 2. `src/components/authoring/Dashboard.tsx` — BUG-9 fix: sidebar `workspace` label "Workspace"→"Edit Media", icon→`palette`; item `analytics`→`preview` ("Pratinjau", icon `visibility`); `activeNavId` mapping diperbaiki
@@ -525,7 +576,9 @@ Sprint 0 — Base App Stability (curl/HTTP): PARTIAL ⚠️ (curl OK, browser se
 Sprint 0B — Browser Chunk Stability: PASS ✅ (setelah BUG-6 fix)
 Sprint 1A — Workspace Layout: PASS ✅ (setelah BUG-8 fix + gutter measurement verified)
 Sprint 1B — Teacher Flow Label: PASS ✅ (setelah BUG-9 fix, label navigasi jelas)
-Sprint 1C — Template Entry Point: NOT STARTED
+Sprint 1C.1 — Workspace Labels & AI Tab: PASS ✅ (setelah BUG-10 fix, label tombol/panel jelas, AI tab hidden)
+Sprint 1C.2 — Right Panel Simplification: NEXT
+Sprint 1D — Template Entry Point: NOT STARTED
 
 Base App (HTTP): PASS ✅ (5+ requests, sandbox, fallback)
 Browser Session:  PASS ✅ (Dashboard hydrate, Canvas Workspace render, chunks OK)
@@ -542,8 +595,10 @@ Area Parkir:      TETAP DITAHAN
 **Sprint 0B PASS — browser chunk stability terbukti setelah BUG-6 fix.**
 **Sprint 1A Workspace Layout PASS — BUG-8 fix (size persen string) + gutter 16-24px verified via Playwright.**
 **Sprint 1B Teacher Flow Label PASS — BUG-9 fix (navigasi label jelas untuk guru).**
+**Sprint 1C.1 Workspace Labels & AI Tab PASS — BUG-10 fix (label tombol/panel jelas, AI tab hidden).**
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar" — panel ter-collapse ke 30px karena size dianggap pixel.**
 **BUG-9 adalah root cause masalah "guru bingung masuk workspace" — label Analytics/Workspace tidak sesuai fungsi.**
+**BUG-10 adalah root cause masalah "guru bingung di workspace" — istilah teknis Main/Publish/Scenes dan AI tab yang mengganggu.**
 
 ---
 

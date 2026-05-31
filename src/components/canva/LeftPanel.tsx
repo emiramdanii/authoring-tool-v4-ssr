@@ -109,7 +109,7 @@ export default function LeftPanel() {
             className="text-[13px] font-bold text-silse-on-surface tracking-tight"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
-            Workspace
+            Halaman Media
           </h3>
           <button
             onClick={() => handleTabChange('add-block')}
@@ -155,7 +155,7 @@ export default function LeftPanel() {
                   <div className="flex items-center gap-1.5 mb-2 px-1">
                     <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>layers</span>
                     <span className="text-[10px] uppercase tracking-widest text-silse-outline font-bold">
-                      Scenes
+                      Halaman
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
