@@ -35,8 +35,8 @@ export const ZOOM_STEP = 0.1;
 /** Sentinel value meaning "auto-fit to viewport" */
 export const ZOOM_FIT = -1;
 
-/** Padding around the canvas in the viewport (px) */
-export const CANVAS_VIEWPORT_PADDING = 24;
+/** Padding around the canvas in the viewport (px) — reduced from 24 to 16 for tighter gutter */
+export const CANVAS_VIEWPORT_PADDING = 16;
 
 /**
  * Calculate the zoom level that fits the canvas into the viewport.

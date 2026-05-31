@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { IconRail } from './left-panel/IconRail';
 import type { LeftTab } from './types';

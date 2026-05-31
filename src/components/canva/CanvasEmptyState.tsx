@@ -73,7 +73,7 @@ export default function CanvasEmptyState() {
 
   return (
     <>
-      <div className="flex-1 w-full h-full flex flex-col items-center justify-center bg-app-surface px-4 py-8">
+      <div className="flex-1 w-full h-full flex flex-col items-center justify-center bg-app-surface px-4 py-4">
         {/* Illustration / Icon */}
         <ScaleIn delay={0} className="mb-6">
           <div className="w-16 h-16 rounded-2xl bg-app-accent/10 border border-app-accent/20 flex items-center justify-center">
