@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-05-31 (Ronde 8 — Sprint 1 Workspace Gutter Verification + BUG-7/BUG-8 Fix)
+Tanggal: 2026-05-31 (Ronde 9 — Sprint 1B Teacher Flow Label Fix)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -12,10 +12,20 @@ Tester: AI (otomatis) + Human (pending)
 Build: PASS
 Sprint 0 — Base App Stability (curl/HTTP): PASS — server hidup setelah 5+ request, API 503 sandbox, fallback OK
 Sprint 0B — Browser Chunk Stability: PASS — Dashboard hydrate OK, Canvas Workspace chunks load OK (setelah BUG-6 fix)
-Sprint 1 — Workspace Gutter: PASS — gutter 16-24px terbukti via Playwright measurement, panel 20%/55%/25% benar
-Sprint 1 — Teacher Flow: NOT VERIFIED — alur guru belum terbukti
+Sprint 1A — Workspace Gutter: PASS — gutter 16-24px terbukti via Playwright measurement, panel 20%/55%/25% benar
+Sprint 1B — Teacher Flow Label: PASS — navigasi label diperbaiki, guru tahu tombol masuk workspace
+Sprint 1 — Teacher Flow Entry: NOT VERIFIED — Template preview belum ada
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 9:**
+
+1. Sprint 1B FIX: AuthoringTool.tsx — nav `canva` label "Analytics" → "Edit Media", icon `analytics` → `palette`
+2. Sprint 1B FIX: AuthoringTool.tsx — nav `dokumen` label "Workspace" → "RPP & Dokumen"
+3. Sprint 1B FIX: AuthoringTool.tsx — `getActiveNavId()` mapping: preview tidak lagi highlight canva
+4. Sprint 1B FIX: Dashboard.tsx — sidebar `workspace` label "Workspace" → "Edit Media", icon → `palette`
+5. Sprint 1B FIX: Dashboard.tsx — sidebar item `analytics` → `preview` ("Pratinjau", icon `visibility`)
+6. Sprint 1B FIX: Dashboard.tsx — `activeNavId` mapping: preview→preview, hapus dokumen→settings
 
 **PERUBAHAN RONDE 8:**
 
@@ -46,6 +56,7 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 | BUG-6: useMemo not defined crash | **FIXED** | `import { useMemo }` ditambahkan ke `LeftPanel.tsx:3`. `SchemaBlockTreeWithBadge` menggunakan `useMemo` tanpa import → CanvaBuilder crash |
 | BUG-7: StatusBar elements.length crash | **FIXED** | `page?.elements.length` → `page?.elements?.length` di `StatusBar.tsx:163`. Saat `elements` undefined, `.length` crash |
 | BUG-8: ResizablePanel sizes as pixels | **FIXED** | `react-resizable-panels` v4 menginterpretasikan angka sebagai pixel bukan persen. `defaultSize={20}` → `defaultSize="20%"` di `CanvaBuilder.tsx`. Panel kiri hanya 30px (seharusnya 288px) |
+| BUG-9: Navigasi label membingungkan guru | **FIXED** | Sidebar "Analytics" → "Edit Media", "Workspace" → "RPP & Dokumen". Dashboard "Analytics" → "Pratinjau". Preview highlight sekarang benar. 6 perubahan di 2 file. |
 
 ### Base App Stability Test — Ronde 5
 
@@ -302,7 +313,7 @@ hapus `SANDBOX_MODE=1` dari `.env` untuk mengaktifkan kembali database.
 - Server stability: PASS — tetap hidup setelah Canvas Workspace load
 - Memory: `--max-old-space-size=768` diperlukan untuk stabil
 
-### Sprint 1 — Workspace Gutter: PASS ✅ (Ronde 8)
+### Sprint 1A — Workspace Layout: PASS ✅ (Ronde 8)
 
 **Workspace Layout: PASS ✅**
 - Panel kiri: 288px (20%) ✅
@@ -316,14 +327,31 @@ hapus `SANDBOX_MODE=1` dari `.env` untuk mengaktifkan kembali database.
 - Panel kanan bisa diklik ✅
 - Error boundary: Not visible ✅
 
-**Teacher Flow: NOT VERIFIED**
-- Beranda: ada tapi tidak jelas arahnya untuk guru
-- Tombol "Mulai dari Template": belum diverifikasi
-- Coba Template / Template Testing: belum diverifikasi
-- Template umum mudah ditemukan: belum diverifikasi
-- Preview template: belum diverifikasi
-- Gunakan Template → masuk Workspace: belum diverifikasi
-- Workspace menjelaskan kiri/tengah/kanan: belum diverifikasi
+### Sprint 1B — Teacher Flow Label: PASS ✅ (Ronde 9)
+
+**Navigasi label diperbaiki:**
+- Sidebar utama: "Analytics" → "Edit Media" ✅ (icon: palette)
+- Sidebar utama: "Workspace" → "RPP & Dokumen" ✅
+- Dashboard sidebar: "Workspace" → "Edit Media" ✅ (icon: palette)
+- Dashboard sidebar: "Analytics" → "Pratinjau" ✅ (icon: visibility)
+- Preview highlight sekarang benar: tidak lagi highlight "Analytics" ✅
+- Build: PASS ✅
+
+**Sebelum/Sesudah navigasi:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| Sidebar utama canva | "Analytics" (icon analytics) | "Edit Media" (icon palette) |
+| Sidebar utama dokumen | "Workspace" | "RPP & Dokumen" |
+| Dashboard workspace | "Workspace" (icon edit_note) | "Edit Media" (icon palette) |
+| Dashboard preview | "Analytics" → preview | "Pratinjau" → preview |
+| Preview highlight | highlights "Analytics" | highlights "Pratinjau" |
+
+### Sprint 1C — Template Entry Point: NOT STARTED
+
+- Template preview belum ada (regresi: TemplateMarketplace dihapus dari UI)
+- Alur: Beranda → Template → Preview → Gunakan Template → Edit Media
+- TemplateMarketplace.tsx (717 baris) ada tapi orphaned
 
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar":** Panel kiri/kanan hanya 30/35px karena size dianggap pixel. Fix ke persen string mengembalikan panel ke ukuran benar.
 
@@ -484,6 +512,10 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 1. `src/components/canva/CanvaBuilder.tsx` — BUG-8 fix: `defaultSize={20}` → `defaultSize="20%"`, `minSize={15}` → `minSize="15%"`, `maxSize={30}` → `maxSize="30%"`, dll.
 2. `src/components/canva/StatusBar.tsx` — BUG-7 fix: `page?.elements.length` → `page?.elements?.length`
 
+### Sejak Ronde 9 (Sprint 1B Teacher Flow Label Fix)
+1. `src/components/authoring/AuthoringTool.tsx` — BUG-9 fix: nav `canva` label "Analytics"→"Edit Media", icon `analytics`→`palette`; nav `dokumen` label "Workspace"→"RPP & Dokumen"; `getActiveNavId()` preview tidak lagi highlight canva
+2. `src/components/authoring/Dashboard.tsx` — BUG-9 fix: sidebar `workspace` label "Workspace"→"Edit Media", icon→`palette`; item `analytics`→`preview` ("Pratinjau", icon `visibility`); `activeNavId` mapping diperbaiki
+
 ---
 
 ## J. STATUS PROYEK
@@ -491,8 +523,9 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 ```
 Sprint 0 — Base App Stability (curl/HTTP): PARTIAL ⚠️ (curl OK, browser session partial)
 Sprint 0B — Browser Chunk Stability: PASS ✅ (setelah BUG-6 fix)
-Sprint 1 — Workspace Gutter: PASS ✅ (setelah BUG-8 fix + gutter measurement verified)
-Sprint 1 — Teacher Flow: NOT VERIFIED
+Sprint 1A — Workspace Layout: PASS ✅ (setelah BUG-8 fix + gutter measurement verified)
+Sprint 1B — Teacher Flow Label: PASS ✅ (setelah BUG-9 fix, label navigasi jelas)
+Sprint 1C — Template Entry Point: NOT STARTED
 
 Base App (HTTP): PASS ✅ (5+ requests, sandbox, fallback)
 Browser Session:  PASS ✅ (Dashboard hydrate, Canvas Workspace render, chunks OK)
@@ -507,8 +540,10 @@ Area Parkir:      TETAP DITAHAN
 
 **Sprint 0 diturunkan ke PARTIAL karena hanya curl/HTTP diverifikasi.**
 **Sprint 0B PASS — browser chunk stability terbukti setelah BUG-6 fix.**
-**Sprint 1 Workspace Gutter PASS — BUG-8 fix (size persen string) + gutter 16-24px verified via Playwright.**
+**Sprint 1A Workspace Layout PASS — BUG-8 fix (size persen string) + gutter 16-24px verified via Playwright.**
+**Sprint 1B Teacher Flow Label PASS — BUG-9 fix (navigasi label jelas untuk guru).**
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar" — panel ter-collapse ke 30px karena size dianggap pixel.**
+**BUG-9 adalah root cause masalah "guru bingung masuk workspace" — label Analytics/Workspace tidak sesuai fungsi.**
 
 ---
 

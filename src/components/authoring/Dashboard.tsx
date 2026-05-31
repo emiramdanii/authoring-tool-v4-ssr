@@ -32,9 +32,9 @@ interface SidebarNavItem {
 
 const SIDEBAR_NAV_ITEMS: SidebarNavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: 'space_dashboard', panelRequest: 'dashboard' },
-  { id: 'workspace', label: 'Workspace', icon: 'edit_note', panelRequest: 'canva' },
+  { id: 'workspace', label: 'Edit Media', icon: 'palette', panelRequest: 'canva' },
   { id: 'assets', label: 'Assets', icon: 'folder_open', panelRequest: 'konten' },
-  { id: 'analytics', label: 'Analytics', icon: 'analytics', panelRequest: 'preview' },
+  { id: 'preview', label: 'Pratinjau', icon: 'visibility', panelRequest: 'preview' },
 ];
 
 const SIDEBAR_SECONDARY_ITEMS: { id: string; label: string; icon: string; panelRequest: string | null }[] = [
@@ -138,8 +138,7 @@ export default function Dashboard() {
     if (activePanel === 'dashboard') return 'dashboard';
     if (activePanel === 'canva') return 'workspace';
     if (activePanel === 'konten') return 'assets';
-    if (activePanel === 'preview') return 'analytics';
-    if (activePanel === 'dokumen') return 'settings';
+    if (activePanel === 'preview') return 'preview';
     // For any other active panel, default to dashboard
     return 'dashboard';
   }, [activePanel]);
