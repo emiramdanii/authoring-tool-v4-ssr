@@ -195,9 +195,9 @@ export default function CanvaBuilder() {
         >
           {/* Left Panel — Resizable, default 20%, min 220px */}
           <ResizablePanel
-            defaultSize={20}
-            minSize={15}
-            maxSize={30}
+            defaultSize="20%"
+            minSize="15%"
+            maxSize="30%"
             data-tour="left-panel"
             data-testid="left-panel"
             role="complementary"
@@ -213,8 +213,8 @@ export default function CanvaBuilder() {
 
           {/* Stage Canvas Area — auto flex, dot-grid background */}
           <ResizablePanel
-            defaultSize={55}
-            minSize={30}
+            defaultSize="55%"
+            minSize="30%"
           >
             <div className="flex flex-col h-full relative overflow-hidden bg-silse-surface-dim canvas-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
               <ProfilerWrapper id="Stage">
@@ -226,9 +226,9 @@ export default function CanvaBuilder() {
           {/* Right Panel — Resizable, always mounted for stable layout */}
           <ResizableHandle className="bg-silse-outline-variant/40 hover:bg-silse-primary/40 transition-colors w-px" />
           <ResizablePanel
-            defaultSize={rightPanelOpen ? 25 : 0}
-            minSize={rightPanelOpen ? 18 : 0}
-            maxSize={rightPanelOpen ? 35 : 0}
+            defaultSize={rightPanelOpen ? "25%" : "0%"}
+            minSize={rightPanelOpen ? "18%" : "0%"}
+            maxSize={rightPanelOpen ? "35%" : "0%"}
             data-tour="right-panel"
             data-testid="right-panel"
             role="complementary"

@@ -1,7 +1,7 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-05-31 (Ronde 6 — Sprint 1 Redefinisi: UI Workspace + Teacher Flow)
-Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit
+Tanggal: 2026-05-31 (Ronde 8 — Sprint 1 Workspace Gutter Verification + BUG-7/BUG-8 Fix)
+Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
 ---
@@ -10,30 +10,29 @@ Tester: AI (otomatis) + Human (pending)
 
 ```
 Build: PASS
-Base App Stability: PASS — server tetap hidup setelah 5+ request, API 503 sandbox, fallback OK
-Sprint 1 UI Workspace Layout: PARTIAL/PASS — panel kiri/tengah/kanan terlihat
-Sprint 1 Teacher Flow: NOT VERIFIED — alur guru dari beranda sampai workspace belum terbukti
-Sprint 1 overall: PARTIAL
+Sprint 0 — Base App Stability (curl/HTTP): PASS — server hidup setelah 5+ request, API 503 sandbox, fallback OK
+Sprint 0B — Browser Chunk Stability: PASS — Dashboard hydrate OK, Canvas Workspace chunks load OK (setelah BUG-6 fix)
+Sprint 1 — Workspace Gutter: PASS — gutter 16-24px terbukti via Playwright measurement, panel 20%/55%/25% benar
+Sprint 1 — Teacher Flow: NOT VERIFIED — alur guru belum terbukti
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
-**PERUBAHAN DEFINISI SPRINT 1 (Ronde 6):**
+**PERUBAHAN RONDE 8:**
 
-Sprint 1 diubah dari "UI Workspace" menjadi "UI Workspace + Teacher Flow".
+1. BUG-7 DITEMUKAN: StatusBar crash — `page?.elements.length` crash ketika `elements` undefined
+2. BUG-7 DIPERBAIKI: `page?.elements?.length` — tambah optional chaining
+3. BUG-8 DITEMUKAN (CRITICAL): `react-resizable-panels` v4 API change — angka dianggap **pixels** bukan persen
+4. BUG-8 DIPERBAIKI: `defaultSize={20}` → `defaultSize="20%"`, dll. di `CanvaBuilder.tsx`
+5. Sprint 1 Workspace Gutter: **PASS** — semua gutter 16-24px terbukti via Playwright measurement
+6. Panel sizes sekarang benar: Left=288px (20%), Center=791px (55%), Right=360px (25%)
 
-Alasan: Workspace yang stabil tapi guru tidak tahu harus klik apa = belum stabil untuk guru.
+**PERUBAHAN RONDE 7:**
 
-Sprint 1 sekarang harus menjawab 5 pertanyaan:
-1. Setelah buka app, guru tahu harus klik apa?
-2. Guru bisa menemukan template dengan mudah?
-3. Guru bisa mencoba template sebelum memakai?
-4. Guru bisa memakai template dan langsung masuk workspace?
-5. Di workspace, guru tahu kiri/tengah/kanan fungsinya apa?
-
-Flow wajib Sprint 1:
-```
-Beranda → Mulai dari Template → Pilih template umum → Preview Template → Gunakan Template → Canvas Workspace → Preview / Play → Export HTML
-```
+1. Sprint 0 diturunkan dari PASS ke PARTIAL — hanya lulus curl/HTTP test, belum terbukti di browser session
+2. Sprint 0B (BARU) — Browser Chunk Stability — Dashboard → Canvas Workspace → chunks load → workspace renders
+3. BUG-6 DITEMUKAN: `useMemo is not defined` di `SchemaBlockTreeWithBadge` menyebabkan CanvaBuilder crash
+4. BUG-6 DIPERBAIKI: Tambah `useMemo` ke import di `LeftPanel.tsx`
+5. Sprint 1 Gutter Fix: `CANVAS_VIEWPORT_PADDING` dikurangi 24→16px, `CanvasEmptyState` py-8→py-4
 
 ### Perbaikan Bug sejak Laporan Sebelumnya
 
@@ -44,6 +43,9 @@ Beranda → Mulai dari Template → Pilih template umum → Preview Template →
 | BUG-3: Quiz feedback tidak terdeteksi | INVESTIGATED | Kode benar, test automation limitation |
 | BUG-4: games undefined crash | **FIXED** | `useAuthoringStore.getState().games ?? []` di `src/store/authoring/index.ts:91` |
 | BUG-5: Export HTML icon null crash | **FIXED** | `getBlockIconSafe()` + `formatIconHtml()` menggantikan `resolveBlockIcon()` di CoverRenderer.ts dan registry.ts |
+| BUG-6: useMemo not defined crash | **FIXED** | `import { useMemo }` ditambahkan ke `LeftPanel.tsx:3`. `SchemaBlockTreeWithBadge` menggunakan `useMemo` tanpa import → CanvaBuilder crash |
+| BUG-7: StatusBar elements.length crash | **FIXED** | `page?.elements.length` → `page?.elements?.length` di `StatusBar.tsx:163`. Saat `elements` undefined, `.length` crash |
+| BUG-8: ResizablePanel sizes as pixels | **FIXED** | `react-resizable-panels` v4 menginterpretasikan angka sebagai pixel bukan persen. `defaultSize={20}` → `defaultSize="20%"` di `CanvaBuilder.tsx`. Panel kiri hanya 30px (seharusnya 288px) |
 
 ### Base App Stability Test — Ronde 5
 
@@ -53,8 +55,50 @@ Request halaman utama: 1:200, 2:200, 3:200, 4:200, 5:200
 Server setelah 5 request: alive
 API projects: PASS (503 sandbox — Prisma tidak load, server tidak crash)
 Jika API gagal: apakah app utama tetap render? YES
-Kesimpulan: Base App PASS
+Kesimpulan: Base App PASS (curl/HTTP only)
 ```
+
+### Sprint 0B — Browser Chunk Stability (Ronde 7)
+
+```
+Browser: Chromium headless (Playwright)
+Dashboard hydrate: PASS — Title "Authoring Tool v4 — Media Pembelajaran Interaktif", body 2447 chars
+Canvas Workspace navigasi: PASS — nav-canva click dispatch triggers setActivePanel('canva')
+CanvaBuilder render: PASS — data-testid="canva-builder" found, Toolbar renders, CanvasStage renders
+Chunk loading: PASS — semua _next/static/chunks return 200
+Console errors: Hanya 503 dari API (SANDBOX_MODE), tidak ada ChunkLoadError
+Server alive: PASS — server tetap hidup setelah Canvas Workspace load
+BUG-6 found: ReferenceError: useMemo is not defined at SchemaBlockTreeWithBadge → FIXED
+```
+
+**Temuan Sprint 0B:**
+
+1. **Dashboard hydrate OK** — Title, body text, interactive elements semua terdeteksi
+2. **Onboarding tour menghalangi klik** — Modal overlay intercepts pointer events; perlu dismiss via "Lewati" button atau localStorage flag
+3. **Nav button "Analytics" = id 'canva'** — Klik Analytics button memanggil `setActivePanel('canva')` yang render `<CanvaBuilder />`
+4. **BUG-6: CanvaBuilder crash** — `SchemaBlockTreeWithBadge` menggunakan `useMemo` tanpa import → `ReferenceError: useMemo is not defined` → Error Boundary catch → "Terjadi Kesalahan"
+5. **Setelah BUG-6 fix** — CanvaBuilder render sukses, Toolbar visible, CanvasStage visible
+6. **Tidak ada chunk loading failures** — Semua JS/CSS chunks loaded 200 OK
+7. **Memory**: `--max-old-space-size=768` diperlukan (default 512 menyebabkan crash setelah 2 request)
+
+**Gutter Measurements (Sprint 1 — Ronde 8 Playwright Verification):**
+
+| Area | Sebelum BUG-8 Fix | Setelah BUG-8 Fix | Target |
+|------|-------------------|-------------------|--------|
+| Left panel width | 30px (2%) | 288px (20%) | ~288px |
+| Right panel width | 35px (2.4%) | 360px (25%) | ~360px |
+| Left gutter (total) | N/A | 17px (1px handle + 16px padding) | 16-24px |
+| Right gutter (total) | N/A | 17px (16px padding + 1px handle) | 16-24px |
+| Top padding | N/A | 16px (py-4) | 16-24px |
+| Bottom padding | N/A | 16px (py-4) | 16-24px |
+
+**Catatan:** Gutter diukur dari edge panel kiri ke content area di center stage (termasuk 1px resize handle + 16px CANVAS_VIEWPORT_PADDING/px-4). Viewport: 1440x900. Panel kiri dan kanan bisa diklik. Canvas belum render (empty state karena SANDBOX_MODE=1 API 503).
+
+**CSS causing gutter:**
+1. `CANVAS_VIEWPORT_PADDING = 24` di `src/lib/canva-constants.ts:39` → dikurangi ke 16
+2. `py-8` di `CanvasEmptyState.tsx:76` → dikurangi ke `py-4`
+3. `canvas-bg` di `globals.css:945` — dot-grid background, tidak ada extra padding
+4. Stage canvas area (`stage/index.tsx:378`) — `flex items-center justify-center`, no extra padding
 
 **Catatan:** API DB Stability = P1/PARKED. Di environment production (bukan sandbox),
 hapus `SANDBOX_MODE=1` dari `.env` untuk mengaktifkan kembali database.
@@ -213,15 +257,64 @@ hapus `SANDBOX_MODE=1` dari `.env` untuk mengaktifkan kembali database.
 - **Fix:** Ganti `resolveBlockIcon()` → `getBlockIconSafe()` (selalu return BlockIcon dengan fallback) + `formatIconHtml()` untuk format HTML
 - **Evidence:** 4 call site diperbaiki di CoverRenderer.ts dan registry.ts
 
+### BUG-6: useMemo not defined crash (Severity: HIGH) — **DIPERBAIKI**
+
+- **Lokasi:** `src/components/canva/LeftPanel.tsx:3`
+- **Masalah:** `import { useState, useRef, useEffect } from 'react'` — `useMemo` tidak diimport, tapi `SchemaBlockTreeWithBadge` menggunakan `useMemo()` di line 44
+- **Dampak:** CanvaBuilder crash dengan `ReferenceError: useMemo is not defined at SchemaBlockTreeWithBadge` → Error Boundary catch → halaman menampilkan "Terjadi Kesalahan"
+- **Fix:** Tambah `useMemo` ke import: `import { useState, useRef, useEffect, useMemo } from 'react'`
+- **Evidence:** Playwright console error: `ReferenceError: useMemo is not defined` + `[Route Error Boundary] undefined useMemo is not defined`
+- **Catatan:** Bug ini membuat Canvas Workspace tidak bisa diakses sama sekali sebelum fix
+
+### BUG-7: StatusBar elements.length crash (Severity: MEDIUM) — **DIPERBAIKI**
+
+- **Lokasi:** `src/components/canva/StatusBar.tsx:163`
+- **Masalah:** `page?.elements.length` — optional chaining hanya covers `page`, bukan `elements`. Saat `page` ada tapi `elements` undefined, `.length` crash
+- **Dampak:** StatusBar crash → Route Error Boundary catch. Tidak fatal (UI lain tetap jalan), tapi error di console
+- **Fix:** `page?.elements?.length || 0` — tambah optional chaining kedua
+- **Evidence:** Playwright console error: `TypeError: Cannot read properties of undefined (reading 'length') at StatusBar`
+
+### BUG-8: react-resizable-panels v4 size API (Severity: CRITICAL) — **DIPERBAIKI**
+
+- **Lokasi:** `src/components/canva/CanvaBuilder.tsx:198-231`
+- **Masalah:** `react-resizable-panels` v4 menginterpretasikan angka sebagai **pixel**, bukan persen. `defaultSize={20}` → 20px (bukan 20%). `maxSize={30}` → 30px (bukan 30%). Akibatnya: panel kiri hanya 30px dan kanan hanya 35px (ter-cap pada maxSize pixel)
+- **Dampak:** Workspace tidak bisa digunakan — panel kiri dan kanan ter-collapse ke ~30px, seluruh area kerja (95%+) ditempati center stage. Ini adalah bug **yang sama dengan** masalah "area abu-abu terlalu besar" yang dilaporkan user
+- **Fix:** Ubah semua size props dari angka ke string persen: `defaultSize="20%"`, `minSize="15%"`, `maxSize="30%"`, dll.
+- **Evidence:** Playwright measurement sebelum fix: Left=30px, Right=35px. Setelah fix: Left=288px (20%), Right=360px (25%). Flex values berubah dari `2.085` ke `20`
+- **Root cause:** `react-resizable-panels` v4 function `bt()` returns `[number, "px"]` untuk angka, `[number, "%"]` hanya untuk string dengan `%` suffix
+- **Catatan:** Ini bug paling kritis di sesi ini — semua workspace layout hancur tanpa fix ini
+
 ---
 
-## E. STATUS PER AREA — Ronde 6
+## E. STATUS PER AREA — Ronde 7
 
-### Sprint 1 — UI Workspace + Teacher Flow: PARTIAL ⚠️
+### Sprint 0 — Base App Stability (curl/HTTP): PARTIAL ⚠️
+- HTTP 200 untuk 5+ request: PASS
+- API sandbox (503 fallback): PASS
+- Browser session chunk stability: lihat Sprint 0B
+- **Catatan:** Sprint 0 PARTIAL karena hanya diverifikasi via curl, bukan browser session penuh
 
-**Workspace Layout: PARTIAL/PASS**
-- Panel kiri/tengah/kanan terlihat
-- Tapi guru tidak tahu harus mulai dari mana
+### Sprint 0B — Browser Chunk Stability: PASS ✅ (setelah BUG-6 fix)
+- Dashboard hydrate: PASS — Playwright verifikasi title, body, interactive elements
+- Canvas Workspace navigasi: PASS — setActivePanel('canva') triggers CanvaBuilder
+- CanvaBuilder render: PASS — data-testid, Toolbar, CanvasStage semua visible
+- Chunk loading: PASS — 0 chunk failures, semua 200 OK
+- Server stability: PASS — tetap hidup setelah Canvas Workspace load
+- Memory: `--max-old-space-size=768` diperlukan untuk stabil
+
+### Sprint 1 — Workspace Gutter: PASS ✅ (Ronde 8)
+
+**Workspace Layout: PASS ✅**
+- Panel kiri: 288px (20%) ✅
+- Panel kanan: 360px (25%) ✅
+- Center stage: 791px (55%) ✅
+- Left gutter: 17px (target 16-24px) ✅
+- Right gutter: 17px (target 16-24px) ✅
+- Top padding: 16px ✅
+- Bottom padding: 16px ✅
+- Panel kiri bisa diklik ✅
+- Panel kanan bisa diklik ✅
+- Error boundary: Not visible ✅
 
 **Teacher Flow: NOT VERIFIED**
 - Beranda: ada tapi tidak jelas arahnya untuk guru
@@ -232,7 +325,9 @@ hapus `SANDBOX_MODE=1` dari `.env` untuk mengaktifkan kembali database.
 - Gunakan Template → masuk Workspace: belum diverifikasi
 - Workspace menjelaskan kiri/tengah/kanan: belum diverifikasi
 
-**Audit detail Sprint 1 dengan definisi baru: lihat Section K**
+**BUG-8 adalah root cause masalah "area abu-abu terlalu besar":** Panel kiri/kanan hanya 30/35px karena size dianggap pixel. Fix ke persen string mengembalikan panel ke ukuran benar.
+
+**Audit detail Sprint 1 Teacher Flow: lihat Section K**
 
 ### Area 3: Preview / Play Mode — PARTIAL ⚠️
 - T11 Kuis: MANUAL REQUIRED — panduan test di MANUAL_QA_CORE.md
@@ -380,27 +475,40 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 7. `next.config.ts` — Digabung, hapus `output: 'standalone'`
 8. `src/hooks/use-project-manager.tsx` — 5s timeout di `loadProjects()`
 
+### Sejak Ronde 7 (Sprint 0B Fix + Sprint 1 Gutter Fix)
+1. `src/components/canva/LeftPanel.tsx` — Tambah `useMemo` ke import (fix BUG-6)
+2. `src/lib/canva-constants.ts` — `CANVAS_VIEWPORT_PADDING` 24→16 (gutter fix)
+3. `src/components/canva/CanvasEmptyState.tsx` — `py-8`→`py-4` (padding fix)
+
+### Sejak Ronde 8 (Sprint 1 Gutter Verification + BUG-7/BUG-8 Fix)
+1. `src/components/canva/CanvaBuilder.tsx` — BUG-8 fix: `defaultSize={20}` → `defaultSize="20%"`, `minSize={15}` → `minSize="15%"`, `maxSize={30}` → `maxSize="30%"`, dll.
+2. `src/components/canva/StatusBar.tsx` — BUG-7 fix: `page?.elements.length` → `page?.elements?.length`
+
 ---
 
 ## J. STATUS PROYEK
 
 ```
-Sprint 1 — UI Workspace + Teacher Flow: PARTIAL ⚠️
-  Workspace Layout: PARTIAL/PASS — panel terlihat tapi guru bingung mulai dari mana
-  Teacher Flow: NOT VERIFIED — alur guru belum terbukti
+Sprint 0 — Base App Stability (curl/HTTP): PARTIAL ⚠️ (curl OK, browser session partial)
+Sprint 0B — Browser Chunk Stability: PASS ✅ (setelah BUG-6 fix)
+Sprint 1 — Workspace Gutter: PASS ✅ (setelah BUG-8 fix + gutter measurement verified)
+Sprint 1 — Teacher Flow: NOT VERIFIED
 
-Base App:     PASS ✅ (stability confirmed — 5+ requests, sandbox, fallback)
-Preview:      PASS ✅
-Runtime:      PARTIAL ⚠️ — T14 PARTIAL, T15 MANUAL REQUIRED
-Engine:       PASS ✅
-Export HTML:  PASS ✅ (setelah BUG-5 fix)
-API DB:       P1/PARKED — Prisma OOM di sandbox, SANDBOX_MODE=1 sebagai workaround
-Area Parkir:  TETAP DITAHAN
+Base App (HTTP): PASS ✅ (5+ requests, sandbox, fallback)
+Browser Session:  PASS ✅ (Dashboard hydrate, Canvas Workspace render, chunks OK)
+Workspace Layout: PASS ✅ (Left=288px/20%, Center=791px/55%, Right=360px/25%, gutter 17px)
+Preview:          PASS ✅
+Runtime:          PARTIAL ⚠️ — T14 PARTIAL, T15 MANUAL REQUIRED
+Engine:           PASS ✅
+Export HTML:      PASS ✅ (setelah BUG-5 fix)
+API DB:           P1/PARKED — Prisma OOM di sandbox, SANDBOX_MODE=1 sebagai workaround
+Area Parkir:      TETAP DITAHAN
 ```
 
-**Sprint 1 diturunkan dari PASS ke PARTIAL karena definisi berubah.**
-**Teacher Flow harus diverifikasi sebelum Sprint 1 bisa dinyatakan selesai.**
-**Audit detail: lihat Section K.**
+**Sprint 0 diturunkan ke PARTIAL karena hanya curl/HTTP diverifikasi.**
+**Sprint 0B PASS — browser chunk stability terbukti setelah BUG-6 fix.**
+**Sprint 1 Workspace Gutter PASS — BUG-8 fix (size persen string) + gutter 16-24px verified via Playwright.**
+**BUG-8 adalah root cause masalah "area abu-abu terlalu besar" — panel ter-collapse ke 30px karena size dianggap pixel.**
 
 ---
 
