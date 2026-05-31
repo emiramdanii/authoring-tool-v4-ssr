@@ -15,6 +15,7 @@ import ValidationSection from './ValidationSection';
 import LayerPanel from '../left-panel/LayerPanel';
 
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
 
@@ -59,6 +60,7 @@ type RightPanelTab = 'properties' | 'ai' | 'layer';
 export default function RightPanel() {
   const rightPanelOpen = useCanvaStore(s => s.rightPanelOpen);
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const selectedBlockType = useCanvaStore(s => s.selectedBlockType);
   const selectedBlockIds = useCanvaStore(s => s.selectedBlockIds);
   const selectedElId = useCanvaStore(s => s.selectedElId);
   const selectedElIds = useCanvaStore(s => s.selectedElIds);
@@ -98,6 +100,17 @@ export default function RightPanel() {
   const hasMultiBlockSelection = selectedBlockIds.length > 1;
   const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
 
+  // Contextual header label (Sprint 1C.2)
+  const headerLabel = (() => {
+    if (!isSederhana) return 'Properties';
+    if (hasBlockSelection && selectedBlockType) {
+      const friendly = teacherTerm(selectedBlockType, true);
+      return `Edit ${friendly}`;
+    }
+    if (hasBlockSelection) return 'Edit Konten';
+    return 'Edit Halaman';
+  })();
+
   if (!rightPanelOpen) return null;
 
   return (
@@ -110,7 +123,7 @@ export default function RightPanel() {
             className="text-sm font-bold text-silse-on-surface tracking-tight"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
-            Properties
+            {headerLabel}
           </h3>
         </div>
         <button
@@ -165,7 +178,6 @@ export default function RightPanel() {
               </div>
             ) : isSchemaDriven ? (
               <div className="flex-1 overflow-y-auto custom-scrollbar">
-                <ValidationSection />
                 <BackgroundSection />
                 <PageSettingsSection />
                 <PaletteSection />
@@ -178,6 +190,8 @@ export default function RightPanel() {
                     <PageInfo />
                   </>
                 )}
+                {/* ── Pemeriksaan (validation) — moved to bottom, collapsed by default ── */}
+                <ValidationSection />
                 {/* ── Empty state hint — MD3 style ── */}
                 <div className="mx-3 mt-3 mb-4 rounded-2xl border border-dashed border-silse-outline-variant/60 bg-silse-surface-container-low/50 overflow-hidden anim-enter-fade">
                   <div className="px-4 pt-4 pb-3 text-center">

@@ -244,7 +244,7 @@ function GateBadge({ gate }: { gate: TemplateGateResult }) {
 export default function ValidationSection() {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [showCurrentPageOnly, setShowCurrentPageOnly] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [repairInProgress, setRepairInProgress] = useState(false);
@@ -413,7 +413,7 @@ export default function ValidationSection() {
   return (
     <Section
       icon={<Shield size={12} />}
-      title="Validasi"
+      title="Pemeriksaan"
       collapsed={collapsed}
       onToggle={() => setCollapsed(c => !c)}
     >

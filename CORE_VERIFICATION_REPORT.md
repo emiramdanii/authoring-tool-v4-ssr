@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-05-31 (Ronde 10 — Sprint 1C.1 Workspace Labels & AI Tab Hide)
+Tanggal: 2026-05-31 (Ronde 11 — Sprint 1C.2 Right Panel Simplification)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -15,9 +15,19 @@ Sprint 0B — Browser Chunk Stability: PASS — Dashboard hydrate OK, Canvas Wor
 Sprint 1A — Workspace Gutter: PASS — gutter 16-24px terbukti via Playwright measurement, panel 20%/55%/25% benar
 Sprint 1B — Teacher Flow Label: PASS — navigasi label diperbaiki, guru tahu tombol masuk workspace
 Sprint 1C.1 — Workspace Labels & AI Tab: PASS — label tombol/panel disederhanakan, AI tab disembunyikan
+Sprint 1C.2 — Right Panel Simplification: PASS — ValidationSection dipindah, header kontekstual, Scene Type & Grid hidden di teacher mode
 Sprint 1 — Teacher Flow Entry: NOT VERIFIED — Template preview belum ada
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 11:**
+
+1. Sprint 1C.2 FIX: RightPanel.tsx — ValidationSection dipindah dari posisi #1 ke bawah (setelah NavigationSection)
+2. Sprint 1C.2 FIX: ValidationSection.tsx — label "Validasi" → "Pemeriksaan", default collapsed=true
+3. Sprint 1C.2 FIX: PageSettingsSection.tsx — Scene Type dropdown disembunyikan dari teacher mode (`!isSederhana`)
+4. Sprint 1C.2 FIX: PageSettingsSection.tsx — Grid & Snap disembunyikan dari teacher mode (`!isSederhana`)
+5. Sprint 1C.2 FIX: RightPanel.tsx — header "Properties" → kontekstual: "Edit Halaman" / "Edit [tipe blok]" / "Edit Konten" di teacher mode
+6. CORE_SCOPE.md — ditambahkan klasifikasi CORE vs PARKIR untuk komponen interaktif
 
 **PERUBAHAN RONDE 10:**
 
@@ -67,6 +77,7 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 | BUG-8: ResizablePanel sizes as pixels | **FIXED** | `react-resizable-panels` v4 menginterpretasikan angka sebagai pixel bukan persen. `defaultSize={20}` → `defaultSize="20%"` di `CanvaBuilder.tsx`. Panel kiri hanya 30px (seharusnya 288px) |
 | BUG-9: Navigasi label membingungkan guru | **FIXED** | Sidebar "Analytics" → "Edit Media", "Workspace" → "RPP & Dokumen". Dashboard "Analytics" → "Pratinjau". Preview highlight sekarang benar. 6 perubahan di 2 file. |
 | BUG-10: Istilah teknis di workspace | **FIXED** | Toolbar "Main" → "Coba Siswa", "Publish" → "Export HTML". LeftPanel "Workspace" → "Halaman Media", "Scenes" → "Halaman". AI tab disembunyikan. 5 perubahan di 3 file. |
+| BUG-11: Panel kanan terlalu teknis untuk guru | **FIXED** | ValidationSection "Validasi" → "Pemeriksaan" + dipindah ke bawah + default collapsed. Header "Properties" → "Edit Halaman"/"Edit [tipe]". Scene Type & Grid & Snap disembunyikan dari teacher mode. |
 
 ### Base App Stability Test — Ronde 5
 
@@ -387,11 +398,28 @@ Tengah:  media canvas
 Kanan:   Properti (tanpa AI tab)
 ```
 
-### Sprint 1C.2 — Right Panel Simplification: NEXT
-- ValidationSection: tetap terlihat atau masuk "Lanjutan"
-- Scene Type: disembunyikan atau tidak
-- DisplayModeSelector: diparkir
-- Theme tools: dipindah ke pengaturan
+### Sprint 1C.2 — Right Panel Simplification: PASS ✅ (Ronde 11)
+
+**Panel kanan disederhanakan untuk teacher mode:**
+- ValidationSection: label "Validasi" → "Pemeriksaan", dipindah ke bawah, default collapsed ✅
+- Header: "Properties" → kontekstual ("Edit Halaman" / "Edit [tipe blok]") ✅
+- Scene Type: disembunyikan dari teacher mode ✅
+- Grid & Snap: disembunyikan dari teacher mode ✅
+- BackgroundSection, NavigationSection, PageInfo: tetap CORE ✅
+- PageSettingsSection (Jenis Halaman, Varian Tampilan): tetap terlihat ✅
+- Build: PASS ✅
+
+**Sebelum/Sesudah panel kanan teacher mode:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| Header | "Properties" | "Edit Halaman" / "Edit Kuis" / "Edit Teks" |
+| Section #1 | ValidationSection (expanded, "Validasi") | BackgroundSection |
+| Section #2 | BackgroundSection | Pengaturan Halaman |
+| Section terakhir | empty state hint | Pemeriksaan (collapsed) |
+| Scene Type | terlihat | hidden (teacher mode) |
+| Grid & Snap | terlihat | hidden (teacher mode) |
+| Advanced mode | "Properties" | "Properties" (tidak berubah) |
 
 ### Sprint 1C — Template Entry Point: NOT STARTED
 
@@ -558,6 +586,12 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 1. `src/components/canva/CanvaBuilder.tsx` — BUG-8 fix: `defaultSize={20}` → `defaultSize="20%"`, `minSize={15}` → `minSize="15%"`, `maxSize={30}` → `maxSize="30%"`, dll.
 2. `src/components/canva/StatusBar.tsx` — BUG-7 fix: `page?.elements.length` → `page?.elements?.length`
 
+### Sejak Ronde 11 (Sprint 1C.2 Right Panel Simplification)
+1. `src/components/canva/right-panel/RightPanel.tsx` — BUG-11 fix: ValidationSection dipindah ke bawah (setelah NavigationSection), header "Properties" → kontekstual via `teacherTerm()`, import `teacherTerm` + `selectedBlockType`
+2. `src/components/canva/right-panel/ValidationSection.tsx` — BUG-11 fix: label "Validasi"→"Pemeriksaan", default collapsed=true
+3. `src/components/canva/right-panel/PageSettingsSection.tsx` — BUG-11 fix: Scene Type & Grid & Snap disembunyikan dari teacher mode via `!isSederhana`, import `useTeacherMode`
+4. `CORE_SCOPE.md` — Klasifikasi CORE vs PARKIR untuk komponen interaktif (interaksi pembelajaran = CORE, gamifikasi = PARKIR)
+
 ### Sejak Ronde 10 (Sprint 1C.1 Workspace Labels & AI Tab Hide)
 1. `src/components/canva/Toolbar.tsx` — BUG-10 fix: label "Main"→"Coba Siswa" (edit mode + preview mode), "Publish"→"Export HTML", "Publishing…"→"Mengekspor…", title attributes + comments updated
 2. `src/components/canva/LeftPanel.tsx` — BUG-10 fix: header "Workspace"→"Halaman Media", section "Scenes"→"Halaman"
@@ -577,7 +611,7 @@ Sprint 0B — Browser Chunk Stability: PASS ✅ (setelah BUG-6 fix)
 Sprint 1A — Workspace Layout: PASS ✅ (setelah BUG-8 fix + gutter measurement verified)
 Sprint 1B — Teacher Flow Label: PASS ✅ (setelah BUG-9 fix, label navigasi jelas)
 Sprint 1C.1 — Workspace Labels & AI Tab: PASS ✅ (setelah BUG-10 fix, label tombol/panel jelas, AI tab hidden)
-Sprint 1C.2 — Right Panel Simplification: NEXT
+Sprint 1C.2 — Right Panel Simplification: PASS ✅ (setelah BUG-11 fix, panel kanan ramah guru)
 Sprint 1D — Template Entry Point: NOT STARTED
 
 Base App (HTTP): PASS ✅ (5+ requests, sandbox, fallback)
@@ -596,6 +630,7 @@ Area Parkir:      TETAP DITAHAN
 **Sprint 1A Workspace Layout PASS — BUG-8 fix (size persen string) + gutter 16-24px verified via Playwright.**
 **Sprint 1B Teacher Flow Label PASS — BUG-9 fix (navigasi label jelas untuk guru).**
 **Sprint 1C.1 Workspace Labels & AI Tab PASS — BUG-10 fix (label tombol/panel jelas, AI tab hidden).**
+**Sprint 1C.2 Right Panel Simplification PASS — BUG-11 fix (panel kanan ramah guru: header kontekstual, ValidationSection dipindah, Scene Type & Grid hidden).**
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar" — panel ter-collapse ke 30px karena size dianggap pixel.**
 **BUG-9 adalah root cause masalah "guru bingung masuk workspace" — label Analytics/Workspace tidak sesuai fungsi.**
 **BUG-10 adalah root cause masalah "guru bingung di workspace" — istilah teknis Main/Publish/Scenes dan AI tab yang mengganggu.**
