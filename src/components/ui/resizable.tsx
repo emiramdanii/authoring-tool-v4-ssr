@@ -12,7 +12,6 @@ function ResizablePanelGroup({
 }: React.ComponentProps<typeof Group>) {
   return (
     <Group
-      data-slot="resizable-panel-group"
       className={cn(
         "flex h-full w-full data-[panel-group-direction=vertical]:flex-col",
         className
