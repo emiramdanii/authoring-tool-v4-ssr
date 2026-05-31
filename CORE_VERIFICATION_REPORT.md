@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 12 — Sprint 1D Verification + Sprint 1E Audit)
+Tanggal: 2026-06-01 (Ronde 13 — Sprint 1E.1 Left Panel Simplification)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -17,11 +17,37 @@ Sprint 1B — Teacher Flow Label: PASS — navigasi label diperbaiki, guru tahu 
 Sprint 1C.1 — Workspace Labels & AI Tab: PASS — label tombol/panel disederhanakan, AI tab disembunyikan
 Sprint 1C.2 — Right Panel Simplification: PASS — ValidationSection dipindah, header kontekstual, Scene Type & Grid hidden di teacher mode
 Sprint 1D — Template Entry Point: PASS — flow inta benar, presetId wired ke preset asli (macam-norma & misi-penjelajah)
-Sprint 1E — Left Panel Simplification: AUDITED — SchemaBlockTree ignores teacherMode, no bottom page strip, rekomendasi Hybrid (Opsi C)
+Sprint 1E.1 — Left Panel Simplification: PASS — SchemaBlockTree menghormati teacher mode, collapsed default, label ramah guru
+Sprint 1E.2 — BottomPageStrip: NOTED — navigasi halaman via bottom strip (Sprint 1E.2 nanti)
+Sprint 1E.3 — Template Tab Cleanup: NOTED — cleanup dual template system (Sprint 1E.3 nanti)
 Sprint 1F — Canvas Readability: NOTED — teks transparan di canvas putih (Sprint 1F nanti)
 Sprint 1G — Background-Based Media Mode: NOTED — media HTML sebagai background (Sprint 1G nanti)
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 13:**
+
+1. Sprint 1E.1 IMPLEMENTASI: SchemaBlockTree sekarang menghormati teacher mode
+2. Header "Schema" → "Struktur Konten" di sederhana mode (icon: account_tree → category_search)
+3. Badge "N blocks" → "N konten" di sederhana mode
+4. Bolt/technical icon (⚡) disembunyikan di sederhana mode (TreeNode + PageBlockSection + SchemaBlockTreeCompact + SchemaBlockTreeWithBadge)
+5. SchemaBlockTree collapsed default di sederhana mode, expanded di lengkap mode
+6. PageBlockSection collapsed default di sederhana mode
+7. Block labels menggunakan teacher-friendly overrides (TEACHER_BLOCK_LABELS map): def-box→Kotak Definisi, nc-grid→Kisi Norma, ftab→Tab Konten, nk-card→Kartu Norma, dll
+8. getBlockDisplay() dan getBlockTitle() sekarang menerima isSederhana parameter
+9. SchemaBlockTreeCompact juga menghormati teacher mode
+10. Build: PASS ✅
+
+**Sebelum/Sesudah panel kiri teacher mode:**
+
+| Area | Sebelum | Sesudah (Sederhana) |
+|------|---------|---------|
+| Header | "Schema" (bolt icon) | "Struktur Konten" (category_search icon) |
+| Badge | "5 blocks ⚡" | "5 konten" (tanpa bolt) |
+| Default state | Expanded | Collapsed (klik untuk buka) |
+| Block labels | def-box, nc-grid, ftab, nk-card | Kotak Definisi, Kisi Norma, Tab Konten, Kartu Norma |
+| Bolt icon per item | ⚡ selalu terlihat | Hidden |
+| PageBlockSection | "3 blocks ⚡" | "3 konten" (tanpa bolt) |
 
 **PERUBAHAN RONDE 12:**
 
@@ -629,6 +655,11 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 1. `src/components/canva/CanvaBuilder.tsx` — BUG-8 fix: `defaultSize={20}` → `defaultSize="20%"`, `minSize={15}` → `minSize="15%"`, `maxSize={30}` → `maxSize="30%"`, dll.
 2. `src/components/canva/StatusBar.tsx` — BUG-7 fix: `page?.elements.length` → `page?.elements?.length`
 
+### Sejak Ronde 13 (Sprint 1E.1 — Left Panel Simplification)
+1. `src/components/canva/left-panel/SchemaBlockTree.tsx` — Major rewrite for teacher mode: import useTeacherMode + teacherTerm; SchemaBlockTree reads isSederhana, collapsed default in teacher mode, header "Schema"→"Struktur Konten" with category_search icon; PageBlockSection receives isSederhana+defaultCollapsed props, "N blocks"→"N konten", bolt icon hidden; TreeNode receives isSederhana, bolt icon conditionally hidden, getBlockDisplay/getBlockTitle accept isSederhana; TEACHER_BLOCK_LABELS map for teacher-friendly block type names (def-box→Kotak Definisi, nc-grid→Kisi Norma, ftab→Tab Konten, etc.); SchemaBlockTreeCompact also respects teacher mode
+2. `src/components/canva/LeftPanel.tsx` — SchemaBlockTreeWithBadge: import useTeacherMode, "N blocks"→"N konten" badge, bolt icon hidden in sederhana mode
+3. `CORE_VERIFICATION_REPORT.md` — Sprint 1E.1 status added as PASS, Ronde 13 changes documented
+
 ### Sejak Ronde 12 (Sprint 1D P0 Fix — Wire presetId ke preset asli)
 1. `src/core/template/CourseTemplateRegistry.ts` — `createProjectFromTemplate()` diubah jadi async; tambah preset-backed template path: jika template punya `presetId`, load LessonSchema via `loadPreset()` + `schemaToCanvaPages()` bukan generic schema factory; tambah import `loadPreset`, `schemaToCanvaPages`, `generatePageId`, `DEFAULT_NAV_CONFIG`, `logger`
 2. `src/components/authoring/Dashboard.tsx` — `createProjectFromTemplate(template.id, metadata)` → `await createProjectFromTemplate(template.id, metadata)`
@@ -663,6 +694,7 @@ Sprint 1B — Teacher Flow Label: PASS ✅ (setelah BUG-9 fix, label navigasi je
 Sprint 1C.1 — Workspace Labels & AI Tab: PASS ✅ (setelah BUG-10 fix, label tombol/panel jelas, AI tab hidden)
 Sprint 1C.2 — Right Panel Simplification: PASS ✅ (setelah BUG-11 fix, panel kanan ramah guru)
 Sprint 1D — Template Entry Point: PASS ✅ (presetId wired ke preset asli, flow benar)
+Sprint 1E.1 — Left Panel Simplification: PASS ✅ (SchemaBlockTree menghormati teacher mode)
 
 Base App (HTTP): PASS ✅ (5+ requests, sandbox, fallback)
 Browser Session:  PASS ✅ (Dashboard hydrate, Canvas Workspace render, chunks OK)
@@ -682,6 +714,7 @@ Area Parkir:      TETAP DITAHAN
 **Sprint 1C.1 Workspace Labels & AI Tab PASS — BUG-10 fix (label tombol/panel jelas, AI tab hidden).**
 **Sprint 1C.2 Right Panel Simplification PASS — BUG-11 fix (panel kanan ramah guru: header kontekstual, ValidationSection dipindah, Scene Type & Grid hidden).**
 **Sprint 1D Template Entry Point PASS — presetId wired ke preset asli, flow benar.**
+**Sprint 1E.1 Left Panel Simplification PASS — SchemaBlockTree menghormati teacher mode: collapsed default, "Struktur Konten" header, "N konten" badge, bolt icon hidden, teacher-friendly block labels.**
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar" — panel ter-collapse ke 30px karena size dianggap pixel.**
 **BUG-9 adalah root cause masalah "guru bingung masuk workspace" — label Analytics/Workspace tidak sesuai fungsi.**
 **BUG-10 adalah root cause masalah "guru bingung di workspace" — istilah teknis Main/Publish/Scenes dan AI tab yang mengganggu.**

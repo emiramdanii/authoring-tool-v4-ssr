@@ -10,6 +10,7 @@ import { TemplateSection } from './left-panel/TemplateSection';
 import { SettingsSection } from './left-panel/SettingsSection';
 import { SchemaBlockTree } from './left-panel/SchemaBlockTree';
 import { getPageBlocks } from '@/core/schema/ensure-schema';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 import HistoryPanel from './left-panel/HistoryPanel';
 
@@ -41,6 +42,7 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
 // ── SchemaBlockTree with badge showing total block count ──
 function SchemaBlockTreeWithBadge() {
   const pages = useCanvaStore(s => s.pages);
+  const { isSederhana } = useTeacherMode();
   const totalBlocks = useMemo(() => {
     let count = 0;
     for (const page of pages) {
@@ -51,6 +53,10 @@ function SchemaBlockTreeWithBadge() {
     return count;
   }, [pages]);
 
+  const blockCountLabel = isSederhana
+    ? `${totalBlocks} konten`
+    : `${totalBlocks} block${totalBlocks !== 1 ? 's' : ''}`;
+
   return (
     <div>
       <div className="flex items-center gap-1.5 px-1 mb-1">
@@ -59,8 +65,10 @@ function SchemaBlockTreeWithBadge() {
       {totalBlocks > 0 && (
         <div className="px-1 mt-0.5">
           <span className="silse-chip text-[9px] py-0.5 px-2">
-            <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>bolt</span>
-            {totalBlocks} block{totalBlocks !== 1 ? 's' : ''}
+            {!isSederhana && (
+              <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>bolt</span>
+            )}
+            {blockCountLabel}
           </span>
         </div>
       )}

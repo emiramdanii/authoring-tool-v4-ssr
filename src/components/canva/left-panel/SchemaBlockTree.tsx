@@ -1,7 +1,7 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════
-// SCHEMA BLOCK TREE v3 — SILSE v4 MD3 Block Navigator
+// SCHEMA BLOCK TREE v4 — SILSE v4 MD3 Block Navigator
 // ═══════════════════════════════════════════════════════════════════
 // Navigate schema blocks within each page.
 //
@@ -10,13 +10,13 @@
 //   NAV:   goPage() + selectBlock() → navigate & edit
 //   CROSS: Click block → navigate to page + show in right panel
 //
-// v3 changes:
-//   - Better MD3 styling with rounded-lg items and active state
-//   - SILSE semantic tokens for block type colors (no hardcoded Tailwind)
-//   - Smooth transitions for expand/collapse
-//   - Better visual hierarchy with depth-based indentation
-//   - Schema badge uses silse-primary tokens
-//   - Hover states with proper surface colors
+// v4 changes (Sprint 1E.1 — Teacher Mode):
+//   - Respects teacher mode: collapsed default in sederhana, expanded in lengkap
+//   - Header "Schema" → "Struktur Konten" in teacher mode
+//   - Badge "N blocks" → "N konten" in teacher mode
+//   - Bolt/technical icons hidden in teacher mode
+//   - Block labels use teacherTerm() mapping in teacher mode
+//   - Block tree available but not dominant in teacher mode
 // ═══════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback } from 'react';
@@ -25,6 +25,8 @@ import { useInteractionStore } from '@/store/canva/interaction-store';
 import { getPageBlocks } from '@/core/schema/ensure-schema';
 import { isCompositeBlockType, getCompositeContainerDescriptor } from '@/core/schema/capability-registry';
 import { getKontenTabForBlockType } from '@/hooks/use-schema-navigator';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import type { SchemaBlock } from '@/core/schema/types';
 import type { CanvaPage } from '@/components/canva/types';
 
@@ -72,17 +74,46 @@ const BLOCK_DISPLAY: Record<string, { icon: string; label: string; color: string
   'team-buzzer-game':  { icon: 'groups', label: 'Kuis Tim', color: 'text-silse-tertiary-container' },
 };
 
-function getBlockDisplay(type: string): { icon: string; label: string; color: string } {
-  return BLOCK_DISPLAY[type] || { icon: 'widgets', label: type, color: 'text-silse-on-surface-variant' };
+// ── Teacher-friendly label overrides for block types ──
+// In sederhana mode, these technical block type labels are replaced
+// with teacher-friendly equivalents.
+const TEACHER_BLOCK_LABELS: Record<string, string> = {
+  'def-box':           'Kotak Definisi',
+  'nc-grid':           'Kisi Norma',
+  'ftab':              'Tab Konten',
+  'nk-card':           'Kartu Norma',
+  'materi-blok':       'Bagian Materi',
+  'materi-section':    'Bagian Materi',
+  'flashcard-set':     'Kartu Belajar',
+  'sateri':            'Skenario Belajar',
+  'tujuan-display':    'Tujuan Pembelajaran',
+  'hero':              'Judul Besar',
+  'cover':             'Sampul',
+  'hasil':             'Hasil Belajar',
+  'checklist':         'Daftar Centang',
+  'reveal':            'Konten Tersembunyi',
+  'tabel-accord':      'Accordion Tabel',
+};
+
+function getBlockDisplay(type: string, isSederhana: boolean): { icon: string; label: string; color: string } {
+  const base = BLOCK_DISPLAY[type] || { icon: 'widgets', label: type, color: 'text-silse-on-surface-variant' };
+  if (isSederhana) {
+    // Apply teacher-friendly label override if available
+    const teacherLabel = TEACHER_BLOCK_LABELS[type];
+    if (teacherLabel) {
+      return { ...base, label: teacherLabel };
+    }
+  }
+  return base;
 }
 
 // ── Get block title/label for the tree item ─────────────────────
 
-function getBlockTitle(block: SchemaBlock): string {
+function getBlockTitle(block: SchemaBlock, isSederhana: boolean): string {
   const b = block as Record<string, unknown>;
   if (typeof b.title === 'string' && b.title) return b.title as string;
   if (typeof b.label === 'string' && b.label) return b.label as string;
-  return getBlockDisplay(block.type).label;
+  return getBlockDisplay(block.type, isSederhana).label;
 }
 
 // ── Get child blocks from a composite block ─────────────────────
@@ -123,15 +154,16 @@ interface TreeNodeProps {
   depth: number;
   selectedBlockId: string | null;
   onSelect: (pageId: string, blockId: string, blockType: string) => void;
+  isSederhana: boolean;
 }
 
-function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeProps) {
+function TreeNode({ block, pageId, depth, selectedBlockId, onSelect, isSederhana }: TreeNodeProps) {
   const [expanded, setExpanded] = useState(depth < 1); // Auto-expand first level
   const children = getChildBlocks(block);
   const hasChildren = children.length > 0;
   const isSelected = selectedBlockId === block.id;
-  const display = getBlockDisplay(block.type);
-  const title = getBlockTitle(block);
+  const display = getBlockDisplay(block.type, isSederhana);
+  const title = getBlockTitle(block, isSederhana);
 
   return (
     <div>
@@ -179,14 +211,16 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
               }
             }}
             className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-silse-on-surface-variant/60 hover:text-silse-primary transition-opacity cursor-pointer"
-            title="Edit di Konten"
+            title={isSederhana ? 'Edit Konten' : 'Edit di Konten'}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>edit</span>
           </span>
         )}
 
-        {/* Schema badge */}
-        <span className="material-symbols-outlined flex-shrink-0 text-silse-primary/25" style={{ fontSize: '10px' }}>bolt</span>
+        {/* Schema badge — only shown in advanced (lengkap) mode */}
+        {!isSederhana && (
+          <span className="material-symbols-outlined flex-shrink-0 text-silse-primary/25" style={{ fontSize: '10px' }}>bolt</span>
+        )}
       </button>
 
       {/* Children */}
@@ -200,6 +234,7 @@ function TreeNode({ block, pageId, depth, selectedBlockId, onSelect }: TreeNodeP
               depth={depth + 1}
               selectedBlockId={selectedBlockId}
               onSelect={onSelect}
+              isSederhana={isSederhana}
             />
           ))}
         </div>
@@ -216,10 +251,13 @@ interface PageBlockSectionProps {
   isActive: boolean;
   selectedBlockId: string | null;
   onSelect: (pageId: string, blockId: string, blockType: string) => void;
+  isSederhana: boolean;
+  defaultCollapsed?: boolean;
 }
 
-function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect }: PageBlockSectionProps) {
-  const [expanded, setExpanded] = useState(isActive); // Auto-expand active page on initial render
+function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect, isSederhana, defaultCollapsed }: PageBlockSectionProps) {
+  // In teacher mode, start collapsed; in advanced mode, auto-expand active page
+  const [expanded, setExpanded] = useState(defaultCollapsed ? false : isActive);
   // Subscribe to schema changes reactively — re-compute blocks when schema content changes.
   // Previously, [page] alone could miss updates when Zustand/immer patches deep schema fields
   // without creating a new page reference. Adding page.schema and block count ensures reactivity.
@@ -231,6 +269,10 @@ function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect
     return null;
   }
 
+  const blockCountLabel = isSederhana
+    ? `${blocks.length} konten`
+    : `${blocks.length} block${blocks.length !== 1 ? 's' : ''}`;
+
   return (
     <div className="border-l border-silse-outline-variant/25 ml-2">
       {/* Toggle button */}
@@ -241,8 +283,11 @@ function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect
         }`}
       >
         <span className={`material-symbols-outlined transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} style={{ fontSize: '10px' }}>chevron_right</span>
-        <span className="material-symbols-outlined text-silse-primary/40" style={{ fontSize: '9px' }}>bolt</span>
-        <span>{blocks.length} block{blocks.length !== 1 ? 's' : ''}</span>
+        {/* Bolt icon only in advanced mode */}
+        {!isSederhana && (
+          <span className="material-symbols-outlined text-silse-primary/40" style={{ fontSize: '9px' }}>bolt</span>
+        )}
+        <span>{blockCountLabel}</span>
       </button>
 
       {/* Block tree */}
@@ -256,6 +301,7 @@ function PageBlockSection({ page, pageIndex, isActive, selectedBlockId, onSelect
               depth={0}
               selectedBlockId={selectedBlockId}
               onSelect={onSelect}
+              isSederhana={isSederhana}
             />
           ))}
         </div>
@@ -272,6 +318,10 @@ export function SchemaBlockTree() {
   const goPage = useCanvaStore(s => s.goPage);
   const selectBlock = useInteractionStore(s => s.selectBlock);
   const selectedBlockId = useInteractionStore(s => s.selectedBlockId);
+  const { isSederhana } = useTeacherMode();
+
+  // In teacher mode, start collapsed so block tree doesn't dominate
+  const [collapsed, setCollapsed] = useState(isSederhana);
 
   // Navigate to a block: go to the page and select the block
   const handleSelect = useCallback((pageId: string, blockId: string, blockType: string) => {
@@ -303,15 +353,30 @@ export function SchemaBlockTree() {
     return null;
   }
 
+  // Teacher-friendly header and labels
+  const headerLabel = isSederhana ? 'Struktur Konten' : 'Schema';
+  const headerIcon = isSederhana ? 'category_search' : 'account_tree';
+
   return (
     <div className="space-y-0.5">
-      <div className="flex items-center gap-1.5 px-1 py-1">
-        <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>account_tree</span>
-        <span className="text-[11px] font-bold text-silse-outline uppercase tracking-widest">
-          Schema
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="flex items-center gap-1.5 px-1 py-1 w-full text-left hover:bg-silse-surface-container-high/30 rounded-md transition-colors"
+      >
+        <span className={`material-symbols-outlined text-silse-outline transition-transform duration-150 ${collapsed ? '' : 'rotate-0'}`} style={{ fontSize: '12px' }}>
+          {collapsed ? 'chevron_right' : 'expand_more'}
         </span>
-      </div>
-      {schemaPages.map(({ page, index }) => (
+        <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>{headerIcon}</span>
+        <span className="text-[11px] font-bold text-silse-outline uppercase tracking-widest">
+          {headerLabel}
+        </span>
+        {isSederhana && schemaPages.length > 0 && (
+          <span className="ml-auto text-[9px] font-medium text-silse-on-surface-variant bg-silse-surface-container-high/50 px-1.5 py-0.5 rounded-full">
+            {schemaPages.length} halaman
+          </span>
+        )}
+      </button>
+      {!collapsed && schemaPages.map(({ page, index }) => (
         <PageBlockSection
           key={page.id}
           page={page}
@@ -319,6 +384,8 @@ export function SchemaBlockTree() {
           isActive={index === currentPageIndex}
           selectedBlockId={selectedBlockId}
           onSelect={handleSelect}
+          isSederhana={isSederhana}
+          defaultCollapsed={isSederhana}
         />
       ))}
     </div>
@@ -339,6 +406,7 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
   const goPage = useCanvaStore(s => s.goPage);
   const selectBlock = useInteractionStore(s => s.selectBlock);
   const selectedBlockId = useInteractionStore(s => s.selectedBlockId);
+  const { isSederhana } = useTeacherMode();
   const [expanded, setExpanded] = useState(false);
 
   // Reactive: re-compute blocks when schema changes (not just page reference)
@@ -355,6 +423,10 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
 
   if (!isSchemaDriven || blocks.length === 0) return null;
 
+  const blockCountLabel = isSederhana
+    ? `${blocks.length} konten`
+    : `${blocks.length} block${blocks.length !== 1 ? 's' : ''}`;
+
   return (
     <div className="ml-4">
       <button
@@ -362,8 +434,11 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
         className="flex items-center gap-1 text-[10px] text-silse-on-surface-variant hover:text-silse-primary transition-colors py-0.5 rounded-lg"
       >
         <span className={`material-symbols-outlined transition-transform duration-150 ${expanded ? 'rotate-90' : ''}`} style={{ fontSize: '9px' }}>chevron_right</span>
-        <span className="material-symbols-outlined text-silse-primary-container/50" style={{ fontSize: '9px' }}>bolt</span>
-        <span>{blocks.length} block{blocks.length !== 1 ? 's' : ''}</span>
+        {/* Bolt icon only in advanced mode */}
+        {!isSederhana && (
+          <span className="material-symbols-outlined text-silse-primary-container/50" style={{ fontSize: '9px' }}>bolt</span>
+        )}
+        <span>{blockCountLabel}</span>
       </button>
 
       {expanded && (
@@ -376,6 +451,7 @@ export function SchemaBlockTreeCompact({ page, pageIndex, isActive }: SchemaBloc
               depth={0}
               selectedBlockId={selectedBlockId}
               onSelect={handleSelect}
+              isSederhana={isSederhana}
             />
           ))}
         </div>
