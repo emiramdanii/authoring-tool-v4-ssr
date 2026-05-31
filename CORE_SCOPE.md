@@ -6,12 +6,13 @@ Saat ini SILSE tidak sedang menambah fitur baru.
 
 Tujuan utama hanya:
 
-1. Satu media pembelajaran bisa dibuka di workspace.
-2. Satu media pembelajaran bisa diedit.
-3. Satu media pembelajaran bisa dimainkan.
-4. Satu media pembelajaran bisa diekspor sebagai HTML.
+1. Guru bisa mulai kerja tanpa bingung (Teacher Flow).
+2. Satu media pembelajaran bisa dibuka di workspace.
+3. Satu media pembelajaran bisa diedit.
+4. Satu media pembelajaran bisa dimainkan.
+5. Satu media pembelajaran bisa diekspor sebagai HTML.
 
-Jika pekerjaan tidak membantu 4 tujuan itu, maka pekerjaan tersebut tidak boleh dikerjakan sekarang.
+Jika pekerjaan tidak membantu 5 tujuan itu, maka pekerjaan tersebut tidak boleh dikerjakan sekarang.
 
 ---
 
@@ -40,9 +41,11 @@ Hanya 4 area berikut yang boleh disentuh.
 
 ---
 
-## 1. UI Workspace
+## 1. UI Workspace + Teacher Flow
 
 UI Workspace adalah tempat guru bekerja.
+
+UI Workspace juga mencakup Teacher Flow — alur kerja guru dari beranda sampai masuk workspace.
 
 Bahasa sederhana:
 
@@ -51,9 +54,19 @@ Bahasa sederhana:
 - kanan = edit isi / pengaturan
 - atas/bawah = toolbar dasar / navigasi
 
+Teacher Flow:
+
+- halaman awal memberi pilihan jelas
+- tombol "Mulai dari Template" terlihat
+- template testing mudah ditemukan
+- guru bisa preview template sebelum memakai
+- guru bisa klik "Gunakan Template"
+- setelah memakai template, guru langsung masuk Canvas Workspace
+- workspace menjelaskan area kiri, tengah, kanan secara sederhana
+
 ### File yang termasuk UI Workspace
 
-Boleh disentuh jika masalahnya benar-benar berkaitan dengan workspace:
+Boleh disentuh jika masalahnya benar-benar berkaitan dengan workspace atau teacher flow:
 
 ```txt
 src/components/canva/CanvaBuilder.tsx
@@ -64,6 +77,10 @@ src/components/canva/page-renderer/
 src/components/canva/stage/
 src/components/canva/InlineEditableText.tsx
 src/hooks/use-learning-editor.ts
+src/hooks/use-project-manager.tsx
+src/components/home/ (jika ada — halaman beranda)
+src/components/template/ (jika ada — template picker/preview)
+src/app/page.tsx (beranda)
 ```
 
 ### Yang boleh dikerjakan di UI Workspace
@@ -77,16 +94,21 @@ src/hooks/use-learning-editor.ts
 * memperbaiki pindah halaman saat sedang edit
 * memastikan hanya satu halaman aktif yang tampil
 * memastikan edit mode dan play mode tidak bercampur
+* memastikan halaman beranda memberi pilihan jelas
+* memastikan tombol "Mulai dari Template" terlihat
+* memastikan template bisa di-preview sebelum dipakai
+* memastikan "Gunakan Template" membawa guru ke Canvas Workspace
+* memastikan workspace menjelaskan fungsi kiri/tengah/kanan
 
 ### Yang tidak boleh dikerjakan di UI Workspace
 
-* membuat dashboard baru
-* membuat onboarding baru
-* membuat template gallery baru
+* membuat dashboard baru yang kompleks
+* membuat onboarding tour baru
 * membuat desain UI besar-besaran
 * membuat color theme baru
 * membuat animasi dekoratif baru
 * menambah fitur yang tidak diminta
+* membuat template marketplace
 
 ---
 
@@ -282,30 +304,40 @@ Saat ini targetnya bukan membuat otomatis, tetapi membuat satu media bisa berjal
 
 ---
 
-## 2. Template Baru
+## 2. Template Baru (Kompleks)
 
 Diparkir dulu.
 
 Yang tidak boleh dikerjakan:
 
-* menambah template baru
-* menambah preset baru
+* menambah template kompleks (lebih dari 5 halaman)
+* menambah preset baru yang rumit
 * marketplace template
 * template registry baru
-* template subject baru
+* template subject baru yang butuh konten khusus
 * template mapel baru
+
+Yang boleh dikerjakan (sebagai bagian Sprint 1 Teacher Flow):
+
+* 5 template umum sederhana dengan data dummy untuk testing flow:
+  1. Materi + Kuis
+  2. Materi + Aktivitas
+  3. Skenario + Diskusi
+  4. Game Sortir + Kuis
+  5. Pertemuan Lengkap
 
 File yang diparkir:
 
 ```txt
-src/presets/
-src/core/preset/
-src/components/canva/left-panel/template-gallery/
+src/presets/ (template kompleks baru)
+src/core/preset/ (preset baru yang rumit)
+src/components/canva/left-panel/template-gallery/ (marketplace)
 ```
 
 Alasan diparkir:
 
 Template yang ada saja harus dibuktikan stabil dari workspace sampai export.
+5 template umum sederhana diperbolehkan untuk testing flow guru.
 
 ---
 
@@ -440,18 +472,22 @@ Yang tetap core dan boleh:
 
 ---
 
-## 8. Dashboard dan Onboarding
+## 8. Dashboard dan Onboarding (Kompleks)
 
 Diparkir dulu.
 
 Yang tidak boleh dikerjakan:
 
-* dashboard baru
-* tour baru
-* onboarding baru
-* homepage baru
-* template gallery baru
-* user journey baru
+* dashboard kompleks baru
+* tour panjang baru
+* onboarding multi-step baru
+* homepage yang terlalu rumit
+* user journey tracking baru
+
+Yang boleh dikerjakan (sebagai bagian Sprint 1 Teacher Flow):
+
+* beranda sederhana dengan pilihan jelas (Mulai dari Template / Proyek Saya)
+* label area workspace sederhana (kiri = halaman, tengah = media, kanan = edit)
 
 ---
 
@@ -486,9 +522,14 @@ AI tidak boleh loncat ke Export jika Workspace dan Runtime belum dinyatakan stab
 
 ---
 
-## Sprint 1 — Workspace
+## Sprint 1 — UI Workspace + Teacher Flow
 
-Target:
+Sprint 1 bukan hanya layout 3 panel.
+Sprint 1 juga harus memastikan guru bisa memulai pekerjaan dengan jelas.
+
+Workspace yang stabil tapi susah dipakai = belum stabil untuk guru.
+
+### Target Workspace Layout
 
 * guru bisa membuka media
 * daftar halaman tampil di kiri
@@ -500,14 +541,67 @@ Target:
 * pindah halaman saat edit tetap menyimpan
 * edit mode dan play mode tidak bercampur
 
+### Target Teacher Flow
+
+UI Workspace juga mencakup Teacher Flow — alur kerja guru dari awal sampai masuk workspace.
+
+Yang termasuk Teacher Flow:
+
+1. halaman awal memberi pilihan jelas
+2. tombol "Mulai dari Template" terlihat
+3. template testing mudah ditemukan
+4. guru bisa preview template sebelum memakai
+5. guru bisa klik "Gunakan Template"
+6. setelah memakai template, guru langsung masuk Canvas Workspace
+7. workspace menjelaskan area kiri, tengah, kanan secara sederhana
+
+### 5 Pertanyaan Sprint 1
+
+Sprint 1 dianggap selesai hanya jika 5 pertanyaan ini terjawab:
+
+```txt
+1. Setelah buka app, guru tahu harus klik apa?
+2. Guru bisa menemukan template dengan mudah?
+3. Guru bisa mencoba template sebelum memakai?
+4. Guru bisa memakai template dan langsung masuk workspace?
+5. Di workspace, guru tahu kiri/tengah/kanan fungsinya apa?
+```
+
+### Flow Wajib
+
+```txt
+Beranda
+→ Mulai dari Template
+→ Pilih template umum
+→ Preview Template
+→ Gunakan Template
+→ Canvas Workspace
+→ Preview / Play
+→ Export HTML
+```
+
+### 5 Template Umum untuk Testing Flow
+
+Template boleh memakai data dummy sederhana.
+Tujuan sprint ini bukan membuat template sempurna, tetapi membuat alur guru jelas.
+
+1. **Materi + Kuis** — halaman materi + halaman kuis pilihan ganda
+2. **Materi + Aktivitas** — halaman materi + halaman aktivitas interaktif
+3. **Skenario + Diskusi** — halaman skenario + halaman refleksi/diskusi
+4. **Game Sortir + Kuis** — halaman game sortir + halaman kuis
+5. **Pertemuan Lengkap** — cover + materi + kuis + game + refleksi
+
 Tidak boleh membahas:
 
 * export
-* template baru
-* AI
+* AI generator
 * design system
 * SCORM
 * PWA
+* template kompleks
+* typography redesign
+* color redesign
+* marketplace
 
 ---
 
@@ -752,22 +846,32 @@ Jika jawabannya tidak jelas, jangan merge.
 
 # H. TARGET SELESAI VERSI SEDERHANA
 
-Aplikasi dianggap kembali ke jalur benar jika 12 hal ini berjalan:
+Aplikasi dianggap kembali ke jalur benar jika 15 hal ini berjalan:
 
-1. Guru bisa membuka satu media.
-2. Guru bisa melihat daftar halaman di kiri.
-3. Guru bisa memilih halaman.
-4. Media tampil di tengah.
-5. Guru bisa edit teks dasar.
-6. Kuis bisa dijawab.
-7. Skor naik.
-8. Tombol next/prev jalan.
-9. Progress berubah.
-10. Game bisa selesai.
-11. Refleksi bisa disimpan.
-12. Export HTML berhasil dan hasilnya sama dengan preview.
+**Teacher Flow:**
+1. Setelah buka app, guru tahu harus klik apa.
+2. Guru bisa menemukan dan memilih template.
+3. Guru bisa preview template sebelum memakai.
+4. Guru bisa memakai template dan langsung masuk workspace.
 
-Jika 12 hal ini belum benar, jangan tambah fitur lain.
+**Workspace:**
+5. Guru bisa membuka satu media.
+6. Guru bisa melihat daftar halaman di kiri.
+7. Guru bisa memilih halaman.
+8. Media tampil di tengah.
+9. Guru bisa edit teks dasar.
+
+**Runtime:**
+10. Kuis bisa dijawab.
+11. Skor naik.
+12. Tombol next/prev jalan.
+13. Progress berubah.
+14. Game bisa selesai.
+
+**Export:**
+15. Export HTML berhasil dan hasilnya sama dengan preview.
+
+Jika 15 hal ini belum benar, jangan tambah fitur lain.
 
 ---
 

@@ -1,7 +1,7 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-05-31 (Ronde 5 — BUG-5 Fix + Base App Stability)
-Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test
+Tanggal: 2026-05-31 (Ronde 6 — Sprint 1 Redefinisi: UI Workspace + Teacher Flow)
+Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit
 Tester: AI (otomatis) + Human (pending)
 
 ---
@@ -11,10 +11,28 @@ Tester: AI (otomatis) + Human (pending)
 ```
 Build: PASS
 Base App Stability: PASS — server tetap hidup setelah 5+ request, API 503 sandbox, fallback OK
-Core verification: 12 PASS (E2E/unit), 1 PARTIAL, 3 MANUAL REQUIRED (human QA pending), 0 FAIL
-Bug fix ronde 5: BUG-5 (Export HTML icon null crash) FIXED
-API DB Stability: P1/PARKED — Prisma Client ~132MB menyebabkan OOM di sandbox. SANDBOX_MODE=1 menghindari ini.
-T14 Progress: PARTIAL — progress 67% terlihat, CompletionModal muncul, tapi progress change tidak terkonfirmasi
+Sprint 1 UI Workspace Layout: PARTIAL/PASS — panel kiri/tengah/kanan terlihat
+Sprint 1 Teacher Flow: NOT VERIFIED — alur guru dari beranda sampai workspace belum terbukti
+Sprint 1 overall: PARTIAL
+Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
+```
+
+**PERUBAHAN DEFINISI SPRINT 1 (Ronde 6):**
+
+Sprint 1 diubah dari "UI Workspace" menjadi "UI Workspace + Teacher Flow".
+
+Alasan: Workspace yang stabil tapi guru tidak tahu harus klik apa = belum stabil untuk guru.
+
+Sprint 1 sekarang harus menjawab 5 pertanyaan:
+1. Setelah buka app, guru tahu harus klik apa?
+2. Guru bisa menemukan template dengan mudah?
+3. Guru bisa mencoba template sebelum memakai?
+4. Guru bisa memakai template dan langsung masuk workspace?
+5. Di workspace, guru tahu kiri/tengah/kanan fungsinya apa?
+
+Flow wajib Sprint 1:
+```
+Beranda → Mulai dari Template → Pilih template umum → Preview Template → Gunakan Template → Canvas Workspace → Preview / Play → Export HTML
 ```
 
 ### Perbaikan Bug sejak Laporan Sebelumnya
