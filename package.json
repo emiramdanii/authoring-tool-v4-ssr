@@ -72,6 +72,7 @@
     "jsdom": "^29.1.1",
     "postcss-nested": "^7.0.2",
     "prisma": "^6.11.1",
+    "serve": "^14.2.6",
     "shx": "^0.4.0",
     "tailwindcss": "^4",
     "tsx": "^4.19.0",

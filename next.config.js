@@ -15,7 +15,7 @@ const nextConfig = {
   reactStrictMode: true,
 
   // ── Standalone output for minimal memory footprint ───────────
-  output: 'standalone',
+  // output: 'standalone', // Disabled for dev/testing
 
   // ── Disable source maps in production ──────────────────────────
   productionBrowserSourceMaps: false,

@@ -6,7 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // output: "standalone", // Disabled for dev/testing — standalone causes OOM in sandbox
   typescript: {
     ignoreBuildErrors: false,
   },
