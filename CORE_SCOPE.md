@@ -35,6 +35,72 @@ Jika menemukan masalah di area yang diparkir, catat saja di `PARKED_NOTES.md`. J
 
 ---
 
+## Klasifikasi Konten Interaktif: CORE vs PARKIR
+
+Batas ini wajib diperjelas sebelum menyentuh panel kanan atau editor blok.
+
+### Interaksi Pembelajaran = CORE
+
+Komponen berikut adalah **CORE** karena langsung mendukung tujuan pembelajaran.
+Guru harus bisa membuat dan mengedit komponen ini di workspace.
+Panel kanan harus menampilkan editor untuk komponen ini saat blok terkait dipilih.
+
+```txt
+kuis
+multiple choice
+drag and drop
+sortir kategori
+matching
+true/false
+fill blank
+refleksi
+diskusi
+feedback benar/salah
+skor
+progress
+completion
+navigation lock
+```
+
+Bahasa sederhana:
+
+- Jika siswa harus **mengerjakan sesuatu untuk belajar**, itu CORE.
+- Jika guru harus **bisa mengedit soal/pertanyaan/instruksi**, itu CORE.
+- Jika panel kanan menampilkan editor untuk tipe blok di atas, itu tidak boleh dihapus atau diparkir.
+
+### Gamifikasi Tambahan = PARKIR
+
+Komponen berikut adalah **PARKIR** karena menambah motivasi tetapi bukan kebutuhan dasar pembelajaran.
+Jangan dikerjakan sampai 15 target utama tercapai.
+
+```txt
+leaderboard
+coin
+avatar
+streak
+achievement dashboard
+level global
+```
+
+Bahasa sederhana:
+
+- Jika fitur **menghias pengalaman** tanpa mengubah pembelajaran, itu PARKIR.
+- Jika fitur membuat siswa "senang" tetapi tidak membuat siswa "belajar", itu PARKIR.
+
+### Tabel Ringkas
+
+| Kategori | Contoh | Status | Alasan |
+|----------|--------|--------|--------|
+| Soal/Ujian | kuis, MC, true/false, fill blank | CORE | Guru harus bisa buat & edit soal |
+| Aktivitas interaktif | drag-drop, sortir, matching | CORE | Media interaktif butuh aktivitas |
+| Refleksi/Diskusi | refleksi, diskusi, feedback | CORE | Bagian dari alur pembelajaran |
+| Tracking dasar | skor, progress, completion | CORE | Siswa & guru perlu tahu hasil |
+| Navigasi | navigation lock, tombol lanjut | CORE | Alur belajar harus jelas |
+| Gamifikasi | leaderboard, coin, avatar | PARKIR | Motivasi tambahan, bukan kebutuhan dasar |
+| Gamifikasi | streak, achievement, level | PARKIR | Motivasi tambahan, bukan kebutuhan dasar |
+
+---
+
 # A. AREA CORE YANG BOLEH DIKERJAKAN
 
 Hanya 4 area berikut yang boleh disentuh.
@@ -165,6 +231,9 @@ Runtime adalah bagian yang membuat media bisa dimainkan siswa.
 
 ### Yang termasuk Runtime
 
+Runtime mencakup semua interaksi pembelajaran yang siswa kerjakan.
+Lihat juga: "Klasifikasi Konten Interaktif: CORE vs PARKIR" di atas.
+
 * tombol Mulai
 * tombol Berikutnya
 * tombol Sebelumnya
@@ -172,9 +241,17 @@ Runtime adalah bagian yang membuat media bisa dimainkan siswa.
 * skor
 * status halaman selesai
 * kuis benar/salah
+* multiple choice
+* drag and drop
+* sortir kategori
+* matching
+* true/false
+* fill blank
 * game selesai
 * refleksi tersimpan
-* halaman terkunci sampai aktivitas selesai
+* diskusi
+* feedback benar/salah
+* halaman terkunci sampai aktivitas selesai (navigation lock)
 
 ### File yang termasuk Runtime
 
@@ -213,12 +290,17 @@ src/hooks/use-learning-editor.ts
 
 ### Yang tetap boleh sebagai Runtime Core
 
+Lihat juga: "Klasifikasi Konten Interaktif: CORE vs PARKIR" di atas.
+
 * skor
 * progress
 * feedback benar/salah
 * completion
 * tombol ulangi
 * navigation lock
+* kuis / multiple choice / true/false / fill blank
+* drag and drop / sortir / matching
+* refleksi / diskusi
 
 ---
 
@@ -447,6 +529,7 @@ App utama harus normal dulu sebelum offline dibuat rapi.
 ## 7. Gamifikasi Tambahan
 
 Diparkir dulu.
+Lihat juga: "Klasifikasi Konten Interaktif: CORE vs PARKIR" di atas untuk batas lengkap.
 
 Yang tidak boleh dikerjakan:
 
@@ -461,7 +544,7 @@ Yang tidak boleh dikerjakan:
 * lencana global
 * koleksi reward
 
-Yang tetap core dan boleh:
+Yang tetap core dan boleh (bukan gamifikasi, lihat klasifikasi di atas):
 
 * skor
 * progress
@@ -469,6 +552,9 @@ Yang tetap core dan boleh:
 * completion
 * tombol ulangi
 * navigation lock
+* kuis / multiple choice / true/false / fill blank
+* drag and drop / sortir / matching
+* refleksi / diskusi
 
 ---
 
