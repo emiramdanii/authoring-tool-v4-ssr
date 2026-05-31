@@ -215,10 +215,25 @@ hapus `SANDBOX_MODE=1` dari `.env` untuk mengaktifkan kembali database.
 
 ---
 
-## E. STATUS PER AREA — Ronde 5
+## E. STATUS PER AREA — Ronde 6
 
-### Area 1: Base App — PASS ✅ (Stability confirmed: 5+ requests, sandbox mode, fallback OK)
-### Area 2: UI Workspace — PASS ✅ (setelah BUG-4 fix)
+### Sprint 1 — UI Workspace + Teacher Flow: PARTIAL ⚠️
+
+**Workspace Layout: PARTIAL/PASS**
+- Panel kiri/tengah/kanan terlihat
+- Tapi guru tidak tahu harus mulai dari mana
+
+**Teacher Flow: NOT VERIFIED**
+- Beranda: ada tapi tidak jelas arahnya untuk guru
+- Tombol "Mulai dari Template": belum diverifikasi
+- Coba Template / Template Testing: belum diverifikasi
+- Template umum mudah ditemukan: belum diverifikasi
+- Preview template: belum diverifikasi
+- Gunakan Template → masuk Workspace: belum diverifikasi
+- Workspace menjelaskan kiri/tengah/kanan: belum diverifikasi
+
+**Audit detail Sprint 1 dengan definisi baru: lihat Section K**
+
 ### Area 3: Preview / Play Mode — PARTIAL ⚠️
 - T11 Kuis: MANUAL REQUIRED — panduan test di MANUAL_QA_CORE.md
 - T12 Skor: MANUAL REQUIRED — panduan test di MANUAL_QA_CORE.md
@@ -370,8 +385,11 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 ## J. STATUS PROYEK
 
 ```
+Sprint 1 — UI Workspace + Teacher Flow: PARTIAL ⚠️
+  Workspace Layout: PARTIAL/PASS — panel terlihat tapi guru bingung mulai dari mana
+  Teacher Flow: NOT VERIFIED — alur guru belum terbukti
+
 Base App:     PASS ✅ (stability confirmed — 5+ requests, sandbox, fallback)
-Workspace:    PASS ✅
 Preview:      PASS ✅
 Runtime:      PARTIAL ⚠️ — T14 PARTIAL, T15 MANUAL REQUIRED
 Engine:       PASS ✅
@@ -380,5 +398,68 @@ API DB:       P1/PARKED — Prisma OOM di sandbox, SANDBOX_MODE=1 sebagai workar
 Area Parkir:  TETAP DITAHAN
 ```
 
-**Manual QA siap untuk T8, T11, T12, T14, T15.**
-**Server stabil dan bisa diakses di http://localhost:3000**
+**Sprint 1 diturunkan dari PASS ke PARTIAL karena definisi berubah.**
+**Teacher Flow harus diverifikasi sebelum Sprint 1 bisa dinyatakan selesai.**
+**Audit detail: lihat Section K.**
+
+---
+
+## K. AUDIT SPRINT 1 — UI Workspace + Teacher Flow (Ronde 6)
+
+Definisi Sprint 1 diubah dari "UI Workspace" menjadi "UI Workspace + Teacher Flow".
+
+### 10-Point Checklist
+
+| # | Checkpoint | Status | Bukti |
+|---|-----------|--------|-------|
+| 1 | Saat app dibuka, guru tahu harus klik apa? | **PARTIAL** | Dashboard menampilkan "Buat Konten Baru dengan AI" sebagai CTA paling menonjol. "Mulai dari Template" adalah card kecil di akhir grid. Guru non-AI mungkin bingung. |
+| 2 | Ada tombol "Mulai dari Template"? | **PASS** | `Dashboard.tsx:612` — dashed-border card "Mulai dari Template". Sidebar "Proyek Baru" juga membuka TemplateWizard. |
+| 3 | Ada akses Coba Template / Template Testing? | **FAIL** | `TemplateMarketplace.tsx` (717 baris) punya preview system lengkap, tapi **dihapus dari UI** saat R-1 cleanup. Tidak ada tombol yang mengaksesnya. |
+| 4 | Template umum mudah ditemukan? | **PASS** | Dashboard menampilkan 15 template card dalam grid (PPKn, IPA, MTK, PJOK). TemplateGalleryPanel punya search dan filter. |
+| 5 | Ada tombol Preview di template card? | **FAIL** | Dashboard template card: klik langsung apply tanpa preview. TemplateGalleryPanel: hanya "Gunakan" dan "Sesuaikan". Tidak ada preview visual. |
+| 6 | Ada tombol "Gunakan Template"? | **PARTIAL** | Terminologi tidak konsisten: "Gunakan" (TemplateGalleryPanel), "Buat Project" (TemplateWizard), atau langsung klik card (Dashboard). Tidak ada label "Gunakan Template" yang seragam. |
+| 7 | Preview template tanpa buat project? | **FAIL** | Tidak ada mekanisme preview tanpa commit. TemplateMarketplace dulu punya ini, tapi dihapus dari UI. TemplateCustomizeDialog hanya konfigurasi, bukan preview visual. |
+| 8 | "Gunakan Template" langsung masuk Canvas Workspace? | **PASS** | TemplateWizard: `setActivePanel('canva')` setelah pembuatan. Dashboard: `setActivePanel('canva')` setelah apply. |
+| 9 | Workspace jelas: kiri/tengah/kanan? | **PASS** | `CanvaBuilder.tsx` — 3 panel ResizablePanelGroup. Left: "Panel halaman dan block". Center: "Area kerja editor". Right: "Panel properti". Guided tour (`CanvaTour`) dan orientation tooltip (`CanvaOrientationTooltip`) ada. |
+| 10 | Canvas tidak menutupi panel? | **PASS** | Panel constraints: Left min=15% max=30%, Center min=30%, Right min=18% max=35%. Resize handles terlihat. |
+
+### Skor Audit
+
+```
+PASS:    4/10
+PARTIAL: 2/10
+FAIL:    4/10
+```
+
+### Masalah P0 (menghalangi teacher flow sepenuhnya)
+
+**No Template Preview Before Commit (poin 3, 5, 7)**
+
+Guru tidak bisa melihat tampilan template sebelum menggunakannya. `TemplateMarketplace.tsx` (717 baris) punya fitur preview lengkap (screen-by-screen walkthrough, visual/list modes, "Gunakan Template" button), tapi **dihapus dari UI** saat R-1 cleanup. Klik template card di Dashboard langsung mengapply tanpa preview. Ini adalah regresi — fitur yang sudah ada, dihapus.
+
+### Masalah P1 (membuat teacher flow membingungkan)
+
+1. **CTA utama mengarah ke AI, bukan template (poin 1)** — Tombol paling menonjol di Dashboard adalah "Buat Konten Baru dengan AI". Guru yang hanya ingin pilih template harus scroll melewati ini. Area AI = PARKIR.
+
+2. **Terminologi "Gunakan Template" tidak konsisten (poin 6)** — Berbeda di setiap entry point: "Gunakan", "Buat Project", atau tidak ada tombol sama sekali (klik card langsung apply).
+
+### Masalah P2 (nice to have)
+
+1. **TemplateMarketplace orphaned** — File `src/components/canva/TemplateMarketplace.tsx` (717 baris) ada tapi tidak diimport. Dead code yang bisa diaktifkan kembali.
+
+2. **Tidak ada search template di Dashboard** — Dashboard menampilkan 15 template flat. TemplateGalleryPanel punya search/filter tapi tersembunyi di dalam Canvas LeftPanel.
+
+### File yang Perlu Diubah
+
+| Prioritas | File | Aksi |
+|-----------|------|------|
+| P0 | `src/components/canva/TemplateMarketplace.tsx` | Aktifkan kembali, hubungkan ke Dashboard |
+| P0 | `src/components/authoring/Dashboard.tsx` | Tambah tombol Preview di template card; reorder CTA |
+| P0 | `src/components/canva/left-panel/TemplateGalleryPanel.tsx` | Tambah tombol preview visual di setiap TemplateCard |
+| P1 | `src/components/authoring/Dashboard.tsx` | Tambah teks "Gunakan Template" di card |
+| P1 | `src/components/canva/TemplateWizard.tsx` | Ubah "Buat Project" menjadi "Gunakan Template" |
+| P2 | `src/components/canva/toolbar/ToolbarActions.tsx` | Aktifkan kembali marketplaceOpen state dan tombol |
+
+### Verdict Sprint 1: **PARTIAL**
+
+Alasan: Workspace layout solid (poin 9-10 PASS). "Mulai dari Template" ada (poin 2). Template mudah ditemukan (poin 4). Flow ke Canvas benar (poin 8). Tapi **absennya template preview** (poin 3, 5, 7 FAIL) adalah gap kritis — guru harus commit ke template tanpa melihatnya. TemplateMarketplace yang punya fitur ini dihapus dari UI (regresi). Sampai preview diaktifkan kembali atau mekanisme preview baru ditambahkan, teacher flow tidak lengkap.
