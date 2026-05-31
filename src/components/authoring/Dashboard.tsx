@@ -272,7 +272,7 @@ export default function Dashboard() {
         kelas: template.grade !== '*' ? template.grade : undefined,
       };
 
-      const rawPages = createProjectFromTemplate(template.id, metadata);
+      const rawPages = await createProjectFromTemplate(template.id, metadata);
       const themeId = getTemplateThemeId(template.id);
 
       // Apply theme IMMUTABLY

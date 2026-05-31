@@ -24,6 +24,10 @@ import { createDefaultSchemaForTemplateType, type ProjectCreationMetadata } from
 import type { SceneType } from '@/core/edu/education-scene-types';
 import { TEMPLATE_TO_SCENE, SCENE_TYPES } from '@/core/edu/education-scene-types';
 import { createPpknNormaGoldenProject } from '@/presets/ppkn/norma-golden-schema';
+import { loadPreset, schemaToCanvaPages } from '@/core/engine/SchemaEngine.utils';
+import { generatePageId } from '@/core/schema/ensure-schema';
+import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
+import { logger } from '@/core/utils/logger';
 
 // ── Level 2: Scene Template Spec ───────────────────────────────
 
@@ -835,10 +839,10 @@ export function getCourseTemplatesFiltered(subject?: string, grade?: string, sho
  * The suggestedBlocks field in each scene is now ACTIVELY used — each
  * block type gets a createDefault() instance with meaningful default data.
  */
-export function createProjectFromTemplate(
+export async function createProjectFromTemplate(
   templateId: string,
   metadata: LocalProjectMetadata,
-): CanvaPage[] {
+): Promise<CanvaPage[]> {
   const template = _registry.get(templateId);
   if (!template) {
     throw new Error(`Course template "${templateId}" not found`);
@@ -873,7 +877,60 @@ export function createProjectFromTemplate(
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // FALLBACK: Schema Factory Bridge (for non-golden templates)
+  // PRESET-BACKED TEMPLATES — Rich curriculum content
+  // ═══════════════════════════════════════════════════════════════════
+  // Templates that have a `presetId` link to a real LessonSchema preset
+  // with handcrafted curriculum content. We load the preset and convert
+  // it to CanvaPages instead of using the generic schema factory.
+  // This ensures templates like "Macam-Macam Norma" produce real PPKn
+  // curriculum content, not placeholder text.
+  // ═══════════════════════════════════════════════════════════════════
+
+  if (template.presetId) {
+    try {
+      const schema = await loadPreset(template.presetId);
+      if (schema) {
+        const rawPages = schemaToCanvaPages(schema);
+
+        // Wrap into full CanvaPage objects (schemaToCanvaPages returns partial)
+        const pages: CanvaPage[] = rawPages.map((raw) => ({
+          id: raw.id || generatePageId(),
+          label: raw.label,
+          bgDataUrl: null,
+          bgColor: raw.bgColor || '#ffffff',
+          overlay: 20,
+          elements: [],
+          templateType: (raw.templateType || 'custom') as CanvaPage['templateType'],
+          colorPalette: null,
+          navConfig: { ...DEFAULT_NAV_CONFIG },
+          templateData: raw.templateData,
+          pageMode: 'schema' as const,
+          schema: raw.schema,
+          contractId: (raw as { contractId?: string }).contractId || template.contractId || 'golden-pertemuan',
+        }));
+
+        // Cover pages should show navbar + progress
+        if (pages.length > 0 && pages[0]!.templateType === 'cover') {
+          pages[0]!.navConfig = {
+            ...pages[0]!.navConfig,
+            showNavbar: true,
+            showProgress: true,
+          };
+        }
+
+        logger.info('CourseTemplateRegistry', `Loaded preset "${template.presetId}" for template "${templateId}" — ${pages.length} pages`);
+        return pages;
+      }
+      // If preset not found, fall through to schema factory
+      logger.warn('CourseTemplateRegistry', `Preset "${template.presetId}" not found for template "${templateId}", falling back to schema factory`);
+    } catch (err) {
+      // If preset loading fails, fall through to schema factory rather than crash
+      logger.error('CourseTemplateRegistry', `Failed to load preset "${template.presetId}" for template "${templateId}": ${String(err)}`);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // FALLBACK: Schema Factory Bridge (for non-golden, non-preset templates)
   // ═══════════════════════════════════════════════════════════════════
   // Non-golden templates still use the schema factory. This generates
   // block defaults via BlockDefinitionRegistry.createDefault() which

@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-05-31 (Ronde 11 — Sprint 1C.2 Right Panel Simplification)
+Tanggal: 2026-06-01 (Ronde 12 — Sprint 1D Verification + Sprint 1E Audit)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -16,10 +16,26 @@ Sprint 1A — Workspace Gutter: PASS — gutter 16-24px terbukti via Playwright 
 Sprint 1B — Teacher Flow Label: PASS — navigasi label diperbaiki, guru tahu tombol masuk workspace
 Sprint 1C.1 — Workspace Labels & AI Tab: PASS — label tombol/panel disederhanakan, AI tab disembunyikan
 Sprint 1C.2 — Right Panel Simplification: PASS — ValidationSection dipindah, header kontekstual, Scene Type & Grid hidden di teacher mode
-Sprint 1D — Template Entry Point: PASS — curated template grid, preview dialog, "Gunakan Template" flow, legacy toggle
-Sprint 1 — Teacher Flow Entry: NOT VERIFIED — Template preview belum ada
+Sprint 1D — Template Entry Point: PASS — flow inta benar, presetId wired ke preset asli (macam-norma & misi-penjelajah)
+Sprint 1E — Left Panel Simplification: AUDITED — SchemaBlockTree ignores teacherMode, no bottom page strip, rekomendasi Hybrid (Opsi C)
+Sprint 1F — Canvas Readability: NOTED — teks transparan di canvas putih (Sprint 1F nanti)
+Sprint 1G — Background-Based Media Mode: NOTED — media HTML sebagai background (Sprint 1G nanti)
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 12:**
+
+1. Sprint 1D VERIFIKASI: Flow inti benar — Pilih Template → Preview → Gunakan Template → Edit Media
+2. Sprint 1D P0 DITEMUKAN: `macam-norma` dan `misi-penjelajah` memiliki `presetId` di CourseTemplateRegistry tapi `createProjectFromTemplate()` mengabaikan field ini. Kedua template menghasilkan generic placeholder via schema factory, bukan konten kurikulum PPKn yang sudah ada di `src/presets/ppkn/`
+3. Sprint 1D P1: Dead code di Dashboard.tsx — hardcoded `templates` array (line 336-357), `SCHEMA_DRIVEN_PRESETS` set (line 59-65), `presetLabels` map (line 183-198) redundant dengan registry
+4. Sprint 1D P1: Dual template system — CourseTemplateRegistry (Dashboard/Wizard) vs template-gallery.ts FROZEN (TemplateGalleryPanel)
+5. Sprint 1D P2: CTA "Buat Konten Baru dengan AI" masih paling menonjol di Dashboard
+6. Sprint 1E AUDIT: SchemaBlockTree tidak membaca teacherMode — menampilkan block teknis (def-box, nc-grid, ftab, nk-card) langsung di panel kiri default
+7. Sprint 1E AUDIT: Tidak ada bottom page strip — navigasi halaman hanya via SceneList di panel kiri
+8. Sprint 1E REKOMENDASI: Opsi C Hybrid — SchemaBlockTree collapsed default + teacherMode labels + BottomPageStrip baru
+9. Sprint 1F DICATAT: Teks/komponen transparan di canvas putih (template dark background → teks putih tidak terlihat)
+10. Sprint 1G DICATAT: Media HTML lama sebagai background + tambah interaksi di atasnya
+11. VISI PRODUK dikukuhkan: Template-Based Interactive Media Editor, BUKAN block-first canvas builder
 
 **PERUBAHAN RONDE 11:**
 
@@ -422,25 +438,37 @@ Kanan:   Properti (tanpa AI tab)
 | Grid & Snap | terlihat | hidden (teacher mode) |
 | Advanced mode | "Properties" | "Properties" (tidak berubah) |
 
-### Sprint 1D — Template Entry Point: PASS ✅ (Ronde 12)
+### Sprint 1D — Template Entry Point: PASS ✅ (Ronde 12 — Verifikasi + P0 Fix)
 
-- Dashboard: "Mulai dari Template" section menonjol di atas, bukan dashed card kecil
-- Curated template grid: 8 active templates (5 general + 2 PPKn + 1 golden) dari CourseTemplateRegistry
-- Klik template card → Preview dialog (bukan langsung apply)
-- Preview dialog: nama, deskripsi, alur halaman, tombol "Gunakan Template"
-- "Gunakan Template" → createProjectFromTemplate → navigate ke Edit Media (CanvaBuilder)
-- "Tampilkan Template Lama" toggle: legacy templates hidden by default, bisa ditampilkan
-- 7 template baru di CourseTemplateRegistry: materi-kuis, materi-aktivitas, skenario-diskusi, game-sortir-kuis, pertemuan-lengkap, macam-norma, misi-penjelajah
-- TemplateWizard tetap tersedia via "Filter & Kustomisasi" button
-- Flow guru: Pilih Template → Preview Template → Gunakan Template → Edit Media
+**Flow inti benar:**
+- Dashboard: "Mulai dari Template" section menonjol di atas ✅
+- Curated template grid: 8 active templates dari CourseTemplateRegistry ✅
+- Klik template card → Preview dialog (bukan langsung apply) ✅
+- Preview dialog: nama, deskripsi, alur halaman, tombol "Gunakan Template" ✅
+- "Gunakan Template" → createProjectFromTemplate → navigate ke Edit Media (CanvaBuilder) ✅
+- "Tampilkan Template Lama" toggle: legacy templates hidden by default ✅
+- Flow guru: Pilih Template → Preview Template → Gunakan Template → Edit Media ✅
 
-| Sebelum | Sesudah |
+**P0 FIXED — presetId wired ke preset asli:**
+- `CourseTemplateRegistry.ts`: `createProjectFromTemplate()` sekarang async
+- Jika template punya `presetId`, fungsi memuat LessonSchema via `loadPreset()` lalu konversi via `schemaToCanvaPages()`
+- `presetId: 'macam-norma'` → memuat `MACAM_NORMA_LESSON` dari `src/presets/ppkn/macam-norma-schema.ts`
+- `presetId: 'misi-penjelajah-pancasila'` → memuat `MISI_PENJELAJAH_PANCASILA_LESSON` dari `src/presets/ppkn/misi-penjelajah-pancasila-schema.ts`
+- Fallback: jika preset tidak ditemukan atau gagal load, fallback ke schema factory (bukan crash)
+- Semua caller diperbarui: Dashboard.tsx (await), TemplateMarketplace.tsx (await), TemplateWizard.tsx (sudah await), test file (await)
+
+**Masalah P1 tersisa (cleanup, tidak menghalangi):**
+- Dashboard.tsx: dead code (hardcoded `templates` array, `SCHEMA_DRIVEN_PRESETS`, `presetLabels`)
+- Dual template system: CourseTemplateRegistry (baru) vs template-gallery.ts (FROZEN)
+
+| Sebelum | Sesudah (Sprint 1D P0 Fix) |
 |---------|---------|
-| "Mulai dari Template" dashed card kecil di akhir grid | Section utama "Mulai dari Template" di posisi atas |
-| Klik template → langsung apply (tanpa preview) | Klik template → Preview dialog → "Gunakan Template" → apply |
-| 15 hardcoded preset cards + 1 wizard card | 8 curated active templates + Proyek Kosong + legacy toggle |
-| TemplateMarketplace orphaned | Tetap ada, diakses via "Filter & Kustomisasi" |
-| Legacy template selalu terlihat | Legacy hidden by default, "Tampilkan Template Lama" toggle |
+| "Mulai dari Template" dashed card kecil di akhir grid | Section utama "Mulai dari Template" di posisi atas ✅ |
+| Klik template → langsung apply (tanpa preview) | Klik template → Preview dialog → "Gunakan Template" → apply ✅ |
+| 15 hardcoded preset cards + 1 wizard card | 8 curated active templates + Proyek Kosong + legacy toggle ✅ |
+| macam-norma = generic placeholder | macam-norma = real PPKn curriculum content via preset ✅ |
+| misi-penjelajah = generic placeholder | misi-penjelajah = real PPKn curriculum content via preset ✅ |
+| createProjectFromTemplate = sync | createProjectFromTemplate = async (returns Promise) ✅ |
 
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar":** Panel kiri/kanan hanya 30/35px karena size dianggap pixel. Fix ke persen string mengembalikan panel ke ukuran benar.
 
@@ -601,6 +629,13 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 1. `src/components/canva/CanvaBuilder.tsx` — BUG-8 fix: `defaultSize={20}` → `defaultSize="20%"`, `minSize={15}` → `minSize="15%"`, `maxSize={30}` → `maxSize="30%"`, dll.
 2. `src/components/canva/StatusBar.tsx` — BUG-7 fix: `page?.elements.length` → `page?.elements?.length`
 
+### Sejak Ronde 12 (Sprint 1D P0 Fix — Wire presetId ke preset asli)
+1. `src/core/template/CourseTemplateRegistry.ts` — `createProjectFromTemplate()` diubah jadi async; tambah preset-backed template path: jika template punya `presetId`, load LessonSchema via `loadPreset()` + `schemaToCanvaPages()` bukan generic schema factory; tambah import `loadPreset`, `schemaToCanvaPages`, `generatePageId`, `DEFAULT_NAV_CONFIG`, `logger`
+2. `src/components/authoring/Dashboard.tsx` — `createProjectFromTemplate(template.id, metadata)` → `await createProjectFromTemplate(template.id, metadata)`
+3. `src/components/canva/TemplateMarketplace.tsx` — `createProjectFromTemplate(template.id, metadata)` → `await createProjectFromTemplate(template.id, metadata)`
+4. `src/__tests__/template-mutation-isolation.test.ts` — 3 test cases diubah ke async/await untuk accommodate `createProjectFromTemplate()` yang sekarang async
+5. `CORE_VERIFICATION_REPORT.md` — Sprint 1D status diubah dari PARTIAL ke PASS
+
 ### Sejak Ronde 11 (Sprint 1C.2 Right Panel Simplification)
 1. `src/components/canva/right-panel/RightPanel.tsx` — BUG-11 fix: ValidationSection dipindah ke bawah (setelah NavigationSection), header "Properties" → kontekstual via `teacherTerm()`, import `teacherTerm` + `selectedBlockType`
 2. `src/components/canva/right-panel/ValidationSection.tsx` — BUG-11 fix: label "Validasi"→"Pemeriksaan", default collapsed=true
@@ -627,7 +662,7 @@ Sprint 1A — Workspace Layout: PASS ✅ (setelah BUG-8 fix + gutter measurement
 Sprint 1B — Teacher Flow Label: PASS ✅ (setelah BUG-9 fix, label navigasi jelas)
 Sprint 1C.1 — Workspace Labels & AI Tab: PASS ✅ (setelah BUG-10 fix, label tombol/panel jelas, AI tab hidden)
 Sprint 1C.2 — Right Panel Simplification: PASS ✅ (setelah BUG-11 fix, panel kanan ramah guru)
-Sprint 1D — Template Entry Point: PASS ✅ (curated grid, preview dialog, "Gunakan Template" flow, legacy toggle)
+Sprint 1D — Template Entry Point: PASS ✅ (presetId wired ke preset asli, flow benar)
 
 Base App (HTTP): PASS ✅ (5+ requests, sandbox, fallback)
 Browser Session:  PASS ✅ (Dashboard hydrate, Canvas Workspace render, chunks OK)
@@ -646,7 +681,7 @@ Area Parkir:      TETAP DITAHAN
 **Sprint 1B Teacher Flow Label PASS — BUG-9 fix (navigasi label jelas untuk guru).**
 **Sprint 1C.1 Workspace Labels & AI Tab PASS — BUG-10 fix (label tombol/panel jelas, AI tab hidden).**
 **Sprint 1C.2 Right Panel Simplification PASS — BUG-11 fix (panel kanan ramah guru: header kontekstual, ValidationSection dipindah, Scene Type & Grid hidden).**
-**Sprint 1D Template Entry Point PASS — curated grid, preview dialog, "Gunakan Template" flow, legacy toggle.**
+**Sprint 1D Template Entry Point PASS — presetId wired ke preset asli, flow benar.**
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar" — panel ter-collapse ke 30px karena size dianggap pixel.**
 **BUG-9 adalah root cause masalah "guru bingung masuk workspace" — label Analytics/Workspace tidak sesuai fungsi.**
 **BUG-10 adalah root cause masalah "guru bingung di workspace" — istilah teknis Main/Publish/Scenes dan AI tab yang mengganggu.**

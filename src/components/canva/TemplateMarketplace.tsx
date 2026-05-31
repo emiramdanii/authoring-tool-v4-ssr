@@ -497,7 +497,7 @@ export default function TemplateMarketplace({
       };
 
       // Create populated pages using the schema factory bridge
-      const rawPages = createProjectFromTemplate(template.id, metadata);
+      const rawPages = await createProjectFromTemplate(template.id, metadata);
 
       // Get theme from template
       const themeId = getTemplateThemeId(template.id);
