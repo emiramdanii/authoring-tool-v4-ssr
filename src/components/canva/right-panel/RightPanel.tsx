@@ -12,7 +12,7 @@ import AlignmentTools from './AlignmentTools';
 import PageInfo from './PageInfo';
 import TabManagementSection from './TabManagementSection';
 import LayerPanel from '../left-panel/LayerPanel';
-import { Layers, Zap, Box, Sparkles, Settings2, MousePointer2, Hand, SlidersHorizontal } from 'lucide-react';
+
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
@@ -87,12 +87,14 @@ export default function RightPanel() {
     }
   }, [isSederhana, activeTab]);
 
+  // Hooks MUST be called before any early return (Rules of Hooks)
+  const toggleRightPanel = useCanvaStore(s => s.toggleRightPanel);
+  const deleteBlock = useCanvaStore(s => s.deleteBlock);
+
   // Determine context mode
   const hasBlockSelection = selectedBlockId != null;
   const hasMultiBlockSelection = selectedBlockIds.length > 1;
   const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
-  const toggleRightPanel = useCanvaStore(s => s.toggleRightPanel);
-  const deleteBlock = useCanvaStore(s => s.deleteBlock);
 
   if (!rightPanelOpen) return null;
 

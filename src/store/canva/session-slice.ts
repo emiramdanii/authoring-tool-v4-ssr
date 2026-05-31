@@ -188,6 +188,14 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
   // The existing canvasPreview toggle remains for backward compat —
   // setAppMode('preview') is the canonical way going forward.
   setAppMode: (mode) => {
+    // ── Save pending inline edit before mode switch ──
+    // Same fix as goPage: blur the active contentEditable element
+    // so InlineTextEditor.onBlur fires and saves the edit.
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl as HTMLElement).isContentEditable) {
+      (activeEl as HTMLElement).blur();
+    }
+
     if (mode === 'preview' || mode === 'present') {
       set({
         appMode: mode,

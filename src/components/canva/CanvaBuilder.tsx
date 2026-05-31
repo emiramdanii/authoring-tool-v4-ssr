@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
-import { useAuthoringStore } from '@/store/authoring-store';
 import { useDirtyStore } from '@/store/dirty-store';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -199,27 +198,25 @@ export default function CanvaBuilder() {
             </div>
           </ResizablePanel>
 
-          {/* Right Panel — Resizable, shows/hides with animation */}
-          {rightPanelOpen && (
-            <>
-              <ResizableHandle className="bg-silse-outline-variant/40 hover:bg-silse-primary/40 transition-colors w-px" />
-              <ResizablePanel
-                defaultSize={25}
-                minSize={18}
-                maxSize={35}
-                data-tour="right-panel"
-                data-testid="right-panel"
-                role="complementary"
-                aria-label="Panel properti"
-              >
-                <CanvasErrorBoundary name="RightPanel">
-                  <ProfilerWrapper id="RightPanel">
-                    <RightPanel />
-                  </ProfilerWrapper>
-                </CanvasErrorBoundary>
-              </ResizablePanel>
-            </>
-          )}
+          {/* Right Panel — Resizable, always mounted for stable layout */}
+          <ResizableHandle className="bg-silse-outline-variant/40 hover:bg-silse-primary/40 transition-colors w-px" />
+          <ResizablePanel
+            defaultSize={rightPanelOpen ? 25 : 0}
+            minSize={rightPanelOpen ? 18 : 0}
+            maxSize={rightPanelOpen ? 35 : 0}
+            data-tour="right-panel"
+            data-testid="right-panel"
+            role="complementary"
+            aria-label="Panel properti"
+          >
+            {rightPanelOpen && (
+              <CanvasErrorBoundary name="RightPanel">
+                <ProfilerWrapper id="RightPanel">
+                  <RightPanel />
+                </ProfilerWrapper>
+              </CanvasErrorBoundary>
+            )}
+          </ResizablePanel>
         </ResizablePanelGroup>
 
         {/* Scene Tab Bar — between builder row and status bar */}

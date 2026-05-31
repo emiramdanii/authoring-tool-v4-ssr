@@ -1,31 +1,7 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
-import {
-  Plus,
-  FilePlus2,
-  Sparkles,
-  ChevronDown,
-} from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import type { PageTemplateType } from './types';
-import { RATIOS } from './types';
-import { getPresetsGroupedByCategory, type PagePreset } from '@/core/preset/PagePresetRegistry';
-import {
-  TEMPLATE_BADGE_MAP,
-  getModuleIcon,
-  getGameIcon,
-} from '@/lib/canva-icon-maps';
-import { GAME_TYPES } from '@/lib/canva-constants';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { IconRail } from './left-panel/IconRail';
 import type { LeftTab } from './types';
 import { SceneList } from './left-panel/SceneList';
@@ -35,17 +11,8 @@ import { SettingsSection } from './left-panel/SettingsSection';
 import { SchemaBlockTree } from './left-panel/SchemaBlockTree';
 
 import HistoryPanel from './left-panel/HistoryPanel';
-import AddBlockPanel from './left-panel/AddBlockPanel';
+
 import dynamic from 'next/dynamic';
-
-const TemplateGalleryPanel = dynamic(() => import('./left-panel/TemplateGalleryPanel'), {
-  ssr: false,
-  loading: () => <div className="h-32 animate-pulse bg-silse-surface-container-high/20 rounded-lg" />,
-});
-
-import { getAvailablePresets } from '@/core/engine/SchemaEngine';
-import { ensurePageSchema } from '@/core/schema/ensure-schema';
-import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 
 const PageTypeCreator = dynamic(() => import('./PageTypeCreator'), {
   ssr: false,
