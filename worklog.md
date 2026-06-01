@@ -164,3 +164,28 @@ Stage Summary:
 - No logic/scoring/state changes — visual style only
 - Pages without bg image: all original styles preserved
 - Build PASS, pushed to origin/main
+
+---
+Task ID: D
+Agent: Main
+Task: Sprint D — Dualism Audit Luas
+
+Work Log:
+- Launched 4 parallel audit agents covering 8 areas
+- Agent 1: Page Data & Background dualism
+- Agent 2: Template & Rendering dualism
+- Agent 3: Editing & Runtime dualism
+- Agent 4: Export & UI Navigation dualism
+- Verified ToolbarNavNew.tsx is dead code (no imports)
+- Verified activePanel vs panelRequest dual state
+- Verified updateSchemaBlock vs applyGuidedSchemaPatch dual write path
+- Compiled final audit report with 12 dualisms found
+
+Stage Summary:
+- 12 dualisms identified across 8 audit areas
+- 3 P0 (data loss / broken feature), 5 P1 (UX inconsistency), 4 P2 (cleanup/parking)
+- Background dualism: P0 FIXED, minor sisa risiko (createPage gap)
+- Critical P0: Export runtime divergence (vanilla JS vs React, behavior not guaranteed)
+- Critical P1: Dual write path (updateSchemaBlock vs applyGuidedSchemaPatch)
+- Critical P1: Template dual system (CourseTemplateRegistry vs template-gallery)
+- Report delivered to user for prioritization
