@@ -5,6 +5,13 @@
 //
 // Phase 6: Added client-side fallback export that generates a
 // self-contained HTML entirely in the browser (no Vite dependency).
+//
+// D1/D3 Fix: exportWithFallback() NO LONGER silently falls back to
+// the degraded vanilla JS export. If Path A (Vite SSR) fails, the
+// user gets a clear error message instead of a silently degraded
+// export. The client-side export (exportClientSide) is still
+// available for explicit dev/debug use but is NOT automatically
+// called. Path A is the only production source of truth.
 // ═══════════════════════════════════════════════════════════════════════
 
 'use client';
@@ -115,7 +122,7 @@ export function useViteExport() {
     } catch (err: unknown) {
       logger.error('Vite Export', err);
       toast.error(`Gagal export: ${err instanceof Error ? err.message : String(err)}`, { id: 'export-ssr' });
-      throw err; // Re-throw so caller can fall back
+      throw err; // Re-throw so caller can show error
     }
   }, [pages, ratioId]);
 
@@ -170,16 +177,23 @@ export function useViteExport() {
   }, [pages, ratioId]);
 
   // ═══════════════════════════════════════════════════════════════════
-  // CLIENT-SIDE EXPORT — Pure browser fallback (no Vite dependency)
+  // CLIENT-SIDE EXPORT — Dev/debug only (NOT production source of truth)
+  //
+  // This path uses vanilla JS string templates that produce DEGRADED
+  // output: no navigation locks, no contract-aware rendering, no
+  // premium effects, no sound, basic quiz layout (all-at-once).
+  // It is intentionally NOT called automatically from exportWithFallback().
+  // Use only for explicit dev/debug purposes.
   // ═══════════════════════════════════════════════════════════════════
 
   /**
    * Export HTML using the client-side generator.
    * Generates a self-contained HTML file entirely in the browser.
-   * Always works — no server template required.
+   * ⚠️ DEGRADED OUTPUT — no navigation locks, no premium effects,
+   * basic quiz rendering. For dev/debug only, not production use.
    */
   const exportClientSide = useCallback(async () => {
-    toast.loading(`Mengekspor ${pages.length} halaman (Client-Side)...`, { id: 'export-client' });
+    toast.loading(`Mengekspor ${pages.length} halaman (Mode Terbatas)...`, { id: 'export-client' });
 
     try {
       const payload = buildPayload();
@@ -197,7 +211,7 @@ export function useViteExport() {
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      toast.success(`Export client-side selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-client' });
+      toast.success(`Export mode terbatas selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB) — Hasil TIDAK sama dengan preview`, { id: 'export-client' });
     } catch (err: unknown) {
       logger.error('Client Export', err);
       toast.error(`Gagal export client-side: ${err instanceof Error ? err.message : String(err)}`, { id: 'export-client' });
@@ -206,6 +220,7 @@ export function useViteExport() {
 
   /**
    * Preview using the client-side generator in a new tab.
+   * ⚠️ DEGRADED OUTPUT — for dev/debug only.
    */
   const previewClientSide = useCallback(() => {
     try {
@@ -217,7 +232,7 @@ export function useViteExport() {
         win.document.write(html);
         win.document.close();
       }
-      toast.success(`Preview client-side dibuka (${pages.length} halaman)`);
+      toast.success(`Preview mode terbatas dibuka (${pages.length} halaman) — Hasil TIDAK sama dengan preview`);
     } catch (err: unknown) {
       logger.error('Client Preview', err);
       toast.error(`Gagal preview client-side: ${err instanceof Error ? err.message : String(err)}`);
@@ -225,43 +240,33 @@ export function useViteExport() {
   }, [pages, ratioId, buildPayload]);
 
   /**
-   * Try Vite export first; if it fails, automatically fall back
-   * to client-side export. Provides the best experience.
+   * Primary export entry point. Uses Vite SSR (Path A) — the only
+   * production source of truth. If Path A fails, shows a clear error
+   * instead of silently falling back to the degraded vanilla JS export.
+   *
+   * The degraded client-side export (exportClientSide) is still
+   * available for explicit dev/debug use but is NOT called here.
    */
   const exportWithFallback = useCallback(async () => {
-    toast.loading(`Mengekspor ${pages.length} halaman...`, { id: 'export-fallback' });
+    toast.loading(`Mengekspor ${pages.length} halaman...`, { id: 'export-primary' });
 
     try {
-      // Try Vite SSR export first
       await exportHTML();
-    } catch (viteErr) {
-      // Vite failed — fall back to client-side
-      logger.warn('Export', 'Vite export failed, falling back to client-side: ' + String(viteErr));
-      toast.loading(`Vite gagal, menggunakan client-side fallback...`, { id: 'export-fallback' });
+    } catch (err: unknown) {
+      // Path A failed — do NOT silently fall back to degraded export.
+      // Show clear error so the user knows the export is not available.
+      const errMsg = err instanceof Error ? err.message : String(err);
+      logger.error('Export', 'Vite SSR export gagal: ' + errMsg);
 
-      try {
-        const payload = buildPayload();
-        const html = generateClientExportHtml(payload);
-        const filename = generateExportFilename(payload.meta as Record<string, unknown>);
+      // Detect template-missing error from the API route
+      const isTemplateMissing = errMsg.includes('template') || errMsg.includes('export:build');
+      const userMessage = isTemplateMissing
+        ? `Export utama gagal — template export belum tersedia. Jalankan \"npm run export:build\" terlebih dahulu.`
+        : `Export gagal: ${errMsg}`;
 
-        const blob = new Blob([html], { type: 'text/html; charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-        toast.success(`Export fallback selesai (${pages.length} halaman, ${(blob.size / 1024).toFixed(0)} KB)`, { id: 'export-fallback' });
-      } catch (clientErr: unknown) {
-        logger.error('Export', clientErr);
-        toast.error(`Export gagal total: ${clientErr instanceof Error ? clientErr.message : String(clientErr)}`, { id: 'export-fallback' });
-      }
+      toast.error(userMessage, { id: 'export-primary', duration: 8000 });
     }
-  }, [exportHTML, buildPayload, pages]);
+  }, [exportHTML, pages]);
 
   return {
     exportHTML,

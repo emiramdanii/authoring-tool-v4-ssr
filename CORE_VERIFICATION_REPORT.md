@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 24 — D2 Align Schema Block Update Path)
+Tanggal: 2026-06-01 (Ronde 25 — D1/D3 Export Fallback Safety)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -29,8 +29,41 @@ Sprint R1 — Struktur Panel Kanan 3 Zona: PASS — Isi Utama/Tampilan/Lanjutan,
 Sprint R2 — Header Konteks Ganda: PASS — panel kanan menampilkan title/subtitle/description, kuis tunjukkan jumlah opsi, materi-blok tunjukkan tipe, halaman tunjukkan template
 P0 — Background Source of Truth: PASS — schema page background disatukan ke schema.background, file upload ke schema path, halaman lama dinormalisasi
 D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty tracking + optional overflow check, caller prioritas tinggi di-upgrade
+D1/D3 — Export Fallback Safety: PASS — exportWithFallback tidak lagi diam-diam fallback ke degraded vanilla JS, error jelas jika Path A gagal
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 25 (D1/D3 — Export Fallback Safety):**
+
+1. D1/D3 IMPLEMENTASI: `exportWithFallback()` tidak lagi diam-diam fallback ke vanilla JS string export
+2. `use-vite-export.ts`: `exportWithFallback()` sekarang hanya mencoba Path A (Vite SSR). Jika gagal, tampilkan error jelas — bukan export degraded
+3. `use-vite-export.ts`: Deteksi template-missing error — jika API route mengembalikan pesan "template" atau "export:build", tampilkan pesan spesifik: "Export utama gagal — template export belum tersedia. Jalankan npm run export:build terlebih dahulu."
+4. `use-vite-export.ts`: Untuk error lain, tampilkan pesan generik: "Export gagal: {errMsg}"
+5. `use-vite-export.ts`: Toast error duration diperpanjang ke 8000ms agar guru sempat membaca
+6. `use-vite-export.ts`: `exportClientSide()` dan `previewClientSide()` tetap tersedia sebagai named export untuk dev/debug, tapi ditandai "DEGRADED OUTPUT" dan "Mode Terbatas"
+7. `use-vite-export.ts`: Toast success untuk client-side export sekarang menambahkan "— Hasil TIDAK sama dengan preview"
+8. `use-vite-export.ts`: Comment header diupdate — menjelaskan kebijakan baru bahwa Path A adalah satu-satunya source of truth
+9. Tidak mengubah: ExportApp.tsx, PageRenderer, renderer, game/quiz logic, runtime, API routes, SCORM export
+10. Tidak menghapus: src/lib/export/, src/lib/client-export.ts (follow-up tersendiri)
+11. Build: PASS
+
+**D1/D3 kebijakan export source of truth:**
+
+```txt
+Path A (Vite SSR + React ExportApp) = SATU-SATUNYA source of truth export
+Path B (Vanilla JS string export) = Dev/debug only, TIDAK boleh dipakai diam-diam
+Jika Path A gagal → Error jelas, BUKAN degraded fallback
+exportClientSide() masih tersedia untuk explicit dev use
+```
+
+**D1/D3 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| exportWithFallback() | Coba Vite SSR → gagal? Diam-diam pakai vanilla JS | Coba Vite SSR → gagal? Tampilkan error jelas |
+| Guru saat template hilang | Dapat export degraded tanpa sadar | Dapat error: "template belum tersedia, jalankan export:build" |
+| exportClientSide() toast | "Export client-side selesai" | "Export mode terbatas selesai — Hasil TIDAK sama dengan preview" |
+| Vanilla JS path status | Fallback otomatis | Dev/debug only, harus explicit |
 
 **PERUBAHAN RONDE 24 (D2 — Align Schema Block Update Path):**
 
