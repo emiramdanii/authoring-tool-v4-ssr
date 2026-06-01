@@ -92,3 +92,25 @@ Stage Summary:
   8. ✅ Build pass
 - Files: BottomPageStrip.tsx (new), CanvaBuilder.tsx (2 lines added), CORE_VERIFICATION_REPORT.md
 - Next: Sprint 1E.3 — Template Tab Cleanup
+
+---
+Task ID: 1E.3
+Agent: Main
+Task: Sprint 1E.3 — Template Tab Cleanup (Opsi A: sembunyikan tab Template di teacher mode)
+
+Work Log:
+- Git status clean, git pull --rebase up-to-date
+- Read LeftPanel.tsx, IconRail.tsx, use-teacher-mode.ts, types.ts
+- IconRail.tsx: Added `teacherOnly` flag to PRIMARY_RAIL_ITEMS, filtered `visibleItems` by teacherMode, label 'Template (Lanjutan)' in advanced mode
+- LeftPanel.tsx: Added `isSederhana` guard on templates tab content, hidden Quick Add 'Custom' button in teacher mode, grid-cols-3 vs grid-cols-2 conditional, handleTabChange redirect 'templates'→'pages' in teacher mode, useEffect redirect for store-driven tab changes
+- npm run build: PASS
+- git diff --check: no whitespace issues
+- Updated CORE_VERIFICATION_REPORT.md: Sprint 1E.3 status PASS, Ronde 15 changes, file list
+- git commit: "fix: hide legacy template tab in teacher mode (Sprint 1E.3)"
+- git push origin main: SUCCESS (d0ecb10..8f2af7f)
+
+Stage Summary:
+- Sprint 1E.3 PASS — Tab Template hidden in teacher mode, visible in advanced mode with label "Template (Lanjutan)"
+- 3 files changed: IconRail.tsx, LeftPanel.tsx, CORE_VERIFICATION_REPORT.md
+- No files deleted, no template system rewritten
+- Dashboard, TemplateWizard, BottomPageStrip, SceneList, SchemaBlockTree NOT touched
