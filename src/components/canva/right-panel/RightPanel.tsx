@@ -15,7 +15,8 @@ import ValidationSection from './ValidationSection';
 import LayerPanel from '../left-panel/LayerPanel';
 
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
-import { teacherTerm } from '@/core/i18n/teacher-terminology';
+import { getRightPanelContext } from '@/core/i18n/right-panel-context';
+import { useSelectedBlock } from './block-properties/use-selected-block';
 import { isEnabled } from '@/config/feature-flags';
 import dynamic from 'next/dynamic';
 
@@ -100,35 +101,51 @@ export default function RightPanel() {
   const hasMultiBlockSelection = selectedBlockIds.length > 1;
   const hasElementSelection = selectedElId != null || selectedElIds.length > 0;
 
-  // Contextual header label (Sprint 1C.2)
-  const headerLabel = (() => {
-    if (!isSederhana) return 'Properties';
-    if (hasBlockSelection && selectedBlockType) {
-      const friendly = teacherTerm(selectedBlockType, true);
-      return `Edit ${friendly}`;
-    }
-    if (hasBlockSelection) return 'Edit Konten';
-    return 'Edit Halaman';
-  })();
+  // Sprint R2: Contextual header — computes title/subtitle/description
+  const { block: selectedBlock } = useSelectedBlock();
+  const panelContext = getRightPanelContext({
+    blockType: selectedBlockType,
+    block: selectedBlock,
+    isSederhana,
+    pageTemplateType: page?.templateType,
+  });
 
   if (!rightPanelOpen) return null;
 
   return (
     <div className="w-full h-full bg-silse-surface-container-lowest border-l border-silse-outline-variant/40 flex flex-col shrink-0 overflow-hidden">
-      {/* ── Properties Header — SILSE v4 MD3 reference style ── */}
+      {/* ── Properties Header — Sprint R2: Contextual 3-line header ── */}
       <div className="px-4 py-2.5 border-b border-silse-outline-variant/50 flex items-center justify-between bg-silse-surface-container-lowest flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-silse-tertiary" style={{ fontSize: '20px' }}>tune</span>
-          <h3
-            className="text-sm font-bold text-silse-on-surface tracking-tight"
-            style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
-          >
-            {headerLabel}
-          </h3>
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <span className="material-symbols-outlined text-silse-tertiary shrink-0" style={{ fontSize: '20px' }}>tune</span>
+          <div className="min-w-0">
+            <h3
+              className="text-sm font-bold text-silse-on-surface tracking-tight leading-tight"
+              style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+            >
+              {panelContext.title}
+            </h3>
+            {isSederhana && panelContext.subtitle && (
+              <div
+                className="text-[11px] text-silse-on-surface-variant leading-tight mt-0.5 truncate"
+                style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+              >
+                {panelContext.subtitle}
+              </div>
+            )}
+            {isSederhana && panelContext.description && (
+              <div
+                className="text-[10px] text-silse-on-surface-variant/60 leading-tight mt-0.5 truncate"
+                style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+              >
+                {panelContext.description}
+              </div>
+            )}
+          </div>
         </div>
         <button
           onClick={toggleRightPanel}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150"
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150 shrink-0 ml-2"
           aria-label="Tutup panel"
         >
           <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>close</span>

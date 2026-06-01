@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 21 — Sprint R1 Struktur Panel Kanan 3 Zona)
+Tanggal: 2026-06-01 (Ronde 22 — Sprint R2 Header Konteks Ganda)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -26,8 +26,47 @@ Sprint 1G — Background-Based Media Mode: PASS (dengan P0 + P1.1 + P1.2 fix) �
 Sprint 2A — Kuis Guided Editor Polish: PASS — jawaban benar A/B/C/D select, guru tidak perlu tahu indeks angka, bug falsy value 0 diperbaiki
 Sprint 2B — MateriBlok Guided Editor Minimal: PASS — materi-blok masuk GuidedFormEditor, showWhen conditional fields, 6 tipe prioritas, flat string array fix
 Sprint R1 — Struktur Panel Kanan 3 Zona: PASS — Isi Utama/Tampilan/Lanjutan, Tampilan collapsed default, tab bar hidden jika 1 tab
+Sprint R2 — Header Konteks Ganda: PASS — panel kanan menampilkan title/subtitle/description, kuis tunjukkan jumlah opsi, materi-blok tunjukkan tipe, halaman tunjukkan template
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 22 (Sprint R2 — Header Konteks Ganda):**
+
+1. Sprint R2 IMPLEMENTASI: Header panel kanan 3-baris di teacher mode — title, subtitle, description
+2. `right-panel-context.ts` (BARU): Helper `getRightPanelContext()` — menghitung konteks header dari blockType + block data + GuidedEditorSchema
+3. `right-panel-context.ts`: Subtitle dinamis — kuis menampilkan jumlah opsi, materi-blok menampilkan tipe (Kotak Definisi, Materi Poin, dll)
+4. `right-panel-context.ts`: Deskripsi statis per block type — "Atur pertanyaan, pilihan jawaban, dan feedback." dll
+5. `right-panel-context.ts`: Page-level context — "Edit Halaman" + label template (Materi Pembelajaran, Kuis Interaktif, dll)
+6. `RightPanel.tsx`: Header berubah dari 1 baris `headerLabel` menjadi 3 baris: title (bold), subtitle (11px), description (10px)
+7. `RightPanel.tsx`: Import `useSelectedBlock` hook untuk akses block data — reaktif terhadap perubahan schema
+8. `RightPanel.tsx`: Advanced mode tetap 1 baris "Properties" — tidak berubah
+9. `RightPanel.tsx`: Hapus unused import `teacherTerm` — sudah digantikan oleh `getRightPanelContext()`
+10. Renderer, export, runtime, game editor, GuidedFormEditor, BlockPropertiesPanel TIDAK disentuh
+11. Build: PASS ✅
+
+**Sprint R2 header context per scenario:**
+
+| Scenario | Title | Subtitle | Description |
+|----------|-------|----------|-------------|
+| Kuis dipilih | Edit Kuis | Pilihan Ganda · 4 opsi | Atur pertanyaan, pilihan jawaban, dan feedback. |
+| Materi-blok (definisi) | Edit Konten Materi | Kotak Definisi | Ubah judul dan isi materi. |
+| Materi-blok (poin) | Edit Konten Materi | Materi Poin | Ubah judul dan isi materi. |
+| Diskusi dipilih | Edit Diskusi | Diskusi Kelompok | Atur pertanyaan untuk diskusi kelompok. |
+| Refleksi dipilih | Edit Refleksi | Refleksi Diri | Atur pertanyaan refleksi dan petunjuk. |
+| Cover dipilih | Edit Cover | Sampul | Ubah judul, subjudul, dan ikon. |
+| Halaman (materi) | Edit Halaman | Materi Pembelajaran | Atur background, navigasi, dan pengaturan halaman. |
+| Advanced mode | Properties | (tidak ada) | (tidak ada) |
+
+**Sprint R2 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Header teacher mode | 1 baris: "Edit Kuis" | 3 baris: title + subtitle + description |
+| Header advanced mode | "Properties" | "Properties" (tidak berubah) |
+| Subtitle konteks | Tidak ada | Kuis: jumlah opsi, Materi: tipe, Halaman: template |
+| Deskripsi | Tidak ada | Statis per block type |
+| Sumber data header | `teacherTerm()` | `getRightPanelContext()` + `useSelectedBlock()` |
+| teacherTerm dependency | `teacherTerm('kuis', true)` → 'kuis' (fallback broken) | Tidak pakai teacherTerm untuk header |
 
 **PERUBAHAN RONDE 21 (Sprint R1 — Struktur Panel Kanan):**
 
