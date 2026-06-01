@@ -11,6 +11,8 @@ import { SettingsSection } from './left-panel/SettingsSection';
 import { SchemaBlockTree } from './left-panel/SchemaBlockTree';
 import { getPageBlocks } from '@/core/schema/ensure-schema';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
+import { FloatingPageMenu } from './left-panel/FloatingPageMenu';
+import type { PageTemplateType } from './types';
 
 import HistoryPanel from './left-panel/HistoryPanel';
 
@@ -109,6 +111,14 @@ export default function LeftPanel() {
     useCanvaStore.getState().setLeftTab(resolved);
   };
 
+  // Sprint 1E.4: add page from floating menu — stays on pages tab
+  const addTemplatePage = useCanvaStore(s => s.addTemplatePage);
+  const handleAddFromMenu = (templateType: PageTemplateType) => {
+    addTemplatePage(templateType);
+    // Ensure we stay on pages tab (no switch to add-block)
+    handleTabChange('pages');
+  };
+
   return (
     <div className="flex h-full bg-silse-surface-container-low overflow-hidden">
       {/* ── Icon Rail — SILSE v4: w-16, bg-surface-bright, border-r ── */}
@@ -124,13 +134,15 @@ export default function LeftPanel() {
           >
             Halaman Media
           </h3>
-          <button
-            onClick={() => handleTabChange('add-block')}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-primary hover:bg-silse-primary-container/20 transition-colors"
-            aria-label="Tambah baru"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
-          </button>
+          {/* Sprint 1E.4: Floating Add Menu — no tab switch, panel stays on pages */}
+          <FloatingPageMenu onSelect={handleAddFromMenu} align="end" side="bottom">
+            <button
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-primary hover:bg-silse-primary-container/20 transition-colors"
+              aria-label="Tambah halaman"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
+            </button>
+          </FloatingPageMenu>
         </div>
 
         {/* Search filter — only show on Pages tab */}
@@ -179,7 +191,7 @@ export default function LeftPanel() {
                 {/* Schema Block Tree — integrated per page */}
                 <SchemaBlockTreeWithBadge />
 
-                {/* Library Blocks Section — 2x2 dashed grid */}
+                {/* Quick Add — Sprint 1E.4: replaced with compact floating menu triggers */}
                 <div className="pt-2 border-t border-silse-outline-variant/40">
                   <div className="flex items-center gap-1.5 mb-2 px-1">
                     <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>grid_view</span>
@@ -188,28 +200,31 @@ export default function LeftPanel() {
                     </span>
                   </div>
                   <div className={`grid gap-1.5 ${isSederhana ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                    {/* Materi — add page directly, no tab switch */}
                     <button
-                      onClick={() => handleTabChange('add-block')}
+                      onClick={() => handleAddFromMenu('materi')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-primary/5 hover:border-silse-primary/30 transition-all group"
                     >
                       <span className="material-symbols-outlined text-silse-primary mb-0.5" style={{ fontSize: '18px' }}>menu_book</span>
                       <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-primary">Materi</span>
                     </button>
+                    {/* Kuis — add page directly, no tab switch */}
                     <button
-                      onClick={() => handleTabChange('add-block')}
+                      onClick={() => handleAddFromMenu('kuis')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-tertiary/5 hover:border-silse-tertiary/30 transition-all group"
                     >
                       <span className="material-symbols-outlined text-silse-tertiary mb-0.5" style={{ fontSize: '18px' }}>quiz</span>
                       <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-tertiary">Kuis</span>
                     </button>
+                    {/* Game — add page directly, no tab switch */}
                     <button
-                      onClick={() => handleTabChange('add-block')}
+                      onClick={() => handleAddFromMenu('game')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-secondary/5 hover:border-silse-secondary/30 transition-all group"
                     >
                       <span className="material-symbols-outlined text-silse-secondary mb-0.5" style={{ fontSize: '18px' }}>sports_esports</span>
                       <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-secondary">Game</span>
                     </button>
-                    {/* Custom button: hidden in teacher mode (1E.3) — teachers pick templates from Dashboard */}
+                    {/* Custom — advanced mode only, still goes to templates tab */}
                     {!isSederhana && (
                     <button
                       onClick={() => handleTabChange('templates')}

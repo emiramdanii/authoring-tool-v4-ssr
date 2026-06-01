@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 15 — Sprint 1E.3 Template Tab Cleanup)
+Tanggal: 2026-06-01 (Ronde 16 — Sprint 1E.4 Floating Add Menu)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -20,10 +20,36 @@ Sprint 1D — Template Entry Point: PASS — flow inta benar, presetId wired ke 
 Sprint 1E.1 — Left Panel Simplification: PASS — SchemaBlockTree menghormati teacher mode, collapsed default, label ramah guru
 Sprint 1E.2 — BottomPageStrip: PASS — horizontal page strip di bawah canvas, navigasi cepat tanpa buka panel kiri
 Sprint 1E.3 — Template Tab Cleanup: PASS — tab Template disembunyikan di teacher mode, label 'Template (Lanjutan)' di advanced mode
+Sprint 1E.4 — Floating Add Menu: PASS — guru tambah halaman via popover tanpa kehilangan daftar halaman
 Sprint 1F — Canvas Readability: NOTED — teks transparan di canvas putih (Sprint 1F nanti)
 Sprint 1G — Background-Based Media Mode: NOTED — media HTML sebagai background (Sprint 1G nanti)
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 16:**
+
+1. Sprint 1E.4 IMPLEMENTASI: Floating Add Menu Tahap 1 — guru tambah halaman tanpa panel kiri berubah
+2. Komponen baru `FloatingPageMenu.tsx` — Radix Popover + preset grid 2 kolom, dikelompokkan per kategori
+3. LeftPanel.tsx: Tombol `add_circle` di header sekarang membuka Popover (bukan pindah ke tab add-block)
+4. LeftPanel.tsx: `handleAddFromMenu()` — panggil `addTemplatePage(type)` lalu tetap di tab 'pages'
+5. LeftPanel.tsx: Quick Add buttons (Materi/Kuis/Game) sekarang langsung `addTemplatePage()` tanpa pindah tab
+6. SceneList.tsx: Tombol "Tambah Halaman" sekarang membuka FloatingPageMenu (bukan `addPage()` kosong)
+7. SceneList.tsx: Import `addTemplatePage` dari store + `FloatingPageMenu` + `PageTemplateType`
+8. Menu menampilkan preset dari `getPresetsGroupedByCategory()`: Halaman, Interaktif, Penutup
+9. Klik luar + ESC menutup menu (built-in Radix Popover)
+10. Portal rendering — daftar halaman tetap terlihat di belakang menu
+11. Tidak ada 42 block teknis tampil ke guru
+12. BottomPageStrip, AddBlockPanel, AddBlockSection, PagePresetRegistry, store TIDAK disentuh
+13. Build: PASS ✅
+
+**Sebelum/Sesudah panel kiri:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Tombol + di header | Pindah ke tab add-block (daftar halaman hilang) | Buka popover mengambang (daftar halaman tetap) |
+| Quick Add Materi/Kuis/Game | Pindah ke tab add-block | Langsung tambah halaman via addTemplatePage |
+| Tombol Tambah Halaman | addPage() kosong (custom) | FloatingPageMenu (pilih tipe: Cover/Tujuan/Materi/Kuis/dll) |
+| Menu isi | Tidak ada — harus buka tab add-block | Preset grid: Halaman + Interaktif + Penutup |
 
 **PERUBAHAN RONDE 15:**
 
@@ -694,6 +720,12 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 ---
 
 ## I. FILE YANG DIUBAH
+
+### Sejak Ronde 16 (Sprint 1E.4 — Floating Add Menu)
+1. `src/components/canva/left-panel/FloatingPageMenu.tsx` — Komponen baru: Radix Popover + preset grid 2 kolom, grouped by category, click-outside + ESC close
+2. `src/components/canva/LeftPanel.tsx` — Header add_circle button → FloatingPageMenu trigger; handleAddFromMenu() calls addTemplatePage; Quick Add buttons now call addTemplatePage directly
+3. `src/components/canva/left-panel/SceneList.tsx` — "Tambah Halaman" button → FloatingPageMenu trigger; import addTemplatePage + FloatingPageMenu + PageTemplateType
+4. `CORE_VERIFICATION_REPORT.md` — Sprint 1E.4 status updated to PASS, Ronde 16 changes documented
 
 ### Sejak Ronde 15 (Sprint 1E.3 — Template Tab Cleanup)
 1. `src/components/canva/left-panel/IconRail.tsx` — `teacherOnly` flag pada PRIMARY_RAIL_ITEMS; `visibleItems` filter berdasarkan teacherMode; label 'Template (Lanjutan)' di advanced mode tooltip
