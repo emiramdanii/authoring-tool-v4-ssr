@@ -114,3 +114,27 @@ Stage Summary:
 - 3 files changed: IconRail.tsx, LeftPanel.tsx, CORE_VERIFICATION_REPORT.md
 - No files deleted, no template system rewritten
 - Dashboard, TemplateWizard, BottomPageStrip, SceneList, SchemaBlockTree NOT touched
+
+---
+Task ID: 1E.4
+Agent: Main
+Task: Sprint 1E.4 — Floating Add Menu Tahap 1
+
+Work Log:
+- Git status clean, git pull --rebase up-to-date
+- Created FloatingPageMenu.tsx: Radix Popover + preset grid 2-column, grouped by category (Halaman/Interaktif/Penutup)
+- LeftPanel.tsx: header add_circle button → FloatingPageMenu trigger (no more add-block tab switch)
+- LeftPanel.tsx: handleAddFromMenu() calls addTemplatePage(type) + stays on 'pages' tab
+- LeftPanel.tsx: Quick Add buttons (Materi/Kuis/Game) now call addTemplatePage directly
+- SceneList.tsx: "Tambah Halaman" button → FloatingPageMenu trigger (not addPage() anymore)
+- SceneList.tsx: imported addTemplatePage, FloatingPageMenu, PageTemplateType
+- npm run build: PASS
+- git diff --check: no issues
+- Updated CORE_VERIFICATION_REPORT.md: Sprint 1E.4 PASS, Ronde 16 changes, file list
+- git commit: "fix: add floating page menu (Sprint 1E.4)"
+- git push origin main: SUCCESS (8f2af7f..5ef0711)
+
+Stage Summary:
+- Sprint 1E.4 PASS — Guru bisa tambah halaman via floating menu tanpa kehilangan daftar halaman
+- 4 files changed: FloatingPageMenu.tsx (new), LeftPanel.tsx, SceneList.tsx, CORE_VERIFICATION_REPORT.md
+- BottomPageStrip, AddBlockPanel, AddBlockSection, PagePresetRegistry, store NOT touched
