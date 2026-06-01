@@ -547,6 +547,9 @@ export interface GuidedFieldDef {
   /** For number type: min/max */
   min?: number;
   max?: number;
+  /** Conditional visibility: show this field only when another field's value is in `values`.
+   *  If undefined, the field is always shown (backward-compatible). */
+  showWhen?: { field: string; values: string[] };
 }
 
 /**
@@ -642,6 +645,54 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     sections: [
       { key: 'title', label: 'Judul', fieldKeys: ['title'] },
       { key: 'questions', label: 'Soal', fieldKeys: ['questions'] },
+    ],
+  },
+
+  'materi-blok': {
+    blockType: 'materi-blok',
+    displayName: 'Konten Materi',
+    description: 'Blok konten materi — paragraf, definisi, poin, dan lainnya',
+    icon: '📖',
+    fields: [
+      { key: 'tipe', label: 'Tipe Konten', type: 'select', required: true, options: [
+        { label: 'Paragraf', value: 'teks' },
+        { label: 'Definisi', value: 'definisi' },
+        { label: 'Poin', value: 'poin' },
+        { label: 'Checklist', value: 'checklist' },
+        { label: 'Info Box', value: 'infobox' },
+        { label: 'Highlight', value: 'highlight' },
+      ], helpText: 'Pilih tipe konten yang ingin ditampilkan' },
+      { key: 'judul', label: 'Judul', type: 'text', placeholder: 'Judul konten...' },
+      { key: 'isi', label: 'Isi', type: 'textarea', placeholder: 'Tulis isi konten di sini...',
+        showWhen: { field: 'tipe', values: ['teks', 'definisi', 'infobox', 'highlight', 'kutipan', 'gambar'] } },
+      { key: 'butir', label: 'Daftar Butir', type: 'array', maxItems: 10,
+        showWhen: { field: 'tipe', values: ['poin', 'checklist'] },
+        helpText: 'Tambah atau hapus butir poin/checklist',
+        fields: [
+          { key: '', label: 'Butir', type: 'text', placeholder: 'Tulis butir...' },
+        ] },
+      { key: 'warna', label: 'Warna', type: 'color',
+        showWhen: { field: 'tipe', values: ['definisi', 'highlight'] },
+        helpText: 'Warna aksen konten' },
+      { key: 'icon', label: 'Ikon', type: 'icon',
+        showWhen: { field: 'tipe', values: ['highlight'] },
+        helpText: 'Ikon di samping judul highlight', placeholder: '💡' },
+      { key: 'infoboxStyle', label: 'Gaya Info Box', type: 'select',
+        showWhen: { field: 'tipe', values: ['infobox'] },
+        options: [
+          { label: 'Info', value: 'info' },
+          { label: 'Tips', value: 'tips' },
+          { label: 'Peringatan', value: 'warning' },
+          { label: 'Berhasil', value: 'success' },
+        ],
+        helpText: 'Pilih gaya tampilan info box' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color',
+        helpText: 'Warna aksen untuk blok materi' },
+    ],
+    sections: [
+      { key: 'type', label: 'Tipe', fieldKeys: ['tipe'] },
+      { key: 'content', label: 'Konten', fieldKeys: ['judul', 'isi', 'butir'] },
+      { key: 'style', label: 'Gaya', fieldKeys: ['warna', 'icon', 'infoboxStyle', 'accentColor'] },
     ],
   },
 

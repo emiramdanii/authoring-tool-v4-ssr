@@ -129,16 +129,27 @@ export function renderGuidedField(
         />
       );
 
-    case 'array':
+    case 'array': {
+      // Support flat string arrays: when sub-field key is '', the array is string[]
+      // not Array<Record<string, unknown>>. Convert at the boundary.
+      const isFlatStringArray = field.fields?.length === 1 && field.fields[0]!.key === '';
+      const rawItems = (value as Array<unknown>) || [];
+      const items = isFlatStringArray
+        ? rawItems.map(item => ({ '': item }))
+        : (rawItems as Array<Record<string, unknown>>);
+      const handleArrayUpdate = isFlatStringArray
+        ? (updatedItems: Array<Record<string, unknown>>) => handleUpdate(updatedItems.map(item => item[''] ?? ''))
+        : (updatedItems: Array<Record<string, unknown>>) => handleUpdate(updatedItems);
       return (
         <GuidedArrayField
           key={field.key}
           fieldId={fieldId}
           fieldDef={field}
-          items={(value as Array<Record<string, unknown>>) || []}
-          onUpdate={items => handleUpdate(items)}
+          items={items}
+          onUpdate={handleArrayUpdate}
         />
       );
+    }
 
     default:
       return null;

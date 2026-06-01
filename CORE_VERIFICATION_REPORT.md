@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 19 — Sprint 2A Kuis Guided Editor Polish)
+Tanggal: 2026-06-01 (Ronde 20 — Sprint 2B MateriBlok Guided Editor Minimal)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -24,8 +24,45 @@ Sprint 1E.4 — Floating Add Menu: PASS — guru tambah halaman via popover tanp
 Sprint 1F — Canvas Readability: PASS — readability safety layer menyesuaikan warna konten saat dark theme di light canvas
 Sprint 1G — Background-Based Media Mode: PASS (dengan P0 + P1.1 + P1.2 fix) — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca, export HTML parity, quiz readability on bg image
 Sprint 2A — Kuis Guided Editor Polish: PASS — jawaban benar A/B/C/D select, guru tidak perlu tahu indeks angka, bug falsy value 0 diperbaiki
+Sprint 2B — MateriBlok Guided Editor Minimal: PASS — materi-blok masuk GuidedFormEditor, showWhen conditional fields, 6 tipe prioritas, flat string array fix
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 20 (Sprint 2B):**
+
+1. Sprint 2B IMPLEMENTASI: MateriBlok Guided Editor Minimal — guru bisa edit materi-blok lewat GuidedFormEditor, bukan SchemaDrivenEditor mentah
+2. `guided-patch.ts`: Tambah `showWhen?: { field: string; values: string[] }` ke `GuidedFieldDef` — conditional field visibility, backward-compatible (undefined = selalu tampil)
+3. `guided-patch.ts`: Tambah entry `materi-blok` ke `GUIDED_EDITOR_REGISTRY` dengan 8 field: tipe, judul, isi, butir, warna, icon, infoboxStyle, accentColor
+4. `GuidedFormEditor.tsx`: Tambah `visibleFields` filter — field dengan `showWhen` hanya tampil jika `blockData[showWhen.field]` termasuk `showWhen.values`
+5. `GuidedFormEditor.tsx`: Section grouping sekarang menggunakan `visibleFields` bukan `guidedSchema.fields` — section kosong (semua field hidden) otomatis hilang
+6. `guided-field-renderer.tsx`: Fix flat string array — `string[]` (seperti `butir`, `opts`) sekarang dikonversi ke `Array<Record<string, ''>>` di boundary, bukan di-cast langsung. Ini memperbaiki kuis `opts` juga
+7. 6 tipe prioritas didukung: teks (judul+isi), definisi (judul+isi+warna), poin (judul+butir), checklist (judul+butir), infobox (judul+isi+infoboxStyle), highlight (judul+isi+warna+icon)
+8. 7 tipe ditunda: compare, studi, tabel, timeline, gambar, kutipan, statistik
+9. MateriBlokRenderer, export HTML, schema utama TIDAK disentuh
+10. Build: PASS ✅
+
+**Sprint 2B showWhen conditional visibility:**
+
+| Field | Tipe yang Menampilkan Field Ini |
+|-------|------|
+| tipe | semua (selalu tampil) |
+| judul | semua (selalu tampil) |
+| isi | teks, definisi, infobox, highlight, kutipan, gambar |
+| butir | poin, checklist |
+| warna | definisi, highlight |
+| icon | highlight |
+| infoboxStyle | infobox |
+| accentColor | semua (selalu tampil) |
+
+**Sprint 2B flat string array fix:**
+
+| Sebelum | Sesudah |
+|---------|--------|
+| `string[]` di-cast ke `Array<Record<string, unknown>>` | `string[]` dikonversi ke `Array<{ '': string }>` di boundary |
+| `item['']` pada string = undefined | `item['']` pada `{ '': 'text' }` = 'text' |
+| `opts` kuis: input kosong | `opts` kuis: value terisi benar |
+| `butir` materi-blok: tidak bisa diedit | `butir` materi-blok: bisa diedit |
+| `onUpdate` kirim `Array<Record>` ke store | `onUpdate` konversi balik ke `string[]` sebelum kirim |
 
 **PERUBAHAN RONDE 19 (Sprint 2A):**
 
