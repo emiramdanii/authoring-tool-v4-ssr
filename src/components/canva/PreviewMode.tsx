@@ -69,9 +69,13 @@ export default function PreviewMode() {
   const progressPct = totalPages > 0 ? (completedCount / totalPages) * 100 : 0;
 
   // ── Initialize learning session when entering preview ──
-  // So that when user clicks "Main sebagai Siswa", the session is ready
+  // So that when user clicks "Main sebagai Siswa", the session is ready.
+  // Also clear stale scores from previous sessions — each Preview session
+  // should start fresh. Without this, persisted scores from localStorage
+  // (mpi-interactive-store) would appear in the score pill and completion dots.
   const initSession = useLearningMediaStore(s => s.initSession);
   useEffect(() => {
+    useInteractiveStore.getState().replayAll();
     if (pages.length > 0) {
       const templateTypes = pages.map(p => p.templateType || 'custom');
       initSession(pages.length, templateTypes);

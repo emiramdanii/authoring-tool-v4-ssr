@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-02 (Ronde 26 — D6 createPage schema.background gap)
+Tanggal: 2026-06-02 (Ronde 27 — D7 Dual Score Store / R7.1)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -31,8 +31,48 @@ P0 — Background Source of Truth: PASS — schema page background disatukan ke 
 D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty tracking + optional overflow check, caller prioritas tinggi di-upgrade
 D1/D3 — Export Fallback Safety: PASS — exportWithFallback tidak lagi diam-diam fallback ke degraded vanilla JS, error jelas jika Path A gagal
 D6 — createPage schema.background gap: PASS — createPage() dan setTemplateType() custom sekarang menghasilkan schema.background default dari creation-time
+D7 — Dual Score Store: ACCEPTABLE/FIXED — dual store adalah separation of concerns yang intentional, gap R7.1 (stale scores di Preview/Present) ditutup
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 27 (D7 — Dual Score Store / R7.1):**
+
+1. D7 AUDIT: Dual score store bukan dualisme arsitektur — ini separation of concerns yang intentional:
+   - InteractiveStore = score recorder (persisted ke localStorage, menerima `reportScore()` dari semua renderer)
+   - LearningMediaStore = session orchestrator (ephemeral, contract-aware, mengelola navigasi + lock + completion)
+   - Bridge = satu arah InteractiveStore → LearningMediaStore (di LearningMediaShell & ExportApp)
+2. R7.1 FIX: PreviewMode dan PresentMode sekarang memanggil `replayAll()` saat mount — stale scores dari localStorage tidak lagi muncul di score pill dan completion dots
+3. `PreviewMode.tsx`: Mount useEffect sekarang memanggil `useInteractiveStore.getState().replayAll()` sebelum `initSession()`
+4. `PresentMode.tsx`: Mount useEffect baru menambahkan `useInteractiveStore.getState().replayAll()`
+5. LearningMediaShell dan ExportApp sudah aman sebelumnya (sudah memanggil `replayAll()` on mount)
+6. Tidak mengubah: InteractiveStore, LearningMediaStore, KuisRenderer, Game renderers, ExportApp, LearningMediaShell, scoring logic, runtime contract
+7. R7.5 (bridge code duplication) dicatat sebagai P3 follow-up — extract ke `useScoreBridge()` hook, ditunda
+8. Build: PASS
+
+**D7 arsitektur score flow:**
+
+```txt
+Renderer → reportScore() → InteractiveStore (persisted)
+                                ↓ bridge (subscribe)
+                         LearningMediaStore (ephemeral)
+                                ↓
+                         UI: TopNavbar, BottomNav, CompletionModal
+
+Preview/Present mode → baca langsung dari InteractiveStore
+Learn/Export mode → bridge ke LearningMediaStore
+Semua mode → replayAll() on mount = sesi bersih
+```
+
+**D7 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| PreviewMode mount | Tidak clear stale scores | `replayAll()` → score pill mulai dari 0 |
+| PresentMode mount | Tidak clear stale scores | `replayAll()` → score display mulai bersih |
+| LearningMediaShell mount | Sudah `replayAll()` | Tidak berubah (sudah benar) |
+| ExportApp mount | Sudah `replayAll()` | Tidak berubah (sudah benar) |
+| InteractiveStore persist | Ke localStorage | Tetap sama (intentional) |
+| Bridge code | Duplicate di Shell & Export | P3 follow-up: extract `useScoreBridge()` |
 
 **PERUBAHAN RONDE 26 (D6 — createPage schema.background gap):**
 

@@ -63,6 +63,14 @@ export default function PresentMode() {
   const maxScore = totalMax();
   const hasScoredContent = maxScore > 0;
 
+  // ── Clear stale scores from previous sessions on mount ──
+  // InteractiveStore persists scores to localStorage (mpi-interactive-store).
+  // Without this, stale scores from a previous session would appear in the
+  // score display and completion dots when re-entering Present mode.
+  useEffect(() => {
+    useInteractiveStore.getState().replayAll();
+  }, []);
+
   // Sync fullscreen state with browser (handles Esc key and other native exits)
   useEffect(() => {
     const handleFullscreenChange = () => {
