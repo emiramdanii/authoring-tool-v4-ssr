@@ -38,7 +38,14 @@ export default function BackgroundSection() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
-      if (dataUrl) setBgImage(dataUrl);
+      if (!dataUrl) return;
+      // P0 fix: schema page → write to schema.background.imageUrl
+      // Legacy page → write to page.bgDataUrl
+      if (isSchemaDriven) {
+        updateScreenBackground({ imageUrl: dataUrl, overlay: schemaBg?.overlay ?? 40 });
+      } else {
+        setBgImage(dataUrl);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -190,6 +197,22 @@ export default function BackgroundSection() {
           <label className="text-[10px] font-bold text-silse-on-surface block mb-1.5">
             🖼️ Gambar Latar
           </label>
+
+          {/* File upload button — P0 fix: writes to schema.background.imageUrl */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full py-2 rounded-xl border border-dashed border-silse-outline-variant hover:border-silse-primary/30 bg-silse-surface-container-low hover:bg-silse-surface-container-lowest transition-colors flex flex-col items-center gap-0.5 mb-2"
+          >
+            <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '14px' }}>upload</span>
+            <span className="text-[9px] font-bold text-silse-on-surface-variant">Upload Gambar</span>
+          </button>
 
           {/* Image URL input */}
           <div className="mb-2">

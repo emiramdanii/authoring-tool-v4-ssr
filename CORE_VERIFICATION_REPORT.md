@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 22 — Sprint R2 Header Konteks Ganda)
+Tanggal: 2026-06-01 (Ronde 23 — P0 Background Source of Truth)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -27,8 +27,40 @@ Sprint 2A — Kuis Guided Editor Polish: PASS — jawaban benar A/B/C/D select, 
 Sprint 2B — MateriBlok Guided Editor Minimal: PASS — materi-blok masuk GuidedFormEditor, showWhen conditional fields, 6 tipe prioritas, flat string array fix
 Sprint R1 — Struktur Panel Kanan 3 Zona: PASS — Isi Utama/Tampilan/Lanjutan, Tampilan collapsed default, tab bar hidden jika 1 tab
 Sprint R2 — Header Konteks Ganda: PASS — panel kanan menampilkan title/subtitle/description, kuis tunjukkan jumlah opsi, materi-blok tunjukkan tipe, halaman tunjukkan template
+P0 — Background Source of Truth: PASS — schema page background disatukan ke schema.background, file upload ke schema path, halaman lama dinormalisasi
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 23 (P0 — Background Source of Truth):**
+
+1. P0 IMPLEMENTASI: Schema page background disatukan — `schema.background` jadi single source of truth, bukan dual `page.bgColor` + `schema.background`
+2. `schema-factory.ts`: Semua page type sekarang punya default `background` — cover/hero: `{ type: 'radial', color1: 'y', color2: 'bg' }`, lainnya: `{ type: 'solid', color1: 'bg' }`. Sebelumnya non-cover/hero mendapat `background: undefined`
+3. `ensure-schema.ts`: `migrateAllPages()` Step 3b — normalisasi `schema.background === undefined` → `{ type: 'solid', color1: 'bg' }`. Halaman lama yang dibuat sebelum P0 fix otomatis mendapat default background saat di-load
+4. `ensure-schema.ts`: Step 1b — empty page schema juga mendapat `background: { type: 'solid', color1: 'bg' }` saat migrasi
+5. `BackgroundSection.tsx`: `handleFileUpload` sekarang menulis ke `schema.background.imageUrl` untuk schema page (via `updateScreenBackground()`), bukan ke `page.bgDataUrl` (legacy). Legacy page tetap menulis ke `page.bgDataUrl`
+6. `BackgroundSection.tsx`: Tombol "Upload Gambar" ditambahkan di schema path — sebelumnya schema path hanya punya URL input, tidak ada file upload
+7. Renderer, export, template system, game editor TIDAK disentuh
+8. Legacy field (`page.bgColor`, `page.bgDataUrl`, `page.overlay`) tetap ada untuk legacy page — tidak dihapus
+9. Build: PASS ✅
+
+**P0 prinsip source of truth:**
+
+```txt
+Schema page → schema.background (SATU-SATUNYA sumber)
+Legacy page → page.bgColor / page.bgDataUrl / page.overlay
+Dua sistem TIDAK boleh campur di satu halaman.
+```
+
+**P0 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Schema page baru | `schema.background = undefined` | `schema.background = { type: 'solid', color1: 'bg' }` |
+| Halaman lama | `schema.background = undefined` → renderer fallback | Dinormalisasi ke `{ type: 'solid', color1: 'bg' }` saat load |
+| Upload file di schema page | Menulis ke `page.bgDataUrl` (TIDAK terbaca renderer) | Menulis ke `schema.background.imageUrl` (terbaca renderer) |
+| Upload file di legacy page | Menulis ke `page.bgDataUrl` | Tetap sama |
+| BackgroundSection schema path | Hanya URL input, tidak ada upload file | Ada tombol "Upload Gambar" + URL input |
+| `page.bgColor` untuk schema page | Diset ke '#ffffff' tapi tidak dibaca | Tetap ada tapi TIDAK digunakan schema path |
 
 **PERUBAHAN RONDE 22 (Sprint R2 — Header Konteks Ganda):**
 
