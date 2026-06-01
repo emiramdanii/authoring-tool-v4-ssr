@@ -176,6 +176,14 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     tokens.setSceneType(sceneType);
   }
 
+  // ═══ Sprint 1G: BACKGROUND IMAGE STATE ══════════════════════════
+  // Set background image state on the TokenResolver so ALL block
+  // renderers know they're on an image background. This lets them
+  // adapt — e.g., use opaque cards, higher contrast text.
+  // Flow: SchemaScreenRenderer → tokens.setHasBackgroundImage()
+  //       → tokens.edu() → EduRenderingContext.hasBackgroundImage()
+  tokens.setHasBackgroundImage(!!screen.background?.imageUrl);
+
   // ═══ TEMPLATE VALIDATION (ALL MODES) ════════════════════════════
   // Validate the page against the TemplateThemeContract in ALL modes.
   // In development, log violations to console as warnings.
@@ -465,7 +473,13 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
     };
   }, [dragState, screen.blocks]);
 
-  // ═══ BACKGROUND STYLE — applies to ALL screen types ═══
+  // ═══ BACKGROUND STYLE — Sprint 1G: Full layer stack ═══
+  // Layer 0: Canvas base (EDU_MODE_BG — always light)
+  // Layer 1: Background style (solid/gradient/radial from schema)
+  // Layer 2: Background media (image with fit/opacity/blur)
+  // Layer 3: Overlay/scrim (dark/light/gradient)
+  // Layer 4: Content (blocks, section labels)
+  //
   // Display mode backgrounds override the default bg color:
   //   - classroom: normal theme bg
   //   - projector: warm #FFFBF0 for projection screens
@@ -476,20 +490,41 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
   // design intent — only the default solid bg gets overridden.
   const displayMode = useCanvaStore((s) => s.displayMode);
   const bg = screen.background;
+  const modeBg = EDU_MODE_BG[displayMode];
+
+  // Sprint 1G: Determine if background image is active
+  const hasBgImage = !!bg?.imageUrl;
+
+  // Sprint 1G: Resolve overlay type — auto-detect when not explicitly set
+  const overlayType = bg?.overlayType ?? 'dark';
+
+  // Sprint 1G: Resolve overlay opacity (0-80, default 40)
+  const overlayOpacity = bg?.overlay ?? 40;
+
   const bgStyle = useMemo<React.CSSProperties>(() => {
     const style: React.CSSProperties = {};
-    const modeBg = EDU_MODE_BG[displayMode];
+    // Layer 0: Canvas base — always EDU mode background
+    // This ensures a light base regardless of theme.
+    style.background = modeBg.bg;
 
     if (bg) {
       if (bg.type === 'radial') {
         // Radial backgrounds (cover/hero) keep their design intent
+        // but fall back to mode bg2 for the bottom of the gradient
         style.background = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(bg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(bg.color2 || 'bg')}, ${modeBg.bg2})`;
       } else if (bg.type === 'gradient') {
         // Gradient backgrounds keep their design intent
         style.background = `linear-gradient(180deg, ${tokens.color(bg.color1 || 'y')}, ${tokens.color(bg.color2 || 'bg')})`;
       } else if (bg.type === 'solid') {
-        // Solid backgrounds: in print mode, always white
-        style.background = displayMode === 'print' ? modeBg.bg : tokens.color(bg.color1 || 'bg');
+        // Sprint 1F: If schema bg color1 is the generic 'bg' token key, it would
+        // resolve to the dark theme bg (#0e1c2f) which OVERRIDES the light EDU canvas.
+        // Only apply schema solid bg when it's an EXPLICIT color (not the generic 'bg' key).
+        const isGenericBgToken = !bg.color1 || bg.color1 === 'bg' || bg.color1 === 'bg2';
+        if (displayMode === 'print' || (isGenericBgToken && tokens.isCanvasLight())) {
+          style.background = modeBg.bg; // Use EDU display mode background instead
+        } else {
+          style.background = tokens.color(bg.color1 || 'bg');
+        }
       }
     }
     if (!bg && !isPureCoverPage) {
@@ -497,7 +532,37 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       style.background = modeBg.bg;
     }
     return style;
-  }, [bg, tokens, isPureCoverPage, displayMode]);
+  }, [bg, tokens, isPureCoverPage, displayMode, modeBg]);
+
+  // Sprint 1G: Build overlay CSS based on overlayType
+  const overlayStyle = useMemo<React.CSSProperties>(() => {
+    const op = overlayOpacity / 100;
+    switch (overlayType) {
+      case 'light':
+        return { background: `rgba(255,255,255,${op})` };
+      case 'gradient':
+        // Bottom gradient: transparent → dark — common for hero text readability
+        return { background: `linear-gradient(to top, rgba(0,0,0,${op}), rgba(0,0,0,${op * 0.3}) 40%, transparent 70%)` };
+      case 'dark':
+      default:
+        return { background: `rgba(0,0,0,${op})` };
+    }
+  }, [overlayType, overlayOpacity]);
+
+  // Sprint 1G: Build background media layer style
+  const bgMediaStyle = useMemo<React.CSSProperties>(() => {
+    const style: React.CSSProperties = {
+      zIndex: 0,
+      objectFit: bg?.imageFit ?? 'cover',
+      opacity: (bg?.imageOpacity ?? 100) / 100,
+    };
+    if (bg?.imageBlur && bg.imageBlur > 0) {
+      style.filter = `blur(${bg.imageBlur}px)`;
+      // When blurred, scale up slightly to avoid edge blur artifacts
+      style.transform = 'scale(1.05)';
+    }
+    return style;
+  }, [bg?.imageFit, bg?.imageOpacity, bg?.imageBlur]);
 
   // ═══ RENDER: Scene-driven absolute positioning ═══
   // Cover/hero: absolute inset-0 (fills entire scene)
@@ -519,26 +584,46 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
       className={isPureCoverPage ? 'absolute inset-0' : 'relative h-full w-full'}
       style={{
         fontFamily: tokens.fontFamily('body'),
-        color: displayMode === 'print' ? '#000000' : tokens.color('text'),
+        // Sprint 1G: When background image with dark overlay is active,
+        // text should be light regardless of theme — the overlay makes the
+        // effective background dark, so content must adapt for readability.
+        // When bg image has light overlay, text should be dark.
+        // When no bg image, fall back to Sprint 1F + print checks.
+        color: displayMode === 'print'
+          ? '#000000'
+          : hasBgImage && overlayType === 'dark'
+            ? '#FFFFFF'
+            : hasBgImage && overlayType === 'gradient'
+              ? '#FFFFFF'
+              : hasBgImage && overlayType === 'light'
+                ? '#1C1C1E'
+                : tokens.isDarkThemeOnLightCanvas()
+                  ? '#1C1C1E'
+                  : tokens.color('text'),
         ...bgStyle,
         overflow: 'hidden', // Scene clips at boundary — no content escapes
       }}
     >
-      {/* ══ BACKGROUND IMAGE LAYER — rendered behind content ════ */}
-      {bg?.imageUrl && (
+      {/* ══ BACKGROUND IMAGE LAYER — Sprint 1G: Full media + overlay ════ */}
+      {hasBgImage && (
         <>
+          {/* Layer 2: Background media — decorative, position absolute,
+              does not affect layout flow, does not cause overflow */}
           <img
-            src={bg.imageUrl}
+            src={bg!.imageUrl}
             alt=""
             role="presentation"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ zIndex: 0 }}
+            className="absolute inset-0 w-full h-full"
+            style={bgMediaStyle}
           />
+          {/* Layer 3: Overlay/scrim — ensures text readability on images.
+              Type: dark (default), light, or gradient.
+              When background is ramai/bright, this scrim keeps text visible. */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               zIndex: 0,
-              background: `rgba(0,0,0,${(bg.overlay ?? 30) / 100})`,
+              ...overlayStyle,
             }}
           />
         </>
@@ -550,8 +635,17 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
           <span
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-extrabold text-[10px] uppercase"
             style={{
-              background: tokens.colorAlpha(screen.sectionColor || 'y', 0.15),
-              color: tokens.color(screen.sectionColor || 'y'),
+              // Sprint 1G: Higher opacity on image backgrounds for readability
+              background: hasBgImage
+                ? tokens.colorAlpha(screen.sectionColor || 'y', 0.85)
+                : tokens.colorAlpha(screen.sectionColor || 'y', 0.15),
+              // Sprint 1G: On dark overlay images, use white text on colored pill;
+              // on light overlay, use dark text; otherwise use accent color
+              color: hasBgImage && (overlayType === 'dark' || overlayType === 'gradient')
+                ? '#FFFFFF'
+                : hasBgImage && overlayType === 'light'
+                  ? '#1C1C1E'
+                  : tokens.color(screen.sectionColor || 'y'),
               letterSpacing: '0.08em',
             }}
           >
@@ -684,6 +778,10 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
 
       {/* ══ SCENE NAVIGATOR — for multi-scene pages ══════════════ */}
       {/* Shows prev/next + dots when content overflows into multiple scenes */}
+      {/* Sprint 1G: isLightBackground considers both canvas mode AND
+          background image overlay type. Dark overlay on image → dark bg →
+          light chrome. Light overlay on image → light bg → dark chrome.
+          When no image, falls back to Sprint 1F canvas light check. */}
       <SceneNavigator
         currentScene={sceneIndex}
         totalScenes={scenePlan.totalScenes}
@@ -692,7 +790,11 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
         position="bottom"
         onPromoteScene={isCompact ? () => useCanvaStore.getState().promoteSceneSplit(1) : undefined}
         safeMode={safeMode}
-        isLightBackground={!isPureCoverPage && tokens.isCanvasLight()}
+        isLightBackground={
+          hasBgImage
+            ? overlayType === 'light' || (overlayType === 'gradient')
+            : !isPureCoverPage && tokens.isCanvasLight()
+        }
       />
 
       {/* ══ MULTI-SCENE INDICATOR — dev info ══════════════════════ */}

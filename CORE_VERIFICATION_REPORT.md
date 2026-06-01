@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 17 — Sprint 1F Canvas Readability)
+Tanggal: 2026-06-01 (Ronde 18 — Sprint 1G Background-Based Media Mode)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -22,9 +22,57 @@ Sprint 1E.2 — BottomPageStrip: PASS — horizontal page strip di bawah canvas,
 Sprint 1E.3 — Template Tab Cleanup: PASS — tab Template disembunyikan di teacher mode, label 'Template (Lanjutan)' di advanced mode
 Sprint 1E.4 — Floating Add Menu: PASS — guru tambah halaman via popover tanpa kehilangan daftar halaman
 Sprint 1F — Canvas Readability: PASS — readability safety layer menyesuaikan warna konten saat dark theme di light canvas
-Sprint 1G — Background-Based Media Mode: NOTED — media HTML sebagai background (Sprint 1G nanti)
+Sprint 1G — Background-Based Media Mode: PASS — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 18:**
+
+1. Sprint 1G IMPLEMENTASI: Background-Based Media Mode — template/media visual bisa jadi background, konten tetap terbaca di atasnya
+2. Schema types (`schema.ts`): Tambah `imageFit`, `imageOpacity`, `imageBlur`, `overlayType` ke `ScreenSchema.background`
+3. PageFrame.tsx: Hapus duplicate background image rendering untuk schema pages — SchemaRenderer sekarang satu-satunya titik render background
+4. SchemaRenderer.tsx: Layer stack lengkap — Layer 0: Canvas base → Layer 1: Bg style → Layer 2: Media image → Layer 3: Overlay/scrim → Layer 4: Content
+5. SchemaRenderer.tsx: Overlay adaptif — `overlayType: 'dark' | 'light' | 'gradient'` — dark scrim, light scrim, atau gradient scrim
+6. SchemaRenderer.tsx: Media properties — `imageFit: 'cover'|'contain'`, `imageOpacity: 0-100`, `imageBlur: 0-20px`
+7. SchemaRenderer.tsx: Text color adaptif berdasarkan overlay type — dark overlay → white text, light overlay → dark text
+8. SchemaRenderer.tsx: Section label readability — higher opacity pill + white/dark text berdasarkan overlay
+9. TokenResolver (`types.ts`): Tambah `setHasBackgroundImage()`, `hasBackgroundImage()` — propagated via `tokens.edu()`
+10. EduRenderingContext: Tambah `setHasBackgroundImage()`, `hasBackgroundImage()`, `isBackgroundImageActive()` — block renderers bisa adapt
+11. SchemaRenderer.tsx: SceneNavigator `isLightBackground` sekarang mempertimbangkan bg image overlay type
+12. BackgroundSection.tsx: UI controls baru — Ukuran Gambar (cover/contain), Transparansi slider, Blur slider, Tipe Overlay (Gelap/Terang/Gradien), Intensitas Overlay slider
+13. Build: PASS ✅
+14. Sprint 1F regression: NONE — semua readability helpers masih aktif dan berfungsi
+
+**Arsitektur layer background Sprint 1G:**
+
+```txt
+PageFrame (outer)
+├── Canvas base (EDU_MODE_BG — selalu terang)
+├── Top Navbar (z-50)
+├── Content area
+│   └── SchemaScreenRenderer (inner — full control over bg)
+│       ├── Layer 0: Canvas base (EDU_MODE_BG)
+│       ├── Layer 1: Background style (solid/gradient/radial)
+│       ├── Layer 2: Background media (image + fit/opacity/blur)
+│       ├── Layer 3: Overlay/scrim (dark/light/gradient)
+│       ├── Section label (adaptif)
+│       └── Block content (warna teks mengikuti overlay)
+└── Bottom Navbar (z-50)
+```
+
+**Overlay type behavior:**
+
+| Overlay Type | Overlay CSS | Text Color | Use Case |
+|-------------|-------------|------------|----------|
+| dark (default) | `rgba(0,0,0,N)` | `#FFFFFF` | Gambar terang, dark-themed content |
+| light | `rgba(255,255,255,N)` | `#1C1C1E` | Gambar gelap, light-themed content |
+| gradient | `linear-gradient(to top, ...)` | `#FFFFFF` | Bottom text readability on varied backgrounds |
+
+**Background media tidak mengganggu layout:**
+- Position absolute — tidak ikut flow
+- Tidak mengubah ukuran scene
+- Tidak membuat overflow
+- Tidak menabrak navigation
 
 **PERUBAHAN RONDE 17:**
 

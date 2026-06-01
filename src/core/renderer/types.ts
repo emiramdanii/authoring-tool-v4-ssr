@@ -44,6 +44,27 @@ export class TokenResolver {
   private _sceneType?: SceneType;
 
   /**
+   * Sprint 1G: Background image state — set by SchemaScreenRenderer
+   * when a background image is active on the scene. Propagated to
+   * EduRenderingContext via tokens.edu() so block renderers can adapt.
+   *
+   * Flow: SchemaScreenRenderer → tokens.setHasBackgroundImage()
+   *       → tokens.edu() → EduRenderingContext.hasBackgroundImage()
+   */
+  private _hasBackgroundImage: boolean = false;
+
+  /** Sprint 1G: Set background image state for the current scene.
+   *  Called by SchemaScreenRenderer before rendering blocks. */
+  setHasBackgroundImage(has: boolean): void {
+    this._hasBackgroundImage = has;
+  }
+
+  /** Sprint 1G: Whether a background image is active on the current scene. */
+  hasBackgroundImage(): boolean {
+    return this._hasBackgroundImage;
+  }
+
+  /**
    * Contract style overrides — when a TemplateThemeContract is active,
    * its resolved values OVERRIDE the theme/scene/block defaults.
    * Priority: Contract > Scene > Block Default
@@ -725,7 +746,11 @@ export class TokenResolver {
   edu(blockType: string, isCompact: boolean = false, sceneType?: import('@/core/edu/education-scene-types').SceneType): EduRenderingContext {
     // Priority: explicit sceneType param > stored _sceneType > undefined (inferred from blockType)
     const resolvedSceneType = sceneType ?? this._sceneType;
-    return new EduRenderingContext(this, blockType, isCompact, this._displayMode, resolvedSceneType);
+    const ctx = new EduRenderingContext(this, blockType, isCompact, this._displayMode, resolvedSceneType);
+    // Sprint 1G: Propagate background image state to edu context
+    // so block renderers can adapt (e.g., use opaque cards on images)
+    ctx.setHasBackgroundImage(this._hasBackgroundImage);
+    return ctx;
   }
 
   // ═══════════════════════════════════════════════════════════════════

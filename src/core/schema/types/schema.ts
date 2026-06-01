@@ -163,8 +163,20 @@ export interface ScreenSchema {
     color2?: string;
     /** Background image URL — rendered as cover image behind content */
     imageUrl?: string;
-    /** Dark overlay opacity (0–60) for image readability */
+    /** Overlay opacity (0–80) for image readability. Default 40. */
     overlay?: number;
+    /** Sprint 1G: Image fit mode. Default 'cover'. */
+    imageFit?: 'cover' | 'contain';
+    /** Sprint 1G: Image opacity (0–100). Default 100. */
+    imageOpacity?: number;
+    /** Sprint 1G: Image blur radius in px (0–20). Default 0. */
+    imageBlur?: number;
+    /** Sprint 1G: Overlay type — determines overlay color/gradient.
+     *  'dark': dark scrim (rgba(0,0,0,...)) — for light images or dark-themed content
+     *  'light': light scrim (rgba(255,255,255,...)) — for dark images with light content
+     *  'gradient': bottom gradient scrim for text readability on varied backgrounds
+     *  Default: 'dark' */
+    overlayType?: 'dark' | 'light' | 'gradient';
   };
 }
 

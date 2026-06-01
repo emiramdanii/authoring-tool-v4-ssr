@@ -598,6 +598,42 @@ export class EduRenderingContext {
   isDark(): boolean {
     return this.tokens.isDark();
   }
+
+  // ── Sprint 1G: Background image awareness ─────────────────
+
+  /** Whether the current scene has a background image.
+   *  Renderers can use this to adjust their styling — e.g., cards
+   *  may need more opacity/padding when floating on an image. */
+  private _hasBackgroundImage: boolean = false;
+
+  /** Set background image state — called by SchemaScreenRenderer
+   *  before rendering blocks. This is a lightweight flag that doesn't
+   *  require re-creating the entire context. */
+  setHasBackgroundImage(has: boolean): void {
+    this._hasBackgroundImage = has;
+  }
+
+  /** Whether a background image is active on the current scene.
+   *  When true, block renderers should consider using higher contrast
+   *  backgrounds (more opaque cards) for readability on images. */
+  hasBackgroundImage(): boolean {
+    return this._hasBackgroundImage;
+  }
+
+  /** Whether the scene has an active background image that requires
+   *  readability adaptations. Combines hasBackgroundImage() with
+   *  the Sprint 1F isDarkThemeOnLightCanvas() check.
+   *
+   *  When this returns true:
+   *  - Cards should use solid white/dark backgrounds (no glass/transparency)
+   *  - Text should use high-contrast colors
+   *  - Borders should be more visible
+   *
+   *  This is the key helper for Sprint 1G: it tells renderers "you're
+   *  on an image background, make yourself readable." */
+  isBackgroundImageActive(): boolean {
+    return this._hasBackgroundImage;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
