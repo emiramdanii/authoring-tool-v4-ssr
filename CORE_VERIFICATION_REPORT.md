@@ -22,7 +22,7 @@ Sprint 1E.2 — BottomPageStrip: PASS — horizontal page strip di bawah canvas,
 Sprint 1E.3 — Template Tab Cleanup: PASS — tab Template disembunyikan di teacher mode, label 'Template (Lanjutan)' di advanced mode
 Sprint 1E.4 — Floating Add Menu: PASS — guru tambah halaman via popover tanpa kehilangan daftar halaman
 Sprint 1F — Canvas Readability: PASS — readability safety layer menyesuaikan warna konten saat dark theme di light canvas
-Sprint 1G — Background-Based Media Mode: PASS (dengan P0 fix) — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca, export HTML parity
+Sprint 1G — Background-Based Media Mode: PASS (dengan P0 + P1.1 + P1.2 fix) — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca, export HTML parity, quiz readability on bg image
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -57,6 +57,25 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 25. `client-export.ts`: Tambah `renderBgImageLayer()`, `renderBgOverlayLayer()`, `getFallbackTextColor()`
 26. `client-export.ts`: Pages dengan background image mendapat class `page-has-bg-image` + opaque card CSS
 27. Build: PASS ✅ (setelah P0 fix)
+
+**Sprint 1G P1.1 FIX — MateriBlok Readability on Background Image:**
+28. `EduRenderingContext.ts`: `cardBg()` sekarang cek `hasBackgroundImage()` → return semi-opaque bg (light: `rgba(255,255,255,0.92)`, dark: `rgba(15,23,42,0.88)`) saat bg image aktif
+29. `EduRenderingContext.ts`: `cardStyle()` sekarang cek `hasBackgroundImage()` → border lebih kuat (light: `rgba(0,0,0,0.12)`, dark: `rgba(255,255,255,0.18)`) + shadow saat bg image aktif
+30. `MateriBlokRenderer.tsx`: Tambah `readableTintBg()` dan `readableTintBorder()` helper — layer tint di atas opaque underlay saat bg image aktif
+31. `MateriBlokRenderer.tsx`: 6 sub-type diperbaiki: RenderTeks, RenderDefinisi, RenderKutipan, RenderInfobox, RenderHighlight, RenderGambar
+32. `MateriBlokRenderer.tsx`: Nested items diperbaiki: Poin, Checklist, Compare (left/right), Studi (header/question/message)
+33. Build: PASS ✅ (setelah P1.1 fix)
+
+**Sprint 1G P1.2 FIX — KuisRenderer Readability on Background Image:**
+34. `KuisRenderer.tsx`: Tambah `kuisOptionBg()` helper — opsi jawaban bg lebih solid saat bg image aktif (light: `rgba(255,255,255,0.86)`, dark: `rgba(15,23,42,0.78)`)
+35. `KuisRenderer.tsx`: Tambah `kuisOptionBorder()` helper — border opsi lebih jelas saat bg image aktif (light: `rgba(0,0,0,0.14)`, dark: `rgba(255,255,255,0.22)`)
+36. `KuisRenderer.tsx`: Tambah `kuisFeedbackBg()` helper — feedback benar/salah lebih terlihat saat bg image aktif (accent tint 0.16 + opaque underlay)
+37. `KuisRenderer.tsx`: Feedback ditambah border penuh (`1px solid accent`) saat bg image aktif, borderLeft tetap sebagai stripe indicator
+38. `KuisRenderer.tsx`: Semua 3 varian diperbaiki: A (Klasik), B (Kartu), C (Ringkas) — option bg/border + feedback bg/border
+39. `KuisRenderer.tsx`: Completion screen dibungkus `edu.cardStyle()` saat bg image aktif — score/title/breakdown tidak langsung di atas background image
+40. `KuisRenderer.tsx`: Logic jawaban, scoring, reportScore, variant selector, state answered TIDAK disentuh
+41. `KuisRenderer.tsx`: Page tanpa background image → semua style lama tetap (helpers return original values)
+42. Build: PASS ✅ (setelah P1.2 fix)
 
 **Arsitektur layer background Sprint 1G (Editor + Export):**
 
