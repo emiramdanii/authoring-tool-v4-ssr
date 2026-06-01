@@ -189,3 +189,25 @@ Stage Summary:
 - Critical P1: Dual write path (updateSchemaBlock vs applyGuidedSchemaPatch)
 - Critical P1: Template dual system (CourseTemplateRegistry vs template-gallery)
 - Report delivered to user for prioritization
+---
+Task ID: D1/D3
+Agent: main
+Task: D1/D3 Export Fallback Safety — prevent silent degraded export fallback
+
+Work Log:
+- D1/D3 mini-audit completed: mapped all export paths (4 pipelines), identified active/dead files
+- Found: Path A (Vite SSR) = IDENTIK with preview, Path B (Vanilla JS) = DEGRADED
+- client-export.ts = DEAD CODE (0 imports), silse/ = DEAD (not connected)
+- Risk: exportWithFallback() silently gives guru degraded export when Path A fails
+- Fix: Changed exportWithFallback() to NOT auto-fallback, show clear error instead
+- Template-missing errors get specific actionable message
+- exportClientSide() kept as dev/debug tool, marked DEGRADED OUTPUT
+- Build: PASS
+- Commit: fix: prevent silent degraded export fallback
+- Pushed to origin/main
+
+Stage Summary:
+- D1/D3 Export Fallback Safety: PASS
+- Path A (Vite SSR + React ExportApp) established as only production source of truth
+- Path B (Vanilla JS) demoted to dev/debug only, NOT auto-called
+- Follow-up: Option A (delete client-export.ts dead code), Path B cleanup decision
