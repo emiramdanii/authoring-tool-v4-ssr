@@ -57,7 +57,15 @@ export function getCss(ratioW: number, ratioH: number): string {
     .page.exit-right { opacity: 0; transform: translateX(30px); pointer-events: none; }
     .page.enter-left { opacity: 0; transform: translateX(-30px); }
     .page.enter-right { opacity: 0; transform: translateX(30px); }
-    .page-content { flex: 1; }
+    .page-content { flex: 1; position: relative; z-index: 1; }
+    /* Sprint 1G P0: Pages with background images need opaque cards for readability */
+    .page-has-bg-image .block {
+      background: rgba(255,255,255,0.92);
+      border-color: rgba(0,0,0,0.08);
+      color: #1e293b;
+    }
+    .page-has-bg-image .block .block-intro { color: #475569; }
+    .page-has-bg-image .block .text-muted { color: #475569; }
     .page-label {
       position: absolute;
       bottom: 8px;
@@ -67,6 +75,7 @@ export function getCss(ratioW: number, ratioH: number): string {
       color: rgba(255,255,255,0.25);
       font-weight: 600;
       white-space: nowrap;
+      z-index: 1;
     }
     .section-label {
       display: inline-block;
@@ -795,6 +804,11 @@ export function getCss(ratioW: number, ratioH: number): string {
       .profil-box { background: rgba(0,0,0,0.02); }
       .game-check-btn { background: rgba(62,207,207,0.1); border-color: rgba(62,207,207,0.2); color: #0891b2; }
       .game-check-btn:hover { background: rgba(62,207,207,0.15); }
+      /* Sprint 1G P0: Light mode bg-image cards — slightly softer white */
+      .page-has-bg-image .block {
+        background: rgba(255,255,255,0.96);
+        border-color: rgba(0,0,0,0.06);
+      }
     }
 
     /* ── Confetti ── */

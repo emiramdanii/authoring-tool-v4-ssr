@@ -22,7 +22,7 @@ Sprint 1E.2 — BottomPageStrip: PASS — horizontal page strip di bawah canvas,
 Sprint 1E.3 — Template Tab Cleanup: PASS — tab Template disembunyikan di teacher mode, label 'Template (Lanjutan)' di advanced mode
 Sprint 1E.4 — Floating Add Menu: PASS — guru tambah halaman via popover tanpa kehilangan daftar halaman
 Sprint 1F — Canvas Readability: PASS — readability safety layer menyesuaikan warna konten saat dark theme di light canvas
-Sprint 1G — Background-Based Media Mode: PASS — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca
+Sprint 1G — Background-Based Media Mode: PASS (dengan P0 fix) — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca, export HTML parity
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -43,10 +43,25 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 13. Build: PASS ✅
 14. Sprint 1F regression: NONE — semua readability helpers masih aktif dan berfungsi
 
-**Arsitektur layer background Sprint 1G:**
+**Sprint 1G P0 FIX — Export HTML Background Parity:**
+15. `html-templates.ts`: `renderPageHtml()` sekarang merender 5-layer background stack yang sama dengan SchemaRenderer
+16. `html-templates.ts`: Tambah helper `renderBackgroundBaseStyle()`, `renderBackgroundImageLayer()`, `renderBackgroundOverlayLayer()`
+17. `html-templates.ts`: Tambah `getExportTextColor()` — text color adaptif berdasarkan overlay type (dark→white, light→dark)
+18. `html-templates.ts`: Tambah `getExportSectionLabelStyle()` — section label adaptif (opacity + color berdasarkan overlay)
+19. `html-templates.ts`: Page div mendapat class `page-has-bg-image` saat background image aktif
+20. `styles.ts`: `.page-has-bg-image .block` — opaque white cards (rgba(255,255,255,0.92)) untuk readability di atas gambar
+21. `styles.ts`: `.page-content` sekarang `position:relative; z-index:1` — content di atas background layers
+22. `styles.ts`: `.page-label` sekarang `z-index:1` — label page tetap terbaca di atas background
+23. `styles.ts`: Light mode override untuk `.page-has-bg-image .block` — softer white (0.96 opacity)
+24. `client-export.ts`: Fallback export juga mendukung background image + overlay (layer image + overlay + text color adaptation)
+25. `client-export.ts`: Tambah `renderBgImageLayer()`, `renderBgOverlayLayer()`, `getFallbackTextColor()`
+26. `client-export.ts`: Pages dengan background image mendapat class `page-has-bg-image` + opaque card CSS
+27. Build: PASS ✅ (setelah P0 fix)
+
+**Arsitektur layer background Sprint 1G (Editor + Export):**
 
 ```txt
-PageFrame (outer)
+PageFrame (outer — editor)
 ├── Canvas base (EDU_MODE_BG — selalu terang)
 ├── Top Navbar (z-50)
 ├── Content area
@@ -58,6 +73,14 @@ PageFrame (outer)
 │       ├── Section label (adaptif)
 │       └── Block content (warna teks mengikuti overlay)
 └── Bottom Navbar (z-50)
+
+Export HTML (P0 fix — same layer stack)
+├── Layer 0+1: Page div background style (canvas base + bg color/gradient)
+├── Layer 2: <img> absolute inset-0 (imageUrl, object-fit, opacity, blur)
+├── Layer 3: <div> absolute inset-0 pointer-events:none (overlay)
+├── Section label (z-index:1, adaptif color/opacity)
+├── Page content (z-index:1, blocks + games)
+└── Page label (z-index:1)
 ```
 
 **Overlay type behavior:**
