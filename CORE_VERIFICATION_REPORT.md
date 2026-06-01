@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 16 — Sprint 1E.4 Floating Add Menu)
+Tanggal: 2026-06-01 (Ronde 17 — Sprint 1F Canvas Readability)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -21,10 +21,56 @@ Sprint 1E.1 — Left Panel Simplification: PASS — SchemaBlockTree menghormati 
 Sprint 1E.2 — BottomPageStrip: PASS — horizontal page strip di bawah canvas, navigasi cepat tanpa buka panel kiri
 Sprint 1E.3 — Template Tab Cleanup: PASS — tab Template disembunyikan di teacher mode, label 'Template (Lanjutan)' di advanced mode
 Sprint 1E.4 — Floating Add Menu: PASS — guru tambah halaman via popover tanpa kehilangan daftar halaman
-Sprint 1F — Canvas Readability: NOTED — teks transparan di canvas putih (Sprint 1F nanti)
+Sprint 1F — Canvas Readability: PASS — readability safety layer menyesuaikan warna konten saat dark theme di light canvas
 Sprint 1G — Background-Based Media Mode: NOTED — media HTML sebagai background (Sprint 1G nanti)
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 17:**
+
+1. Sprint 1F IMPLEMENTASI: Canvas Readability Safety Layer — konten terbaca saat dark theme di canvas putih
+2. TokenResolver (types.ts): Tambah `isCanvasLight()` — cek EDU display mode background terang
+3. TokenResolver (types.ts): Tambah `isDarkThemeOnLightCanvas()` — deteksi konflik dark theme + light canvas
+4. TokenResolver (types.ts): `subtleBg()` dan `subtleBorder()` — saat dark theme di light canvas, gunakan `rgba(0,0,0,...)` bukan `rgba(255,255,255,...)`
+5. TokenResolver (types.ts): `minOpacity()` — saat dark theme di light canvas, enforce light-mode minimum (0.65)
+6. TokenResolver (types.ts): `eduTextColor()` — saat dark theme di light canvas, return '#1C1C1E' bukan '#e8f2ff'
+7. EduRenderingContext: `textColor()` — saat dark theme di light canvas, return '#1C1C1E' bukan white
+8. EduRenderingContext: `cardBg()` — saat dark theme di light canvas, return '#FFFFFF' bukan dark/glass card
+9. EduRenderingContext: `mutedText()` — saat dark theme di light canvas, return `rgba(28,28,30,...)` bukan muted blue-gray
+10. PageFrame.tsx: Schema bg `color1='bg'` tidak lagi override EDU white canvas — guard `isGenericBgToken && tokens.isCanvasLight()`
+11. SceneNavigator.tsx: Tambah `isLightBackground` prop — conditional light/dark chrome
+12. SchemaRenderer.tsx: Pass `isLightBackground={!isPureCoverPage && tokens.isCanvasLight()}` ke SceneNavigator
+13. Build: PASS ✅
+
+**Root cause Sprint 1F:**
+
+```txt
+Canvas background = dari EDU Display Mode (putih di classroom/print/projector/student)
+Content color = dari Theme Token System (putih di dark theme)
+
+Saat dark theme + classroom mode = teks putih di atas canvas putih = INVISIBLE
+```
+
+**Fix: Readability safety layer di titik pusat (resolver/wrapper), bukan per-renderer:**
+
+| Method | Sebelum (dark theme + light canvas) | Sesudah |
+|--------|-------------------------------------|---------|
+| `edu.textColor()` | `#e8f2ff` (putih, invisible) | `#1C1C1E` (gelap, terbaca) |
+| `edu.cardBg()` | `rgba(255,255,255,0.06)` (glass, invisible) | `#FFFFFF` (solid, terlihat) |
+| `edu.mutedText()` | `rgba(110,144,181,0.5)` (low contrast) | `rgba(28,28,30,0.65+)` (readable) |
+| `tokens.subtleBg()` | `rgba(255,255,255,0.06)` (invisible border) | `rgba(0,0,0,0.06)` (visible) |
+| `tokens.subtleBorder()` | `rgba(255,255,255,0.06)` (invisible) | `rgba(0,0,0,0.06)` (visible) |
+| SceneNavigator chrome | Dark-only (putih di putih) | Conditional light/dark |
+| Schema bg 'bg' token | Override canvas putih ke gelap | Gunakan EDU display mode bg |
+
+**Prinsip fix:**
+
+```txt
+background terang → warna teks gelap
+background gelap → warna teks terang
+```
+
+Bukan mengubah semua renderer satu per satu, tapi menambah safety layer di resolver — semua renderer otomatis ikut.
 
 **PERUBAHAN RONDE 16:**
 

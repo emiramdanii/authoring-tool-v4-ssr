@@ -71,6 +71,36 @@ export class TokenResolver {
     return luminance < 0.5;
   }
 
+  /** Whether the EDU display mode canvas has a light background.
+   *  All EDU display modes (classroom, projector, print, student) use
+   *  white/near-white canvas backgrounds. This is the ACTUAL background
+   *  where content renders — not the theme's bg token.
+   *
+   *  Sprint 1F: Readability safety — when this returns true but isDark()
+   *  also returns true, we have the "white text on white canvas" problem. */
+  isCanvasLight(): boolean {
+    // All current EDU display modes have light backgrounds
+    return this._displayMode === 'classroom'
+      || this._displayMode === 'projector'
+      || this._displayMode === 'print'
+      || this._displayMode === 'student';
+  }
+
+  /** Whether a dark theme is rendering on a light canvas — the readability danger zone.
+   *  This is the KEY check for Sprint 1F: when theme tokens say "dark" but
+   *  the actual canvas background is light (from EDU display mode), all
+   *  color methods must adapt to ensure content is readable.
+   *
+   *  Example: golden-presentation theme (dark tokens) + classroom mode
+   *  (white canvas) = tokens.color('text') returns '#e8f2ff' (near-white)
+   *  which is invisible on the white canvas.
+   *
+   *  When this returns true, color methods should return light-mode values
+   *  instead of delegating to dark-theme tokens. */
+  isDarkThemeOnLightCanvas(): boolean {
+    return this.isDark() && this.isCanvasLight();
+  }
+
   /** Get the theme ID */
   get themeId(): string | undefined {
     return this._themeId;
@@ -86,6 +116,9 @@ export class TokenResolver {
    *  opacity on light themes (~4.5:1 contrast for body text).
    */
   private minOpacity(a: number): number {
+    // Sprint 1F: When dark theme renders on light canvas, enforce light-mode
+    // opacity minimums — dark text on light bg needs higher minimum opacity
+    if (this.isDarkThemeOnLightCanvas()) return Math.max(a, 0.65);
     return this.isDark() ? Math.max(a, 0.4) : Math.max(a, 0.65);
   }
 
@@ -215,15 +248,21 @@ export class TokenResolver {
     return this.colorAlpha('card', a);
   }
 
-  /** Subtle background for inset areas — rgba(255,255,255,N) on dark, rgba(0,0,0,N) on light */
+  /** Subtle background for inset areas — rgba(255,255,255,N) on dark, rgba(0,0,0,N) on light.
+   *  Sprint 1F: When dark theme renders on light canvas, use dark rgba
+   *  (white rgba on white canvas = invisible). */
   subtleBg(opacity: number): string {
+    if (this.isDarkThemeOnLightCanvas()) return `rgba(0,0,0,${opacity})`;
     return this.isDark()
       ? `rgba(255,255,255,${opacity})`
       : `rgba(0,0,0,${opacity})`;
   }
 
-  /** Subtle border — rgba(255,255,255,N) on dark, rgba(0,0,0,N) on light */
+  /** Subtle border — rgba(255,255,255,N) on dark, rgba(0,0,0,N) on light.
+   *  Sprint 1F: When dark theme renders on light canvas, use dark rgba
+   *  (white border on white canvas = invisible). */
   subtleBorder(opacity: number): string {
+    if (this.isDarkThemeOnLightCanvas()) return `rgba(0,0,0,${opacity})`;
     return this.isDark()
       ? `rgba(255,255,255,${opacity})`
       : `rgba(0,0,0,${opacity})`;
@@ -714,9 +753,13 @@ export class TokenResolver {
     return EDU_MODE_BG[this._displayMode].card;
   }
 
-  /** Mode-aware text color — in print mode, always returns #000000 */
+  /** Mode-aware text color — in print mode, always returns #000000.
+   *  Sprint 1F: When dark theme renders on light canvas, returns dark text. */
   eduTextColor(): string {
-    return this._displayMode === 'print' ? EDU_PRINT_SAFE.textColor : this.color('text');
+    if (this._displayMode === 'print') return EDU_PRINT_SAFE.textColor;
+    // Sprint 1F: Readability safety — dark theme + light canvas = use dark text
+    if (this.isDarkThemeOnLightCanvas()) return '#1C1C1E';
+    return this.color('text');
   }
 
   /** Is the current display mode 'print'? */

@@ -378,25 +378,37 @@ export class EduRenderingContext {
   }
 
   /** Text color.
-   *  In print mode, always returns pure black for B&W fotokopi safety. */
+   *  In print mode, always returns pure black for B&W fotokopi safety.
+   *  Sprint 1F: When dark theme renders on light canvas, returns dark text
+   *  instead of white text (which would be invisible on white canvas). */
   textColor(): string {
     if (this.mode === 'print') return EDU_PRINT_SAFE.textColor;
+    // Sprint 1F: Readability safety — dark theme + light canvas = use dark text
+    if (this.tokens.isDarkThemeOnLightCanvas()) return '#1C1C1E';
     return this.tokens.color('text');
   }
 
   /** Muted text.
-   *  In print mode, uses dark gray for B&W safety. */
+   *  In print mode, uses dark gray for B&W safety.
+   *  Sprint 1F: When dark theme renders on light canvas, uses dark muted
+   *  instead of light-muted-on-white (which has poor contrast). */
   mutedText(a: number = 0.8): string {
     if (this.mode === 'print') return 'rgba(0,0,0,0.6)';
+    // Sprint 1F: Readability safety — dark muted on light canvas
+    if (this.tokens.isDarkThemeOnLightCanvas()) return `rgba(28,28,30,${Math.max(a, 0.65)})`;
     return this.tokens.muted(a);
   }
 
   /** Card background — mode-aware + scene treatment.
-   *  Scene-aware: elevated/flat/subtle treatment per scene. */
+   *  Scene-aware: elevated/flat/subtle treatment per scene.
+   *  Sprint 1F: When dark theme renders on light canvas, returns white card
+   *  instead of dark/glass card (which would be invisible on white canvas). */
   cardBg(): string {
     if (this.mode === 'print') return EDU_PRINT_SAFE.bgColor;
     if (this.mode === 'projector') return EDU_MODE_BG.projector.card;
     if (this.mode === 'student') return EDU_MODE_BG.student.card;
+    // Sprint 1F: Readability safety — white card on light canvas
+    if (this.tokens.isDarkThemeOnLightCanvas()) return '#FFFFFF';
     return this.tokens.color('card');
   }
 

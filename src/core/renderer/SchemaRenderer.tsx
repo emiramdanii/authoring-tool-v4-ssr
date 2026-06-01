@@ -692,6 +692,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
         position="bottom"
         onPromoteScene={isCompact ? () => useCanvaStore.getState().promoteSceneSplit(1) : undefined}
         safeMode={safeMode}
+        isLightBackground={!isPureCoverPage && tokens.isCanvasLight()}
       />
 
       {/* ══ MULTI-SCENE INDICATOR — dev info ══════════════════════ */}

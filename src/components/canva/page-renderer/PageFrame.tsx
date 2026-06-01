@@ -443,7 +443,17 @@ export const PageFrame = React.memo(function PageFrame({
       {isSchemaDriven && (() => {
         const schemaBg = page.schema?.background;
         let baseBg = modeBg.bg;
-        if (schemaBg?.type === 'solid') baseBg = displayMode === 'print' ? modeBg.bg : tokens.color(schemaBg.color1 || 'bg');
+        if (schemaBg?.type === 'solid') {
+          // Sprint 1F: If schema bg color1 is the generic 'bg' token key, it would
+          // resolve to the dark theme bg (#0e1c2f) which OVERRIDES the light EDU canvas.
+          // Only apply schema solid bg when it's an EXPLICIT color (not the generic 'bg' key).
+          const isGenericBgToken = !schemaBg.color1 || schemaBg.color1 === 'bg' || schemaBg.color1 === 'bg2';
+          if (displayMode === 'print' || (isGenericBgToken && tokens.isCanvasLight())) {
+            baseBg = modeBg.bg; // Use EDU display mode background instead
+          } else {
+            baseBg = tokens.color(schemaBg.color1 || 'bg');
+          }
+        }
         else if (schemaBg?.type === 'gradient') baseBg = `linear-gradient(180deg, ${tokens.color(schemaBg.color1 || 'y')}, ${tokens.color(schemaBg.color2 || 'bg')})`;
         else if (schemaBg?.type === 'radial') baseBg = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(schemaBg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(schemaBg.color2 || 'bg')}, ${modeBg.bg2})`;
         else baseBg = page.bgColor || modeBg.bg;
