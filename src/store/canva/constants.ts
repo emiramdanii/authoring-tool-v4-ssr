@@ -33,6 +33,7 @@ export function createPage(label: string, templateType: PageTemplateType = 'cust
       version: 1,
       templateType,
       blocks: [],
+      background: { type: 'solid', color1: 'bg' },
     },
     // v4: overlayElements removed — all elements in elements[]
   };

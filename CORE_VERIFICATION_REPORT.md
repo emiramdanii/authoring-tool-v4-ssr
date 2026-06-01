@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 25 — D1/D3 Export Fallback Safety)
+Tanggal: 2026-06-02 (Ronde 26 — D6 createPage schema.background gap)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -30,8 +30,35 @@ Sprint R2 — Header Konteks Ganda: PASS — panel kanan menampilkan title/subti
 P0 — Background Source of Truth: PASS — schema page background disatukan ke schema.background, file upload ke schema path, halaman lama dinormalisasi
 D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty tracking + optional overflow check, caller prioritas tinggi di-upgrade
 D1/D3 — Export Fallback Safety: PASS — exportWithFallback tidak lagi diam-diam fallback ke degraded vanilla JS, error jelas jika Path A gagal
+D6 — createPage schema.background gap: PASS — createPage() dan setTemplateType() custom sekarang menghasilkan schema.background default dari creation-time
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 26 (D6 — createPage schema.background gap):**
+
+1. D6 IMPLEMENTASI: Semua schema page baru sekarang punya `schema.background` sejak creation-time — tidak perlu menunggu `migrateAllPages()` atau `ensurePageSchema()`
+2. `constants.ts`: `createPage()` schema sekarang menyertakan `background: { type: 'solid', color1: 'bg' }` — halaman kosong baru langsung punya background source of truth
+3. `page-slice.ts`: `setTemplateType()` jalur custom sekarang menyertakan `background: { type: 'solid', color1: 'bg' }` — switch ke custom tidak lagi meninggalkan schema tanpa background
+4. Tidak mengubah: legacy fields (bgColor/bgDataUrl/overlay), renderer, export, template system, addTemplatePage (sudah benar via ensurePageSchema)
+5. Build: PASS
+
+**D6 prinsip background source of truth dari creation-time:**
+
+```txt
+Schema page baru → schema.background = { type: 'solid', color1: 'bg' } (sejak create)
+Legacy page → bgColor / bgDataUrl / overlay (tidak diubah)
+Tidak perlu menunggu migration/normalization
+```
+
+**D6 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| createPage() halaman kosong | `schema.background = undefined` | `schema.background = { type: 'solid', color1: 'bg' }` |
+| setTemplateType() custom | `schema.background = undefined` | `schema.background = { type: 'solid', color1: 'bg' }` |
+| addTemplatePage() | Sudah punya via ensurePageSchema | Tidak berubah (sudah benar) |
+| Renderer | Fallback ke legacy field jika undefined | Sekarang menemukan schema.background langsung |
+| Legacy fields | Tetap ada | Tetap ada (tidak diubah) |
 
 **PERUBAHAN RONDE 25 (D1/D3 — Export Fallback Safety):**
 

@@ -183,6 +183,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
         version: 1,
         templateType: 'custom',
         blocks: [],
+        background: { type: 'solid', color1: 'bg' },
       };
       newPage.elements = [];
       newPage.pageMode = 'schema';
