@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 23 — P0 Background Source of Truth)
+Tanggal: 2026-06-01 (Ronde 24 — D2 Align Schema Block Update Path)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -28,27 +28,31 @@ Sprint 2B — MateriBlok Guided Editor Minimal: PASS — materi-blok masuk Guide
 Sprint R1 — Struktur Panel Kanan 3 Zona: PASS — Isi Utama/Tampilan/Lanjutan, Tampilan collapsed default, tab bar hidden jika 1 tab
 Sprint R2 — Header Konteks Ganda: PASS — panel kanan menampilkan title/subtitle/description, kuis tunjukkan jumlah opsi, materi-blok tunjukkan tipe, halaman tunjukkan template
 P0 — Background Source of Truth: PASS — schema page background disatukan ke schema.background, file upload ke schema path, halaman lama dinormalisasi
+D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty tracking + optional overflow check, caller prioritas tinggi di-upgrade
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
-**PERUBAHAN RONDE 23 (P0 — Background Source of Truth):**
+**PERUBAHAN RONDE 24 (D2 — Align Schema Block Update Path):**
 
-1. P0 IMPLEMENTASI: Schema page background disatukan — `schema.background` jadi single source of truth, bukan dual `page.bgColor` + `schema.background`
-2. `schema-factory.ts`: Semua page type sekarang punya default `background` — cover/hero: `{ type: 'radial', color1: 'y', color2: 'bg' }`, lainnya: `{ type: 'solid', color1: 'bg' }`. Sebelumnya non-cover/hero mendapat `background: undefined`
-3. `ensure-schema.ts`: `migrateAllPages()` Step 3b — normalisasi `schema.background === undefined` → `{ type: 'solid', color1: 'bg' }`. Halaman lama yang dibuat sebelum P0 fix otomatis mendapat default background saat di-load
-4. `ensure-schema.ts`: Step 1b — empty page schema juga mendapat `background: { type: 'solid', color1: 'bg' }` saat migrasi
-5. `BackgroundSection.tsx`: `handleFileUpload` sekarang menulis ke `schema.background.imageUrl` untuk schema page (via `updateScreenBackground()`), bukan ke `page.bgDataUrl` (legacy). Legacy page tetap menulis ke `page.bgDataUrl`
-6. `BackgroundSection.tsx`: Tombol "Upload Gambar" ditambahkan di schema path — sebelumnya schema path hanya punya URL input, tidak ada file upload
-7. Renderer, export, template system, game editor TIDAK disentuh
-8. Legacy field (`page.bgColor`, `page.bgDataUrl`, `page.overlay`) tetap ada untuk legacy page — tidak dihapus
-9. Build: PASS ✅
+1. D2 IMPLEMENTASI: `updateSchemaBlock()` di-upgrade agar sejajar dengan `applyGuidedSchemaPatch()` — gap overflow check + dirty tracking ditutup
+2. `types.ts`: Signature baru `updateSchemaBlock(blockId, updates, options?)` — parameter ke-3 opsional, backward compatible
+3. `types.ts`: Tambah `UpdateSchemaBlockOptions { overflowPolicy?, source? }` — default `overflowPolicy: 'none'`, `source: 'user'`
+4. `schema-crud-slice.ts`: Dirty tracking — `markDirty()` dipanggil setelah setiap write, sama seperti `applyGuidedSchemaPatch()`
+5. `schema-crud-slice.ts`: Optional overflow check — jika `overflowPolicy !== 'none'`, menjalankan `checkOverflowRich()` dari guided-patch, menulis warning ke OverflowWarningStore, auto-clear jika konten muat
+6. `schema-crud-slice.ts`: Source tracking — edit bus event sekarang menggunakan `source` dari options, bukan hardcoded `'user'`
+7. `guided-patch.ts`: `checkOverflowRich()` di-export agar bisa dipakai oleh schema-crud-slice
+8. Caller di-upgrade: InlineTextEditor, AIAssistantPanel, AIRefinePanel, AIRefineSection, SchemaDrivenEditor (BlockPropertiesPanel + block-properties/index) — semua kini menggunakan `{ overflowPolicy: 'warn' }`
+9. Caller TIDAK diubah: variant switchers (12 renderer), TransformHandles, BlockContextMenu — style/layout changes tidak perlu overflow check
+10. GuidedFormEditor, applyGuidedSchemaPatch, renderer, export, template system TIDAK disentuh
+11. Build: PASS ✅
 
-**P0 prinsip source of truth:**
+**D2 prinsip update path alignment:**
 
 ```txt
-Schema page → schema.background (SATU-SATUNYA sumber)
-Legacy page → page.bgColor / page.bgDataUrl / page.overlay
-Dua sistem TIDAK boleh campur di satu halaman.
+updateSchemaBlock()  → core write path (Zustand store action)
+applyGuidedSchemaPatch() → extended write path (standalone module)
+Keduanya sudah share: findBlockOwner, commitSchemaUpdate, mergeBlockInArray, deepMergeBlock, editBus, assertDocumentPurity
+Gap yang ditutup: dirty tracking, optional overflow check, source tracking
 ```
 
 **P0 sebelum/sesudah:**
