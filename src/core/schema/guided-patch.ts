@@ -629,7 +629,12 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'opts', label: 'Pilihan Jawaban', type: 'array', maxItems: 4, fields: [
             { key: '', label: 'Pilihan', type: 'text', placeholder: 'Tulis pilihan jawaban...' },
           ]},
-          { key: 'ans', label: 'Jawaban Benar (indeks)', type: 'number', min: 0, max: 3, helpText: 'Nomor indeks jawaban benar (0=A, 1=B, 2=C, 3=D)' },
+          { key: 'ans', label: 'Jawaban Benar', type: 'select', options: [
+            { label: 'A', value: '0' },
+            { label: 'B', value: '1' },
+            { label: 'C', value: '2' },
+            { label: 'D', value: '3' },
+          ], helpText: 'Pilih jawaban yang benar' },
           { key: 'ex', label: 'Penjelasan', type: 'textarea', helpText: 'Penjelasan mengapa jawaban ini benar', placeholder: 'Jelaskan alasan jawaban benar...' },
         ],
       },

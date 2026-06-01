@@ -636,8 +636,13 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                   <div>
                     <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">{subField.label}</label>
                     <select
-                      value={String(item[subField.key] || '')}
-                      onChange={e => updateItem(idx, subField.key, e.target.value)}
+                      value={item[subField.key] != null ? String(item[subField.key]) : ''}
+                      onChange={e => {
+                        const raw = e.target.value;
+                        // Auto-convert numeric strings to numbers (e.g. "0"→0 for ans index)
+                        const parsed = raw !== '' && !isNaN(Number(raw)) ? Number(raw) : raw;
+                        updateItem(idx, subField.key, parsed);
+                      }}
                       className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all"
                     >
                       {subField.options.map(opt => (

@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 18 — Sprint 1G Background-Based Media Mode)
+Tanggal: 2026-06-01 (Ronde 19 — Sprint 2A Kuis Guided Editor Polish)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -23,8 +23,30 @@ Sprint 1E.3 — Template Tab Cleanup: PASS — tab Template disembunyikan di tea
 Sprint 1E.4 — Floating Add Menu: PASS — guru tambah halaman via popover tanpa kehilangan daftar halaman
 Sprint 1F — Canvas Readability: PASS — readability safety layer menyesuaikan warna konten saat dark theme di light canvas
 Sprint 1G — Background-Based Media Mode: PASS (dengan P0 + P1.1 + P1.2 fix) — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca, export HTML parity, quiz readability on bg image
+Sprint 2A — Kuis Guided Editor Polish: PASS — jawaban benar A/B/C/D select, guru tidak perlu tahu indeks angka, bug falsy value 0 diperbaiki
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 19 (Sprint 2A):**
+
+1. Sprint 2A IMPLEMENTASI: Kuis Guided Editor Polish — guru pilih jawaban benar A/B/C/D, bukan input angka 0–3
+2. `guided-patch.ts`: Field `ans` diubah dari `type: 'number'` ke `type: 'select'` dengan options A/B/C/D (value tetap '0'–'3')
+3. `guided-patch.ts`: Label diubah dari 'Jawaban Benar (indeks)' ke 'Jawaban Benar', helpText dari 'Nomor indeks jawaban benar (0=A, 1=B, 2=C, 3=D)' ke 'Pilih jawaban yang benar'
+4. `guided-field-renderer.tsx`: Fix bug falsy value — `item[subField.key] || ''` → `item[subField.key] != null ? String(item[subField.key]) : ''` — option A (value 0) sekarang terseleksi dengan benar
+5. `guided-field-renderer.tsx`: Fix bug numeric string — select onChange auto-parse numeric string ke number (`'0'`→`0`) supaya KuisRenderer tetap menerima `ans: number`
+6. KuisRenderer, scoring, reportScore, export HTML, schema utama TIDAK disentuh
+7. Build: PASS ✅
+
+**Sprint 2A sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| Field jawaban benar | `<input type="number" min=0 max=3>` | `<select>` dropdown A/B/C/D |
+| Guru harus tahu | 0=A, 1=B, 2=C, 3=D | Langsung pilih huruf |
+| Label field | 'Jawaban Benar (indeks)' | 'Jawaban Benar' |
+| Help text | 'Nomor indeks jawaban benar (0=A, 1=B, 2=C, 3=D)' | 'Pilih jawaban yang benar' |
+| ans=0 terseleksi? | BUG: `0 || ''` = `''` → tidak terseleksi | FIX: `!= null` → `'0'` → terseleksi |
+| Value tersimpan | number (via number input) | number (auto-parse dari select) |
 
 **PERUBAHAN RONDE 18:**
 
