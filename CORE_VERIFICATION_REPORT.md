@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 13 — Sprint 1E.1 Left Panel Simplification)
+Tanggal: 2026-06-01 (Ronde 14 — Sprint 1E.2 BottomPageStrip)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -18,12 +18,50 @@ Sprint 1C.1 — Workspace Labels & AI Tab: PASS — label tombol/panel disederha
 Sprint 1C.2 — Right Panel Simplification: PASS — ValidationSection dipindah, header kontekstual, Scene Type & Grid hidden di teacher mode
 Sprint 1D — Template Entry Point: PASS — flow inta benar, presetId wired ke preset asli (macam-norma & misi-penjelajah)
 Sprint 1E.1 — Left Panel Simplification: PASS — SchemaBlockTree menghormati teacher mode, collapsed default, label ramah guru
-Sprint 1E.2 — BottomPageStrip: NOTED — navigasi halaman via bottom strip (Sprint 1E.2 nanti)
+Sprint 1E.2 — BottomPageStrip: PASS — horizontal page strip di bawah canvas, navigasi cepat tanpa buka panel kiri
 Sprint 1E.3 — Template Tab Cleanup: NOTED — cleanup dual template system (Sprint 1E.3 nanti)
 Sprint 1F — Canvas Readability: NOTED — teks transparan di canvas putih (Sprint 1F nanti)
 Sprint 1G — Background-Based Media Mode: NOTED — media HTML sebagai background (Sprint 1G nanti)
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 14:**
+
+1. Sprint 1E.2 IMPLEMENTASI: BottomPageStrip — horizontal page navigator di bawah canvas
+2. Komponen baru `BottomPageStrip.tsx` — pill/card per halaman, horizontal scroll, auto-scroll ke halaman aktif
+3. Menggunakan store yang sudah ada: `pages[]`, `currentPageIndex`, `goPage(idx)`, `addPage()`
+4. Ikon dari `TEMPLATE_BADGE_MAP` (emoji per template type) + label `p.label`
+5. Halaman aktif: `bg-silse-primary-container text-silse-on-primary-container font-bold`
+6. Tombol "+" (Tambah) di ujung kanan — `addPage()`
+7. Tinggi: 36px — canvas tetap nyaman (~770px tersisa)
+8. `overflow-x-auto` + `scroll-snap` + auto-scroll ke pill aktif saat `currentPageIndex` berubah
+9. Tidak mengganggu SceneTabBar (layer berbeda: page-level vs block-level)
+10. SceneList di panel kiri tetap ada (detail: drag, hapus, duplikat, health check)
+11. Build: PASS ✅
+
+**Layout workspace sekarang:**
+
+```
+┌──────────────────────────────────────┐
+│ Toolbar (h-16, fixed top)           │
+├──────┬──────────────┬───────────────┤
+│ Left │   Stage      │  Right        │
+│ 20%  │   55%        │  25%          │
+├──────┴──────────────┴───────────────┤
+│ BottomPageStrip (h-36px) ← BARU    │
+│ SceneTabBar (jika ada tabs)        │
+│ StatusBar (h-28px)                  │
+└──────────────────────────────────────┘
+```
+
+**Sebelum/Sesudah navigasi halaman:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Navigasi cepat | Harus buka panel kiri | Bottom strip langsung terlihat |
+| Halaman aktif | SceneList kiri saja | Strip bawah + SceneList kiri |
+| Tambah halaman | Panel kiri "Tambah Halaman" | Strip bawah tombol "+" juga |
+| Banyak halaman | Scroll vertikal panel kiri | Horizontal scroll di bawah |
 
 **PERUBAHAN RONDE 13:**
 
@@ -655,6 +693,11 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 1. `src/components/canva/CanvaBuilder.tsx` — BUG-8 fix: `defaultSize={20}` → `defaultSize="20%"`, `minSize={15}` → `minSize="15%"`, `maxSize={30}` → `maxSize="30%"`, dll.
 2. `src/components/canva/StatusBar.tsx` — BUG-7 fix: `page?.elements.length` → `page?.elements?.length`
 
+### Sejak Ronde 14 (Sprint 1E.2 — BottomPageStrip)
+1. `src/components/canva/BottomPageStrip.tsx` — Komponen baru: horizontal page navigator di bawah canvas. Pill/card per halaman dengan emoji dari TEMPLATE_BADGE_MAP, label p.label, active highlight bg-silse-primary-container, auto-scroll ke halaman aktif via useEffect, horizontal scroll overflow-x-auto + scroll-snap, tombol "+" untuk addPage(). Tinggi 36px.
+2. `src/components/canva/CanvaBuilder.tsx` — Import BottomPageStrip, render di bawah ResizablePanelGroup dan di atas SceneTabBar
+3. `CORE_VERIFICATION_REPORT.md` — Sprint 1E.2 status added as PASS, Ronde 14 changes documented
+
 ### Sejak Ronde 13 (Sprint 1E.1 — Left Panel Simplification)
 1. `src/components/canva/left-panel/SchemaBlockTree.tsx` — Major rewrite for teacher mode: import useTeacherMode + teacherTerm; SchemaBlockTree reads isSederhana, collapsed default in teacher mode, header "Schema"→"Struktur Konten" with category_search icon; PageBlockSection receives isSederhana+defaultCollapsed props, "N blocks"→"N konten", bolt icon hidden; TreeNode receives isSederhana, bolt icon conditionally hidden, getBlockDisplay/getBlockTitle accept isSederhana; TEACHER_BLOCK_LABELS map for teacher-friendly block type names (def-box→Kotak Definisi, nc-grid→Kisi Norma, ftab→Tab Konten, etc.); SchemaBlockTreeCompact also respects teacher mode
 2. `src/components/canva/LeftPanel.tsx` — SchemaBlockTreeWithBadge: import useTeacherMode, "N blocks"→"N konten" badge, bolt icon hidden in sederhana mode
@@ -695,6 +738,7 @@ Sprint 1C.1 — Workspace Labels & AI Tab: PASS ✅ (setelah BUG-10 fix, label t
 Sprint 1C.2 — Right Panel Simplification: PASS ✅ (setelah BUG-11 fix, panel kanan ramah guru)
 Sprint 1D — Template Entry Point: PASS ✅ (presetId wired ke preset asli, flow benar)
 Sprint 1E.1 — Left Panel Simplification: PASS ✅ (SchemaBlockTree menghormati teacher mode)
+Sprint 1E.2 — BottomPageStrip: PASS ✅ (horizontal page strip di bawah canvas, navigasi cepat)
 
 Base App (HTTP): PASS ✅ (5+ requests, sandbox, fallback)
 Browser Session:  PASS ✅ (Dashboard hydrate, Canvas Workspace render, chunks OK)
@@ -715,6 +759,7 @@ Area Parkir:      TETAP DITAHAN
 **Sprint 1C.2 Right Panel Simplification PASS — BUG-11 fix (panel kanan ramah guru: header kontekstual, ValidationSection dipindah, Scene Type & Grid hidden).**
 **Sprint 1D Template Entry Point PASS — presetId wired ke preset asli, flow benar.**
 **Sprint 1E.1 Left Panel Simplification PASS — SchemaBlockTree menghormati teacher mode: collapsed default, "Struktur Konten" header, "N konten" badge, bolt icon hidden, teacher-friendly block labels.**
+**Sprint 1E.2 BottomPageStrip PASS — horizontal page strip di bawah canvas: pill per halaman, scroll horizontal, auto-scroll ke aktif, tombol "+", tidak mengganggu SceneTabBar/StatusBar, SceneList kiri tetap ada.**
 **BUG-8 adalah root cause masalah "area abu-abu terlalu besar" — panel ter-collapse ke 30px karena size dianggap pixel.**
 **BUG-9 adalah root cause masalah "guru bingung masuk workspace" — label Analytics/Workspace tidak sesuai fungsi.**
 **BUG-10 adalah root cause masalah "guru bingung di workspace" — istilah teknis Main/Publish/Scenes dan AI tab yang mengganggu.**

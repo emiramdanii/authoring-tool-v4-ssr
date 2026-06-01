@@ -29,6 +29,7 @@ import { ProfilerWrapper } from '@/components/shared/PerformanceMonitor';
 import { CanvaOrientationTooltip } from '@/components/shared/CanvaOrientationTooltip';
 import { useHealthMonitor } from '@/hooks/use-health-monitor';
 import { SceneTabBar } from './toolbar/SceneTabBar';
+import { BottomPageStrip } from './BottomPageStrip';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 // ═══════════════════════════════════════════════════════════════
@@ -244,7 +245,10 @@ export default function CanvaBuilder() {
           </ResizablePanel>
         </ResizablePanelGroup>
 
-        {/* Scene Tab Bar — between builder row and status bar */}
+        {/* Bottom Page Strip — horizontal page navigator below canvas */}
+        <BottomPageStrip />
+
+        {/* Scene Tab Bar — intra-page schema tabs (block filter) */}
         <SceneTabBar isCompact={true} />
 
         {/* Status Bar */}
