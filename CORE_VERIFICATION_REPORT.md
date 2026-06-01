@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 14 — Sprint 1E.2 BottomPageStrip)
+Tanggal: 2026-06-01 (Ronde 15 — Sprint 1E.3 Template Tab Cleanup)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -19,11 +19,43 @@ Sprint 1C.2 — Right Panel Simplification: PASS — ValidationSection dipindah,
 Sprint 1D — Template Entry Point: PASS — flow inta benar, presetId wired ke preset asli (macam-norma & misi-penjelajah)
 Sprint 1E.1 — Left Panel Simplification: PASS — SchemaBlockTree menghormati teacher mode, collapsed default, label ramah guru
 Sprint 1E.2 — BottomPageStrip: PASS — horizontal page strip di bawah canvas, navigasi cepat tanpa buka panel kiri
-Sprint 1E.3 — Template Tab Cleanup: NOTED — cleanup dual template system (Sprint 1E.3 nanti)
+Sprint 1E.3 — Template Tab Cleanup: PASS — tab Template disembunyikan di teacher mode, label 'Template (Lanjutan)' di advanced mode
 Sprint 1F — Canvas Readability: NOTED — teks transparan di canvas putih (Sprint 1F nanti)
 Sprint 1G — Background-Based Media Mode: NOTED — media HTML sebagai background (Sprint 1G nanti)
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 15:**
+
+1. Sprint 1E.3 IMPLEMENTASI: Template Tab Cleanup — sembunyikan tab Template dari teacher mode
+2. IconRail.tsx: `teacherOnly` flag pada PRIMARY_RAIL_ITEMS, filter `visibleItems` berdasarkan `teacherMode`
+3. IconRail.tsx: Label 'Template' → 'Template (Lanjutan)' di lengkap/advanced mode (tooltip)
+4. LeftPanel.tsx: `isSederhana` guard pada templates tab content (`!isSederhana`)
+5. LeftPanel.tsx: Quick Add 'Custom' button disembunyikan di teacher mode
+6. LeftPanel.tsx: Quick Add grid `grid-cols-3` di teacher mode (3 tombol rapi), `grid-cols-2` di advanced mode (4 tombol)
+7. LeftPanel.tsx: Guard redirect — jika store leftTab berubah ke 'templates' saat teacherMode, redirect ke 'pages'
+8. LeftPanel.tsx: handleTabChange guard — tab 'templates' di teacher mode → resolve ke 'pages'
+9. TemplateGalleryPanel.tsx, template-gallery.ts TIDAK disentuh — tetap ada untuk advanced mode
+10. Dashboard, TemplateWizard TIDAK disentuh
+11. BottomPageStrip, SceneList, SchemaBlockTree TIDAK disentuh
+12. Build: PASS ✅
+
+**Sebelum/Sesudah panel kiri teacher mode:**
+
+| Area | Sebelum | Sesudah (Sederhana) |
+|------|---------|---------|
+| Icon Rail tab | 3 tab: Halaman, Konten, Template | 2 tab: Halaman, Konten (Template hidden) |
+| Templates tab content | Terlihat (TemplateSection + PageTypeCreator) | Hidden |
+| Quick Add 'Custom' button | Terlihat (grid 2x2) | Hidden (grid 1x3) |
+| Dashboard template flow | Tetap sama | Tetap sama |
+
+**Advanced mode:**
+
+| Area | Sebelum | Sesudah (Lengkap) |
+|------|---------|---------|
+| Icon Rail tab label | 'Template' | 'Template (Lanjutan)' |
+| Templates tab content | Terlihat | Tetap terlihat |
+| Quick Add 'Custom' button | Terlihat | Tetap terlihat |
 
 **PERUBAHAN RONDE 14:**
 
@@ -662,6 +694,11 @@ Semua 9 area parkir sesuai CORE_SCOPE.md:
 ---
 
 ## I. FILE YANG DIUBAH
+
+### Sejak Ronde 15 (Sprint 1E.3 — Template Tab Cleanup)
+1. `src/components/canva/left-panel/IconRail.tsx` — `teacherOnly` flag pada PRIMARY_RAIL_ITEMS; `visibleItems` filter berdasarkan teacherMode; label 'Template (Lanjutan)' di advanced mode tooltip
+2. `src/components/canva/LeftPanel.tsx` — `isSederhana` guard: templates tab content hidden, Quick Add 'Custom' button hidden, grid-cols-3 in teacher mode; handleTabChange + useEffect redirect 'templates'→'pages' in teacher mode
+3. `CORE_VERIFICATION_REPORT.md` — Sprint 1E.3 status updated to PASS, Ronde 15 changes documented
 
 ### Sejak Ronde 1
 1. `src/store/authoring/index.ts` — Line 91: `games ?? []` (fix BUG-4)

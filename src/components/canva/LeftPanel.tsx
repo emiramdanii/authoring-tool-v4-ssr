@@ -86,22 +86,27 @@ export default function LeftPanel() {
   const [searchFilter, setSearchFilter] = useState('');
 
   const teacherMode = useCanvaStore(s => s.teacherMode);
+  const { isSederhana } = useTeacherMode();
   const blockLabel = teacherMode ? 'Konten' : 'Block';
 
   // When store leftTab changes (e.g., from CommandPalette or Stage buttons),
   // sync local activeTab
+  // Sprint 1E.3: redirect 'templates' to 'pages' in teacher mode
   const prevStoreTab = useRef(storeLeftTab);
   useEffect(() => {
     if (storeLeftTab !== prevStoreTab.current) {
       prevStoreTab.current = storeLeftTab;
-      setActiveTab(storeLeftTab as LeftTab);
+      const resolved = (storeLeftTab === 'templates' && isSederhana) ? 'pages' : storeLeftTab;
+      setActiveTab(resolved as LeftTab);
     }
-  }, [storeLeftTab]);
+  }, [storeLeftTab, isSederhana]);
 
   const handleTabChange = (tab: LeftTab) => {
-    setActiveTab(tab);
+    // Sprint 1E.3: block 'templates' tab in teacher mode
+    const resolved = (tab === 'templates' && isSederhana) ? 'pages' : tab;
+    setActiveTab(resolved);
     // Sync store so other components (CommandPalette, Stage) can read current tab
-    useCanvaStore.getState().setLeftTab(tab);
+    useCanvaStore.getState().setLeftTab(resolved);
   };
 
   return (
@@ -182,7 +187,7 @@ export default function LeftPanel() {
                       Quick Add
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className={`grid gap-1.5 ${isSederhana ? 'grid-cols-3' : 'grid-cols-2'}`}>
                     <button
                       onClick={() => handleTabChange('add-block')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-primary/5 hover:border-silse-primary/30 transition-all group"
@@ -204,6 +209,8 @@ export default function LeftPanel() {
                       <span className="material-symbols-outlined text-silse-secondary mb-0.5" style={{ fontSize: '18px' }}>sports_esports</span>
                       <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-secondary">Game</span>
                     </button>
+                    {/* Custom button: hidden in teacher mode (1E.3) — teachers pick templates from Dashboard */}
+                    {!isSederhana && (
                     <button
                       onClick={() => handleTabChange('templates')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-on-surface-variant/5 hover:border-silse-on-surface-variant/30 transition-all group"
@@ -211,6 +218,7 @@ export default function LeftPanel() {
                       <span className="material-symbols-outlined text-silse-on-surface-variant mb-0.5" style={{ fontSize: '18px' }}>dashboard</span>
                       <span className="text-[10px] font-semibold text-silse-on-surface-variant">Custom</span>
                     </button>
+                    )}
                   </div>
                 </div>
               </>
@@ -220,7 +228,7 @@ export default function LeftPanel() {
               <AddBlockSection addBlockOpen={addBlockOpen} onToggle={() => setAddBlockOpen(!addBlockOpen)} />
             )}
 
-            {activeTab === 'templates' && (
+            {activeTab === 'templates' && !isSederhana && (
               <>
                 <TemplateSection galleryOpen={templateGalleryOpen} onToggle={() => setTemplateGalleryOpen(!templateGalleryOpen)} />
                 <PageTypeCreator />
