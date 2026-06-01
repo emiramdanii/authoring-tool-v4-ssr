@@ -58,3 +58,37 @@ Stage Summary:
 - All 7 targets met: collapsed default, "Struktur Konten" header, "N konten" badge, bolt hidden, teacher-friendly labels, block tree non-dominant, SceneList still primary
 - Files modified: SchemaBlockTree.tsx, LeftPanel.tsx, CORE_VERIFICATION_REPORT.md
 - Next: Sprint 1E.2 — BottomPageStrip
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Sprint 1E.2 — BottomPageStrip
+
+Work Log:
+- Git pull --rebase: clean, up to date
+- Created src/components/canva/BottomPageStrip.tsx — new component
+  - Horizontal page strip (h-36px) below canvas
+  - Pill per halaman: emoji icon from TEMPLATE_BADGE_MAP + p.label
+  - Active page: bg-silse-primary-container, font-bold
+  - overflow-x-auto + scroll-snap + auto-scroll to active pill
+  - Tombol "+" (Tambah) at end → addPage()
+  - Uses existing store: pages, currentPageIndex, goPage, addPage
+- Updated CanvaBuilder.tsx: import BottomPageStrip, render between ResizablePanelGroup and SceneTabBar
+- Build: PASS ✅
+- Updated CORE_VERIFICATION_REPORT.md (Ronde 14, Sprint 1E.2 PASS)
+- Committed: fix: add bottom page strip (d0ecb10)
+- Pushed to origin/main
+
+Stage Summary:
+- Sprint 1E.2 PASS — BottomPageStrip implemented
+- All 8 PASS criteria met:
+  1. ✅ Bottom strip muncul di bawah canvas
+  2. ✅ Halaman aktif jelas (primary-container highlight)
+  3. ✅ Klik pill berpindah halaman (goPage)
+  4. ✅ Tombol + menambah halaman (addPage)
+  5. ✅ Scroll horizontal saat halaman banyak
+  6. ✅ Canvas tetap nyaman (~770px)
+  7. ✅ Panel kiri tidak menampilkan block teknis default (1E.1 fix intact)
+  8. ✅ Build pass
+- Files: BottomPageStrip.tsx (new), CanvaBuilder.tsx (2 lines added), CORE_VERIFICATION_REPORT.md
+- Next: Sprint 1E.3 — Template Tab Cleanup
