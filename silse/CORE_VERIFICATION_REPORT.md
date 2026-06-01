@@ -333,3 +333,51 @@ Area Parkir:  TETAP DITAHAN
 **BUG-5 SUDAH DIPERBAIKI. Export HTML sekarang PASS.**
 **T8, T11, T12 masih butuh manual QA oleh manusia.**
 Baru setelah semua PASS, boleh lanjut ke area berikutnya.
+
+---
+
+## K. SPRINT 1G — Background-Based Media Mode
+
+### Sprint 1G P0: Export HTML Background Image + Overlay
+
+| Item | Status | Detail |
+|------|--------|--------|
+| Export renders `imageUrl` | PASS | `renderPageHtml()` now renders background image layer |
+| `imageFit`, `imageOpacity`, `imageBlur` in export | PASS | All image properties exported |
+| Overlay `dark/light/gradient` in export | PASS | All overlay types rendered in export HTML |
+| Overlay `pointer-events:none` | PASS | Non-interactive overlay layer |
+| Content z-index above overlay | PASS | Content layer on top |
+| `client-export.ts` fallback support | PASS | Fallback export also supports background image |
+| Build PASS | PASS | Compiled successfully |
+
+### Sprint 1G P1.1: Editor Card Readability on Background Image
+
+| Item | Status | Detail |
+|------|--------|--------|
+| `edu.cardBg()` bg-image-aware | PASS | Returns semi-opaque when `hasBackgroundImage()` true |
+| `edu.cardStyle()` bg-image-aware | PASS | Stronger border + shadow when bg image active |
+| `readableTintBg()` helper | PASS | Composes tint on opaque underlay for transparent blocks |
+| `readableTintBorder()` helper | PASS | Boosts border opacity on bg image |
+| RenderTeks readable | PASS | Uses `readableTintBg` + `readableTintBorder` |
+| RenderDefinisi readable | PASS | Uses `readableTintBg` + `readableTintBorder` |
+| RenderKutipan readable | PASS | Uses `readableTintBg` + `readableTintBorder` |
+| RenderInfobox readable | PASS | Uses `readableTintBg` + `readableTintBorder` |
+| RenderHighlight readable | PASS | Gradient with opaque underlay on bg image |
+| RenderGambar placeholder readable | PASS | Uses `readableTintBg` + `readableTintBorder` |
+| Nested items (Poin, Checklist, Compare, Studi) | PASS | All nested `colorAlpha(0.04-0.06)` use `readableTintBg` |
+| No bg image → no visual change | PASS | Helpers return original values when `hasBackgroundImage()` false |
+| KuisRenderer untouched | PASS | Not modified in P1.1 |
+| Export unchanged | PASS | No export code modified |
+| Build PASS | PASS | Compiled successfully |
+
+### Files Changed (Sprint 1G)
+
+1. `src/core/edu/EduRenderingContext.ts` — `cardBg()` + `cardStyle()` background-image-aware
+2. `src/core/renderer/blocks/MateriBlokRenderer.tsx` — `readableTintBg` + `readableTintBorder` helpers, applied to 6+ sub-types
+
+### Sprint 1G Status
+
+```
+Sprint 1G — Background-Based Media Mode: P0 PASS, P1.1 PASS
+Final PASS: menunggu P1.2 (KuisRenderer readability) atau visual QA terakhir
+```
