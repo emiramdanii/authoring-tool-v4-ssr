@@ -156,7 +156,7 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
         const sectionLabel = sectionDef?.label || sectionKey;
 
         return (
-          <PropertyGroup key={sectionKey} label={sectionLabel} defaultCollapsed={false}>
+          <PropertyGroup key={sectionKey} label={sectionLabel} defaultCollapsed={sectionDef?.collapsed ?? false}>
             {fields.map(field => renderGuidedField(field, b, handleUpdate))}
           </PropertyGroup>
         );

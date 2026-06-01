@@ -136,6 +136,8 @@ export default function RightPanel() {
       </div>
 
       {/* ── Tab Bar — MD3 Segmented Style ─────────────────────── */}
+      {/* Hide tab bar in teacher mode when only 1 tab — reduces visual noise */}
+      {!(isSederhana && TABS.length <= 1) && (
       <div className="flex items-center gap-1 px-3 pt-2 pb-1.5 shrink-0 bg-silse-surface-container-lowest">
         <div className="flex items-center gap-0.5 bg-silse-surface-container-high/40 rounded-xl p-0.5 w-full">
           {TABS.map((tab) => {
@@ -161,6 +163,7 @@ export default function RightPanel() {
           })}
         </div>
       </div>
+      )}
 
       {/* ── Tab Content ──────────────────────────────────── */}
       <div className="flex-1 overflow-hidden">

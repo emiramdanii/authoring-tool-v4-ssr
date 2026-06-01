@@ -568,11 +568,14 @@ export interface GuidedEditorSchema {
   icon: string;
   /** Ordered list of editable content fields */
   fields: GuidedFieldDef[];
-  /** Sections for grouping fields */
+  /** Sections for grouping fields into 3 zona: Isi Utama, Tampilan, Lanjutan */
   sections?: Array<{
     key: string;
     label: string;
     fieldKeys: string[];
+    /** Whether this section starts collapsed. Default: false (open).
+     *  Use true for "Tampilan" and "Lanjutan" zones. */
+    collapsed?: boolean;
   }>;
 }
 
@@ -610,7 +613,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'icon', label: 'Ikon', type: 'icon', helpText: 'Ikon utama di cover' },
     ],
     sections: [
-      { key: 'main', label: 'Konten Utama', fieldKeys: ['title', 'subtitle', 'icon'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'subtitle', 'icon'] },
     ],
   },
 
@@ -643,8 +646,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'title', label: 'Judul', fieldKeys: ['title'] },
-      { key: 'questions', label: 'Soal', fieldKeys: ['questions'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
     ],
   },
 
@@ -690,9 +692,8 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         helpText: 'Warna aksen untuk blok materi' },
     ],
     sections: [
-      { key: 'type', label: 'Tipe', fieldKeys: ['tipe'] },
-      { key: 'content', label: 'Konten', fieldKeys: ['judul', 'isi', 'butir'] },
-      { key: 'style', label: 'Gaya', fieldKeys: ['warna', 'icon', 'infoboxStyle', 'accentColor'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'butir'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle', 'accentColor'], collapsed: true },
     ],
   },
 
@@ -719,8 +720,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'questions', label: 'Pertanyaan Diskusi', fieldKeys: ['questions'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'questions'] },
     ],
   },
 
@@ -746,8 +746,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'questions', label: 'Pertanyaan Refleksi', fieldKeys: ['questions'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'questions'] },
     ],
   },
 
@@ -762,7 +761,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       // The guided form for materi-section will be enhanced in Phase 2
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title'] },
     ],
   },
 
@@ -781,6 +780,10 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         { label: 'Oranye', value: 'o' },
         { label: 'Merah', value: 'r' },
       ]},
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['content'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['borderColor'], collapsed: true },
     ],
   },
 
@@ -803,6 +806,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'color', label: 'Warna', type: 'color' },
         ],
       },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['cards'] },
     ],
   },
 
@@ -827,6 +833,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
       { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'text' },
     ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'objectives', 'profil'] },
+    ],
   },
 
   'rangkuman': {
@@ -850,6 +859,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         ],
       },
       { key: 'closingStatement', label: 'Pernyataan Penutup', type: 'textarea' },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'concepts', 'closingStatement'] },
     ],
   },
 
@@ -944,8 +956,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'profil'] },
-      { key: 'items', label: 'Tujuan Pembelajaran', fieldKeys: ['items'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'profil', 'items'] },
     ],
   },
 
@@ -974,8 +985,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title'] },
-      { key: 'steps', label: 'Langkah Kegiatan', fieldKeys: ['steps'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'steps'] },
     ],
   },
 
@@ -1002,8 +1012,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['namaBab', 'jumlahPertemuan'] },
-      { key: 'pertemuan', label: 'Daftar Pertemuan', fieldKeys: ['pertemuan'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['namaBab', 'jumlahPertemuan', 'pertemuan'] },
     ],
   },
 
@@ -1045,9 +1054,8 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'style', label: 'Gaya', fieldKeys: ['layout', 'animation'] },
-      { key: 'tabs', label: 'Daftar Tab', fieldKeys: ['tabs'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'tabs'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layout', 'animation'], collapsed: true },
     ],
   },
 
@@ -1073,8 +1081,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'items', label: 'Daftar Item', fieldKeys: ['items'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'items'] },
     ],
   },
 
@@ -1101,8 +1108,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title'] },
-      { key: 'steps', label: 'Langkah-langkah', fieldKeys: ['steps'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'steps', 'accentColor'] },
     ],
   },
 
@@ -1135,9 +1141,8 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'style', label: 'Gaya', fieldKeys: ['layout'] },
-      { key: 'kartu', label: 'Daftar Kartu', fieldKeys: ['kartu'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'kartu'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layout', 'accentColor'], collapsed: true },
     ],
   },
 };

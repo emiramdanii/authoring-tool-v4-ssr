@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-01 (Ronde 20 — Sprint 2B MateriBlok Guided Editor Minimal)
+Tanggal: 2026-06-01 (Ronde 21 — Sprint R1 Struktur Panel Kanan 3 Zona)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -25,8 +25,52 @@ Sprint 1F — Canvas Readability: PASS — readability safety layer menyesuaikan
 Sprint 1G — Background-Based Media Mode: PASS (dengan P0 + P1.1 + P1.2 fix) — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca, export HTML parity, quiz readability on bg image
 Sprint 2A — Kuis Guided Editor Polish: PASS — jawaban benar A/B/C/D select, guru tidak perlu tahu indeks angka, bug falsy value 0 diperbaiki
 Sprint 2B — MateriBlok Guided Editor Minimal: PASS — materi-blok masuk GuidedFormEditor, showWhen conditional fields, 6 tipe prioritas, flat string array fix
+Sprint R1 — Struktur Panel Kanan 3 Zona: PASS — Isi Utama/Tampilan/Lanjutan, Tampilan collapsed default, tab bar hidden jika 1 tab
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 21 (Sprint R1 — Struktur Panel Kanan):**
+
+1. Sprint R1 IMPLEMENTASI: 3 zona konsisten di GuidedFormEditor — Isi Utama, Tampilan, Lanjutan
+2. `guided-patch.ts`: Tambah `collapsed?: boolean` di section definition — backward-compatible (undefined = false = terbuka)
+3. `guided-patch.ts`: Semua block type di registry di-reorganize ke zona konsisten — "Isi Utama" (content, terbuka), "Tampilan" (visual, collapsed), "Lanjutan" (teknis, collapsed)
+4. `guided-patch.ts`: Block yang punya field visual (materi-blok, def-box, tab-icons, infografis) mendapat section "Tampilan" dengan `collapsed: true`
+5. `GuidedFormEditor.tsx`: `defaultCollapsed={false}` di-hardcode → `defaultCollapsed={sectionDef?.collapsed ?? false}` — section sekarang membaca collapsed dari schema
+6. `RightPanel.tsx`: Tab bar disembunyikan di teacher mode saat hanya 1 tab aktif — mengurangi visual noise
+7. Renderer, export, runtime, game editor TIDAK disentuh
+8. Build: PASS ✅
+
+**Sprint R1 section reorganize per block type:**
+
+| Block | Sebelum (sections) | Sesudah (zona) |
+|-------|-------------------|----------------|
+| cover | Konten Utama | Isi Utama |
+| kuis | Judul, Soal | Isi Utama |
+| materi-blok | Tipe, Konten, Gaya (semua terbuka) | Isi Utama (terbuka), Tampilan (collapsed) |
+| diskusi | Header, Pertanyaan Diskusi | Isi Utama |
+| refleksi | Header, Pertanyaan Refleksi | Isi Utama |
+| materi-section | Header | Isi Utama |
+| def-box | (no sections) | Isi Utama (terbuka), Tampilan (collapsed) |
+| nc-grid | (no sections) | Isi Utama |
+| tujuan-display | (no sections) | Isi Utama |
+| rangkuman | (no sections) | Isi Utama |
+| tp | Header, Tujuan Pembelajaran | Isi Utama |
+| alur | Header, Langkah Kegiatan | Isi Utama |
+| atp | Header, Daftar Pertemuan | Isi Utama |
+| tab-icons | Header, Gaya, Daftar Tab | Isi Utama (terbuka), Tampilan (collapsed) |
+| accordion | Header, Daftar Item | Isi Utama |
+| timeline | Header, Langkah-langkah | Isi Utama |
+| infografis | Header, Gaya, Daftar Kartu | Isi Utama (terbuka), Tampilan (collapsed) |
+
+**Sprint R1 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Section labels | Acak: "Header", "Konten", "Gaya", "Tipe" | Konsisten: "Isi Utama", "Tampilan" |
+| Section collapsed | Semua `false` (terbuka) | Isi Utama=`false`, Tampilan=`true` |
+| Field gaya terlihat? | Selalu terbuka, sejajar konten utama | Collapsed default, guru klik jika perlu |
+| Tab bar teacher mode | 1 tab "Properti" tetap ditampilkan | Hidden jika hanya 1 tab |
+| GuidedFormEditor | Hardcode `defaultCollapsed={false}` | Baca dari `sectionDef.collapsed` |
 
 **PERUBAHAN RONDE 20 (Sprint 2B):**
 
