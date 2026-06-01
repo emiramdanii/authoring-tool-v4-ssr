@@ -138,3 +138,29 @@ Stage Summary:
 - Sprint 1E.4 PASS — Guru bisa tambah halaman via floating menu tanpa kehilangan daftar halaman
 - 4 files changed: FloatingPageMenu.tsx (new), LeftPanel.tsx, SceneList.tsx, CORE_VERIFICATION_REPORT.md
 - BottomPageStrip, AddBlockPanel, AddBlockSection, PagePresetRegistry, store NOT touched
+---
+Task ID: P1.2
+Agent: main
+Task: Sprint 1G P1.2 — KuisRenderer readability on background image
+
+Work Log:
+- Read KuisRenderer.tsx (709 lines) — identified all 3 variants + completion screen
+- Read EduRenderingContext.ts — confirmed hasBackgroundImage() and cardStyle() APIs
+- Read TokenResolver types.ts — confirmed hasBackgroundImage() exists on tokens
+- Added 3 local helpers: kuisOptionBg(), kuisOptionBorder(), kuisFeedbackBg()
+- Applied helpers to Variant A (Klasik) options + feedback
+- Applied helpers to Variant B (Kartu) options + feedback
+- Applied helpers to Variant C (Ringkas) options + feedback
+- Added full border on feedback when bg image active (1px solid accent + borderLeft stripe)
+- Wrapped completion screen with edu.cardStyle() when bg image active
+- Build: PASS
+- Updated CORE_VERIFICATION_REPORT.md with P1.1 + P1.2 entries
+- Committed: fix: improve quiz readability on background image
+- Pulled --rebase: no conflicts
+- Pushed: f2f46d9 → main
+
+Stage Summary:
+- P1.2 COMPLETE — quiz options, feedback, completion screen readable on bg image
+- No logic/scoring/state changes — visual style only
+- Pages without bg image: all original styles preserved
+- Build PASS, pushed to origin/main
