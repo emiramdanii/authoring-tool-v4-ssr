@@ -1161,7 +1161,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
  *   - Total scenes needed
  *   - Human-readable summary
  */
-function checkOverflowRich(schema: ScreenSchema, templateType?: string): OverflowCheckResult {
+export function checkOverflowRich(schema: ScreenSchema, templateType?: string): OverflowCheckResult {
   if (!schema.blocks || schema.blocks.length === 0) {
     return {
       overflowDetected: false,

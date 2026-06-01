@@ -248,7 +248,7 @@ export function useInlineEditor(options: UseInlineEditorOptions) {
     // Convert dot-notation key to nested patch object
     // 'content.title' → { content: { title: newValue } }
     const patch = dotNotationToPatch(fieldKey, newValue);
-    updateSchemaBlock(blockId, patch);
+    updateSchemaBlock(blockId, patch, { overflowPolicy: 'warn', source: 'user' });
   }, [blockId, fieldKey, updateSchemaBlock]);
 
   return {

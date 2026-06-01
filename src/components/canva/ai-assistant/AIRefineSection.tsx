@@ -80,7 +80,7 @@ export default function AIRefineSection() {
 
     if (res?.success && res.data && selectedBlockId) {
       // Auto-apply the refined content
-      updateSchemaBlock(selectedBlockId, res.data);
+      updateSchemaBlock(selectedBlockId, res.data, { overflowPolicy: 'warn', source: 'ai' });
       setLastAppliedMode(mode);
       toast.success('Konten berhasil disempurnakan!');
     }
@@ -89,7 +89,7 @@ export default function AIRefineSection() {
   // Undo last refine (re-apply original)
   const handleUndo = useCallback(() => {
     if (!selectedBlockContent || !selectedBlockId) return;
-    updateSchemaBlock(selectedBlockId, selectedBlockContent);
+    updateSchemaBlock(selectedBlockId, selectedBlockContent, { source: 'ai' });
     setLastAppliedMode(null);
     clear();
     toast.info('Perubahan AI dibatalkan');

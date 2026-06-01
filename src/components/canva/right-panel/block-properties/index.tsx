@@ -127,7 +127,7 @@ export default function BlockPropertiesPanel() {
           <SchemaDrivenEditor
             block={block}
             schema={propertySchema}
-            onUpdate={(updates) => updateSchemaBlock(selectedBlockId, updates)}
+            onUpdate={(updates) => updateSchemaBlock(selectedBlockId, updates, { overflowPolicy: 'warn', source: 'user' })}
           />
         )}
 
