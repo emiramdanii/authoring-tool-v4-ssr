@@ -1352,3 +1352,53 @@ PropertySchema dan GuidedEditorSchema menggunakan key yang berbeda dari schema t
 - [x] alur tidak lagi menulis fase
 - [x] Semua key sesuai schema/renderer
 - [x] Build berhasil
+
+---
+
+## Ronde 29 — Sprint 2B MateriBlok Guided Editor Minimal
+
+Tanggal: 2026-06-02
+
+### Tujuan
+
+Saat guru memilih materi-blok, panel kanan tidak lagi jatuh ke SchemaDrivenEditor mentah. Guru bisa mengedit sub-blok materi paling umum melalui GuidedFormEditor dengan field yang muncul/hilang berdasarkan tipe konten.
+
+### Implementasi
+
+**File: `src/core/schema/guided-patch.ts`**
+
+1. Tambah entry `'materi-blok'` ke `GUIDED_EDITOR_REGISTRY` dengan:
+   - `tipe`: select (teks/definisi/poin/checklist/infobox/highlight)
+   - `judul`: text (opsional)
+   - `isi`: textarea (tampil saat tipe = teks/definisi/infobox/highlight)
+   - `butir`: array-of-text (tampil saat tipe = poin/checklist)
+   - `warna`: color (tampil saat tipe = definisi/highlight)
+   - `icon`: icon (tampil saat tipe = highlight)
+   - `infoboxStyle`: select (tampil saat tipe = infobox)
+   - `accentColor`: color (selalu tampil)
+   - Menggunakan `showWhen` conditional visibility per field
+
+2. Fix `layout` → `layoutVariant` di tab-icons dan infografis GuidedEditor (key harus match schema type)
+
+**File: `src/core/editor/property-schemas/content.ts`**
+
+3. Fix `layout` → `layoutVariant` di tab-icons dan infografis PropertySchema
+
+### showWhen Filtering
+
+GuidedFormEditor sudah mendukung `showWhen` filtering (line 72-79). Field dengan `showWhen: { field: 'tipe', values: ['teks', 'definisi', ...] }` hanya muncul ketika nilai `tipe` sesuai.
+
+### Flat String Array Support
+
+Field `butir` menggunakan pola `key: ''` untuk string array, yang sudah didukung oleh `guided-field-renderer.tsx` (line 135-142). Data `butir: string[]` dikonversi ke/dari `Array<Record<string, unknown>>` di boundary.
+
+### Build Result: PASS
+
+### Standar PASS
+
+- [x] materi-blok tipe teks → field isi tampil, butir tidak tampil
+- [x] tipe poin/checklist → field butir tampil
+- [x] tipe definisi/highlight → field warna tampil
+- [x] tipe infobox → field infoboxStyle tampil
+- [x] Field tidak relevan tidak tampil (showWhen filtering)
+- [x] Build berhasil

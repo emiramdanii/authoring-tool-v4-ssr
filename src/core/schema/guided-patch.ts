@@ -1028,7 +1028,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     fields: [
       { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Tujuan Pembelajaran' },
       { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum tab', placeholder: 'Eksplorasi tujuan pembelajaran hari ini' },
-      { key: 'layout', label: 'Tata Letak', type: 'select', options: [
+      { key: 'layoutVariant', label: 'Tata Letak', type: 'select', options: [
         { label: 'Horizontal', value: 'horizontal' },
         { label: 'Vertikal', value: 'vertical' },
         { label: 'Pills', value: 'pills' },
@@ -1055,7 +1055,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'tabs'] },
-      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layout', 'animation'], collapsed: true },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layoutVariant', 'animation'], collapsed: true },
     ],
   },
 
@@ -1120,7 +1120,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     fields: [
       { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Profil Pelajar Pancasila' },
       { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum kartu', placeholder: 'Dimensi yang dikembangkan...' },
-      { key: 'layout', label: 'Tata Letak', type: 'select', options: [
+      { key: 'layoutVariant', label: 'Tata Letak', type: 'select', options: [
         { label: 'Grid', value: 'grid' },
         { label: 'List', value: 'list' },
         { label: 'Timeline', value: 'timeline' },
@@ -1142,7 +1142,53 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'kartu'] },
-      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layout', 'accentColor'], collapsed: true },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layoutVariant', 'accentColor'], collapsed: true },
+    ],
+  },
+
+  // ── Sprint 2B: MateriBlok Guided Editor ────────────────────────
+  // The most important content block — teachers need this to edit
+  // materi content without falling through to raw SchemaDrivenEditor.
+
+  'materi-blok': {
+    blockType: 'materi-blok',
+    displayName: 'Materi',
+    description: 'Blok konten materi — pilih tipe dan isi konten sesuai kebutuhan',
+    icon: '📚',
+    fields: [
+      {
+        key: 'tipe',
+        label: 'Tipe Konten',
+        type: 'select',
+        required: true,
+        helpText: 'Pilih jenis konten yang ingin ditampilkan',
+        options: [
+          { label: 'Paragraf', value: 'teks' },
+          { label: 'Definisi', value: 'definisi' },
+          { label: 'Poin-poin', value: 'poin' },
+          { label: 'Checklist', value: 'checklist' },
+          { label: 'Info Box', value: 'infobox' },
+          { label: 'Highlight', value: 'highlight' },
+        ],
+      },
+      { key: 'judul', label: 'Judul', type: 'text', helpText: 'Judul opsional untuk blok materi', placeholder: 'Judul materi...' },
+      { key: 'isi', label: 'Isi Konten', type: 'textarea', showWhen: { field: 'tipe', values: ['teks', 'definisi', 'infobox', 'highlight'] }, helpText: 'Teks utama konten', placeholder: 'Tulis konten di sini...' },
+      { key: 'butir', label: 'Butir-butir', type: 'array', maxItems: 6, showWhen: { field: 'tipe', values: ['poin', 'checklist'] }, helpText: 'Setiap butir menjadi satu poin/checklist', fields: [
+        { key: '', label: 'Butir', type: 'text', placeholder: 'Tulis poin...' },
+      ]},
+      { key: 'warna', label: 'Warna Border', type: 'color', showWhen: { field: 'tipe', values: ['definisi', 'highlight'] }, helpText: 'Warna aksen untuk kotak definisi/highlight' },
+      { key: 'icon', label: 'Ikon', type: 'icon', showWhen: { field: 'tipe', values: ['highlight'] }, helpText: 'Ikon untuk blok highlight' },
+      { key: 'infoboxStyle', label: 'Gaya Info Box', type: 'select', showWhen: { field: 'tipe', values: ['infobox'] }, options: [
+        { label: 'Info', value: 'info' },
+        { label: 'Tips', value: 'tips' },
+        { label: 'Peringatan', value: 'warning' },
+        { label: 'Berhasil', value: 'success' },
+      ]},
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'butir'] },
+      { key: 'style', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle', 'accentColor'], collapsed: true },
     ],
   },
 };

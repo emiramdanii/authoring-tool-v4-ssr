@@ -404,7 +404,7 @@ export const TABICONS_PROPERTY_SCHEMA: PropertySchema = {
     { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
     { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
     { key: 'intro', type: 'textarea', label: 'Pengantar', group: 'content', rows: 2 },
-    { key: 'layout', type: 'select', label: 'Tata Letak', group: 'style', options: [
+    { key: 'layoutVariant', type: 'select', label: 'Tata Letak', group: 'style', options: [
       { label: 'Horizontal', value: 'horizontal' },
       { label: 'Vertikal', value: 'vertical' },
       { label: 'Pills', value: 'pills' },
@@ -465,7 +465,7 @@ export const INFOGRAFIS_PROPERTY_SCHEMA: PropertySchema = {
     { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
     { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
     { key: 'intro', type: 'textarea', label: 'Pengantar', group: 'content', rows: 2 },
-    { key: 'layout', type: 'select', label: 'Tata Letak', group: 'style', options: [
+    { key: 'layoutVariant', type: 'select', label: 'Tata Letak', group: 'style', options: [
       { label: 'Grid', value: 'grid' },
       { label: 'List', value: 'list' },
       { label: 'Timeline', value: 'timeline' },
