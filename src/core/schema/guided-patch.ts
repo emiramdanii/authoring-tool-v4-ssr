@@ -1162,6 +1162,45 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'style', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle', 'accentColor'], collapsed: true },
     ],
   },
+
+  // ── Sprint 2C Prep: Sortir Game Guided Editor ──────────────────
+  // Teachers need to edit game title, pool items, and kolom columns
+  // via the right panel guided form, not raw SchemaDrivenEditor.
+
+  'sortir-game': {
+    blockType: 'sortir-game',
+    displayName: 'Game Sortir',
+    description: 'Game mengelompokkan kartu ke kolom yang tepat',
+    icon: '🎮',
+    fields: [
+      { key: 'title', label: 'Judul Game', type: 'text', required: true, helpText: 'Judul game yang terlihat di bagian atas', placeholder: 'Game Sortir...' },
+      {
+        key: 'kolom',
+        label: 'Kolom Kategori',
+        type: 'array',
+        maxItems: 4,
+        helpText: 'Kolom tujuan — siswa memindahkan kartu ke kolom yang benar',
+        fields: [
+          { key: 'label', label: 'Label Kolom', type: 'text', required: true, placeholder: 'Nama kategori...' },
+          { key: 'color', label: 'Warna', type: 'color', helpText: 'Warna aksen kolom' },
+        ],
+      },
+      {
+        key: 'pool',
+        label: 'Kartu Sortir',
+        type: 'array',
+        maxItems: 8,
+        helpText: 'Kartu yang harus dikelompokkan — setiap kartu milik satu kolom',
+        fields: [
+          { key: 'text', label: 'Teks Kartu', type: 'text', required: true, placeholder: 'Tulis teks kartu...' },
+          { key: 'category', label: 'Kolom Tujuan', type: 'text', helpText: 'ID kolom tempat kartu ini benar (harus cocok dengan kolom di atas)' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'kolom', 'pool'] },
+    ],
+  },
 };
 
 // ── Overflow Detection ─────────────────────────────────────────
