@@ -14,8 +14,6 @@ import StatusBar from './StatusBar';
 import LeftPanel from './LeftPanel';
 import Stage from './stage';
 import RightPanel from './right-panel';
-import PreviewMode from './PreviewMode';
-import PresentMode from './PresentMode';
 import { UndoRedoToast } from '@/components/shared/StatusToast';
 import { OfflineIndicator } from '@/components/shared/OfflineIndicator';
 import { useCommandPalette } from '@/components/shared/CommandPalette';
@@ -42,6 +40,16 @@ const PlayOverlay = dynamic(() => import('./PlayOverlay'), {
 });
 
 const LearningMediaShell = dynamic(() => import('./LearningMediaShell'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const PreviewMode = dynamic(() => import('./PreviewMode'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const PresentMode = dynamic(() => import('./PresentMode'), {
   ssr: false,
   loading: () => null,
 });
