@@ -669,6 +669,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'icon', label: 'Ikon', type: 'icon' },
           { key: 'teks', label: 'Teks Pertanyaan', type: 'textarea', required: true },
           { key: 'petunjuk', label: 'Petunjuk', type: 'textarea', helpText: 'Petunjuk untuk membantu siswa menjawab' },
+          { key: 'color', label: 'Warna', type: 'color' },
         ],
       },
     ],

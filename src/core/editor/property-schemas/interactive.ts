@@ -55,8 +55,10 @@ export const DISKUSI_PROPERTY_SCHEMA: PropertySchema = {
     {
       key: 'questions', type: 'array', label: 'Pertanyaan', group: 'content',
       fields: [
+        { key: 'label', label: 'Label', type: 'text' },
+        { key: 'icon', label: 'Ikon', type: 'icon' },
         { key: 'teks', label: 'Pertanyaan', type: 'textarea' },
-        { key: 'petunjuk', label: 'Petunjuk', type: 'text' },
+        { key: 'petunjuk', label: 'Petunjuk', type: 'textarea' },
         { key: 'color', label: 'Warna', type: 'color' },
       ],
     },

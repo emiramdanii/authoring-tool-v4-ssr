@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-02 (Ronde 29 — D8 P0–P2 Add Flow Teacher Mode)
+Tanggal: 2026-06-02 (Ronde 32 — Sprint 2C.1 Diskusi label/icon/color polish)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -25,6 +25,7 @@ Sprint 1F — Canvas Readability: PASS — readability safety layer menyesuaikan
 Sprint 1G — Background-Based Media Mode: PASS (dengan P0 + P1.1 + P1.2 fix) — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca, export HTML parity, quiz readability on bg image
 Sprint 2A — Kuis Guided Editor Polish: PASS — jawaban benar A/B/C/D select, guru tidak perlu tahu indeks angka, bug falsy value 0 diperbaiki
 Sprint 2B — MateriBlok Guided Editor Minimal: PARTIAL PASS — materi-blok masuk GuidedFormEditor, showWhen conditional fields, 6 tipe prioritas, flat string array fix, P1 duplicate key fix applied (Ronde 28)
+Sprint 2C.1 — Diskusi label/icon/color Polish: PASS (Ronde 32) — GuidedEditor diskusi punya field color per pertanyaan, PropertySchema punya label+icon per pertanyaan, petunjuk type diperbaiki ke textarea, renderer/export/runtime tidak berubah
 Sprint R1 — Struktur Panel Kanan 3 Zona: PASS — Isi Utama/Tampilan/Lanjutan, Tampilan collapsed default, tab bar hidden jika 1 tab
 Sprint R2 — Header Konteks Ganda: PASS — panel kanan menampilkan title/subtitle/description, kuis tunjukkan jumlah opsi, materi-blok tunjukkan tipe, halaman tunjukkan template
 P0 — Background Source of Truth: PASS — schema page background disatukan ke schema.background, file upload ke schema path, halaman lama dinormalisasi
@@ -42,6 +43,30 @@ D6 — createPage schema.background gap: PASS — createPage() dan setTemplateTy
 D7 — Dual Score Store: ACCEPTABLE/FIXED — dual store adalah separation of concerns yang intentional, gap R7.1 (stale scores di Preview/Present) ditutup
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 32 (Sprint 2C.1 — Diskusi label/icon/color polish):**
+
+1. Sprint 2C.1 IMPLEMENTASI: Align diskusi editor fields dengan renderer — guru bisa edit label, ikon, teks, petunjuk, dan warna per pertanyaan di GuidedEditor maupun PropertySchema
+2. `guided-patch.ts`: Tambah field `questions[].color` (type: 'color') di entry diskusi — setelah petunjuk, urutan field: label → icon → teks → petunjuk → color
+3. `interactive.ts`: Tambah field `questions[].label` (type: 'text') di DISKUSI_PROPERTY_SCHEMA
+4. `interactive.ts`: Tambah field `questions[].icon` (type: 'icon') di DISKUSI_PROPERTY_SCHEMA
+5. `interactive.ts`: Ubah `questions[].petunjuk` dari type 'text' ke type 'textarea' — petunjuk bisa panjang, textarea lebih tepat
+6. `interactive.ts`: Urutan field questions selaras: label → icon → teks → petunjuk → color (sama dengan GuidedEditor)
+7. Tidak menambahkan `kelompok[]` ke guided editor — field mati, renderer tidak memakainya
+8. Tidak mengubah: DiskusiRenderer, export renderer, blocks.ts, definitions.ts, schema-factory, runtime scoring, guided-field-renderer
+9. Build: PASS
+
+**Sprint 2C.1 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| GuidedEditor diskusi questions | label, icon, teks, petunjuk | label, icon, teks, petunjuk, **color** |
+| PropertySchema diskusi questions | teks, petunjuk(text), color | **label**, **icon**, teks, petunjuk(**textarea**), color |
+| Guru edit warna pertanyaan | Hanya via PropertySchema advanced | Juga via GuidedEditor |
+| Guru edit label pertanyaan | Tidak bisa (PropertySchema tidak punya) | Bisa (GuidedEditor + PropertySchema) |
+| Guru edit ikon pertanyaan | Tidak bisa (PropertySchema tidak punya) | Bisa (GuidedEditor + PropertySchema) |
+| Petunjuk textarea | PropertySchema: text (1 baris) | PropertySchema: textarea (multi-baris) |
+| kelompok[] di guided | Tidak ada (sengaja) | Tidak ada (sengaja — dead field) |
 
 **PERUBAHAN RONDE 31 (D8 P3B — Guided Editor Roda Pertanyaan):**
 
