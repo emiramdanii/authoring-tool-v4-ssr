@@ -32,6 +32,7 @@ D8 P0 — Curated Filter AddBlockPanel: PASS (Ronde 29) — teacher mode hanya m
 D8 P1 — Fix POPULAR_BLOCK_TYPES: PASS (Ronde 29) — materi-blok dihapus (addable:false), page-level blocks dihapus, list selaras dengan TEACHER_ADDABLE_BLOCKS
 D8 P2 — Rename Tambah Konten → Tambah Isi: PASS (Ronde 29) — label UI berubah di AddBlockPanel, AddBlockSection, IconRail, LeftPanel, RightPanel, teacher-terminology
 D8 P3A — Guided Editor Gambar Minimal: PASS (Ronde 30) — block gambar aman masuk ke Tambah Isi teacher mode, 4 field (title, url, caption, accentColor), url tetap text field (paste), tidak jatuh ke SchemaDrivenEditor
+D8 P3C — Gambar Interaktif / Hotspot: PARKIR (Sprint 3) — audit selesai, block baru `hotspot-image` dirancang, ditunda karena scope besar (~13 file), butuh renderer baru + export parity, X/Y manual berisiko membingungkan guru, prinsip: jangan tampilkan fitur ke teacher mode jika belum full vertical slice
 P0 — Tambah Halaman Kosong: PASS (Ronde 28) — PagePresetRegistry.buildPresetWithCreate() sekarang menggunakan createDefaultSchemaForTemplateType() bukan ensurePageSchema()/TemplateAdapter, semua preset menghasilkan konten bermakna
 P1 — Duplicate materi-blok Registry: PASS (Ronde 28) — Entry duplikat dihapus, entry aktif diperluas dengan kutipan+gambar (8 tipe), karakter field ditambahkan
 D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty tracking + optional overflow check, caller prioritas tinggi di-upgrade
