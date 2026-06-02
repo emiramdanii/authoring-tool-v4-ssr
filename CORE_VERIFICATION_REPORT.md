@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-02 (Ronde 28 — P0 Tambah Halaman Kosong / P1 Duplicate Registry)
+Tanggal: 2026-06-02 (Ronde 29 — D8 P0–P2 Add Flow Teacher Mode)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -28,6 +28,9 @@ Sprint 2B — MateriBlok Guided Editor Minimal: PARTIAL PASS — materi-blok mas
 Sprint R1 — Struktur Panel Kanan 3 Zona: PASS — Isi Utama/Tampilan/Lanjutan, Tampilan collapsed default, tab bar hidden jika 1 tab
 Sprint R2 — Header Konteks Ganda: PASS — panel kanan menampilkan title/subtitle/description, kuis tunjukkan jumlah opsi, materi-blok tunjukkan tipe, halaman tunjukkan template
 P0 — Background Source of Truth: PASS — schema page background disatukan ke schema.background, file upload ke schema path, halaman lama dinormalisasi
+D8 P0 — Curated Filter AddBlockPanel: PASS (Ronde 29) — teacher mode hanya menampilkan 8 curated block (semua punya guided editor), bukan 42 block teknis
+D8 P1 — Fix POPULAR_BLOCK_TYPES: PASS (Ronde 29) — materi-blok dihapus (addable:false), page-level blocks dihapus, list selaras dengan TEACHER_ADDABLE_BLOCKS
+D8 P2 — Rename Tambah Konten → Tambah Isi: PASS (Ronde 29) — label UI berubah di AddBlockPanel, AddBlockSection, IconRail, LeftPanel, RightPanel, teacher-terminology
 P0 — Tambah Halaman Kosong: PASS (Ronde 28) — PagePresetRegistry.buildPresetWithCreate() sekarang menggunakan createDefaultSchemaForTemplateType() bukan ensurePageSchema()/TemplateAdapter, semua preset menghasilkan konten bermakna
 P1 — Duplicate materi-blok Registry: PASS (Ronde 28) — Entry duplikat dihapus, entry aktif diperluas dengan kutipan+gambar (8 tipe), karakter field ditambahkan
 D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty tracking + optional overflow check, caller prioritas tinggi di-upgrade
@@ -36,6 +39,65 @@ D6 — createPage schema.background gap: PASS — createPage() dan setTemplateTy
 D7 — Dual Score Store: ACCEPTABLE/FIXED — dual store adalah separation of concerns yang intentional, gap R7.1 (stale scores di Preview/Present) ditutup
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 29 (D8 P0–P2 — Add Flow Teacher Mode):**
+
+1. D8 P0 IMPLEMENTASI: Curated filter di AddBlockPanel untuk teacher mode
+2. `AddBlockPanel.tsx`: Tambah `TEACHER_ADDABLE_BLOCKS` — 8 block type yang aman untuk guru: materi-section, def-box, kuis, diskusi, refleksi, sortir-game, rangkuman, motivasi
+3. `AddBlockPanel.tsx`: `allBlocks` sekarang difilter berdasarkan `TEACHER_ADDABLE_BLOCKS` di sederhana mode — guru tidak lagi melihat 42 block teknis
+4. `AddBlockPanel.tsx`: Advanced mode tetap menampilkan semua addable block — tidak berubah
+5. Semua 8 curated block punya guided editor — guru tidak jatuh ke SchemaDrivenEditor mentah
+
+6. D8 P1 IMPLEMENTASI: Fix POPULAR_BLOCK_TYPES
+7. `AddBlockPanel.tsx`: POPULAR_BLOCK_TYPES diubah dari `['cover', 'tp', 'materi-blok', 'materi-section', 'gambar', 'kuis', 'diskusi', 'refleksi', 'penutup']` ke `['materi-section', 'def-box', 'kuis', 'diskusi', 'refleksi', 'sortir-game', 'rangkuman', 'motivasi']`
+8. Alasan: materi-blok punya `addable:false`, cover/tp/penutup page-level (bukan konten yang disisipkan), gambar belum punya guided editor
+
+9. D8 P2 IMPLEMENTASI: Rename "Tambah Konten" → "Tambah Isi" di semua label UI yang terlihat guru
+10. `AddBlockPanel.tsx`: Header berubah dari "Tambah Konten" ke "Tambah Isi"
+11. `AddBlockPanel.tsx`: `blockLabel` berubah dari 'Konten' ke 'Isi', search placeholder "Cari isi..."
+12. `AddBlockSection.tsx`: `sectionLabel` berubah dari "Tambah Konten" ke "Tambah Isi"
+13. `IconRail.tsx`: Label tab add-block di sederhana mode berubah dari "Tambah Konten" ke "Tambah Isi", import `teacherTerm` dihapus (tidak lagi dipakai)
+14. `LeftPanel.tsx`: `blockLabel` berubah dari 'Konten' ke 'Isi', block count "8 isi" (bukan "8 konten")
+15. `RightPanel.tsx`: `blockLabel` berubah dari 'Konten' ke 'Isi'
+16. `teacher-terminology.ts`: TEACHER_TERMS['Block'] berubah dari 'Konten' ke 'Isi', 'SchemaBlock' dan 'Schema Block' juga, 'Composite Block' → 'Isi Gabungan'
+17. `teacher-terminology.ts`: SIMPLIFIED_GROUPS "Konten & Materi" → "Isi & Materi", "Konten lainnya" → "Isi lainnya"
+18. Tidak mengubah: renderer, export, PagePresetRegistry, addTemplatePage, game logic, guided editor schemas, Dashboard, Dokumen
+19. Build: PASS
+
+**D8 P0 curated block list:**
+
+| Block Type | Name | Personality | Guided Editor | Grup Sederhana |
+|-----------|------|-------------|--------------|----------------|
+| materi-section | Bagian Materi | understanding | ✅ | Isi & Materi |
+| def-box | Kotak Definisi | understanding | ✅ | Isi & Materi |
+| kuis | Kuis | assessment | ✅ | Interaktif |
+| diskusi | Diskusi | discussion | ✅ | Interaktif |
+| refleksi | Refleksi | reflection | ✅ | Interaktif |
+| sortir-game | Game Sortir | assessment | ✅ | Interaktif |
+| rangkuman | Rangkuman | reflection | ✅ | Interaktif |
+| motivasi | Motivasi / Apersepsi | reflection | ✅ | Interaktif |
+
+**D8 blok yang sengaja TIDAK ditampilkan di teacher mode:**
+
+| Block Type | Alasan |
+|-----------|--------|
+| gambar | Belum punya guided editor (P3) |
+| roda-game | Belum punya guided editor (P3) |
+| cover, tp, petunjuk, penutup | Page-level — ditambah via Tambah Halaman |
+| ftab, nc-grid, nk-card, tabel-accord | Terlalu teknis untuk guru |
+| memory-game, matching-game, dll. | Game minor — bisa diakses via advanced mode |
+| materi-blok | addable:false (internal container) |
+
+**D8 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| Teacher mode block count | ~42 addable blocks | 8 curated blocks |
+| "Tambah Konten" label | Terlihat di AddBlockPanel, AddBlockSection, IconRail | "Tambah Isi" |
+| blockLabel teacher mode | 'Konten' | 'Isi' |
+| POPULAR_BLOCK_TYPES | cover, tp, materi-blok, materi-section, gambar, kuis, diskusi, refleksi, penutup | materi-section, def-box, kuis, diskusi, refleksi, sortir-game, rangkuman, motivasi |
+| Advanced mode | 42 blocks | 42 blocks (tidak berubah) |
+| guru klik gambar/roda-game | Jatuh ke SchemaDrivenEditor mentah | Tidak ditampilkan (deferred ke P3) |
 
 **PERUBAHAN RONDE 28 (P0 — Tambah Halaman Kosong / P1 — Duplicate materi-blok Registry):**
 

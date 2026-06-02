@@ -1,7 +1,6 @@
 'use client';
 
 import { useCanvaStore } from '@/store/canva-store';
-import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import {
   Tooltip,
   TooltipTrigger,
@@ -53,11 +52,11 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
   // Render a single rail button — MD3 Navigation Rail style
   const renderRailButton = (item: { id: LeftPanelTab; icon: string; labelKey: string; teacherOnly?: boolean }) => {
     const isActive = activeTab === item.id;
-    // "Tambah Block" → "Tambah Konten" in sederhana mode
+    // "Tambah Block" → "Tambah Isi" in sederhana mode
     // "Template" → "Template (Lanjutan)" in lengkap/advanced mode
     let label: string;
     if (item.id === 'add-block') {
-      label = `Tambah ${teacherTerm(item.labelKey, teacherMode)}`;
+      label = teacherMode ? 'Tambah Isi' : `Tambah ${item.labelKey}`;
     } else if (item.id === 'templates' && !teacherMode) {
       label = 'Template (Lanjutan)';
     } else {

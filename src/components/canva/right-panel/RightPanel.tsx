@@ -66,7 +66,7 @@ export default function RightPanel() {
   const selectedElId = useCanvaStore(s => s.selectedElId);
   const selectedElIds = useCanvaStore(s => s.selectedElIds);
   const { isSederhana } = useTeacherMode();
-  const blockLabel = isSederhana ? 'Konten' : 'Block';
+  const blockLabel = isSederhana ? 'Isi' : 'Block';
 
   const [activeTab, setActiveTab] = useState<RightPanelTab>('properties');
 

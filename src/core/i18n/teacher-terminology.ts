@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // When teacherMode === 'sederhana', UI labels are translated from
 // developer-centric terms (Schema, Block, Compression) to concepts
-// teachers naturally use (Halaman, Konten, Tata Letak Otomatis).
+// teachers naturally use (Halaman, Isi, Tata Letak Otomatis).
 //
 // Usage:
 //   import { teacherTerm } from '@/core/i18n/teacher-terminology';
@@ -16,9 +16,9 @@ export type TeacherMode = 'lengkap' | 'sederhana';
 export const TEACHER_TERMS: Record<string, string> = {
   // Core concepts
   'Schema': 'Tampilan',
-  'SchemaBlock': 'Konten',
-  'Schema Block': 'Konten',
-  'Block': 'Konten',
+  'SchemaBlock': 'Isi',
+  'Schema Block': 'Isi',
+  'Block': 'Isi',
   'Template Type': 'Jenis Halaman',
   'Template': 'Template',
   'Compression': 'Kompak',
@@ -35,7 +35,7 @@ export const TEACHER_TERMS: Record<string, string> = {
   'Scene Overflow': 'Halaman Penuh',
   'Split Scene': 'Pisah Halaman',
   'Merge Scene': 'Gabung Halaman',
-  'Composite Block': 'Konten Gabungan',
+  'Composite Block': 'Isi Gabungan',
   'Container': 'Wadah',
   'Projection': 'Data',
   'BSNP Compliance': 'Kesesuaian BSNP',
@@ -114,7 +114,7 @@ export interface SimplifiedGroup {
 export const SIMPLIFIED_GROUPS: Record<string, SimplifiedGroup> = {
   informasi: {
     key: 'informasi',
-    label: 'Konten & Materi',
+    label: 'Isi & Materi',
     icon: '\uD83D\uDCD6',
     desc: 'Teks, definisi, dan materi pembelajaran',
     colorClass: 'text-blue-400',
@@ -156,7 +156,7 @@ export const SIMPLIFIED_GROUPS: Record<string, SimplifiedGroup> = {
     key: 'lainnya',
     label: 'Lainnya',
     icon: '\u2728',
-    desc: 'Konten lainnya',
+    desc: 'Isi lainnya',
     colorClass: 'text-purple-400',
     bgColorClass: 'bg-purple-500/10',
     borderColorClass: 'border-purple-500/20',

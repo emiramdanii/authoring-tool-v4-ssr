@@ -56,7 +56,7 @@ function SchemaBlockTreeWithBadge() {
   }, [pages]);
 
   const blockCountLabel = isSederhana
-    ? `${totalBlocks} konten`
+    ? `${totalBlocks} isi`
     : `${totalBlocks} block${totalBlocks !== 1 ? 's' : ''}`;
 
   return (
@@ -89,7 +89,7 @@ export default function LeftPanel() {
 
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const { isSederhana } = useTeacherMode();
-  const blockLabel = teacherMode ? 'Konten' : 'Block';
+  const blockLabel = teacherMode ? 'Isi' : 'Block';
 
   // When store leftTab changes (e.g., from CommandPalette or Stage buttons),
   // sync local activeTab
