@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { useDirtyStore } from '@/store/dirty-store';
@@ -29,6 +29,7 @@ import { ProfilerWrapper } from '@/components/shared/PerformanceMonitor';
 import { CanvaOrientationTooltip } from '@/components/shared/CanvaOrientationTooltip';
 import { useHealthMonitor } from '@/hooks/use-health-monitor';
 import { SceneTabBar } from './toolbar/SceneTabBar';
+import { BottomPageStrip } from './BottomPageStrip';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 // ═══════════════════════════════════════════════════════════════
@@ -67,10 +68,21 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
   const appMode = useCanvaStore((s) => s.appMode);
+  const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
+  const selectedElId = useCanvaStore((s) => s.selectedElId);
   const commandPalette = useCommandPalette();
 
   // ── Export success dialog ───────────────────────────────────
   const [showExportSuccess, setShowExportSuccess] = useState(false);
+
+  // ── Auto-open right panel when a block or element is selected ──
+  // If user selects something and the right panel is closed, open it
+  // so they can see the properties panel immediately.
+  useEffect(() => {
+    if ((selectedBlockId || selectedElId) && !rightPanelOpen) {
+      useCanvaStore.setState({ rightPanelOpen: true });
+    }
+  }, [selectedBlockId, selectedElId, rightPanelOpen]);
 
   useEffect(() => {
     const handler = () => setShowExportSuccess(true);
@@ -107,14 +119,7 @@ export default function CanvaBuilder() {
       getCanvaState: useCanvaStore.getState,
       setCanvaState: useCanvaStore.setState,
       getInteractiveState: useInteractiveStore.getState,
-      openAIAssistant: () => {
-        if (!isEnabled('aiAssistant')) return;
-        const store = useCanvaStore.getState();
-        if (!store.rightPanelOpen) {
-          useCanvaStore.setState({ rightPanelOpen: true });
-        }
-        window.dispatchEvent(new CustomEvent('open-ai-assistant'));
-      },
+      // AI Assistant shortcut removed — AI Generator is a parked area per CORE_SCOPE.md
     }),
     [],
   );
@@ -191,9 +196,9 @@ export default function CanvaBuilder() {
         >
           {/* Left Panel — Resizable, default 20%, min 220px */}
           <ResizablePanel
-            defaultSize={20}
-            minSize={15}
-            maxSize={30}
+            defaultSize="20%"
+            minSize="15%"
+            maxSize="30%"
             data-tour="left-panel"
             data-testid="left-panel"
             role="complementary"
@@ -209,8 +214,8 @@ export default function CanvaBuilder() {
 
           {/* Stage Canvas Area — auto flex, dot-grid background */}
           <ResizablePanel
-            defaultSize={55}
-            minSize={30}
+            defaultSize="55%"
+            minSize="30%"
           >
             <div className="flex flex-col h-full relative overflow-hidden bg-silse-surface-dim canvas-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
               <ProfilerWrapper id="Stage">
@@ -219,30 +224,31 @@ export default function CanvaBuilder() {
             </div>
           </ResizablePanel>
 
-          {/* Right Panel — Resizable, shows/hides with animation */}
-          {rightPanelOpen && (
-            <>
-              <ResizableHandle className="bg-silse-outline-variant/40 hover:bg-silse-primary/40 transition-colors w-px" />
-              <ResizablePanel
-                defaultSize={25}
-                minSize={18}
-                maxSize={35}
-                data-tour="right-panel"
-                data-testid="right-panel"
-                role="complementary"
-                aria-label="Panel properti"
-              >
-                <CanvasErrorBoundary name="RightPanel">
-                  <ProfilerWrapper id="RightPanel">
-                    <RightPanel />
-                  </ProfilerWrapper>
-                </CanvasErrorBoundary>
-              </ResizablePanel>
-            </>
-          )}
+          {/* Right Panel — Resizable, always mounted for stable layout */}
+          <ResizableHandle className="bg-silse-outline-variant/40 hover:bg-silse-primary/40 transition-colors w-px" />
+          <ResizablePanel
+            defaultSize={rightPanelOpen ? "25%" : "0%"}
+            minSize={rightPanelOpen ? "18%" : "0%"}
+            maxSize={rightPanelOpen ? "35%" : "0%"}
+            data-tour="right-panel"
+            data-testid="right-panel"
+            role="complementary"
+            aria-label="Panel properti"
+          >
+            {rightPanelOpen && (
+              <CanvasErrorBoundary name="RightPanel">
+                <ProfilerWrapper id="RightPanel">
+                  <RightPanel />
+                </ProfilerWrapper>
+              </CanvasErrorBoundary>
+            )}
+          </ResizablePanel>
         </ResizablePanelGroup>
 
-        {/* Scene Tab Bar — between builder row and status bar */}
+        {/* Bottom Page Strip — horizontal page navigator below canvas */}
+        <BottomPageStrip />
+
+        {/* Scene Tab Bar — intra-page schema tabs (block filter) */}
         <SceneTabBar isCompact={true} />
 
         {/* Status Bar */}

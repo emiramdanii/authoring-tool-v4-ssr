@@ -40,6 +40,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ── Sandbox mode: API routes return 503 without loading Prisma ──
+  // Prevents OOM crash in constrained environments (Prisma Client ~132MB)
+  // Client-side fallback kicks in → app renders with empty project list
+  // Set SANDBOX_MODE=1 in .env to activate; remove or set 0 for production
+  if (process.env.SANDBOX_MODE === '1') {
+    return NextResponse.json(
+      { success: false, error: 'API tidak tersedia dalam mode sandbox', sandbox: true },
+      { status: 503 }
+    );
+  }
+
   const clientIp = getClientIp(request);
   const tier = getRateLimitTier(pathname);
   const result = checkRateLimit(clientIp, tier);

@@ -20,7 +20,7 @@
 
 import type { ScreenSchema } from '../schema/types';
 import type { CanvaPage, PageTemplateType } from '@/components/canva/types';
-import { ensurePageSchema } from '../schema/ensure-schema';
+import { createDefaultSchemaForTemplateType } from '../schema/schema-factory';
 import { getTemplateLabel, getTemplateExtraProps } from '@/store/canva/template-data';
 import { populateTemplateElements } from '@/lib/canva-constants';
 import { createPage, createElId } from '@/store/canva/constants';
@@ -266,21 +266,23 @@ function buildPresetWithCreate(def: Omit<PagePreset, 'create'>): PagePreset {
       // Custom pages have no schema
       if (def.id === 'custom') return null;
 
-      // Schema-first: use ensurePageSchema to create or migrate schema.
-      // derive-schema.ts was removed — presets rely on ensurePageSchema()
-      // which uses TemplateAdapter for legacy pages or returns existing schema.
-      // IMPORTANT: createPage() now always sets an empty schema (for blank pages).
-      // For template pages, we must clear the auto-generated empty schema
-      // so ensurePageSchema() goes through the TemplateAdapter path (Path 3)
-      // which generates the correct blocks for each template type.
-      const basePage = createPage(ctx.label, def.id as PageTemplateType);
-      const schema = ensurePageSchema({ ...basePage, id: ctx.pageId, templateVariant: ctx.variant, schema: undefined });
-      // IMPORTANT: ensurePageSchema may return a deepFrozen schema in dev mode.
-      // We must create a new object to set the ID instead of mutating.
-      if (schema) {
-        return { ...schema, id: ctx.pageId };
-      }
-      return null;
+      // P0 FIX: Use createDefaultSchemaForTemplateType() instead of
+      // the broken ensurePageSchema() → TemplateAdapter path.
+      //
+      // OLD (BROKEN): ensurePageSchema() reads page.templateData which
+      // is always {} for preset pages → TemplateAdapter produces hollow
+      // blocks with empty arrays (questions:[], items:[], etc.).
+      //
+      // NEW (FIXED): createDefaultSchemaForTemplateType() uses
+      // BLOCK_DEFINITIONS.createDefault() → populated blocks with
+      // meaningful default content.
+      const schema = createDefaultSchemaForTemplateType(
+        def.id,           // templateType (cover, materi, kuis, game, etc.)
+        undefined,        // metadata (not available in preset context)
+        undefined,        // suggestedBlocks (use TEMPLATE_BLOCK_MAP defaults)
+        ctx.variant,      // variant (A/B/C)
+      );
+      return { ...schema, id: ctx.pageId };
     },
   };
 }

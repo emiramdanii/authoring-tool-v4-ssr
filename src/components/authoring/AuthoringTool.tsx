@@ -45,9 +45,9 @@ interface NavItem {
 // ═══ SILSE v4 Navigation — Unified nav (mode-aware labels) ════════
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
-  { id: 'dokumen', icon: 'edit_note', label: 'Workspace' },
+  { id: 'dokumen', icon: 'edit_note', label: 'RPP & Dokumen' },
   { id: 'konten', icon: 'folder_open', label: 'Assets' },
-  { id: 'canva', icon: 'analytics', label: 'Analytics' },
+  { id: 'canva', icon: 'palette', label: 'Edit Media' },
 ];
 
 // Panel titles — mode-aware
@@ -307,7 +307,7 @@ function AuthoringToolInner() {
     if (activePanel === 'dashboard') return 'dashboard';
     if (activePanel === 'dokumen') return 'dokumen';
     if (activePanel === 'konten' || activePanel === 'autogen') return 'konten';
-    if (activePanel === 'canva' || activePanel === 'preview') return 'canva';
+    if (activePanel === 'canva') return 'canva';
     return activePanel;
   };
 

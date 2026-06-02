@@ -299,7 +299,13 @@ export function estimateBlockHeight(
     case 'kuis': {
       const q = block as { questions?: unknown[] };
       const numQ = q.questions?.length || 1;
-      contentHeight = 60 + numQ * (isCompact ? 80 : 110);
+      // FIX (Sprint 4 — Engine): Removed isCompact from kuis height estimation.
+      // Compact mode no longer reduces content heights (per FIX 2 comment above).
+      // Using isCompact here caused different overflow/split decisions between
+      // canvas mode (80px/question → fits in one scene) and preview/learn mode
+      // (110px/question → split into two scenes), violating the principle that
+      // the same page should produce the same layout in all modes.
+      contentHeight = 60 + numQ * 110;
       break;
     }
     case 'petunjuk': {

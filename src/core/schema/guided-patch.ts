@@ -547,6 +547,9 @@ export interface GuidedFieldDef {
   /** For number type: min/max */
   min?: number;
   max?: number;
+  /** Conditional visibility: show this field only when another field's value is in `values`.
+   *  If undefined, the field is always shown (backward-compatible). */
+  showWhen?: { field: string; values: string[] };
 }
 
 /**
@@ -565,11 +568,14 @@ export interface GuidedEditorSchema {
   icon: string;
   /** Ordered list of editable content fields */
   fields: GuidedFieldDef[];
-  /** Sections for grouping fields */
+  /** Sections for grouping fields into 3 zona: Isi Utama, Tampilan, Lanjutan */
   sections?: Array<{
     key: string;
     label: string;
     fieldKeys: string[];
+    /** Whether this section starts collapsed. Default: false (open).
+     *  Use true for "Tampilan" and "Lanjutan" zones. */
+    collapsed?: boolean;
   }>;
 }
 
@@ -607,7 +613,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'icon', label: 'Ikon', type: 'icon', helpText: 'Ikon utama di cover' },
     ],
     sections: [
-      { key: 'main', label: 'Konten Utama', fieldKeys: ['title', 'subtitle', 'icon'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'subtitle', 'icon'] },
     ],
   },
 
@@ -629,14 +635,18 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'opts', label: 'Pilihan Jawaban', type: 'array', maxItems: 4, fields: [
             { key: '', label: 'Pilihan', type: 'text', placeholder: 'Tulis pilihan jawaban...' },
           ]},
-          { key: 'ans', label: 'Jawaban Benar (indeks)', type: 'number', min: 0, max: 3, helpText: 'Nomor indeks jawaban benar (0=A, 1=B, 2=C, 3=D)' },
+          { key: 'ans', label: 'Jawaban Benar', type: 'select', options: [
+            { label: 'A', value: '0' },
+            { label: 'B', value: '1' },
+            { label: 'C', value: '2' },
+            { label: 'D', value: '3' },
+          ], helpText: 'Pilih jawaban yang benar' },
           { key: 'ex', label: 'Penjelasan', type: 'textarea', helpText: 'Penjelasan mengapa jawaban ini benar', placeholder: 'Jelaskan alasan jawaban benar...' },
         ],
       },
     ],
     sections: [
-      { key: 'title', label: 'Judul', fieldKeys: ['title'] },
-      { key: 'questions', label: 'Soal', fieldKeys: ['questions'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
     ],
   },
 
@@ -663,8 +673,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'questions', label: 'Pertanyaan Diskusi', fieldKeys: ['questions'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'questions'] },
     ],
   },
 
@@ -690,8 +699,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'questions', label: 'Pertanyaan Refleksi', fieldKeys: ['questions'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'questions'] },
     ],
   },
 
@@ -706,7 +714,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       // The guided form for materi-section will be enhanced in Phase 2
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title'] },
     ],
   },
 
@@ -725,6 +733,10 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         { label: 'Oranye', value: 'o' },
         { label: 'Merah', value: 'r' },
       ]},
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['content'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['borderColor'], collapsed: true },
     ],
   },
 
@@ -747,6 +759,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'color', label: 'Warna', type: 'color' },
         ],
       },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['cards'] },
     ],
   },
 
@@ -771,6 +786,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
       { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'text' },
     ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'objectives', 'profil'] },
+    ],
   },
 
   'rangkuman': {
@@ -794,6 +812,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         ],
       },
       { key: 'closingStatement', label: 'Pernyataan Penutup', type: 'textarea' },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'concepts', 'closingStatement'] },
     ],
   },
 
@@ -888,8 +909,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'profil'] },
-      { key: 'items', label: 'Tujuan Pembelajaran', fieldKeys: ['items'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'profil', 'items'] },
     ],
   },
 
@@ -906,10 +926,10 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         type: 'array',
         maxItems: 6,
         fields: [
-          { key: 'fase', label: 'Fase', type: 'select', options: [
-            { label: 'Pendahuluan', value: 'Pendahuluan' },
-            { label: 'Inti', value: 'Inti' },
-            { label: 'Penutup', value: 'Penutup' },
+          { key: 'dot', label: 'Fase', type: 'select', options: [
+            { label: 'Pendahuluan', value: 'y' },
+            { label: 'Inti', value: 'c' },
+            { label: 'Penutup', value: 'r' },
           ]},
           { key: 'durasi', label: 'Durasi', type: 'text', placeholder: '10 menit' },
           { key: 'judul', label: 'Nama Kegiatan', type: 'text', required: true, placeholder: 'Apersepsi' },
@@ -918,8 +938,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title'] },
-      { key: 'steps', label: 'Langkah Kegiatan', fieldKeys: ['steps'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'steps'] },
     ],
   },
 
@@ -946,8 +965,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['namaBab', 'jumlahPertemuan'] },
-      { key: 'pertemuan', label: 'Daftar Pertemuan', fieldKeys: ['pertemuan'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['namaBab', 'jumlahPertemuan', 'pertemuan'] },
     ],
   },
 
@@ -963,7 +981,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     fields: [
       { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Tujuan Pembelajaran' },
       { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum tab', placeholder: 'Eksplorasi tujuan pembelajaran hari ini' },
-      { key: 'layout', label: 'Tata Letak', type: 'select', options: [
+      { key: 'layoutVariant', label: 'Tata Letak', type: 'select', options: [
         { label: 'Horizontal', value: 'horizontal' },
         { label: 'Vertikal', value: 'vertical' },
         { label: 'Pills', value: 'pills' },
@@ -989,9 +1007,8 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'style', label: 'Gaya', fieldKeys: ['layout', 'animation'] },
-      { key: 'tabs', label: 'Daftar Tab', fieldKeys: ['tabs'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'tabs'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layoutVariant', 'animation'], collapsed: true },
     ],
   },
 
@@ -1017,8 +1034,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'items', label: 'Daftar Item', fieldKeys: ['items'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'items'] },
     ],
   },
 
@@ -1045,8 +1061,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title'] },
-      { key: 'steps', label: 'Langkah-langkah', fieldKeys: ['steps'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'steps', 'accentColor'] },
     ],
   },
 
@@ -1058,7 +1073,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     fields: [
       { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Profil Pelajar Pancasila' },
       { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum kartu', placeholder: 'Dimensi yang dikembangkan...' },
-      { key: 'layout', label: 'Tata Letak', type: 'select', options: [
+      { key: 'layoutVariant', label: 'Tata Letak', type: 'select', options: [
         { label: 'Grid', value: 'grid' },
         { label: 'List', value: 'list' },
         { label: 'Timeline', value: 'timeline' },
@@ -1079,9 +1094,169 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
     ],
     sections: [
-      { key: 'header', label: 'Header', fieldKeys: ['title', 'intro'] },
-      { key: 'style', label: 'Gaya', fieldKeys: ['layout'] },
-      { key: 'kartu', label: 'Daftar Kartu', fieldKeys: ['kartu'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'kartu'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layoutVariant', 'accentColor'], collapsed: true },
+    ],
+  },
+
+  // ── Sprint 2B: MateriBlok Guided Editor ────────────────────────
+  // The most important content block — teachers need this to edit
+  // materi content without falling through to raw SchemaDrivenEditor.
+  //
+  // P1 FIX: Merged duplicate entry. The old Entry 1 (displayName
+  // 'Konten Materi') was silently overwritten by this entry. Now
+  // this is the single source of truth, with kutipan and gambar
+  // added to options + showWhen per MateriBlokRenderer support.
+  //
+  // Supported tipe (from MateriBlokRenderer + MateriBlokTipe):
+  //   teks, definisi, poin, checklist, infobox, highlight,
+  //   kutipan, gambar, tabel, timeline, compare, statistik, studi
+  // Guided editor currently exposes 8 most-used types.
+  // Remaining 5 (tabel, timeline, compare, statistik, studi) can
+  // be added in future sprints when their guided fields are defined.
+
+  'materi-blok': {
+    blockType: 'materi-blok',
+    displayName: 'Materi',
+    description: 'Blok konten materi — pilih tipe dan isi konten sesuai kebutuhan',
+    icon: '📚',
+    fields: [
+      {
+        key: 'tipe',
+        label: 'Tipe Konten',
+        type: 'select',
+        required: true,
+        helpText: 'Pilih jenis konten yang ingin ditampilkan',
+        options: [
+          { label: 'Paragraf', value: 'teks' },
+          { label: 'Definisi', value: 'definisi' },
+          { label: 'Poin-poin', value: 'poin' },
+          { label: 'Checklist', value: 'checklist' },
+          { label: 'Info Box', value: 'infobox' },
+          { label: 'Highlight', value: 'highlight' },
+          { label: 'Kutipan', value: 'kutipan' },
+          { label: 'Gambar', value: 'gambar' },
+        ],
+      },
+      { key: 'judul', label: 'Judul', type: 'text', helpText: 'Judul opsional untuk blok materi', placeholder: 'Judul materi...' },
+      { key: 'isi', label: 'Isi Konten', type: 'textarea', showWhen: { field: 'tipe', values: ['teks', 'definisi', 'infobox', 'highlight', 'kutipan', 'gambar'] }, helpText: 'Teks utama konten (untuk gambar: URL gambar)', placeholder: 'Tulis konten di sini...' },
+      { key: 'karakter', label: 'Sumber Kutipan', type: 'text', showWhen: { field: 'tipe', values: ['kutipan'] }, helpText: 'Nama tokoh atau sumber kutipan', placeholder: '— Nama tokoh...' },
+      { key: 'butir', label: 'Butir-butir', type: 'array', maxItems: 6, showWhen: { field: 'tipe', values: ['poin', 'checklist'] }, helpText: 'Setiap butir menjadi satu poin/checklist', fields: [
+        { key: '', label: 'Butir', type: 'text', placeholder: 'Tulis poin...' },
+      ]},
+      { key: 'warna', label: 'Warna Border', type: 'color', showWhen: { field: 'tipe', values: ['definisi', 'highlight'] }, helpText: 'Warna aksen untuk kotak definisi/highlight' },
+      { key: 'icon', label: 'Ikon', type: 'icon', showWhen: { field: 'tipe', values: ['highlight'] }, helpText: 'Ikon untuk blok highlight' },
+      { key: 'infoboxStyle', label: 'Gaya Info Box', type: 'select', showWhen: { field: 'tipe', values: ['infobox'] }, options: [
+        { label: 'Info', value: 'info' },
+        { label: 'Tips', value: 'tips' },
+        { label: 'Peringatan', value: 'warning' },
+        { label: 'Berhasil', value: 'success' },
+      ]},
+      // P3 NOTE: accentColor exists in MateriBlokBlock type but is not
+      // read by MateriBlokRenderer. Keeping field for forward compat
+      // but renderer does not use it yet. See P3 backlog.
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'karakter', 'butir'] },
+      { key: 'style', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle', 'accentColor'], collapsed: true },
+    ],
+  },
+
+  // ── Sprint 2C Prep: Sortir Game Guided Editor ──────────────────
+  // Teachers need to edit game title, pool items, and kolom columns
+  // via the right panel guided form, not raw SchemaDrivenEditor.
+
+  'sortir-game': {
+    blockType: 'sortir-game',
+    displayName: 'Game Sortir',
+    description: 'Game mengelompokkan kartu ke kolom yang tepat',
+    icon: '🎮',
+    fields: [
+      { key: 'title', label: 'Judul Game', type: 'text', required: true, helpText: 'Judul game yang terlihat di bagian atas', placeholder: 'Game Sortir...' },
+      {
+        key: 'kolom',
+        label: 'Kolom Kategori',
+        type: 'array',
+        maxItems: 4,
+        helpText: 'Kolom tujuan — siswa memindahkan kartu ke kolom yang benar',
+        fields: [
+          { key: 'label', label: 'Label Kolom', type: 'text', required: true, placeholder: 'Nama kategori...' },
+          { key: 'color', label: 'Warna', type: 'color', helpText: 'Warna aksen kolom' },
+        ],
+      },
+      {
+        key: 'pool',
+        label: 'Kartu Sortir',
+        type: 'array',
+        maxItems: 8,
+        helpText: 'Kartu yang harus dikelompokkan — setiap kartu milik satu kolom',
+        fields: [
+          { key: 'text', label: 'Teks Kartu', type: 'text', required: true, placeholder: 'Tulis teks kartu...' },
+          { key: 'category', label: 'Kolom Tujuan', type: 'text', helpText: 'ID kolom tempat kartu ini benar (harus cocok dengan kolom di atas)' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'kolom', 'pool'] },
+    ],
+  },
+
+  'gambar': {
+    blockType: 'gambar',
+    displayName: 'Gambar',
+    description: 'Sisipkan gambar ke halaman materi',
+    icon: '🖼️',
+    fields: [
+      { key: 'title', label: 'Judul Gambar', type: 'text', helpText: 'Judul opsional di atas gambar', placeholder: 'Contoh: Diagram Sistem Pernapasan' },
+      { key: 'url', label: 'URL Gambar', type: 'text', required: true, helpText: 'Tempel tautan gambar dari internet.', placeholder: 'https://contoh.com/gambar.jpg' },
+      { key: 'caption', label: 'Keterangan', type: 'textarea', helpText: 'Keterangan singkat di bawah gambar', placeholder: 'Sumber: Buku Paket Hal. 45' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', defaultValue: 'c' },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'url', 'caption'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
+    ],
+  },
+
+  // ── D8 P3B: Roda Game Guided Editor ────────────────────────────
+  // Only fields the renderer actually reads are exposed.
+  // stepMode, currentQuestionIndex, variant, accentColor are NOT shown
+  // because RodaGameRenderer does not use them.
+  'roda-game': {
+    blockType: 'roda-game',
+    displayName: 'Roda Pertanyaan',
+    description: 'Game roda berputar dengan soal pilihan ganda',
+    icon: '🎡',
+    fields: [
+      { key: 'title', label: 'Judul Game', type: 'text', required: true, placeholder: 'Contoh: Roda Pengetahuan' },
+      {
+        key: 'questions',
+        label: 'Soal',
+        type: 'array',
+        maxItems: 6,
+        helpText: 'Maksimal 6 soal. Setiap soal menjadi satu segmen roda.',
+        fields: [
+          { key: 'q', label: 'Pertanyaan', type: 'textarea', required: true },
+          {
+            key: 'opts',
+            label: 'Pilihan Jawaban',
+            type: 'array',
+            maxItems: 4,
+            helpText: 'Tandai jawaban yang benar.',
+            fields: [
+              { key: 'text', label: 'Teks Jawaban', type: 'text', required: true },
+              { key: 'correct', label: 'Jawaban Benar', type: 'boolean' },
+            ],
+          },
+          { key: 'feedbackCorrect', label: 'Feedback Benar', type: 'text', placeholder: 'Benar!' },
+          { key: 'feedbackWrong', label: 'Feedback Salah', type: 'text', placeholder: 'Coba lagi.' },
+          { key: 'diskusiHint', label: 'Hint Diskusi', type: 'text' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
     ],
   },
 };
@@ -1100,7 +1275,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
  *   - Total scenes needed
  *   - Human-readable summary
  */
-function checkOverflowRich(schema: ScreenSchema, templateType?: string): OverflowCheckResult {
+export function checkOverflowRich(schema: ScreenSchema, templateType?: string): OverflowCheckResult {
   if (!schema.blocks || schema.blocks.length === 0) {
     return {
       overflowDetected: false,

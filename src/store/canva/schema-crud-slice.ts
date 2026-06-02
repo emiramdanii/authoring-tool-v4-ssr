@@ -9,7 +9,7 @@
 import { toast } from 'sonner';
 import { produceWithPatches } from 'immer';
 import type { StateCreator } from 'zustand';
-import type { CanvaState } from './types';
+import type { CanvaState, UpdateSchemaBlockOptions } from './types';
 import type { SchemaBlock, ScreenSchema } from '@/core/schema/types';
 import { deepMergeBlock, mergeBlockInArray } from '@/core/editor/deep-merge';
 import { editBus } from '@/core/editor/edit-bus';
@@ -32,8 +32,9 @@ export type SchemaCRDSlice = Pick<
 export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSlice> = (set, get) => ({
 
   // ── Schema Block Content Editing (DEEP PATCH MERGE) ──────────
-  // Flow: UI editor → updateSchemaBlock(id, patch) → deep merge → page.schema → renderer → rerender
-  updateSchemaBlock: (blockId, updates) => {
+  // Flow: UI editor → updateSchemaBlock(id, patch, options?) → deep merge → page.schema → renderer → rerender
+  // D2 Fix: Now supports dirty tracking + optional overflow check to align with applyGuidedSchemaPatch.
+  updateSchemaBlock: (blockId, updates, options?: UpdateSchemaBlockOptions) => {
     const { pages, currentPageIndex } = get();
     let page = pages[currentPageIndex];
     if (!page || !blockId) return;
@@ -54,29 +55,35 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const owner = findBlockOwner(blocks, blockId);
     if (!owner) return;
 
+    // D2: Resolve options with defaults
+    const overflowPolicy = options?.overflowPolicy ?? 'none';
+    const source = options?.source ?? 'user';
+
     get()._pushHistory();
+
+    let newSchema: ScreenSchema;
+    let blockType: string;
 
     if (owner.kind === 'top-level') {
       const { blocks: newBlocks, patches: forwardPatches, inversePatches } =
         mergeBlockInArray(blocks, owner.index, updates);
 
+      blockType = blocks[owner.index]!.type;
+
       editBus.emit({
         type: 'patch',
         patch: {
           blockId,
-          blockType: blocks[owner.index]!.type,
+          blockType,
           pageIndex: currentPageIndex,
           patch: updates,
           timestamp: Date.now(),
-          source: 'user',
+          source,
           _immerPatches: { forward: forwardPatches, inverse: inversePatches, pageIndex: currentPageIndex },
         },
       });
 
-      const newSchema: ScreenSchema = commitSchemaUpdate(schema, newBlocks);
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: newSchema };
-      set({ pages: newPages });
+      newSchema = commitSchemaUpdate(schema, newBlocks);
     } else {
       const [newBlocks, forwardPatches, inversePatches] = produceWithPatches(blocks, draft => {
         let target: SchemaBlock | undefined;
@@ -94,34 +101,82 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
         }
       });
 
-      let nestedBlockType = 'unknown';
       if (owner.kind === 'ftab-tab') {
         const ft = blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
-        nestedBlockType = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex]?.type || 'unknown';
+        blockType = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex]?.type || 'unknown';
       } else if (owner.kind === 'materi-section') {
         const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
-        nestedBlockType = ms.content?.[owner.childIndex]?.type || 'unknown';
-      } else if (owner.kind === 'children') {
-        nestedBlockType = blocks[owner.blockIndex]!.children?.[owner.childIndex]?.type || 'unknown';
+        blockType = ms.content?.[owner.childIndex]?.type || 'unknown';
+      } else {
+        blockType = blocks[owner.blockIndex]!.children?.[owner.childIndex]?.type || 'unknown';
       }
 
       editBus.emit({
         type: 'patch',
         patch: {
           blockId,
-          blockType: nestedBlockType,
+          blockType,
           pageIndex: currentPageIndex,
           patch: updates,
           timestamp: Date.now(),
-          source: 'user',
+          source,
           _immerPatches: { forward: forwardPatches, inverse: inversePatches, pageIndex: currentPageIndex },
         },
       });
 
-      const newSchema: ScreenSchema = commitSchemaUpdate(schema, newBlocks as SchemaBlock[]);
-      const newPages = [...pages];
-      newPages[currentPageIndex] = { ...page, schema: newSchema };
-      set({ pages: newPages });
+      newSchema = commitSchemaUpdate(schema, newBlocks as SchemaBlock[]);
+    }
+
+    const newPages = [...pages];
+    newPages[currentPageIndex] = { ...page, schema: newSchema };
+    set({ pages: newPages });
+
+    // D2: Dirty tracking — mark project as having unsaved changes
+    try {
+      const { useDirtyStore } = require('@/store/dirty-store');
+      useDirtyStore.getState().markDirty();
+    } catch { /* SSR guard */ }
+
+    // D2: Optional overflow check — same engine as applyGuidedSchemaPatch
+    if (overflowPolicy !== 'none') {
+      try {
+        const { checkOverflowRich } = require('@/core/schema/guided-patch');
+        const check = checkOverflowRich(newSchema, page.templateType);
+        if (check.overflowDetected) {
+          try {
+            const { useOverflowWarningStore } = require('@/store/overflow-warning-store');
+            useOverflowWarningStore.getState().setWarning({
+              pageId: page.id,
+              blockId,
+              source,
+              details: check,
+              timestamp: Date.now(),
+            });
+          } catch { /* overflow store not available */ }
+          if (overflowPolicy === 'warn') {
+            console.warn(
+              `[updateSchemaBlock] Overflow detected on page "${page.id}" after patching block "${blockId}". ${check.summary}`
+            );
+          }
+        } else {
+          // Auto-clear stale overflow status when content fits
+          try {
+            const { useOverflowWarningStore } = require('@/store/overflow-warning-store');
+            const overflowStore = useOverflowWarningStore.getState();
+            const currentStatus = overflowStore.pageOverflowStatus[page.id];
+            if (currentStatus?.hasOverflow) {
+              overflowStore.clearPageOverflowStatus(page.id);
+            }
+            const currentWarning = overflowStore.lastWarning;
+            if (currentWarning?.pageId === page.id) {
+              overflowStore.clearWarning();
+            }
+          } catch { /* overflow store not available */ }
+        }
+      } catch {
+        // checkOverflowRich not available (circular dependency guard) — skip overflow check silently
+        // This is acceptable: overflow check is optional, not critical path.
+      }
     }
   },
 

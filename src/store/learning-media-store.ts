@@ -175,7 +175,7 @@ function computePageStatus(
   });
 
   const interaction = pageInteractions.get(screenIndex);
-  const hasInteraction = !!(interaction?.hasAnswered || interaction?.hasReflected);
+  const hasInteraction = !!(interaction?.hasAnswered || interaction?.hasCompletedGame || interaction?.hasReflected);
 
   return getPageCompletionStatus(contract, hasBeenVisited, hasScore, hasInteraction);
 }
@@ -194,7 +194,7 @@ export const useLearningMediaStore = create<LearningMediaState>((set, get) => ({
   isComplete: false,
   showCompletionModal: false,
   sessionInitialized: false,
-  learnSubMode: 'edit' as 'edit' | 'play',
+  learnSubMode: 'play' as 'edit' | 'play',
   navigationLockReason: '',
   showLockToast: false,
 
@@ -223,7 +223,7 @@ export const useLearningMediaStore = create<LearningMediaState>((set, get) => ({
       isComplete: false,
       showCompletionModal: false,
       sessionInitialized: true,
-      learnSubMode: 'edit',
+      learnSubMode: 'play',
       navigationLockReason: '',
       showLockToast: false,
     });
@@ -355,11 +355,10 @@ export const useLearningMediaStore = create<LearningMediaState>((set, get) => ({
   },
 
   setLearnSubMode: (mode) => {
-    // When switching to play mode, stop any active editing
-    if (mode === 'play') {
-      const { stopEditing } = require('@/store/canva-store').useCanvaStore.getState();
-      if (stopEditing) stopEditing();
-    }
+    // When switching to play mode, any active editing must be stopped.
+    // This is handled at the UI layer (LearningMediaShell useEffect watches
+    // learnSubMode and calls stopEditing) rather than here, to avoid
+    // CommonJS require() in an ESM codebase and keep the store pure.
     set({ learnSubMode: mode });
   },
 
@@ -383,7 +382,7 @@ export const useLearningMediaStore = create<LearningMediaState>((set, get) => ({
     isComplete: false,
     showCompletionModal: false,
     sessionInitialized: false,
-    learnSubMode: 'edit' as 'edit' | 'play',
+    learnSubMode: 'play' as 'edit' | 'play',
     navigationLockReason: '',
     showLockToast: false,
   }),

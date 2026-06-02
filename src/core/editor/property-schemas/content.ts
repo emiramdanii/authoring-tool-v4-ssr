@@ -402,14 +402,26 @@ export const TABICONS_PROPERTY_SCHEMA: PropertySchema = {
   ],
   properties: [
     { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
-    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'intro', type: 'textarea', label: 'Pengantar', group: 'content', rows: 2 },
+    { key: 'layoutVariant', type: 'select', label: 'Tata Letak', group: 'style', options: [
+      { label: 'Horizontal', value: 'horizontal' },
+      { label: 'Vertikal', value: 'vertical' },
+      { label: 'Pills', value: 'pills' },
+    ]},
+    { key: 'animation', type: 'select', label: 'Animasi', group: 'style', options: [
+      { label: 'Fade', value: 'fade' },
+      { label: 'Slide Up', value: 'slide-up' },
+      { label: 'Zoom', value: 'zoom' },
+      { label: 'Bounce', value: 'bounce' },
+    ]},
     {
       key: 'tabs', type: 'array', label: 'Tab', group: 'tabs',
       fields: [
         { key: 'icon', label: 'Icon', type: 'icon', placeholder: '🏷️' },
-        { key: 'label', label: 'Label Tab', type: 'text' },
-        { key: 'content', label: 'Konten', type: 'textarea' },
-        { key: 'color', label: 'Warna', type: 'color' },
+        { key: 'judul', label: 'Judul Tab', type: 'text' },
+        { key: 'isi', label: 'Isi Tab', type: 'textarea' },
+        { key: 'warna', label: 'Warna', type: 'color' },
       ],
     },
     { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
@@ -426,14 +438,14 @@ export const ACCORDION_PROPERTY_SCHEMA: PropertySchema = {
   ],
   properties: [
     { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
-    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'intro', type: 'textarea', label: 'Pengantar', group: 'content', rows: 2 },
     {
       key: 'items', type: 'array', label: 'Item', group: 'content',
       fields: [
         { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📂' },
-        { key: 'title', label: 'Judul', type: 'text' },
-        { key: 'content', label: 'Konten', type: 'textarea' },
-        { key: 'color', label: 'Warna', type: 'color' },
+        { key: 'judul', label: 'Judul', type: 'text' },
+        { key: 'isi', label: 'Konten', type: 'textarea' },
       ],
     },
     { key: 'interactive', type: 'boolean', label: 'Interaktif', group: 'style', defaultValue: true },
@@ -451,15 +463,20 @@ export const INFOGRAFIS_PROPERTY_SCHEMA: PropertySchema = {
   ],
   properties: [
     { key: 'variant', type: 'variant', label: 'Varian', group: 'style' },
-    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'title', type: 'text', label: 'Judul', group: 'content', required: true },
+    { key: 'intro', type: 'textarea', label: 'Pengantar', group: 'content', rows: 2 },
+    { key: 'layoutVariant', type: 'select', label: 'Tata Letak', group: 'style', options: [
+      { label: 'Grid', value: 'grid' },
+      { label: 'List', value: 'list' },
+      { label: 'Timeline', value: 'timeline' },
+    ]},
     {
-      key: 'cards', type: 'array', label: 'Kartu', group: 'content',
+      key: 'kartu', type: 'array', label: 'Kartu', group: 'content',
       fields: [
         { key: 'icon', label: 'Icon', type: 'icon', placeholder: '📊' },
-        { key: 'title', label: 'Judul', type: 'text' },
-        { key: 'body', label: 'Isi', type: 'textarea' },
-        { key: 'stat', label: 'Statistik', type: 'text' },
-        { key: 'color', label: 'Warna', type: 'color' },
+        { key: 'judul', label: 'Judul', type: 'text' },
+        { key: 'isi', label: 'Isi', type: 'textarea' },
+        { key: 'warna', label: 'Warna', type: 'color' },
       ],
     },
     { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },

@@ -17,6 +17,7 @@ import { ScreenShell } from '../ScreenShell';
 import { SchemaScreenRenderer, type TokenResolver, type SchemaRenderMode } from '../../SchemaRenderer';
 import type { ScreenSchema } from '@/core/schema/types';
 import type { SceneResolution, SafeArea } from '@/core/scene/SceneLayoutEngine';
+import { LearningEditProvider, type LearningEditContextValue } from '@/components/canva/LearningEditContext';
 
 export interface MotivasiScreenProps {
   page: CanvaPage;
@@ -33,6 +34,16 @@ export interface MotivasiScreenProps {
   pageIndex?: number;
   sceneType?: import('@/core/edu/education-scene-types').SceneType;
   totalPages?: number;
+  /** Whether inline editing is enabled (teacher mode) */
+  editable?: boolean;
+  /** Learning edit context value for providing to block renderers */
+  editContext?: LearningEditContextValue | null;
+  /** ID of the block currently being edited */
+  editingBlockId?: string | null;
+  /** Callback when a block edit is requested */
+  onBlockEdit?: (blockId: string, blockType: string) => void;
+  /** Callback when a block is selected */
+  onBlockSelect?: (blockId: string, blockType: string, addToSelection?: boolean) => void;
 }
 
 export const MotivasiScreen = React.memo(function MotivasiScreen({
@@ -50,6 +61,11 @@ export const MotivasiScreen = React.memo(function MotivasiScreen({
   pageIndex = 0,
   sceneType,
   totalPages = 1,
+  editable = false,
+  editContext = null,
+  editingBlockId,
+  onBlockEdit,
+  onBlockSelect,
 }: MotivasiScreenProps) {
   const isCompact = mode === 'canvas';
 
@@ -66,8 +82,17 @@ export const MotivasiScreen = React.memo(function MotivasiScreen({
       showBottomNav={showBottomNav}
       pageIndex={pageIndex}
       sceneType={sceneType}
+      editingBlockId={editingBlockId}
+      onBlockEdit={onBlockEdit}
+      onBlockSelect={onBlockSelect}
     />
   );
+
+  const contentWithEditContext = editContext ? (
+    <LearningEditProvider value={editContext}>
+      {screenContent}
+    </LearningEditProvider>
+  ) : screenContent;
 
   return (
     <ScreenShell
@@ -80,8 +105,9 @@ export const MotivasiScreen = React.memo(function MotivasiScreen({
       isCompact={isCompact}
       pageIndex={pageIndex}
       totalPages={totalPages}
+      editable={editable}
     >
-      {screenContent}
+      {contentWithEditContext}
     </ScreenShell>
   );
 });

@@ -354,9 +354,23 @@ export const PageFrame = React.memo(function PageFrame({
   const showPrevNext = navConfig.showPrevNext !== false;
   // Schema-driven cover pages don't show top nav — the CoverRenderer has its own background
   const isSchemaCover = isSchemaDriven && page.templateType === 'cover';
-  const showTopNav = !isSchemaCover && page.templateType !== 'cover' && showNavbar;
   const isCoverPage = page.templateType === 'cover';
-  const showBottomNav = showNavbar && !isCoverPage;
+
+  // ═══ Sprint 4 (Engine): Hide PageFrame navbars when external navigation exists ═══
+  // In learn mode: LearningMediaShell provides TopNavbar + BottomNav
+  // In preview mode: PreviewMode provides floating navigation bar
+  // In canvas mode: PageFrame navbars are needed for editing context
+  // In export mode: PageFrame navbars are the primary navigation (no external nav)
+  //
+  // When isSchemaDriven is true AND mode is 'learn'/'preview', the ScreenAdapter
+  // system provides page-level chrome (ScreenShell with progress bar, section label,
+  // page counter). PageFrame's navbars would be duplicate and should be hidden.
+  //
+  // For legacy (non-schema) pages, keep navbars in all modes since there's no
+  // ScreenAdapter chrome to replace them.
+  const externalNavigation = isSchemaDriven && (mode === 'learn' || mode === 'preview');
+  const showTopNav = !isSchemaCover && !isCoverPage && showNavbar && !externalNavigation;
+  const showBottomNav = showNavbar && !isCoverPage && !externalNavigation;
 
   // Use shared TokenResolver from PageRenderer (ensures palette overrides are consistent)
   const themeId = (page.templateData?.schemaThemeId as string) || undefined;
@@ -427,32 +441,18 @@ export const PageFrame = React.memo(function PageFrame({
         </>
       )}
       {isSchemaDriven && (() => {
-        const schemaBg = page.schema?.background;
-        let baseBg = modeBg.bg;
-        if (schemaBg?.type === 'solid') baseBg = displayMode === 'print' ? modeBg.bg : tokens.color(schemaBg.color1 || 'bg');
-        else if (schemaBg?.type === 'gradient') baseBg = `linear-gradient(180deg, ${tokens.color(schemaBg.color1 || 'y')}, ${tokens.color(schemaBg.color2 || 'bg')})`;
-        else if (schemaBg?.type === 'radial') baseBg = `radial-gradient(ellipse 90% 60% at 50% 0%, ${tokens.colorAlpha(schemaBg.color1 || 'y', 0.18)}, transparent 60%), linear-gradient(180deg, ${tokens.color(schemaBg.color2 || 'bg')}, ${modeBg.bg2})`;
-        else baseBg = page.bgColor || modeBg.bg;
-
-        return (
-          <>
-            <div className="absolute inset-0" style={{ background: baseBg }} />
-            {schemaBg?.imageUrl && (
-              <>
-                <img
-                  src={schemaBg.imageUrl}
-                  alt=""
-                  role="presentation"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ background: `rgba(0,0,0,${(schemaBg.overlay ?? 40) / 100})` }}
-                />
-              </>
-            )}
-          </>
-        );
+        // Sprint 1G: PageFrame only renders the canvas base for schema pages.
+        // All background layers (color, image, overlay) are handled by
+        // SchemaScreenRenderer which has full control over the layer stack:
+        //   Layer 0: Canvas base (EDU_MODE_BG)
+        //   Layer 1: Background style (solid/gradient/radial)
+        //   Layer 2: Background media (image with fit/opacity/blur)
+        //   Layer 3: Overlay/scrim (dark/light/gradient)
+        //   Layer 4: Content (blocks, navbars)
+        // This eliminates the duplicate background image rendering that
+        // existed before Sprint 1G (PageFrame + SchemaRenderer both rendered it).
+        const baseBg = modeBg.bg;
+        return <div className="absolute inset-0" style={{ background: baseBg }} />;
       })()}
 
       {/* ══ Top Navbar ════════════════════════════════════════ */}

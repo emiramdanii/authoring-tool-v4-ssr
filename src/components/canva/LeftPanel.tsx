@@ -1,26 +1,7 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-// All icons migrated to Material Symbols Outlined
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
-import type { PageTemplateType } from './types';
-import { RATIOS } from './types';
-import { getPresetsGroupedByCategory, type PagePreset } from '@/core/preset/PagePresetRegistry';
-import {
-  TEMPLATE_BADGE_MAP,
-  getModuleIcon,
-  getGameIcon,
-} from '@/lib/canva-icon-maps';
-import { GAME_TYPES } from '@/lib/canva-constants';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { IconRail } from './left-panel/IconRail';
 import type { LeftTab } from './types';
 import { SceneList } from './left-panel/SceneList';
@@ -29,19 +10,13 @@ import { TemplateSection } from './left-panel/TemplateSection';
 import { SettingsSection } from './left-panel/SettingsSection';
 import { SchemaBlockTree } from './left-panel/SchemaBlockTree';
 import { getPageBlocks } from '@/core/schema/ensure-schema';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
+import { FloatingPageMenu } from './left-panel/FloatingPageMenu';
+import type { PageTemplateType } from './types';
 
 import HistoryPanel from './left-panel/HistoryPanel';
-import AddBlockPanel from './left-panel/AddBlockPanel';
+
 import dynamic from 'next/dynamic';
-
-const TemplateGalleryPanel = dynamic(() => import('./left-panel/TemplateGalleryPanel'), {
-  ssr: false,
-  loading: () => <div className="h-32 animate-pulse bg-silse-surface-container-high/20 rounded-lg" />,
-});
-
-import { getAvailablePresets } from '@/core/engine/SchemaEngine';
-import { ensurePageSchema } from '@/core/schema/ensure-schema';
-import { getBlockDefinition } from '@/core/registry/SceneRegistry';
 
 const PageTypeCreator = dynamic(() => import('./PageTypeCreator'), {
   ssr: false,
@@ -69,6 +44,7 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), {
 // ── SchemaBlockTree with badge showing total block count ──
 function SchemaBlockTreeWithBadge() {
   const pages = useCanvaStore(s => s.pages);
+  const { isSederhana } = useTeacherMode();
   const totalBlocks = useMemo(() => {
     let count = 0;
     for (const page of pages) {
@@ -79,6 +55,10 @@ function SchemaBlockTreeWithBadge() {
     return count;
   }, [pages]);
 
+  const blockCountLabel = isSederhana
+    ? `${totalBlocks} isi`
+    : `${totalBlocks} block${totalBlocks !== 1 ? 's' : ''}`;
+
   return (
     <div>
       <div className="flex items-center gap-1.5 px-1 mb-1">
@@ -87,8 +67,10 @@ function SchemaBlockTreeWithBadge() {
       {totalBlocks > 0 && (
         <div className="px-1 mt-0.5">
           <span className="silse-chip text-[9px] py-0.5 px-2">
-            <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>bolt</span>
-            {totalBlocks} block{totalBlocks !== 1 ? 's' : ''}
+            {!isSederhana && (
+              <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>bolt</span>
+            )}
+            {blockCountLabel}
           </span>
         </div>
       )}
@@ -106,22 +88,35 @@ export default function LeftPanel() {
   const [searchFilter, setSearchFilter] = useState('');
 
   const teacherMode = useCanvaStore(s => s.teacherMode);
-  const blockLabel = teacherMode ? 'Konten' : 'Block';
+  const { isSederhana } = useTeacherMode();
+  const blockLabel = teacherMode ? 'Isi' : 'Block';
 
   // When store leftTab changes (e.g., from CommandPalette or Stage buttons),
   // sync local activeTab
+  // Sprint 1E.3: redirect 'templates' to 'pages' in teacher mode
   const prevStoreTab = useRef(storeLeftTab);
   useEffect(() => {
     if (storeLeftTab !== prevStoreTab.current) {
       prevStoreTab.current = storeLeftTab;
-      setActiveTab(storeLeftTab as LeftTab);
+      const resolved = (storeLeftTab === 'templates' && isSederhana) ? 'pages' : storeLeftTab;
+      setActiveTab(resolved as LeftTab);
     }
-  }, [storeLeftTab]);
+  }, [storeLeftTab, isSederhana]);
 
   const handleTabChange = (tab: LeftTab) => {
-    setActiveTab(tab);
+    // Sprint 1E.3: block 'templates' tab in teacher mode
+    const resolved = (tab === 'templates' && isSederhana) ? 'pages' : tab;
+    setActiveTab(resolved);
     // Sync store so other components (CommandPalette, Stage) can read current tab
-    useCanvaStore.getState().setLeftTab(tab);
+    useCanvaStore.getState().setLeftTab(resolved);
+  };
+
+  // Sprint 1E.4: add page from floating menu — stays on pages tab
+  const addTemplatePage = useCanvaStore(s => s.addTemplatePage);
+  const handleAddFromMenu = (templateType: PageTemplateType) => {
+    addTemplatePage(templateType);
+    // Ensure we stay on pages tab (no switch to add-block)
+    handleTabChange('pages');
   };
 
   return (
@@ -137,15 +132,17 @@ export default function LeftPanel() {
             className="text-[13px] font-bold text-silse-on-surface tracking-tight"
             style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
           >
-            Workspace
+            Halaman Media
           </h3>
-          <button
-            onClick={() => handleTabChange('add-block')}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-primary hover:bg-silse-primary-container/20 transition-colors"
-            aria-label="Tambah baru"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
-          </button>
+          {/* Sprint 1E.4: Floating Add Menu — no tab switch, panel stays on pages */}
+          <FloatingPageMenu onSelect={handleAddFromMenu} align="end" side="bottom">
+            <button
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-silse-primary hover:bg-silse-primary-container/20 transition-colors"
+              aria-label="Tambah halaman"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
+            </button>
+          </FloatingPageMenu>
         </div>
 
         {/* Search filter — only show on Pages tab */}
@@ -183,7 +180,7 @@ export default function LeftPanel() {
                   <div className="flex items-center gap-1.5 mb-2 px-1">
                     <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>layers</span>
                     <span className="text-[10px] uppercase tracking-widest text-silse-outline font-bold">
-                      Scenes
+                      Halaman
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -194,7 +191,7 @@ export default function LeftPanel() {
                 {/* Schema Block Tree — integrated per page */}
                 <SchemaBlockTreeWithBadge />
 
-                {/* Library Blocks Section — 2x2 dashed grid */}
+                {/* Quick Add — Sprint 1E.4: replaced with compact floating menu triggers */}
                 <div className="pt-2 border-t border-silse-outline-variant/40">
                   <div className="flex items-center gap-1.5 mb-2 px-1">
                     <span className="material-symbols-outlined text-silse-outline" style={{ fontSize: '14px' }}>grid_view</span>
@@ -202,28 +199,33 @@ export default function LeftPanel() {
                       Quick Add
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className={`grid gap-1.5 ${isSederhana ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                    {/* Materi — add page directly, no tab switch */}
                     <button
-                      onClick={() => handleTabChange('add-block')}
+                      onClick={() => handleAddFromMenu('materi')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-primary/5 hover:border-silse-primary/30 transition-all group"
                     >
                       <span className="material-symbols-outlined text-silse-primary mb-0.5" style={{ fontSize: '18px' }}>menu_book</span>
                       <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-primary">Materi</span>
                     </button>
+                    {/* Kuis — add page directly, no tab switch */}
                     <button
-                      onClick={() => handleTabChange('add-block')}
+                      onClick={() => handleAddFromMenu('kuis')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-tertiary/5 hover:border-silse-tertiary/30 transition-all group"
                     >
                       <span className="material-symbols-outlined text-silse-tertiary mb-0.5" style={{ fontSize: '18px' }}>quiz</span>
                       <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-tertiary">Kuis</span>
                     </button>
+                    {/* Game — add page directly, no tab switch */}
                     <button
-                      onClick={() => handleTabChange('add-block')}
+                      onClick={() => handleAddFromMenu('game')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-secondary/5 hover:border-silse-secondary/30 transition-all group"
                     >
                       <span className="material-symbols-outlined text-silse-secondary mb-0.5" style={{ fontSize: '18px' }}>sports_esports</span>
                       <span className="text-[10px] font-semibold text-silse-on-surface-variant group-hover:text-silse-secondary">Game</span>
                     </button>
+                    {/* Custom — advanced mode only, still goes to templates tab */}
+                    {!isSederhana && (
                     <button
                       onClick={() => handleTabChange('templates')}
                       className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-dashed border-silse-outline-variant/60 hover:bg-silse-on-surface-variant/5 hover:border-silse-on-surface-variant/30 transition-all group"
@@ -231,6 +233,7 @@ export default function LeftPanel() {
                       <span className="material-symbols-outlined text-silse-on-surface-variant mb-0.5" style={{ fontSize: '18px' }}>dashboard</span>
                       <span className="text-[10px] font-semibold text-silse-on-surface-variant">Custom</span>
                     </button>
+                    )}
                   </div>
                 </div>
               </>
@@ -240,7 +243,7 @@ export default function LeftPanel() {
               <AddBlockSection addBlockOpen={addBlockOpen} onToggle={() => setAddBlockOpen(!addBlockOpen)} />
             )}
 
-            {activeTab === 'templates' && (
+            {activeTab === 'templates' && !isSederhana && (
               <>
                 <TemplateSection galleryOpen={templateGalleryOpen} onToggle={() => setTemplateGalleryOpen(!templateGalleryOpen)} />
                 <PageTypeCreator />

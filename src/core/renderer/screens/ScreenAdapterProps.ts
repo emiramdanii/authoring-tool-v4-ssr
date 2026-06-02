@@ -20,7 +20,7 @@ export interface ScreenAdapterProps {
   schema: ScreenSchema;
   /** Token resolver for styling */
   tokens: TokenResolver;
-  /** Rendering mode (canvas/preview/export) */
+  /** Rendering mode (canvas/preview/export/learn) */
   mode: SchemaRenderMode;
   /** Screen config from registry */
   config: ScreenConfig;
@@ -42,4 +42,16 @@ export interface ScreenAdapterProps {
   sceneType?: SceneType;
   /** Total pages in the learning module */
   totalPages?: number;
+  /** Whether inline editing is enabled (teacher learning mode) */
+  editable?: boolean;
+  /** Learning edit context value for providing to block renderers */
+  editContext?: import('@/components/canva/LearningEditContext').LearningEditContextValue | null;
+
+  // ── Editing state (forwarded to SchemaScreenRenderer for learn/edit mode) ──
+  /** Currently editing block ID (learn/edit mode — for inline editing overlay) */
+  editingBlockId?: string | null;
+  /** Callback when a block is clicked for editing (learn/edit mode) */
+  onBlockEdit?: (blockId: string, blockType: string) => void;
+  /** Callback when a block is clicked (learn/edit mode — for selection without right panel) */
+  onBlockSelect?: (blockId: string, blockType: string, addToSelection?: boolean) => void;
 }

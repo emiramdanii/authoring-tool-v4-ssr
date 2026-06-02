@@ -14,6 +14,11 @@
 //   PageRuntimeContract → LearningMediaStore → BottomNav (lock)
 //   Score bridge: interactive-store → learning-media-store → navbar
 //   Edit vs Play: mode-aware click handling
+//
+// Sprint 3 (Runtime):
+//   - Added "Mulai" button on cover page (prominent CTA)
+//   - BottomNav now context-aware: Mulai/Selanjudnya/Terkunci/Selesai
+//   - Verified score bridge: kuis/game/refleksi → completion → unlock
 // ═══════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
@@ -145,6 +150,7 @@ function BottomNav({
   currentScreen,
   totalScreens,
   pageStatuses,
+  templateType,
   onNext,
   onPrev,
   onGoToScreen,
@@ -155,6 +161,7 @@ function BottomNav({
   currentScreen: number;
   totalScreens: number;
   pageStatuses: PageCompletionStatus[];
+  templateType: string;
   onNext: () => void;
   onPrev: () => void;
   onGoToScreen: (index: number) => void;
@@ -162,6 +169,9 @@ function BottomNav({
   lockReason: string;
   isDark: boolean;
 }) {
+  // Sprint 3: Cover page gets a prominent "Mulai" button
+  const isCoverPage = currentScreen === 0 && templateType === 'cover';
+
   // Completion indicator for each dot
   const getDotClass = (index: number) => {
     const isCurrent = index === currentScreen;
@@ -188,17 +198,21 @@ function BottomNav({
         ? 'bg-[#0e1c2f]/95 backdrop-blur-md border-t border-white/10'
         : 'bg-white border-t border-slate-200'
     }`}>
-      {/* Prev — always allowed */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onPrev}
-        disabled={currentScreen <= 0}
-        className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-30 active:scale-95 transition-transform"
-      >
-        <ChevronLeft size={18} />
-        <span className="hidden sm:inline">Sebelumnya</span>
-      </Button>
+      {/* Prev — always allowed (hidden on cover page) */}
+      {!isCoverPage ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onPrev}
+          disabled={currentScreen <= 0}
+          className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-30 active:scale-95 transition-transform"
+        >
+          <ChevronLeft size={18} />
+          <span className="hidden sm:inline">Sebelumnya</span>
+        </Button>
+      ) : (
+        <div className="w-24" /> /* Spacer on cover page — no prev button */
+      )}
 
       {/* Screen dots — with completion indicators */}
       <div className="flex items-center gap-1.5 overflow-x-auto max-w-[60%] px-2">
@@ -220,8 +234,19 @@ function BottomNav({
         })}
       </div>
 
-      {/* Next / Selesai — contract-aware */}
-      {currentScreen >= totalScreens - 1 ? (
+      {/* Sprint 3: Mulai / Next / Selesai / Terkunci — context-aware */}
+      {isCoverPage ? (
+        /* ── MULAI button — prominent CTA on cover page ── */
+        <Button
+          size="sm"
+          onClick={onNext}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/25 active:scale-95 transition-all"
+        >
+          <Play size={16} />
+          <span>Mulai</span>
+        </Button>
+      ) : currentScreen >= totalScreens - 1 ? (
+        /* ── SELESAI button — on last page ── */
         <Button
           size="sm"
           onClick={onNext}
@@ -231,6 +256,7 @@ function BottomNav({
           <span>Selesai</span>
         </Button>
       ) : isNextLocked ? (
+        /* ── TERKUNCI button — navigation locked by contract ── */
         <Button
           variant="ghost"
           size="sm"
@@ -242,6 +268,7 @@ function BottomNav({
           <span className="hidden sm:inline text-amber-600">Terkunci</span>
         </Button>
       ) : (
+        /* ── SELANJUTNYA button — normal next navigation ── */
         <Button
           variant="ghost"
           size="sm"
@@ -480,7 +507,16 @@ export default function LearningMediaShell() {
   const prevIdxRef = useRef(currentScreenIndex);
 
   // Initialize session on mount — pass template types for contract mapping
+  // Sprint 3: Also reset interactive-store scores so each Learn session
+  // starts fresh. Without this, stale persisted scores from localStorage
+  // would make pages appear as "completed" before the user even starts.
   useEffect(() => {
+    // Clear stale scores from previous sessions — each Learn session
+    // should be a fresh start. replayAll() also bumps replayGeneration
+    // so that all interactive renderers (kuis, game, refleksi) reset
+    // their internal state (answers, current question, etc.).
+    useInteractiveStore.getState().replayAll();
+
     const templateTypes = pages.map(p => p.templateType || 'custom');
     initSession(pages.length, templateTypes);
   }, [pages.length, initSession]); // Only re-init when page count changes
@@ -639,8 +675,15 @@ export default function LearningMediaShell() {
     setAppMode('edit');
   }, [setAppMode, stopEditing]);
 
-  // Handle restart
+  // Handle restart — reset both stores so the session is truly fresh
   const handleRestart = useCallback(() => {
+    // Reset interactive-store: clear scores + bump replayGeneration
+    // so all renderers (kuis, game, refleksi, diskusi) reset their
+    // internal state. Without this, stale scores persist in
+    // interactive-store (localStorage) and the bridge would sync
+    // them back to learning-media-store on the next score change.
+    useInteractiveStore.getState().replayAll();
+
     resetSession();
     const templateTypes = pages.map(p => p.templateType || 'custom');
     initSession(pages.length, templateTypes);
@@ -770,6 +813,7 @@ export default function LearningMediaShell() {
         currentScreen={currentScreenIndex}
         totalScreens={totalScreens}
         pageStatuses={pageStatuses}
+        templateType={templateType}
         onPrev={prevScreen}
         onNext={currentScreenIndex >= totalScreens - 1 ? handleSelesai : nextScreen}
         onGoToScreen={forceGoToScreen}

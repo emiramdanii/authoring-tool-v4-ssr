@@ -17,6 +17,7 @@ import { ScreenShell } from '../ScreenShell';
 import { SchemaScreenRenderer, type TokenResolver, type SchemaRenderMode } from '../../SchemaRenderer';
 import type { ScreenSchema } from '@/core/schema/types';
 import type { SceneResolution, SafeArea } from '@/core/scene/SceneLayoutEngine';
+import { LearningEditProvider, type LearningEditContextValue } from '@/components/canva/LearningEditContext';
 
 export interface PenutupScreenProps {
   page: CanvaPage;
@@ -33,6 +34,16 @@ export interface PenutupScreenProps {
   pageIndex?: number;
   sceneType?: import('@/core/edu/education-scene-types').SceneType;
   totalPages?: number;
+  /** Whether inline editing is enabled (teacher mode) */
+  editable?: boolean;
+  /** Learning edit context value for providing to block renderers */
+  editContext?: LearningEditContextValue | null;
+  /** ID of the block currently being edited */
+  editingBlockId?: string | null;
+  /** Callback when a block edit is requested */
+  onBlockEdit?: (blockId: string, blockType: string) => void;
+  /** Callback when a block is selected */
+  onBlockSelect?: (blockId: string, blockType: string, addToSelection?: boolean) => void;
 }
 
 export const PenutupScreen = React.memo(function PenutupScreen({
@@ -50,6 +61,11 @@ export const PenutupScreen = React.memo(function PenutupScreen({
   pageIndex = 0,
   sceneType,
   totalPages = 1,
+  editable = false,
+  editContext = null,
+  editingBlockId,
+  onBlockEdit,
+  onBlockSelect,
 }: PenutupScreenProps) {
   const isCompact = mode === 'canvas';
 
@@ -66,8 +82,17 @@ export const PenutupScreen = React.memo(function PenutupScreen({
       showBottomNav={showBottomNav}
       pageIndex={pageIndex}
       sceneType={sceneType}
+      editingBlockId={editingBlockId}
+      onBlockEdit={onBlockEdit}
+      onBlockSelect={onBlockSelect}
     />
   );
+
+  const contentWithEditContext = editContext ? (
+    <LearningEditProvider value={editContext}>
+      {screenContent}
+    </LearningEditProvider>
+  ) : screenContent;
 
   // Penutup uses full-page layout → minimal chrome (ScreenShell handles this)
   return (
@@ -81,8 +106,9 @@ export const PenutupScreen = React.memo(function PenutupScreen({
       isCompact={isCompact}
       pageIndex={pageIndex}
       totalPages={totalPages}
+      editable={editable}
     >
-      {screenContent}
+      {contentWithEditContext}
     </ScreenShell>
   );
 });

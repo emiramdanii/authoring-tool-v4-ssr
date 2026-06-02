@@ -12,6 +12,52 @@ import { useBlockCompression } from '../../layout/useBlockCompression';
 import { IOS_SPACING } from '../../themes/ios-visual-contract';
 import type { EduRenderingContext } from '../../edu/EduRenderingContext';
 
+// ── Background-image-aware styling helpers ────────────────────────
+// When a background image is active, quiz options/feedback need more
+// opaque backgrounds and visible borders so they remain readable
+// on top of the image. When no bg image, original styles preserved.
+
+function kuisOptionBg(tokens: TokenResolver, isAnswered: boolean, isCorrect: boolean, isPicked: boolean): string {
+  if (!tokens.hasBackgroundImage()) {
+    if (!isAnswered) return tokens.subtleBg(0.04);
+    if (isCorrect) return tokens.accentBg('g', 0.08);
+    if (isPicked) return tokens.accentBg('r', 0.08);
+    return tokens.subtleBg(0.04);
+  }
+  const isDark = tokens.isDark();
+  if (!isAnswered) return isDark ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.86)';
+  if (isCorrect) {
+    const tint = tokens.accentBg('g', 0.16);
+    return `linear-gradient(${tint}, ${tint}), ${isDark ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.86)'}`;
+  }
+  if (isPicked) {
+    const tint = tokens.accentBg('r', 0.16);
+    return `linear-gradient(${tint}, ${tint}), ${isDark ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.86)'}`;
+  }
+  return isDark ? 'rgba(15,23,42,0.68)' : 'rgba(255,255,255,0.76)';
+}
+
+function kuisOptionBorder(tokens: TokenResolver, isAnswered: boolean, isCorrect: boolean, isPicked: boolean): string {
+  if (!tokens.hasBackgroundImage()) {
+    if (!isAnswered) return tokens.subtleBorder(0.1);
+    if (isCorrect) return tokens.color('g');
+    if (isPicked) return tokens.color('r');
+    return tokens.subtleBorder(0.08);
+  }
+  const isDark = tokens.isDark();
+  if (!isAnswered) return isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.14)';
+  if (isCorrect) return tokens.color('g');
+  if (isPicked) return tokens.color('r');
+  return isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
+}
+
+function kuisFeedbackBg(tokens: TokenResolver, isCorrect: boolean): string {
+  if (!tokens.hasBackgroundImage()) return tokens.accentBg(isCorrect ? 'g' : 'r', 0.06);
+  const tint = tokens.accentBg(isCorrect ? 'g' : 'r', 0.16);
+  const isDark = tokens.isDark();
+  return `linear-gradient(${tint}, ${tint}), ${isDark ? 'rgba(15,23,42,0.82)' : 'rgba(255,255,255,0.88)'}`;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // KUIS RENDERER — Premium Quiz with Full Visual FX + Variant A/B/C
 // ═══════════════════════════════════════════════════════════════════
@@ -124,14 +170,8 @@ function KuisVariantKartu({
         {(q.opts || []).map((opt, i) => {
           const isCorrect = i === q.ans;
           const isPicked = answers[current] === i;
-          const bg = !isAnswered
-            ? tokens.subtleBg(0.04)
-            : isCorrect
-              ? tokens.accentBg('g', 0.08)
-              : isPicked
-                ? tokens.accentBg('r', 0.08)
-                : tokens.subtleBg(0.04);
-          const bdr = !isAnswered ? tokens.subtleBorder(0.1) : isCorrect ? tokens.color('g') : isPicked ? tokens.color('r') : tokens.subtleBorder(0.08);
+          const bg = kuisOptionBg(tokens, isAnswered, isCorrect, isPicked);
+          const bdr = kuisOptionBorder(tokens, isAnswered, isCorrect, isPicked);
 
           return (
               <button
@@ -163,9 +203,8 @@ function KuisVariantKartu({
           style={{
             ...edu.emotionalMotion('reveal'),
             ...edu.body(),
-            background: answers[current] === q.ans
-              ? tokens.accentBg('g', 0.06)
-              : tokens.accentBg('r', 0.06),
+            background: kuisFeedbackBg(tokens, answers[current] === q.ans),
+            ...(tokens.hasBackgroundImage() ? { border: `1px solid ${tokens.color(answers[current] === q.ans ? 'g' : 'r')}` } : {}),
             borderLeft: `${edu.stripeWidth()}px solid ${answers[current] === q.ans ? tokens.color('g') : tokens.color('r')}`,
             color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
             overflow: 'hidden',
@@ -256,14 +295,8 @@ function KuisVariantRingkas({
         {(q.opts || []).map((opt, i) => {
           const isCorrect = i === q.ans;
           const isPicked = answers[current] === i;
-          const bg = !isAnswered
-            ? tokens.subtleBg(0.04)
-            : isCorrect
-              ? tokens.accentBg('g', 0.08)
-              : isPicked
-                ? tokens.accentBg('r', 0.08)
-                : tokens.subtleBg(0.03);
-          const bdr = !isAnswered ? tokens.subtleBorder(0.08) : isCorrect ? tokens.color('g') : isPicked ? tokens.color('r') : tokens.subtleBorder(0.06);
+          const bg = kuisOptionBg(tokens, isAnswered, isCorrect, isPicked);
+          const bdr = kuisOptionBorder(tokens, isAnswered, isCorrect, isPicked);
 
           return (
               <button
@@ -297,9 +330,8 @@ function KuisVariantRingkas({
           style={{
             ...edu.emotionalMotion('reveal'),
             ...edu.body(),
-            background: answers[current] === q.ans
-              ? tokens.accentBg('g', 0.06)
-              : tokens.accentBg('r', 0.06),
+            background: kuisFeedbackBg(tokens, answers[current] === q.ans),
+            ...(tokens.hasBackgroundImage() ? { border: `1px solid ${tokens.color(answers[current] === q.ans ? 'g' : 'r')}` } : {}),
             borderLeft: `${edu.stripeWidth()}px solid ${answers[current] === q.ans ? tokens.color('g') : tokens.color('r')}`,
             color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
             overflow: 'hidden',
@@ -440,7 +472,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
     return (
       <PremiumBlockWrapper tokens={tokens} accent={tierColor} staggerIndex={0}>
         <ReadingProgressIndicator progress={1} tokens={tokens} accent={tierColor} height={2} position="top" />
-        <div className="text-center p-5" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto' }}>
+        <div className="text-center p-5" style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto', ...(edu.hasBackgroundImage() ? edu.cardStyle() : {}) }}>
 
           {/* Score pill */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4"
@@ -592,14 +624,8 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               const isAnswered = answers[current] !== undefined;
               const isCorrect = i === q.ans;
               const isPicked = answers[current] === i;
-              const bg = !isAnswered
-                ? tokens.subtleBg(0.04)
-                : isCorrect
-                  ? tokens.accentBg('g', 0.08)
-                  : isPicked
-                    ? tokens.accentBg('r', 0.08)
-                    : tokens.subtleBg(0.04);
-              const bdr = !isAnswered ? tokens.subtleBorder(0.1) : isCorrect ? tokens.color('g') : isPicked ? tokens.color('r') : tokens.subtleBorder(0.08);
+              const bg = kuisOptionBg(tokens, isAnswered, isCorrect, isPicked);
+              const bdr = kuisOptionBorder(tokens, isAnswered, isCorrect, isPicked);
 
               return (
                   <button
@@ -631,9 +657,8 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
               style={{
                 ...edu.emotionalMotion('reveal'),
                 ...edu.caption(),
-                background: answers[current] === q.ans
-                  ? tokens.accentBg('g', 0.06)
-                  : tokens.accentBg('r', 0.06),
+                background: kuisFeedbackBg(tokens, answers[current] === q.ans),
+                ...(tokens.hasBackgroundImage() ? { border: `1px solid ${tokens.color(answers[current] === q.ans ? 'g' : 'r')}` } : {}),
                 borderLeft: `${edu.stripeWidth()}px solid ${answers[current] === q.ans ? tokens.color('g') : tokens.color('r')}`,
                 color: answers[current] === q.ans ? tokens.color('g') : tokens.color('r'),
                 overflow: 'hidden',

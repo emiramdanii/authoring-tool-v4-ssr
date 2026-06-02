@@ -409,6 +409,7 @@ export function migrateAllPages(pages: CanvaPage[]): CanvaPage[] {
           version: 1,
           templateType: updated.templateType || 'custom',
           blocks: [],
+          background: { type: 'solid', color1: 'bg' },
         },
         elements: [],
         pageMode: 'schema',
@@ -429,6 +430,23 @@ export function migrateAllPages(pages: CanvaPage[]): CanvaPage[] {
     // Step 3: Ensure pageMode is set for all pages
     if (!updated.pageMode) {
       updated = { ...updated, pageMode: updated.schema ? 'schema' : 'elements' };
+      anyMigrated = true;
+    }
+
+    // Step 3b: Normalize schema.background for pages with undefined background
+    // P0 fix: schema pages must have a background field so the right panel
+    // BackgroundSection and SchemaRenderer have a consistent source of truth.
+    // Old pages created before this fix have schema.background = undefined,
+    // causing the renderer to fall back to modeBg.bg while the panel shows
+    // default controls that don't match actual rendering.
+    if (updated.schema && updated.schema.background === undefined) {
+      updated = {
+        ...updated,
+        schema: {
+          ...updated.schema,
+          background: { type: 'solid' as const, color1: 'bg' },
+        },
+      };
       anyMigrated = true;
     }
 

@@ -88,7 +88,7 @@ if (typeof window !== 'undefined') {
         (GAME_TYPES as readonly string[]).includes(m.type)
       );
       // Only setState if games actually differs (prevent infinite loop)
-      const currentGames = useAuthoringStore.getState().games;
+      const currentGames = useAuthoringStore.getState().games ?? [];
       if (derivedGames.length !== currentGames.length ||
           derivedGames.some((g, i) => g._id !== currentGames[i]?._id)) {
         useAuthoringStore.setState({ games: derivedGames } as Partial<import('@/store/authoring/types').AuthoringState>);

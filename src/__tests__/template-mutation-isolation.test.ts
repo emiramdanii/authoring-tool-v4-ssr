@@ -50,8 +50,8 @@ function makeDoubleMateriTemplate(): LessonTemplate {
 // ═══════════════════════════════════════════════════════════════════
 
 describe('Template Mutation Isolation — CourseTemplateRegistry', () => {
-  it('blocks on different pages should not share references', () => {
-    const pages = createProjectFromTemplate('modul-ppkn-vii', {
+  it('blocks on different pages should not share references', async () => {
+    const pages = await createProjectFromTemplate('modul-ppkn-vii', {
       title: 'Hakikat Norma',
       guru: 'Pak Budi',
       sekolah: 'SMP N 1 Jakarta',
@@ -72,8 +72,8 @@ describe('Template Mutation Isolation — CourseTemplateRegistry', () => {
     }
   });
 
-  it('mutating a block on one page should not affect another page', () => {
-    const pages = createProjectFromTemplate('modul-ppkn-vii', {
+  it('mutating a block on one page should not affect another page', async () => {
+    const pages = await createProjectFromTemplate('modul-ppkn-vii', {
       title: 'Hakikat Norma',
       guru: 'Pak Budi',
       sekolah: 'SMP N 1 Jakarta',
@@ -103,8 +103,8 @@ describe('Template Mutation Isolation — CourseTemplateRegistry', () => {
     }
   });
 
-  it('deep-nested children should not share references across pages', () => {
-    const pages = createProjectFromTemplate('modul-ppkn-vii', {
+  it('deep-nested children should not share references across pages', async () => {
+    const pages = await createProjectFromTemplate('modul-ppkn-vii', {
       title: 'Hakikat Norma',
       guru: 'Pak Budi',
       sekolah: 'SMP N 1 Jakarta',

@@ -128,7 +128,7 @@ export default function AIAssistantPanel() {
 
   const handleApply = useCallback(() => {
     if (!result?.success || !result.data || !selectedBlockId) { toast.warning('Tidak ada konten untuk diterapkan atau tidak ada block yang dipilih'); return; }
-    updateSchemaBlock(selectedBlockId, result.data as Record<string, unknown>);
+    updateSchemaBlock(selectedBlockId, result.data as Record<string, unknown>, { overflowPolicy: 'warn', source: 'ai' });
     setApplied(true);
     toast.success('Konten AI diterapkan ke block!');
   }, [result, selectedBlockId, updateSchemaBlock]);

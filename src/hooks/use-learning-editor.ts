@@ -59,6 +59,16 @@ export function useLearningEditor(editable: boolean): UseLearningEditorReturn {
   }, [canEdit]);
 
   const stopEdit = useCallback(() => {
+    // FIX: Force-blur any active contentEditable before clearing editing state.
+    // InlineEditableText saves on blur (onBlur → onSave → onStopEdit), but
+    // stopEdit can be called directly (page switch, block deselection) before
+    // blur fires. Force-blur ensures the save pipeline runs first.
+    if (typeof document !== 'undefined') {
+      const activeEl = document.activeElement as HTMLElement | null;
+      if (activeEl && activeEl.contentEditable === 'true') {
+        activeEl.blur();
+      }
+    }
     setIsEditing(false);
     setEditingBlockId(null);
   }, []);

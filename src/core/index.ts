@@ -95,8 +95,9 @@ export type {
 export { SchemaScreenRenderer, SchemaBlockRenderer, TokenResolver, resolveColor, resolveColorAlpha, resolveMuted, resolveSubtleBg, resolveSubtleBorder } from './renderer/SchemaRenderer';
 export type { SchemaRenderMode, ScreenRendererProps, BlockRenderProps } from './renderer/SchemaRenderer';
 
-// Engine
-export { SchemaEngine, loadPreset, getAvailablePresets, schemaToCanvaPages } from './engine/SchemaEngine';
+// Engine (Sprint 4: SchemaEngine React component removed — dead parallel render path.
+// Only utility function re-exports remain.)
+export { loadPreset, getAvailablePresets, schemaToCanvaPages } from './engine/SchemaEngine';
 
 // Template Adapter — converts legacy pages to schema
 export { convertToSchema, paletteToTokenOverrides } from './engine/TemplateAdapter';

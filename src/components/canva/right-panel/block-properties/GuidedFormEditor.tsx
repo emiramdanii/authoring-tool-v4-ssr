@@ -69,6 +69,15 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
     }
   }, [pageId, blockId]);
 
+  // ── Filter fields by showWhen conditional visibility ──
+  const visibleFields = useMemo(() => {
+    return guidedSchema.fields.filter(field => {
+      if (!field.showWhen) return true; // No condition → always visible
+      const currentVal = String(b[field.showWhen.field] ?? '');
+      return field.showWhen.values.includes(currentVal);
+    });
+  }, [guidedSchema.fields, b]);
+
   // Group fields by section — same pattern as SchemaDrivenEditor
   const { sectionedFields, ungroupedFields } = useMemo(() => {
     const sectionMap = new Map<string, GuidedFieldDef[]>();
@@ -84,8 +93,8 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
       }
     }
 
-    // Classify each field
-    for (const field of guidedSchema.fields) {
+    // Classify each VISIBLE field
+    for (const field of visibleFields) {
       if (sectionedKeys.has(field.key)) {
         continue;
       }
@@ -97,7 +106,7 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
       for (const section of guidedSchema.sections) {
         const fields: GuidedFieldDef[] = [];
         for (const key of section.fieldKeys) {
-          const fieldDef = guidedSchema.fields.find(f => f.key === key);
+          const fieldDef = visibleFields.find(f => f.key === key);
           if (fieldDef) fields.push(fieldDef);
         }
         if (fields.length > 0) {
@@ -107,7 +116,7 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
     }
 
     return { sectionedFields: sectionMap, ungroupedFields: ungrouped };
-  }, [guidedSchema]);
+  }, [guidedSchema.sections, visibleFields]);
 
   // Section display order
   const sectionOrder = guidedSchema.sections?.map(s => s.key) ?? [];
@@ -147,7 +156,7 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
         const sectionLabel = sectionDef?.label || sectionKey;
 
         return (
-          <PropertyGroup key={sectionKey} label={sectionLabel} defaultCollapsed={false}>
+          <PropertyGroup key={sectionKey} label={sectionLabel} defaultCollapsed={sectionDef?.collapsed ?? false}>
             {fields.map(field => renderGuidedField(field, b, handleUpdate))}
           </PropertyGroup>
         );

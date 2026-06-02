@@ -378,25 +378,45 @@ export class EduRenderingContext {
   }
 
   /** Text color.
-   *  In print mode, always returns pure black for B&W fotokopi safety. */
+   *  In print mode, always returns pure black for B&W fotokopi safety.
+   *  Sprint 1F: When dark theme renders on light canvas, returns dark text
+   *  instead of white text (which would be invisible on white canvas). */
   textColor(): string {
     if (this.mode === 'print') return EDU_PRINT_SAFE.textColor;
+    // Sprint 1F: Readability safety — dark theme + light canvas = use dark text
+    if (this.tokens.isDarkThemeOnLightCanvas()) return '#1C1C1E';
     return this.tokens.color('text');
   }
 
   /** Muted text.
-   *  In print mode, uses dark gray for B&W safety. */
+   *  In print mode, uses dark gray for B&W safety.
+   *  Sprint 1F: When dark theme renders on light canvas, uses dark muted
+   *  instead of light-muted-on-white (which has poor contrast). */
   mutedText(a: number = 0.8): string {
     if (this.mode === 'print') return 'rgba(0,0,0,0.6)';
+    // Sprint 1F: Readability safety — dark muted on light canvas
+    if (this.tokens.isDarkThemeOnLightCanvas()) return `rgba(28,28,30,${Math.max(a, 0.65)})`;
     return this.tokens.muted(a);
   }
 
   /** Card background — mode-aware + scene treatment.
-   *  Scene-aware: elevated/flat/subtle treatment per scene. */
+   *  Scene-aware: elevated/flat/subtle treatment per scene.
+   *  Sprint 1F: When dark theme renders on light canvas, returns white card
+   *  instead of dark/glass card (which would be invisible on white canvas).
+   *  Sprint 1G P1: When background image is active, returns semi-opaque
+   *  background so cards don't blend into the image behind them. */
   cardBg(): string {
     if (this.mode === 'print') return EDU_PRINT_SAFE.bgColor;
     if (this.mode === 'projector') return EDU_MODE_BG.projector.card;
     if (this.mode === 'student') return EDU_MODE_BG.student.card;
+    // Sprint 1F: Readability safety — white card on light canvas
+    if (this.tokens.isDarkThemeOnLightCanvas()) return '#FFFFFF';
+    // Sprint 1G P1: Semi-opaque card when floating on background image
+    if (this._hasBackgroundImage) {
+      return this.tokens.isDark()
+        ? 'rgba(15,23,42,0.88)'
+        : 'rgba(255,255,255,0.92)';
+    }
     return this.tokens.color('card');
   }
 
@@ -518,7 +538,8 @@ export class EduRenderingContext {
   /** Card style with scene-aware treatment.
    *  Scene determines: elevated/flat/subtle card treatment.
    *  In print mode: removes shadow, uses thick border for B&W fotokopi safety.
-   *  In projector mode: warm card background, slightly larger radius. */
+   *  Sprint 1G P1: When background image is active, strengthens border
+   *  and shadow so cards remain visible against the image. */
   cardStyle(): Record<string, string | number> {
     const atmosphere = SCENE_ATMOSPHERES[this._sceneType];
     const style: Record<string, string | number> = {
@@ -529,6 +550,11 @@ export class EduRenderingContext {
 
     if (this.mode === 'print') {
       style.boxShadow = 'none';
+    } else if (this._hasBackgroundImage) {
+      // Sprint 1G P1: Stronger border + shadow on background image
+      // so cards don't blend into the image behind them.
+      style.border = `1px solid ${this.tokens.isDark() ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)'}`;
+      style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
     } else {
       // Scene-aware shadow: elevated scenes get shadow, flat/subtle don't
       if (atmosphere.cardTreatment === 'elevated') {
@@ -585,6 +611,42 @@ export class EduRenderingContext {
   /** Is dark theme */
   isDark(): boolean {
     return this.tokens.isDark();
+  }
+
+  // ── Sprint 1G: Background image awareness ─────────────────
+
+  /** Whether the current scene has a background image.
+   *  Renderers can use this to adjust their styling — e.g., cards
+   *  may need more opacity/padding when floating on an image. */
+  private _hasBackgroundImage: boolean = false;
+
+  /** Set background image state — called by SchemaScreenRenderer
+   *  before rendering blocks. This is a lightweight flag that doesn't
+   *  require re-creating the entire context. */
+  setHasBackgroundImage(has: boolean): void {
+    this._hasBackgroundImage = has;
+  }
+
+  /** Whether a background image is active on the current scene.
+   *  When true, block renderers should consider using higher contrast
+   *  backgrounds (more opaque cards) for readability on images. */
+  hasBackgroundImage(): boolean {
+    return this._hasBackgroundImage;
+  }
+
+  /** Whether the scene has an active background image that requires
+   *  readability adaptations. Combines hasBackgroundImage() with
+   *  the Sprint 1F isDarkThemeOnLightCanvas() check.
+   *
+   *  When this returns true:
+   *  - Cards should use solid white/dark backgrounds (no glass/transparency)
+   *  - Text should use high-contrast colors
+   *  - Borders should be more visible
+   *
+   *  This is the key helper for Sprint 1G: it tells renderers "you're
+   *  on an image background, make yourself readable." */
+  isBackgroundImageActive(): boolean {
+    return this._hasBackgroundImage;
   }
 }
 

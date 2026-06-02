@@ -32,6 +32,9 @@ export interface SceneNavigatorProps {
   onPromoteScene?: () => void;
   /** Whether safe mode is active (disables promote scene button) */
   safeMode?: boolean;
+  /** Sprint 1F: Whether the navigator sits on a light background.
+   *  When true, uses dark chrome colors instead of white-on-dark. */
+  isLightBackground?: boolean;
 }
 
 export const SceneNavigator = React.memo(function SceneNavigator({
@@ -42,6 +45,7 @@ export const SceneNavigator = React.memo(function SceneNavigator({
   position = 'bottom',
   onPromoteScene,
   safeMode = false,
+  isLightBackground = false,
 }: SceneNavigatorProps) {
   const handlePrev = useCallback(() => {
     if (currentScene > 0) onSceneChange(currentScene - 1);
@@ -68,26 +72,43 @@ export const SceneNavigator = React.memo(function SceneNavigator({
 
   const posClass = position === 'top' ? 'top-2' : 'bottom-2';
 
+  // Sprint 1F: Conditional light/dark chrome based on background
+  const chromeBg = isLightBackground
+    ? 'rgba(255, 255, 255, 0.9)'
+    : 'rgba(15, 23, 42, 0.85)';
+  const chromeBorder = isLightBackground
+    ? '1px solid rgba(0, 0, 0, 0.08)'
+    : '1px solid rgba(255, 255, 255, 0.1)';
+  const textColor = isLightBackground ? 'text-slate-700' : 'text-white/80';
+  const labelColor = isLightBackground ? 'text-slate-400' : 'text-white/60';
+  const dotActiveBg = isLightBackground
+    ? 'rgba(16, 185, 129, 0.9)'
+    : 'rgba(52, 211, 153, 0.9)';
+  const dotInactiveBg = isLightBackground
+    ? 'rgba(0, 0, 0, 0.2)'
+    : 'rgba(255, 255, 255, 0.3)';
+  const hoverBg = isLightBackground ? 'hover:bg-black/5' : 'hover:bg-white/10';
+
   return (
     <div
       className={`absolute right-3 ${posClass} z-50 flex items-center gap-2`}
       style={{
-        background: 'rgba(15, 23, 42, 0.85)',
+        background: chromeBg,
         backdropFilter: 'blur(8px)',
         borderRadius: '9999px',
         padding: isCompact ? '3px 8px' : '4px 12px',
-        border: '1px solid rgba(255,255,255,0.1)',
+        border: chromeBorder,
       }}
     >
       {/* Prev button */}
       <button
         onClick={handlePrev}
         disabled={currentScene === 0}
-        className="flex items-center justify-center rounded-full transition-colors disabled:opacity-30 hover:bg-white/10"
+        className={`flex items-center justify-center rounded-full transition-colors disabled:opacity-30 ${hoverBg}`}
         style={{ width: isCompact ? 20 : 24, height: isCompact ? 20 : 24 }}
         aria-label="Scene sebelumnya"
       >
-        <span className="material-symbols-outlined text-white/80" style={ { fontSize: '16px' } }>chevron_left</span>
+        <span className={`material-symbols-outlined ${textColor}`} style={ { fontSize: '16px' } }>chevron_left</span>
       </button>
 
       {/* Scene dots */}
@@ -101,8 +122,8 @@ export const SceneNavigator = React.memo(function SceneNavigator({
               width: i === currentScene ? (isCompact ? 14 : 18) : (isCompact ? 6 : 8),
               height: isCompact ? 6 : 8,
               background: i === currentScene
-                ? 'rgba(52, 211, 153, 0.9)'
-                : 'rgba(255, 255, 255, 0.3)',
+                ? dotActiveBg
+                : dotInactiveBg,
               border: 'none',
               cursor: 'pointer',
             }}
@@ -115,16 +136,16 @@ export const SceneNavigator = React.memo(function SceneNavigator({
       <button
         onClick={handleNext}
         disabled={currentScene === totalScenes - 1}
-        className="flex items-center justify-center rounded-full transition-colors disabled:opacity-30 hover:bg-white/10"
+        className={`flex items-center justify-center rounded-full transition-colors disabled:opacity-30 ${hoverBg}`}
         style={{ width: isCompact ? 20 : 24, height: isCompact ? 20 : 24 }}
         aria-label="Scene berikutnya"
       >
-        <span className="material-symbols-outlined text-white/80" style={ { fontSize: '16px' } }>chevron_right</span>
+        <span className={`material-symbols-outlined ${textColor}`} style={ { fontSize: '16px' } }>chevron_right</span>
       </button>
 
       {/* Scene label */}
       <span
-        className="text-white/60 font-medium tabular-nums"
+        className={`${labelColor} font-medium tabular-nums`}
         style={{ fontSize: isCompact ? 9 : 10 }}
       >
         {currentScene + 1}/{totalScenes}
@@ -137,7 +158,7 @@ export const SceneNavigator = React.memo(function SceneNavigator({
             const allowed = isFeatureAllowed('scene-overflow-split' as SafeModeFeature, safeMode);
             if (allowed) onPromoteScene();
           }}
-          className="flex items-center justify-center rounded-full transition-colors hover:bg-white/10 ml-1"
+          className={`flex items-center justify-center rounded-full transition-colors ${hoverBg} ml-1`}
           style={{
             width: isCompact ? 20 : 24,
             height: isCompact ? 20 : 24,
@@ -147,7 +168,7 @@ export const SceneNavigator = React.memo(function SceneNavigator({
           title={safeMode ? 'Dinonaktifkan di Mode Aman' : 'Promosi Scene ke Halaman Baru'}
           disabled={safeMode}
         >
-          {safeMode ? <ShieldOff size={isCompact ? 11 : 13} className="text-amber-400/80" /> : <FilePlus size={isCompact ? 11 : 13} className="text-emerald-400/80" />}
+          {safeMode ? <ShieldOff size={isCompact ? 11 : 13} className={isLightBackground ? 'text-amber-600/80' : 'text-amber-400/80'} /> : <FilePlus size={isCompact ? 11 : 13} className={isLightBackground ? 'text-emerald-600/80' : 'text-emerald-400/80'} />}
         </button>
       )}
     </div>

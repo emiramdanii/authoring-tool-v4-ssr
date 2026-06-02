@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { FadeIn, ScaleIn, SlideIn, StaggerChildren } from '@/lib/transition';
+import { useState, useCallback } from 'react';
+import { FadeIn, ScaleIn, SlideIn } from '@/lib/transition';
 // All icons migrated to Material Symbols Outlined
 import { useCanvaStore } from '@/store/canva-store';
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
@@ -14,7 +14,10 @@ const TemplateWizard = dynamic(() => import('./TemplateWizard'), { ssr: false })
 // CANVAS EMPTY STATE — Shown when pages.length === 0
 // ═══════════════════════════════════════════════════════════════
 // Inviting, clear entry point for teachers who just opened the
-// canvas. Three action cards guide them to start creating.
+// canvas. Two action cards guide them to start creating:
+//   1. Template Siap Pakai — pick a pre-built template
+//   2. Halaman Kosong — start from scratch
+// NOTE: AI "Auto-Generate" card removed — AI Generator is a parked area (see PARKED_NOTES.md).
 // ═══════════════════════════════════════════════════════════════
 
 // Animation handled by CSS classes — no JS variants needed
@@ -34,11 +37,6 @@ interface ActionCard {
 export default function CanvasEmptyState() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const { isSederhana } = useTeacherMode();
-
-  // Phase 3: Migrated setActivePanel → panelRequest
-  const handleAutoGenerate = useCallback(() => {
-    useCanvaStore.setState({ panelRequest: 'autogen' });
-  }, []);
 
   const handleBlankPage = useCallback(() => {
     useCanvaStore.getState().addPage();
@@ -61,17 +59,6 @@ export default function CanvasEmptyState() {
       action: handleTemplate,
     },
     {
-      id: 'autogen',
-      title: isSederhana ? 'Buat dengan AI' : 'Auto-Generate',
-      description: 'Tempel materi, AI buatkan untuk Anda',
-      icon: 'auto_awesome',
-      colorClass: 'text-purple-400',
-      iconBgClass: 'bg-purple-500/15',
-      borderClass: 'border-purple-500/20',
-      hoverBorderClass: 'hover:border-purple-500/40',
-      action: handleAutoGenerate,
-    },
-    {
       id: 'blank',
       title: 'Halaman Kosong',
       description: isSederhana ? 'Buat halaman, lalu tambah konten' : 'Buat halaman baru dari nol',
@@ -86,7 +73,7 @@ export default function CanvasEmptyState() {
 
   return (
     <>
-      <div className="flex-1 w-full h-full flex flex-col items-center justify-center bg-app-surface px-4 py-8">
+      <div className="flex-1 w-full h-full flex flex-col items-center justify-center bg-app-surface px-4 py-4">
         {/* Illustration / Icon */}
         <ScaleIn delay={0} className="mb-6">
           <div className="w-16 h-16 rounded-2xl bg-app-accent/10 border border-app-accent/20 flex items-center justify-center">

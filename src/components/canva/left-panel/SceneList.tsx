@@ -8,6 +8,8 @@ import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 import { getPageContract, type PageCompletionStatus } from '@/core/edu/page-runtime-contract';
 import { validateSinglePage } from '@/core/template/health-check/template-health-check';
 import { Button } from '@/components/ui/button';
+import { FloatingPageMenu } from './FloatingPageMenu';
+import type { PageTemplateType } from '@/components/canva/types';
 
 // ═══════════════════════════════════════════════════════════════
 // SCENE LIST v3 — SILSE v4 Stitch Reference Page Navigator
@@ -79,7 +81,7 @@ function CompletionIndicator({ status }: { status: PageCompletionStatus }) {
   }
 }
 
-export function SceneList() {
+export function SceneList({ searchFilter = '' }: { searchFilter?: string } = {}) {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const goPage = useCanvaStore(s => s.goPage);
@@ -87,6 +89,7 @@ export function SceneList() {
   const deletePage = useCanvaStore(s => s.deletePage);
   const reorderPage = useCanvaStore(s => s.reorderPage);
   const addPage = useCanvaStore(s => s.addPage);
+  const addTemplatePage = useCanvaStore(s => s.addTemplatePage);
   const ratio = useCanvaStore(s => s.currentRatio());
   const teacherMode = useCanvaStore(s => s.teacherMode);
   const pageOverflowStatus = useOverflowWarningStore(s => s.pageOverflowStatus);
@@ -236,13 +239,18 @@ export function SceneList() {
         </div>
       )}
 
-      {/* Add page button */}
-      <button
-        onClick={() => addPage()}
-        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[11px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
+      {/* Sprint 1E.4: Add page via floating menu — guru pilih tipe halaman */}
+      <FloatingPageMenu
+        onSelect={(templateType: PageTemplateType) => addTemplatePage(templateType)}
+        align="start"
+        side="right"
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span> Tambah Halaman
-      </button>
+        <button
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-silse-outline-variant/40 hover:border-silse-primary/40 bg-silse-surface-container/20 hover:bg-silse-primary/5 text-silse-on-surface-variant hover:text-silse-primary text-[11px] font-medium transition-[transform,box-shadow,background-color] active:scale-[0.97]"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span> Tambah Halaman
+        </button>
+      </FloatingPageMenu>
 
       {/* Drag hint */}
       {pages.length > 1 && (

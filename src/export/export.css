@@ -19,6 +19,7 @@
 @source "../../components";
 @source "../../lib";
 @source "../../store";
+@source "../../core";
 @source "../export";
 
 /* ── Base Reset ────────────────────────────────────────────────── */

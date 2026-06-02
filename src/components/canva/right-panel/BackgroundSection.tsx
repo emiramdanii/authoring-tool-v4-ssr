@@ -38,7 +38,14 @@ export default function BackgroundSection() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
-      if (dataUrl) setBgImage(dataUrl);
+      if (!dataUrl) return;
+      // P0 fix: schema page → write to schema.background.imageUrl
+      // Legacy page → write to page.bgDataUrl
+      if (isSchemaDriven) {
+        updateScreenBackground({ imageUrl: dataUrl, overlay: schemaBg?.overlay ?? 40 });
+      } else {
+        setBgImage(dataUrl);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -73,6 +80,31 @@ export default function BackgroundSection() {
   const handleSchemaColorChange = (key: 'color1' | 'color2', value: string) => {
     if (isSchemaDriven) {
       updateScreenBackground({ [key]: value });
+    }
+  };
+
+  // ── Sprint 1G: Background image property handlers ───────────
+  const handleImageFitChange = (fit: 'cover' | 'contain') => {
+    if (isSchemaDriven) {
+      updateScreenBackground({ imageFit: fit });
+    }
+  };
+
+  const handleImageOpacityChange = (opacity: number) => {
+    if (isSchemaDriven) {
+      updateScreenBackground({ imageOpacity: opacity });
+    }
+  };
+
+  const handleImageBlurChange = (blur: number) => {
+    if (isSchemaDriven) {
+      updateScreenBackground({ imageBlur: blur });
+    }
+  };
+
+  const handleOverlayTypeChange = (type: 'dark' | 'light' | 'gradient') => {
+    if (isSchemaDriven) {
+      updateScreenBackground({ overlayType: type });
     }
   };
 
@@ -160,62 +192,168 @@ export default function BackgroundSection() {
           )}
         </div>
 
-        {/* Image URL input */}
-        <div className="mb-2">
-          <label className="text-[10px] text-silse-on-surface-variant block mb-1">Gambar URL</label>
-          <div className="flex gap-1">
-            <div className="flex-1 flex items-center gap-1 bg-silse-surface-container-low border border-silse-outline-variant rounded-lg px-2 h-7">
-              <span className="material-symbols-outlined text-silse-on-surface-variant flex-shrink-0" style={{ fontSize: '10px' }}>link</span>
-              <input
-                type="url"
-                value={imageUrlInput}
-                onChange={e => setImageUrlInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleImageUrlSubmit()}
-                placeholder="https://..."
-                className="flex-1 bg-transparent text-[10px] text-silse-on-surface outline-none placeholder:text-silse-on-surface-variant/40"
-              />
-            </div>
-            <button
-              onClick={handleImageUrlSubmit}
-              disabled={!imageUrlInput.trim()}
-              className="px-2 h-7 rounded-lg bg-silse-primary/20 text-silse-primary text-[9px] font-bold disabled:opacity-30 hover:bg-silse-primary/30 transition-colors"
-            >
-              Set
-            </button>
-          </div>
-          {/* Show current image URL */}
-          {schemaBg?.imageUrl && (
-            <div className="mt-1.5 flex items-center gap-1.5">
-              <div className="flex-1 bg-silse-surface-container-low border border-silse-outline-variant rounded-lg px-2 py-1 overflow-hidden">
-                <span className="text-[8px] text-silse-on-surface-variant truncate block">{schemaBg.imageUrl}</span>
+        {/* ══ Sprint 1G: Background Image Section ══════════════════ */}
+        <div className="border-t border-silse-outline-variant/40 pt-2 mt-2">
+          <label className="text-[10px] font-bold text-silse-on-surface block mb-1.5">
+            🖼️ Gambar Latar
+          </label>
+
+          {/* File upload button — P0 fix: writes to schema.background.imageUrl */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full py-2 rounded-xl border border-dashed border-silse-outline-variant hover:border-silse-primary/30 bg-silse-surface-container-low hover:bg-silse-surface-container-lowest transition-colors flex flex-col items-center gap-0.5 mb-2"
+          >
+            <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '14px' }}>upload</span>
+            <span className="text-[9px] font-bold text-silse-on-surface-variant">Upload Gambar</span>
+          </button>
+
+          {/* Image URL input */}
+          <div className="mb-2">
+            <div className="flex gap-1">
+              <div className="flex-1 flex items-center gap-1 bg-silse-surface-container-low border border-silse-outline-variant rounded-lg px-2 h-7">
+                <span className="material-symbols-outlined text-silse-on-surface-variant flex-shrink-0" style={{ fontSize: '10px' }}>link</span>
+                <input
+                  type="url"
+                  value={imageUrlInput}
+                  onChange={e => setImageUrlInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleImageUrlSubmit()}
+                  placeholder="https://..."
+                  className="flex-1 bg-transparent text-[10px] text-silse-on-surface outline-none placeholder:text-silse-on-surface-variant/40"
+                />
               </div>
               <button
-                onClick={handleRemoveImageUrl}
-                className="p-1 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"
-                title="Hapus gambar"
+                onClick={handleImageUrlSubmit}
+                disabled={!imageUrlInput.trim()}
+                className="px-2 h-7 rounded-lg bg-silse-primary/20 text-silse-primary text-[9px] font-bold disabled:opacity-30 hover:bg-silse-primary/30 transition-colors"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>close</span>
+                Set
               </button>
             </div>
+            {/* Show current image URL */}
+            {schemaBg?.imageUrl && (
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <div className="flex-1 bg-silse-surface-container-low border border-silse-outline-variant rounded-lg px-2 py-1 overflow-hidden">
+                  <span className="text-[8px] text-silse-on-surface-variant truncate block">{schemaBg.imageUrl}</span>
+                </div>
+                <button
+                  onClick={handleRemoveImageUrl}
+                  className="p-1 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"
+                  title="Hapus gambar"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>close</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Sprint 1G: Image controls (only when image is set) */}
+          {schemaBg?.imageUrl && (
+            <>
+              {/* Image fit toggle */}
+              <div className="mb-2">
+                <label className="text-[10px] text-silse-on-surface-variant block mb-1">Ukuran Gambar</label>
+                <div className="flex gap-1">
+                  {(['cover', 'contain'] as const).map(fit => (
+                    <button
+                      key={fit}
+                      onClick={() => handleImageFitChange(fit)}
+                      className={`flex-1 py-1 rounded-lg text-[9px] font-bold transition-[background-color,border-color,color] ${
+                        (schemaBg?.imageFit ?? 'cover') === fit
+                          ? 'bg-silse-primary/20 text-silse-primary border border-silse-primary/40'
+                          : 'bg-silse-surface-container-low text-silse-on-surface-variant border border-silse-outline-variant hover:border-silse-outline-variant'
+                      }`}
+                    >
+                      {fit === 'cover' ? 'Penuh (Cover)' : 'Proporsional (Contain)'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Image opacity slider */}
+              <div className="mb-2">
+                <label className="text-[10px] text-silse-on-surface-variant block mb-1">
+                  Transparansi: {100 - (schemaBg?.imageOpacity ?? 100)}%
+                </label>
+                <input
+                  type="range"
+                  min={20}
+                  max={100}
+                  value={schemaBg?.imageOpacity ?? 100}
+                  onChange={e => handleImageOpacityChange(parseInt(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Image blur slider */}
+              <div className="mb-2">
+                <label className="text-[10px] text-silse-on-surface-variant block mb-1">
+                  Blur: {schemaBg?.imageBlur ?? 0}px
+                </label>
+                <input
+                  type="range"
+                  min={0}
+                  max={20}
+                  value={schemaBg?.imageBlur ?? 0}
+                  onChange={e => handleImageBlurChange(parseInt(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+
+              {/* ══ Sprint 1G: Overlay/scrim controls ════════════════ */}
+              <div className="border-t border-silse-outline-variant/40 pt-2 mt-2">
+                <label className="text-[10px] font-bold text-silse-on-surface block mb-1.5">
+                  🔲 Overlay / Scrim
+                </label>
+
+                {/* Overlay type toggle */}
+                <div className="mb-2">
+                  <label className="text-[10px] text-silse-on-surface-variant block mb-1">Tipe Overlay</label>
+                  <div className="flex gap-1">
+                    {([
+                      { value: 'dark' as const, label: 'Gelap' },
+                      { value: 'light' as const, label: 'Terang' },
+                      { value: 'gradient' as const, label: 'Gradien' },
+                    ]).map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => handleOverlayTypeChange(opt.value)}
+                        className={`flex-1 py-1 rounded-lg text-[9px] font-bold transition-[background-color,border-color,color] ${
+                          (schemaBg?.overlayType ?? 'dark') === opt.value
+                            ? 'bg-silse-primary/20 text-silse-primary border border-silse-primary/40'
+                            : 'bg-silse-surface-container-low text-silse-on-surface-variant border border-silse-outline-variant hover:border-silse-outline-variant'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Overlay opacity slider */}
+                <div className="mb-2">
+                  <label className="text-[10px] text-silse-on-surface-variant block mb-1">
+                    Intensitas Overlay: {schemaBg?.overlay ?? 40}%
+                  </label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={80}
+                    value={schemaBg?.overlay ?? 40}
+                    onChange={e => handleSchemaOverlayChange(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </>
           )}
         </div>
-
-        {/* Overlay slider (only when image is set) */}
-        {schemaBg?.imageUrl && (
-          <div className="mb-2">
-            <label className="text-[10px] text-silse-on-surface-variant block mb-1">
-              Overlay gelap: {schemaBg.overlay ?? 40}%
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={80}
-              value={schemaBg.overlay ?? 40}
-              onChange={e => handleSchemaOverlayChange(parseInt(e.target.value))}
-              className="w-full"
-            />
-          </div>
-        )}
       </Section>
     );
   }

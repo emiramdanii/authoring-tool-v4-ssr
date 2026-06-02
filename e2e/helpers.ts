@@ -18,11 +18,15 @@ export async function gotoApp(page: Page) {
   await page.goto('/');
   // Wait for the app shell to render (AuthoringTool sidebar)
   await page.waitForSelector('[data-testid="nav-canva"]', { timeout: 30000 });
-  // Dismiss the guided tour if it appears
-  const tourSkip = page.locator('button:has-text("Lewati")');
-  if (await tourSkip.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await tourSkip.click();
-    await page.waitForTimeout(300);
+  // Dismiss the guided tour if it appears (tries multiple times since it may animate in)
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const tourSkip = page.locator('button:has-text("Lewati")');
+    if (await tourSkip.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await tourSkip.click({ force: true });
+      await page.waitForTimeout(500);
+    } else {
+      break;
+    }
   }
 }
 
@@ -32,7 +36,14 @@ export async function gotoApp(page: Page) {
  */
 export async function navigateToCanva(page: Page) {
   await gotoApp(page);
-  await page.click('[data-testid="nav-canva"]');
+  // Click the nav-canva button — use force:true as a fallback if regular click
+  // fails due to overlapping elements (tour overlay, animated content, etc.)
+  const navBtn = page.locator('[data-testid="nav-canva"]');
+  try {
+    await navBtn.click({ timeout: 5000 });
+  } catch {
+    await navBtn.click({ force: true, timeout: 5000 });
+  }
   await waitForCanvaReady(page);
 }
 

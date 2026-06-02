@@ -28,7 +28,8 @@ const TRANSITION_LABELS: Record<TransitionType, { icon: string; label: string }>
   flip: { icon: '🔄', label: 'Flip' },
 };
 import {
-  SchemaEngine,
+  SchemaScreenRenderer,
+  TokenResolver,
   loadPreset,
   getAvailablePresets,
   THEME_PRESETS,
@@ -37,6 +38,8 @@ import {
   type LessonSchema,
   type DesignTokens,
 } from '@/core';
+import { getSceneResolution, computeSafeArea } from '@/core/scene/SceneLayoutEngine';
+import { inferSceneType } from '@/core/edu/education-scene-types';
 import { alpha, COLORS } from '@/lib/color-palette';
 import { useInteractiveStore } from '@/store/interactive-store';
 import { isFullPageBlockType } from '@/core/schema/capability-registry';
@@ -225,16 +228,45 @@ export default function SchemaPlayer({
           duration={transitionType === 'slide' ? 0.25 : transitionType === 'fade' ? 0.25 : transitionType === 'zoom' ? 0.3 : 0.35}
           className="absolute inset-0"
         >
-          <SchemaEngine
-            schema={schema}
-            screenIndex={screenIdx}
-            mode={mode === 'canvas' ? 'canvas' : 'preview'}
-            themeOverride={themeId}
-            interactive={interactive}
-            ratioId={ratioId}
-            showTopNav={false}
-            showBottomNav={showBottomNav}
-          />
+          {(() => {
+            // Sprint 4 (Engine): Use SchemaScreenRenderer directly instead of
+            // SchemaEngine. This eliminates the parallel render path — the same
+            // SchemaScreenRenderer is used by PageRenderer in the main workspace.
+            const screen = schema.screens[screenIdx];
+            if (!screen) return (
+              <div className="absolute inset-0 flex items-center justify-center text-white/30 text-sm">
+                Layar tidak ditemukan
+              </div>
+            );
+            const isEngineCompact = mode === 'canvas';
+            const isCoverScreen = screen.blocks.length === 1 &&
+              isFullPageBlockType(screen.blocks[0]!.type);
+            const screenTokens = new TokenResolver(themeId || schema.themeId);
+            const screenRes = getSceneResolution(ratioId);
+            const screenSafeArea = computeSafeArea({
+              showTopNav: false,
+              showBottomNav,
+              isCompact: isEngineCompact,
+              pagePadding: isCoverScreen ? 0 : 16,
+            });
+            const screenSceneType = screen.blocks[0]
+              ? inferSceneType(undefined, undefined, screen.blocks[0].type)
+              : undefined;
+            return (
+              <SchemaScreenRenderer
+                screen={screen}
+                mode={mode === 'canvas' ? 'canvas' : 'preview'}
+                tokens={screenTokens}
+                interactive={interactive}
+                sceneResolution={screenRes}
+                safeArea={screenSafeArea}
+                ratioId={ratioId}
+                showTopNav={false}
+                showBottomNav={showBottomNav}
+                sceneType={screenSceneType}
+              />
+            );
+          })()}
         </PageTransition>
       </div>
 

@@ -9,9 +9,10 @@
 // When a block is selected in the Layer panel, new blocks are
 // inserted after the selected block instead of appended to the end.
 //
-// TEACHER MODE: In 'sederhana' mode, groups are simplified to
-// "Informasi & Materi", "Aktivitas Interaktif", "Struktur Halaman"
-// and "Block" terminology is replaced with "Konten".
+// TEACHER MODE: In 'sederhana' mode, only curated blocks are shown
+// (TEACHER_ADDABLE_BLOCKS) — 8 safe types that have guided editors.
+// Groups are simplified to "Isi & Materi", "Interaktif", etc.
+// "Block" terminology is replaced with "Isi".
 
 import { useState, useMemo, useCallback } from 'react';
 // No lucide-react imports — all icons use Material Symbols Outlined per v4 spec
@@ -55,12 +56,26 @@ export default function AddBlockPanel() {
   const page = pages[currentPageIndex];
 
   // Terminology helpers based on teacher mode
-  const blockLabel = isSederhana ? 'Konten' : 'Block';
+  const blockLabel = isSederhana ? 'Isi' : 'Block';
 
-  // ── Most-used blocks for Sederhana mode — reduces choice overload ──
+  // ── Curated block types for Teacher/Sederhana mode ──
+  // Only blocks that are (1) addable, (2) have guided editors, and
+  // (3) are meaningful for teachers to insert as content.
+  // Page-level blocks (cover, tp, penutup, petunjuk) are NOT here —
+  // those are added via "Tambah Halaman", not "Tambah Isi".
+  // gambar (P3A) and roda-game (P3B) have guided editors.
+  const TEACHER_ADDABLE_BLOCKS = useMemo(() => [
+    'materi-section', 'def-box', 'kuis', 'diskusi',
+    'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
+    'gambar', 'roda-game',
+  ], []);
+
+  // ── Popular blocks for quick-access grid (Sederhana only) ──
+  // Aligned with TEACHER_ADDABLE_BLOCKS — no page-level or non-addable types.
   const POPULAR_BLOCK_TYPES = useMemo(() => [
-    'cover', 'tp', 'materi-blok', 'materi-section', 'gambar',
-    'kuis', 'diskusi', 'refleksi', 'penutup',
+    'materi-section', 'def-box', 'kuis', 'diskusi',
+    'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
+    'gambar', 'roda-game',
   ], []);
 
   // Check if current page can accept schema blocks
@@ -85,7 +100,13 @@ export default function AddBlockPanel() {
   }, [selectedBlockId, page, isSederhana]);
 
   // Get all block definitions, filter by search, exclude non-addable (internal) blocks
-  const allBlocks = useMemo(() => getAllBlockDefinitions().filter(b => b.addable !== false), []);
+  // In sederhana/teacher mode, further filter to curated list only
+  const allBlocks = useMemo(() => {
+    const raw = getAllBlockDefinitions().filter(b => b.addable !== false);
+    if (!isSederhana) return raw;
+    // Teacher mode: only show curated blocks that are safe for teachers
+    return raw.filter(b => TEACHER_ADDABLE_BLOCKS.includes(b.type));
+  }, [isSederhana, TEACHER_ADDABLE_BLOCKS]);
 
   // Popular blocks derived from allBlocks (must come after allBlocks declaration)
   const popularBlocks = useMemo(() => {
@@ -221,7 +242,7 @@ export default function AddBlockPanel() {
       {/* Header */}
       <div className="text-[11px] font-bold text-silse-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
         <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>widgets</span>
-        {isSederhana ? 'Tambah Konten' : 'Tambah Block'}
+        {isSederhana ? 'Tambah Isi' : 'Tambah Block'}
         <span className="text-silse-on-surface-variant/60">({allBlocks.length})</span>
       </div>
 
@@ -373,13 +394,13 @@ export default function AddBlockPanel() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={isSederhana ? 'Cari konten...' : 'Cari block...'}
-          aria-label={isSederhana ? 'Cari konten' : 'Cari block'}
+          placeholder={isSederhana ? 'Cari isi...' : 'Cari block...'}
+          aria-label={isSederhana ? 'Cari isi' : 'Cari block'}
           aria-describedby="add-block-search-help"
           className="w-full h-7 pl-7 pr-2 text-[11px] text-silse-on-surface bg-silse-surface-container-low border border-silse-outline-variant/50 rounded-xl focus:border-silse-primary/50 focus:ring-1 focus:ring-silse-primary/20 focus:outline-none placeholder:text-silse-on-surface-variant/50"
         />
         <span id="add-block-search-help" className="sr-only">
-          Ketik untuk mencari {blockLabel.toLowerCase()} berdasarkan nama, tipe, atau deskripsi
+          Ketik untuk mencari {isSederhana ? 'isi' : 'block'} berdasarkan nama, tipe, atau deskripsi
         </span>
       </div>
 

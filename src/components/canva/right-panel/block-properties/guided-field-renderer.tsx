@@ -129,16 +129,27 @@ export function renderGuidedField(
         />
       );
 
-    case 'array':
+    case 'array': {
+      // Support flat string arrays: when sub-field key is '', the array is string[]
+      // not Array<Record<string, unknown>>. Convert at the boundary.
+      const isFlatStringArray = field.fields?.length === 1 && field.fields[0]!.key === '';
+      const rawItems = (value as Array<unknown>) || [];
+      const items = isFlatStringArray
+        ? rawItems.map(item => ({ '': item }))
+        : (rawItems as Array<Record<string, unknown>>);
+      const handleArrayUpdate = isFlatStringArray
+        ? (updatedItems: Array<Record<string, unknown>>) => handleUpdate(updatedItems.map(item => item[''] ?? ''))
+        : (updatedItems: Array<Record<string, unknown>>) => handleUpdate(updatedItems);
       return (
         <GuidedArrayField
           key={field.key}
           fieldId={fieldId}
           fieldDef={field}
-          items={(value as Array<Record<string, unknown>>) || []}
-          onUpdate={items => handleUpdate(items)}
+          items={items}
+          onUpdate={handleArrayUpdate}
         />
       );
+    }
 
     default:
       return null;
@@ -636,8 +647,13 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                   <div>
                     <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">{subField.label}</label>
                     <select
-                      value={String(item[subField.key] || '')}
-                      onChange={e => updateItem(idx, subField.key, e.target.value)}
+                      value={item[subField.key] != null ? String(item[subField.key]) : ''}
+                      onChange={e => {
+                        const raw = e.target.value;
+                        // Auto-convert numeric strings to numbers (e.g. "0"→0 for ans index)
+                        const parsed = raw !== '' && !isNaN(Number(raw)) ? Number(raw) : raw;
+                        updateItem(idx, subField.key, parsed);
+                      }}
                       className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all"
                     >
                       {subField.options.map(opt => (

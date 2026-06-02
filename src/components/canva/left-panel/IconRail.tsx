@@ -1,7 +1,6 @@
 'use client';
 
 import { useCanvaStore } from '@/store/canva-store';
-import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import {
   Tooltip,
   TooltipTrigger,
@@ -30,10 +29,10 @@ interface IconRailProps {
 }
 
 // Primary tabs — always shown at the top (SILSE v4: Material Symbols Outlined)
-const PRIMARY_RAIL_ITEMS: { id: LeftPanelTab; icon: string; labelKey: string }[] = [
+const PRIMARY_RAIL_ITEMS: { id: LeftPanelTab; icon: string; labelKey: string; teacherOnly?: boolean }[] = [
   { id: 'pages', icon: 'layers', labelKey: 'Halaman' },
   { id: 'add-block', icon: 'grid_view', labelKey: 'Block' },
-  { id: 'templates', icon: 'category', labelKey: 'Template' },
+  { id: 'templates', icon: 'category', labelKey: 'Template', teacherOnly: true }, // hidden in sederhana mode (1E.3)
 ];
 
 // Secondary tabs — shown at bottom with visual separator
@@ -45,13 +44,24 @@ const SECONDARY_RAIL_ITEMS: { id: LeftPanelTab; icon: string; labelKey: string }
 export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
   const teacherMode = useCanvaStore(s => s.teacherMode);
 
+  // Filter: hide legacy template tab in sederhana/teacher mode (Sprint 1E.3)
+  const visibleItems = PRIMARY_RAIL_ITEMS.filter(item =>
+    item.teacherOnly ? !teacherMode : true
+  );
+
   // Render a single rail button — MD3 Navigation Rail style
-  const renderRailButton = (item: { id: LeftPanelTab; icon: string; labelKey: string }) => {
+  const renderRailButton = (item: { id: LeftPanelTab; icon: string; labelKey: string; teacherOnly?: boolean }) => {
     const isActive = activeTab === item.id;
-    // "Tambah Block" → "Tambah Konten" in sederhana mode
-    const label = item.id === 'add-block'
-      ? `Tambah ${teacherTerm(item.labelKey, teacherMode)}`
-      : item.labelKey;
+    // "Tambah Block" → "Tambah Isi" in sederhana mode
+    // "Template" → "Template (Lanjutan)" in lengkap/advanced mode
+    let label: string;
+    if (item.id === 'add-block') {
+      label = teacherMode ? 'Tambah Isi' : `Tambah ${item.labelKey}`;
+    } else if (item.id === 'templates' && !teacherMode) {
+      label = 'Template (Lanjutan)';
+    } else {
+      label = item.labelKey;
+    }
     return (
       <Tooltip key={item.id}>
         <TooltipTrigger asChild>
@@ -88,8 +98,8 @@ export function IconRail({ activeTab, onTabChange, expanded }: IconRailProps) {
     <div
       className="flex flex-col items-center py-6 gap-6 border-r border-silse-outline-variant bg-silse-surface-bright flex-shrink-0 w-16"
     >
-      {/* Primary tabs — always visible at top */}
-      {PRIMARY_RAIL_ITEMS.map(renderRailButton)}
+      {/* Primary tabs — visible at top (filtered by mode) */}
+      {visibleItems.map(renderRailButton)}
 
       {/* Separator + secondary tabs at bottom (teacher mode) or inline (advanced mode) */}
       {teacherMode ? (

@@ -41,6 +41,12 @@ export interface QuizScreenProps {
   editable?: boolean;
   /** Learning edit context value for providing to block renderers */
   editContext?: LearningEditContextValue | null;
+  /** ID of the block currently being edited */
+  editingBlockId?: string | null;
+  /** Callback when a block edit is requested */
+  onBlockEdit?: (blockId: string, blockType: string) => void;
+  /** Callback when a block is selected */
+  onBlockSelect?: (blockId: string, blockType: string, addToSelection?: boolean) => void;
 }
 
 export const QuizScreen = React.memo(function QuizScreen({
@@ -60,6 +66,9 @@ export const QuizScreen = React.memo(function QuizScreen({
   totalPages = 1,
   editable = false,
   editContext = null,
+  editingBlockId,
+  onBlockEdit,
+  onBlockSelect,
 }: QuizScreenProps) {
   const isCompact = mode === 'canvas';
 
@@ -80,6 +89,9 @@ export const QuizScreen = React.memo(function QuizScreen({
       showBottomNav={showBottomNav}
       pageIndex={pageIndex}
       sceneType={sceneType}
+      editingBlockId={editingBlockId}
+      onBlockEdit={onBlockEdit}
+      onBlockSelect={onBlockSelect}
     />
   );
 

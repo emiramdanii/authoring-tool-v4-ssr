@@ -160,7 +160,7 @@ export default function StatusBar() {
   // Previously only counted page.elements → always showed "0 konten"
   // for schema-driven pages even when they had blocks.
   const schemaBlocks = page ? (ensurePageSchema(page)?.blocks.length ?? 0) : 0;
-  const legacyElements = page?.elements.length || 0;
+  const legacyElements = page?.elements?.length || 0;
   const totalElements = schemaBlocks + legacyElements;
   const templateBadge = TEMPLATE_BADGE_MAP[page?.templateType || 'custom'];
 

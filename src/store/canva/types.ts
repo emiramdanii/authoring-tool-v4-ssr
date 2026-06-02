@@ -57,6 +57,14 @@ export type Snapshot = {
   ratioId: string;
 };
 
+/** Options for updateSchemaBlock — aligns with applyGuidedSchemaPatch capabilities */
+export interface UpdateSchemaBlockOptions {
+  /** What to do if the patch causes content overflow. Default: 'none' */
+  overflowPolicy?: 'none' | 'warn' | 'reject' | 'auto-split';
+  /** Source of the edit — for edit bus tracking. Default: 'user' */
+  source?: 'user' | 'ai' | 'system';
+}
+
 // ── Full store interface ──────────────────────────────────────
 export interface CanvaState {
   // ── Persisted state ──────────────────────────────────────────
@@ -214,7 +222,7 @@ export interface CanvaState {
   // Schema block selection — for editing overlay
   selectBlock: (blockId: string | null, blockType?: string | null, addToSelection?: boolean) => void;
   /** Update a schema block's content properties by block ID (deep patch merge) */
-  updateSchemaBlock: (blockId: string, updates: Record<string, unknown>) => void;
+  updateSchemaBlock: (blockId: string, updates: Record<string, unknown>, options?: UpdateSchemaBlockOptions) => void;
   /** Set hover context for a block (for hover effects, layer panel) */
   hoverBlock: (blockId: string | null) => void;
   /** Enter inline editing mode for a block (double-click) */

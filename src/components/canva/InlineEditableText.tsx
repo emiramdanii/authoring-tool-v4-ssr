@@ -25,6 +25,8 @@ export interface InlineEditableTextProps {
   value: string;
   /** Callback when text is saved (on blur or Enter) */
   onSave: (newValue: string) => void;
+  /** Callback when editing stops (blur/Escape) — parent should sync stopEdit() */
+  onStopEdit?: () => void;
   /** Whether this text is editable (only when canEdit is true) */
   editable?: boolean;
   /** Whether this is a multiline text field */
@@ -42,6 +44,7 @@ export interface InlineEditableTextProps {
 export const InlineEditableText = React.memo(function InlineEditableText({
   value,
   onSave,
+  onStopEdit,
   editable = false,
   multiline = false,
   placeholder = 'Klik untuk mengedit...',
@@ -86,7 +89,26 @@ export const InlineEditableText = React.memo(function InlineEditableText({
     if (newText !== value) {
       onSave(newText);
     }
-  }, [isEditing, value, onSave]);
+    // Notify parent that editing stopped so it can sync stopEdit()
+    onStopEdit?.();
+  }, [isEditing, value, onSave, onStopEdit]);
+
+  // FIX: Save pending edit on unmount.
+  // If the component is unmounted while editing (e.g., page switch,
+  // block deselection by parent), the blur handler may not fire.
+  // This cleanup ensures the edit is not lost.
+  useEffect(() => {
+    return () => {
+      if (isEditing && editRef.current) {
+        const newText = editRef.current.textContent || '';
+        if (newText !== value) {
+          onSave(newText);
+        }
+        onStopEdit?.();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing, value]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -102,6 +124,8 @@ export const InlineEditableText = React.memo(function InlineEditableText({
         if (editRef.current) {
           editRef.current.textContent = value;
         }
+        // Notify parent that editing stopped (Escape = cancel, still need stopEdit)
+        onStopEdit?.();
       }
     },
     [multiline, value]

@@ -174,7 +174,10 @@ export function createDefaultSchemaForTemplateType(
       type: 'radial' as const,
       color1: 'y',
       color2: 'bg',
-    } : undefined,
+    } : {
+      type: 'solid' as const,
+      color1: 'bg',
+    },
     nav: {},
   };
 }

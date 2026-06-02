@@ -156,6 +156,16 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
     set({ editingBlockId: blockId });
   },
   stopEditing: () => {
+    // FIX: Force-blur any active contentEditable before clearing state.
+    // This ensures InlineEditableText's onBlur → onSave fires first,
+    // preventing the race condition where clearing editingBlockId causes
+    // the component to unmount before it can save the pending edit.
+    if (typeof document !== 'undefined') {
+      const activeEl = document.activeElement as HTMLElement | null;
+      if (activeEl && activeEl.contentEditable === 'true') {
+        activeEl.blur();
+      }
+    }
     const prevId = get().editingBlockId;
     if (prevId) editBus.emit({ type: 'edit-end', blockId: prevId });
     set({ editingBlockId: null });
@@ -188,7 +198,15 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
   // The existing canvasPreview toggle remains for backward compat —
   // setAppMode('preview') is the canonical way going forward.
   setAppMode: (mode) => {
-    if (mode === 'preview' || mode === 'present' || mode === 'learn') {
+    // ── Save pending inline edit before mode switch ──
+    // Same fix as goPage: blur the active contentEditable element
+    // so InlineTextEditor.onBlur fires and saves the edit.
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl as HTMLElement).isContentEditable) {
+      (activeEl as HTMLElement).blur();
+    }
+
+    if (mode === 'preview' || mode === 'present') {
       set({
         appMode: mode,
         ...clearAllSelections(),

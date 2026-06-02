@@ -12,6 +12,7 @@ import { SCENE_TYPES, type SceneType } from '@/core/edu/education-scene-types';
 import { toast } from 'sonner';
 import Section from './Section';
 import { Button } from '@/components/ui/button';
+import { useTeacherMode } from '@/hooks/use-teacher-mode';
 
 export default function PageSettingsSection() {
   // ── Store selectors ──────────────────────────────────────────
@@ -29,6 +30,9 @@ export default function PageSettingsSection() {
   const gridSize = useCanvaStore(s => s.gridSize);
   const snapEnabled = useCanvaStore(s => s.snapEnabled);
   const isTemplateMode = !!(page?.templateType && page.templateType !== 'custom');
+
+  // ── Teacher mode ─────────────────────────────────────────────
+  const { isSederhana } = useTeacherMode();
 
   // ── Local UI state ───────────────────────────────────────────
   const [collapsed, setCollapsed] = useState(true);
@@ -123,11 +127,10 @@ export default function PageSettingsSection() {
         );
       })()}
 
-      {/* Phase 7: Scene Type Override — teacher can explicitly set the learning scene type.
-          This controls scene-aware rendering: typography hierarchy, accent prominence,
-          emotional profile, spacing density, and card/header treatment.
-          If not set, sceneType is automatically inferred from templateType. */}
-      {isTemplateMode && page?.schema && (
+      {/* Phase 7: Scene Type Override — hidden in teacher mode (Sprint 1C.2).
+          This is a developer/advanced setting for scene-aware rendering.
+          Teachers don't need to configure scene types manually. */}
+      {isTemplateMode && page?.schema && !isSederhana && (
         <div className="mb-3">
           <label className="text-[10px] text-app-muted block mb-1">Scene Type</label>
           <select
@@ -188,8 +191,9 @@ export default function PageSettingsSection() {
         </div>
       )}
 
-      {/* Grid & Snap */}
-      <div className="mb-3">
+      {/* Grid & Snap — hidden in teacher mode (Sprint 1C.2).
+          Grid alignment is a developer tool; teachers don't need it. */}
+      {!isSederhana && <div className="mb-3">
           <label className="text-[10px] text-app-muted block mb-1.5">Grid & Snap</label>
           <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
             <input
@@ -225,7 +229,7 @@ export default function PageSettingsSection() {
               <span>Kasar (20%)</span>
             </div>
           </div>
-      </div>
+      </div>}
 
       {/* Template Edit */}
       {isTemplateMode && page && (
