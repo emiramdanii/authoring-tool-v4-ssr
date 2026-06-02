@@ -104,6 +104,7 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 | variant | Tidak ada di RodaGameBlock type |
 | accentColor | Tidak ada di RodaGameBlock type |
 
+
 **PERUBAHAN RONDE 30 (D8 P3A — Guided Editor Gambar Minimal):**
 
 1. D8 P3A IMPLEMENTASI: Guided editor untuk block `gambar` — guru bisa edit tanpa jatuh ke SchemaDrivenEditor
@@ -129,6 +130,7 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 | sortir-game | Game Sortir | assessment | ✅ | Interaktif |
 | rangkuman | Rangkuman | reflection | ✅ | Interaktif |
 | motivasi | Motivasi / Apersepsi | reflection | ✅ | Interaktif |
+
 
 **D8 P3A ditunda (follow-up):**
 
