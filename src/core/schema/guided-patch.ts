@@ -650,53 +650,6 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     ],
   },
 
-  'materi-blok': {
-    blockType: 'materi-blok',
-    displayName: 'Konten Materi',
-    description: 'Blok konten materi — paragraf, definisi, poin, dan lainnya',
-    icon: '📖',
-    fields: [
-      { key: 'tipe', label: 'Tipe Konten', type: 'select', required: true, options: [
-        { label: 'Paragraf', value: 'teks' },
-        { label: 'Definisi', value: 'definisi' },
-        { label: 'Poin', value: 'poin' },
-        { label: 'Checklist', value: 'checklist' },
-        { label: 'Info Box', value: 'infobox' },
-        { label: 'Highlight', value: 'highlight' },
-      ], helpText: 'Pilih tipe konten yang ingin ditampilkan' },
-      { key: 'judul', label: 'Judul', type: 'text', placeholder: 'Judul konten...' },
-      { key: 'isi', label: 'Isi', type: 'textarea', placeholder: 'Tulis isi konten di sini...',
-        showWhen: { field: 'tipe', values: ['teks', 'definisi', 'infobox', 'highlight', 'kutipan', 'gambar'] } },
-      { key: 'butir', label: 'Daftar Butir', type: 'array', maxItems: 10,
-        showWhen: { field: 'tipe', values: ['poin', 'checklist'] },
-        helpText: 'Tambah atau hapus butir poin/checklist',
-        fields: [
-          { key: '', label: 'Butir', type: 'text', placeholder: 'Tulis butir...' },
-        ] },
-      { key: 'warna', label: 'Warna', type: 'color',
-        showWhen: { field: 'tipe', values: ['definisi', 'highlight'] },
-        helpText: 'Warna aksen konten' },
-      { key: 'icon', label: 'Ikon', type: 'icon',
-        showWhen: { field: 'tipe', values: ['highlight'] },
-        helpText: 'Ikon di samping judul highlight', placeholder: '💡' },
-      { key: 'infoboxStyle', label: 'Gaya Info Box', type: 'select',
-        showWhen: { field: 'tipe', values: ['infobox'] },
-        options: [
-          { label: 'Info', value: 'info' },
-          { label: 'Tips', value: 'tips' },
-          { label: 'Peringatan', value: 'warning' },
-          { label: 'Berhasil', value: 'success' },
-        ],
-        helpText: 'Pilih gaya tampilan info box' },
-      { key: 'accentColor', label: 'Warna Aksen', type: 'color',
-        helpText: 'Warna aksen untuk blok materi' },
-    ],
-    sections: [
-      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'butir'] },
-      { key: 'appearance', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle', 'accentColor'], collapsed: true },
-    ],
-  },
-
   'diskusi': {
     blockType: 'diskusi',
     displayName: 'Diskusi',
@@ -1149,6 +1102,18 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
   // ── Sprint 2B: MateriBlok Guided Editor ────────────────────────
   // The most important content block — teachers need this to edit
   // materi content without falling through to raw SchemaDrivenEditor.
+  //
+  // P1 FIX: Merged duplicate entry. The old Entry 1 (displayName
+  // 'Konten Materi') was silently overwritten by this entry. Now
+  // this is the single source of truth, with kutipan and gambar
+  // added to options + showWhen per MateriBlokRenderer support.
+  //
+  // Supported tipe (from MateriBlokRenderer + MateriBlokTipe):
+  //   teks, definisi, poin, checklist, infobox, highlight,
+  //   kutipan, gambar, tabel, timeline, compare, statistik, studi
+  // Guided editor currently exposes 8 most-used types.
+  // Remaining 5 (tabel, timeline, compare, statistik, studi) can
+  // be added in future sprints when their guided fields are defined.
 
   'materi-blok': {
     blockType: 'materi-blok',
@@ -1169,10 +1134,13 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { label: 'Checklist', value: 'checklist' },
           { label: 'Info Box', value: 'infobox' },
           { label: 'Highlight', value: 'highlight' },
+          { label: 'Kutipan', value: 'kutipan' },
+          { label: 'Gambar', value: 'gambar' },
         ],
       },
       { key: 'judul', label: 'Judul', type: 'text', helpText: 'Judul opsional untuk blok materi', placeholder: 'Judul materi...' },
-      { key: 'isi', label: 'Isi Konten', type: 'textarea', showWhen: { field: 'tipe', values: ['teks', 'definisi', 'infobox', 'highlight'] }, helpText: 'Teks utama konten', placeholder: 'Tulis konten di sini...' },
+      { key: 'isi', label: 'Isi Konten', type: 'textarea', showWhen: { field: 'tipe', values: ['teks', 'definisi', 'infobox', 'highlight', 'kutipan', 'gambar'] }, helpText: 'Teks utama konten (untuk gambar: URL gambar)', placeholder: 'Tulis konten di sini...' },
+      { key: 'karakter', label: 'Sumber Kutipan', type: 'text', showWhen: { field: 'tipe', values: ['kutipan'] }, helpText: 'Nama tokoh atau sumber kutipan', placeholder: '— Nama tokoh...' },
       { key: 'butir', label: 'Butir-butir', type: 'array', maxItems: 6, showWhen: { field: 'tipe', values: ['poin', 'checklist'] }, helpText: 'Setiap butir menjadi satu poin/checklist', fields: [
         { key: '', label: 'Butir', type: 'text', placeholder: 'Tulis poin...' },
       ]},
@@ -1184,10 +1152,13 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         { label: 'Peringatan', value: 'warning' },
         { label: 'Berhasil', value: 'success' },
       ]},
+      // P3 NOTE: accentColor exists in MateriBlokBlock type but is not
+      // read by MateriBlokRenderer. Keeping field for forward compat
+      // but renderer does not use it yet. See P3 backlog.
       { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
     ],
     sections: [
-      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'butir'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'karakter', 'butir'] },
       { key: 'style', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle', 'accentColor'], collapsed: true },
     ],
   },

@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-02 (Ronde 27 — D7 Dual Score Store / R7.1)
+Tanggal: 2026-06-02 (Ronde 28 — P0 Tambah Halaman Kosong / P1 Duplicate Registry)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -24,16 +24,67 @@ Sprint 1E.4 — Floating Add Menu: PASS — guru tambah halaman via popover tanp
 Sprint 1F — Canvas Readability: PASS — readability safety layer menyesuaikan warna konten saat dark theme di light canvas
 Sprint 1G — Background-Based Media Mode: PASS (dengan P0 + P1.1 + P1.2 fix) — background visual sebagai layer media, overlay/scrim adaptif, konten tetap terbaca, export HTML parity, quiz readability on bg image
 Sprint 2A — Kuis Guided Editor Polish: PASS — jawaban benar A/B/C/D select, guru tidak perlu tahu indeks angka, bug falsy value 0 diperbaiki
-Sprint 2B — MateriBlok Guided Editor Minimal: PASS — materi-blok masuk GuidedFormEditor, showWhen conditional fields, 6 tipe prioritas, flat string array fix
+Sprint 2B — MateriBlok Guided Editor Minimal: PARTIAL PASS — materi-blok masuk GuidedFormEditor, showWhen conditional fields, 6 tipe prioritas, flat string array fix, P1 duplicate key fix applied (Ronde 28)
 Sprint R1 — Struktur Panel Kanan 3 Zona: PASS — Isi Utama/Tampilan/Lanjutan, Tampilan collapsed default, tab bar hidden jika 1 tab
 Sprint R2 — Header Konteks Ganda: PASS — panel kanan menampilkan title/subtitle/description, kuis tunjukkan jumlah opsi, materi-blok tunjukkan tipe, halaman tunjukkan template
 P0 — Background Source of Truth: PASS — schema page background disatukan ke schema.background, file upload ke schema path, halaman lama dinormalisasi
+P0 — Tambah Halaman Kosong: PASS (Ronde 28) — PagePresetRegistry.buildPresetWithCreate() sekarang menggunakan createDefaultSchemaForTemplateType() bukan ensurePageSchema()/TemplateAdapter, semua preset menghasilkan konten bermakna
+P1 — Duplicate materi-blok Registry: PASS (Ronde 28) — Entry duplikat dihapus, entry aktif diperluas dengan kutipan+gambar (8 tipe), karakter field ditambahkan
 D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty tracking + optional overflow check, caller prioritas tinggi di-upgrade
 D1/D3 — Export Fallback Safety: PASS — exportWithFallback tidak lagi diam-diam fallback ke degraded vanilla JS, error jelas jika Path A gagal
 D6 — createPage schema.background gap: PASS — createPage() dan setTemplateType() custom sekarang menghasilkan schema.background default dari creation-time
 D7 — Dual Score Store: ACCEPTABLE/FIXED — dual store adalah separation of concerns yang intentional, gap R7.1 (stale scores di Preview/Present) ditutup
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 28 (P0 — Tambah Halaman Kosong / P1 — Duplicate materi-blok Registry):**
+
+1. P0 FIX: `PagePresetRegistry.buildPresetWithCreate()` sekarang menggunakan `createDefaultSchemaForTemplateType()` dari `schema-factory.ts`, bukan jalur lama `ensurePageSchema()` → `TemplateAdapter`
+2. ROOT CAUSE: Jalur lama membaca `page.templateData` yang selalu `{}` (kosong) → `TemplateAdapter.convertToSchema(page)` menghasilkan block hollow (questions:[], items:[], chapters:[]) → canvas kosong
+3. Jalur baru: `createDefaultSchemaForTemplateType(type, metadata, suggestedBlocks, variant)` → `BLOCK_DEFINITIONS[type].createDefault()` → block terisi konten default bermakna
+4. Semua 15 preset sekarang menghasilkan konten nyata:
+   - cover → cover block (title, CTA)
+   - materi → materi-section (populated: text block + poin block + def-box)
+   - kuis → kuis block (title, 1 question with opts)
+   - game → sortir-game block (title, pool with item, kolom with column)
+   - diskusi → diskusi block (title, 1 question)
+   - refleksi → refleksi block (title, 1 question)
+   - skenario, petunjuk, tujuan, motivasi, hasil, rangkuman, penutup, hero, dokumen — semua populated
+5. Import diubah: `ensurePageSchema` → `createDefaultSchemaForTemplateType` dari `schema-factory`
+6. Tidak mengubah: renderer, export, TemplateAdapter, createPageFromPreset (hanya buildPresetWithCreate), AddBlockPanel
+7. Build: PASS
+
+**P1 FIX: Duplicate `materi-blok` key di GUIDED_EDITOR_REGISTRY:**
+
+8. Entry duplikat dihapus — sebelumnya ada 2 entry `'materi-blok'` di registry, JavaScript memakai entry terakhir, entry pertama mati diam-diam
+9. Entry aktif (Sprint 2B) diperluas — 8 tipe sekarang (dari 6):
+   - Ditambahkan: `kutipan` (Kutipan) dan `gambar` (Gambar) ke tipe select options
+   - Ditambahkan: `kutipan` dan `gambar` ke `isi` showWhen — kedua tipe membaca `block.isi` di renderer
+   - Ditambahkan: field `karakter` (Sumber Kutipan) dengan `showWhen: { field: 'tipe', values: ['kutipan'] }` — sesuai `MateriBlokBlock.karakter` type dan `RenderKutipan` renderer
+   - `isi` helpText diperluas: "Teks utama konten (untuk gambar: URL gambar)"
+10. P3 NOTE: `accentColor` field tetap ada di guided editor (forward compat), tapi `MateriBlokRenderer` belum membaca field ini — dicatat di P3 backlog
+11. Build: PASS
+
+**P0 sebelum/sesudah (Tambah Halaman):**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| Tambah Halaman → Game | Canvas kosong (sortir-game with pool:[]) | Canvas terisi: Game Sortir, 1 item, 1 kolom |
+| Tambah Halaman → Kuis | Canvas kosong (questions:[]) | Canvas terisi: Kuis, 1 soal dengan 4 opsi |
+| Tambah Halaman → Materi | Canvas minimal (hollow template) | Canvas terisi: section + teks + poin + def-box |
+| Tambah Halaman → Diskusi | Canvas kosong (questions:[]) | Canvas terisi: Diskusi, 1 pertanyaan |
+| Tambah Halaman → Refleksi | Canvas kosong (questions:[]) | Canvas terisi: Refleksi, 1 pertanyaan |
+| Source of truth | ensurePageSchema() → TemplateAdapter (deprecated) | createDefaultSchemaForTemplateType() → BlockDefinitionRegistry |
+
+**P1 sebelum/sesudah (materi-blok registry):**
+
+| Area | Sebelum | Sesudah |
+|------|---------|--------|
+| GUIDED_EDITOR_REGISTRY['materi-blok'] | 2 entries (Entry 2 overwrites Entry 1 silently) | 1 entry (merged, no duplicate) |
+| Tipe options | 6 types: teks, definisi, poin, checklist, infobox, highlight | 8 types: + kutipan, gambar |
+| `isi` showWhen | ['teks', 'definisi', 'infobox', 'highlight'] | ['teks', 'definisi', 'infobox', 'highlight', 'kutipan', 'gambar'] |
+| `karakter` field | Tidak ada (meski renderer membaca block.karakter) | Ada, showWhen: kutipan |
+| `accentColor` status | Dead field tanpa catatan | Forward compat, P3 note ditambahkan |
 
 **PERUBAHAN RONDE 27 (D7 — Dual Score Store / R7.1):**
 
