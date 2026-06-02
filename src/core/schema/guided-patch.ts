@@ -1218,6 +1218,47 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
     ],
   },
+
+  // ── D8 P3B: Roda Game Guided Editor ────────────────────────────
+  // Only fields the renderer actually reads are exposed.
+  // stepMode, currentQuestionIndex, variant, accentColor are NOT shown
+  // because RodaGameRenderer does not use them.
+  'roda-game': {
+    blockType: 'roda-game',
+    displayName: 'Roda Pertanyaan',
+    description: 'Game roda berputar dengan soal pilihan ganda',
+    icon: '🎡',
+    fields: [
+      { key: 'title', label: 'Judul Game', type: 'text', required: true, placeholder: 'Contoh: Roda Pengetahuan' },
+      {
+        key: 'questions',
+        label: 'Soal',
+        type: 'array',
+        maxItems: 6,
+        helpText: 'Maksimal 6 soal. Setiap soal menjadi satu segmen roda.',
+        fields: [
+          { key: 'q', label: 'Pertanyaan', type: 'textarea', required: true },
+          {
+            key: 'opts',
+            label: 'Pilihan Jawaban',
+            type: 'array',
+            maxItems: 4,
+            helpText: 'Tandai jawaban yang benar.',
+            fields: [
+              { key: 'text', label: 'Teks Jawaban', type: 'text', required: true },
+              { key: 'correct', label: 'Jawaban Benar', type: 'boolean' },
+            ],
+          },
+          { key: 'feedbackCorrect', label: 'Feedback Benar', type: 'text', placeholder: 'Benar!' },
+          { key: 'feedbackWrong', label: 'Feedback Salah', type: 'text', placeholder: 'Coba lagi.' },
+          { key: 'diskusiHint', label: 'Hint Diskusi', type: 'text' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
+    ],
+  },
 };
 
 // ── Overflow Detection ─────────────────────────────────────────

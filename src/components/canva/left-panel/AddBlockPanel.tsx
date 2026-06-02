@@ -63,11 +63,11 @@ export default function AddBlockPanel() {
   // (3) are meaningful for teachers to insert as content.
   // Page-level blocks (cover, tp, penutup, petunjuk) are NOT here —
   // those are added via "Tambah Halaman", not "Tambah Isi".
-  // gambar has guided editor (P3A); roda-game is deferred until it gets a guided editor.
+  // gambar (P3A) and roda-game (P3B) have guided editors.
   const TEACHER_ADDABLE_BLOCKS = useMemo(() => [
     'materi-section', 'def-box', 'kuis', 'diskusi',
     'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-    'gambar',
+    'gambar', 'roda-game',
   ], []);
 
   // ── Popular blocks for quick-access grid (Sederhana only) ──
@@ -75,7 +75,7 @@ export default function AddBlockPanel() {
   const POPULAR_BLOCK_TYPES = useMemo(() => [
     'materi-section', 'def-box', 'kuis', 'diskusi',
     'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-    'gambar',
+    'gambar', 'roda-game',
   ], []);
 
   // Check if current page can accept schema blocks
