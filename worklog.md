@@ -46,3 +46,34 @@ Stage Summary:
 - P1 FIX: No more duplicate materi-blok registry entry, 8 tipe supported (was 6)
 - Build PASS confirmed
 - Local commit ready, push requires manual authentication
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Flow QA for Tambah Halaman + fix sortir-game guided editor
+
+Work Log:
+- Verified push to remote/main: commit 4fc96a5 confirmed at origin/main HEAD
+- Performed code-level Flow QA for all 6 preset types (cover, materi, kuis, game, diskusi, refleksi)
+- Verified schema factory output for each type: all produce populated blocks with non-empty content
+- Verified BlockDefinitionRegistry createDefault(): all return meaningful defaults
+- Verified renderer registration: all 6 block types in RENDERER_MAP
+- Verified createPageFromPreset flow: correctly assigns schema to page.schema
+- Verified page rendering chain: SchemaScreenRenderer → SchemaBlockRenderer → correct renderer component
+- Found ISSUE: sortir-game NOT in GUIDED_EDITOR_REGISTRY → right panel falls through to raw SchemaDrivenEditor
+- Fixed: Added sortir-game guided editor entry with title, kolom (label+color), pool (text+category) fields
+- Build: PASS
+- Commit: feat: add sortir-game guided editor to GUIDED_EDITOR_REGISTRY (7a1d524)
+- Push: SUCCESS to origin/main
+
+Stage Summary:
+- Flow QA results:
+  - Cover: PASS
+  - Materi: PASS (caveat: materi-section guided editor only has title, but nested blocks have their own editors)
+  - Kuis: PASS
+  - Game: PASS (after adding sortir-game guided editor)
+  - Diskusi: PASS
+  - Refleksi: PASS
+- Known P2: materi-section guided editor only exposes title (takeaways/selfCheck not editable via guided form)
+- Known P3: cover preset gets no project metadata when added via Tambah Halaman (expected behavior)
+- Known P3: accentColor field in materi-blok not read by renderer
