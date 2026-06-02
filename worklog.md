@@ -118,3 +118,29 @@ Stage Summary:
 - Generated: /home/z/my-project/download/Teacher-Flow-v1-Stable-Baseline.docx
 - Document covers all 6 areas requested by user
 - Post-check all green
+---
+Task ID: d8-p0-p2
+Agent: main
+Task: D8 P0–P2 — Simplify Add Content Flow for Teacher Mode
+
+Work Log:
+- Read AddBlockPanel.tsx, AddBlockSection.tsx, IconRail.tsx, LeftPanel.tsx, RightPanel.tsx, teacher-terminology.ts
+- Read block definitions registry (37+ block types, only materi-blok has addable:false)
+- Verified guided editor coverage for all 8 curated types
+- D8 P0: Added TEACHER_ADDABLE_BLOCKS constant (8 types), filtered allBlocks in sederhana mode
+- D8 P1: Updated POPULAR_BLOCK_TYPES to align with curated list (removed materi-blok, cover, tp, penutup, gambar)
+- D8 P2: Renamed "Tambah Konten" → "Tambah Isi" in AddBlockPanel, AddBlockSection, IconRail, LeftPanel, RightPanel, teacher-terminology
+- Updated blockLabel from 'Konten' to 'Isi' in all teacher mode contexts
+- Updated SIMPLIFIED_GROUPS: "Konten & Materi" → "Isi & Materi", "Konten lainnya" → "Isi lainnya"
+- Removed unused teacherTerm import from IconRail.tsx
+- Updated CORE_VERIFICATION_REPORT.md with Ronde 29 details
+- Build: PASS
+- Commit: 82f62da
+- Push: origin/main (7a1d524 → 82f62da)
+
+Stage Summary:
+- Teacher mode now shows only 8 curated blocks instead of 42
+- All 8 curated blocks have guided editors (no raw schema editor fallback)
+- "Tambah Konten" renamed to "Tambah Isi" across all UI surfaces
+- Advanced mode unchanged (still shows all addable blocks)
+- Commit: 82f62da, pushed to origin/main
