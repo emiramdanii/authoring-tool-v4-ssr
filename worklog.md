@@ -101,3 +101,20 @@ Stage Summary:
 - Roda-game has GuidedFormEditor, will NOT fall to SchemaDrivenEditor
 - stepMode/currentQuestionIndex/variant/accentColor intentionally excluded from guided form
 - Renderer, export, runtime score NOT modified
+---
+Task ID: rekap
+Agent: Main
+Task: Buat rekap resmi Teacher Flow v1 — Stable Baseline
+
+Work Log:
+- Analyzed all sprint status from Sprint 0 through D8 P3B
+- Created comprehensive DOCX document with 7 sections: Apa yang Sudah Stabil, Flow Guru Sekarang, Fitur Layak Dipakai, Fitur Diparkir, Risiko Tersisa, Roadmap Sprint Berikutnya, Daftar Blok Curated
+- Used DM-1 Deep Cyan palette (ed-tech context)
+- Cover page: dark bg with cyan accent, title + subtitle + metadata
+- Body: 7 tables, numbered lists, justified paragraphs
+- Post-check: 9/9 PASS, 0 errors, 0 warnings
+
+Stage Summary:
+- Generated: /home/z/my-project/download/Teacher-Flow-v1-Stable-Baseline.docx
+- Document covers all 6 areas requested by user
+- Post-check all green
