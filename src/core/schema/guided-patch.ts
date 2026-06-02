@@ -1201,6 +1201,23 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'kolom', 'pool'] },
     ],
   },
+
+  'gambar': {
+    blockType: 'gambar',
+    displayName: 'Gambar',
+    description: 'Sisipkan gambar ke halaman materi',
+    icon: '🖼️',
+    fields: [
+      { key: 'title', label: 'Judul Gambar', type: 'text', helpText: 'Judul opsional di atas gambar', placeholder: 'Contoh: Diagram Sistem Pernapasan' },
+      { key: 'url', label: 'URL Gambar', type: 'text', required: true, helpText: 'Tempel tautan gambar dari internet.', placeholder: 'https://contoh.com/gambar.jpg' },
+      { key: 'caption', label: 'Keterangan', type: 'textarea', helpText: 'Keterangan singkat di bawah gambar', placeholder: 'Sumber: Buku Paket Hal. 45' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', defaultValue: 'c' },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'url', 'caption'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
+    ],
+  },
 };
 
 // ── Overflow Detection ─────────────────────────────────────────

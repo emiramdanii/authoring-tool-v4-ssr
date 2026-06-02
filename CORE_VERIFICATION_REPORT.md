@@ -31,6 +31,7 @@ P0 — Background Source of Truth: PASS — schema page background disatukan ke 
 D8 P0 — Curated Filter AddBlockPanel: PASS (Ronde 29) — teacher mode hanya menampilkan 8 curated block (semua punya guided editor), bukan 42 block teknis
 D8 P1 — Fix POPULAR_BLOCK_TYPES: PASS (Ronde 29) — materi-blok dihapus (addable:false), page-level blocks dihapus, list selaras dengan TEACHER_ADDABLE_BLOCKS
 D8 P2 — Rename Tambah Konten → Tambah Isi: PASS (Ronde 29) — label UI berubah di AddBlockPanel, AddBlockSection, IconRail, LeftPanel, RightPanel, teacher-terminology
+D8 P3A — Guided Editor Gambar Minimal: PASS (Ronde 30) — block gambar aman masuk ke Tambah Isi teacher mode, 4 field (title, url, caption, accentColor), url tetap text field (paste), tidak jatuh ke SchemaDrivenEditor
 P0 — Tambah Halaman Kosong: PASS (Ronde 28) — PagePresetRegistry.buildPresetWithCreate() sekarang menggunakan createDefaultSchemaForTemplateType() bukan ensurePageSchema()/TemplateAdapter, semua preset menghasilkan konten bermakna
 P1 — Duplicate materi-blok Registry: PASS (Ronde 28) — Entry duplikat dihapus, entry aktif diperluas dengan kutipan+gambar (8 tipe), karakter field ditambahkan
 D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty tracking + optional overflow check, caller prioritas tinggi di-upgrade
@@ -39,6 +40,40 @@ D6 — createPage schema.background gap: PASS — createPage() dan setTemplateTy
 D7 — Dual Score Store: ACCEPTABLE/FIXED — dual store adalah separation of concerns yang intentional, gap R7.1 (stale scores di Preview/Present) ditutup
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 30 (D8 P3A — Guided Editor Gambar Minimal):**
+
+1. D8 P3A IMPLEMENTASI: Guided editor untuk block `gambar` — guru bisa edit tanpa jatuh ke SchemaDrivenEditor
+2. `guided-patch.ts`: Tambah entry `'gambar'` ke `GUIDED_EDITOR_REGISTRY` — 4 field: title (text), url (text, required), caption (textarea), accentColor (color, default 'c')
+3. `guided-patch.ts`: Sections: "Isi Utama" (title, url, caption), "Tampilan" (accentColor, collapsed)
+4. `AddBlockPanel.tsx`: `gambar` ditambahkan ke `TEACHER_ADDABLE_BLOCKS` — sekarang 9 item di Tambah Isi teacher mode
+5. `AddBlockPanel.tsx`: `gambar` ditambahkan ke `POPULAR_BLOCK_TYPES` — selaras dengan TEACHER_ADDABLE_BLOCKS
+6. `AddBlockPanel.tsx`: Comment diupdate — "gambar has guided editor (P3A); roda-game deferred"
+7. URL tetap field `text` (paste) — ImageUploader dan tipe field `image` ditunda ke follow-up
+8. Tidak mengubah: GambarRenderer, upload API, export, guided-field-renderer, tipe field
+9. Build: PASS
+
+**D8 P3A curated block list (diperbarui):**
+
+| Block Type | Name | Personality | Guided Editor | Grup Sederhana |
+|-----------|------|-------------|--------------|----------------|
+| materi-section | Bagian Materi | understanding | ✅ | Isi & Materi |
+| def-box | Kotak Definisi | understanding | ✅ | Isi & Materi |
+| gambar | Gambar | understanding | ✅ (P3A) | Isi & Materi |
+| kuis | Kuis | assessment | ✅ | Interaktif |
+| diskusi | Diskusi | discussion | ✅ | Interaktif |
+| refleksi | Refleksi | reflection | ✅ | Interaktif |
+| sortir-game | Game Sortir | assessment | ✅ | Interaktif |
+| rangkuman | Rangkuman | reflection | ✅ | Interaktif |
+| motivasi | Motivasi / Apersepsi | reflection | ✅ | Interaktif |
+
+**D8 P3A ditunda (follow-up):**
+
+| Item | Alasan |
+|------|--------|
+| ImageUploader integration | Perlu tipe field baru `'image'` di GuidedFieldDef, sentuh guided-field-renderer |
+| Tipe field `'image'` | Perlu extend union type + render case baru |
+| Upload API wiring | Risiko buka masalah baru, perlu QA terpisah |
 
 **PERUBAHAN RONDE 29 (D8 P0–P2 — Add Flow Teacher Mode):**
 
@@ -81,8 +116,7 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 
 | Block Type | Alasan |
 |-----------|--------|
-| gambar | Belum punya guided editor (P3) |
-| roda-game | Belum punya guided editor (P3) |
+| roda-game | Belum punya guided editor (P3B) |
 | cover, tp, petunjuk, penutup | Page-level — ditambah via Tambah Halaman |
 | ftab, nc-grid, nk-card, tabel-accord | Terlalu teknis untuk guru |
 | memory-game, matching-game, dll. | Game minor — bisa diakses via advanced mode |
@@ -92,12 +126,13 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 
 | Area | Sebelum | Sesudah |
 |------|---------|--------|
-| Teacher mode block count | ~42 addable blocks | 8 curated blocks |
+| Teacher mode block count | ~42 addable blocks | 9 curated blocks |
 | "Tambah Konten" label | Terlihat di AddBlockPanel, AddBlockSection, IconRail | "Tambah Isi" |
 | blockLabel teacher mode | 'Konten' | 'Isi' |
-| POPULAR_BLOCK_TYPES | cover, tp, materi-blok, materi-section, gambar, kuis, diskusi, refleksi, penutup | materi-section, def-box, kuis, diskusi, refleksi, sortir-game, rangkuman, motivasi |
+| POPULAR_BLOCK_TYPES | cover, tp, materi-blok, materi-section, gambar, kuis, diskusi, refleksi, penutup | materi-section, def-box, kuis, diskusi, refleksi, sortir-game, rangkuman, motivasi, gambar |
 | Advanced mode | 42 blocks | 42 blocks (tidak berubah) |
-| guru klik gambar/roda-game | Jatuh ke SchemaDrivenEditor mentah | Tidak ditampilkan (deferred ke P3) |
+| guru klik gambar | Jatuh ke SchemaDrivenEditor mentah | Guided editor (P3A): paste URL, edit title/caption/color |
+| guru klik roda-game | Jatuh ke SchemaDrivenEditor mentah | Tidak ditampilkan (deferred ke P3B) |
 
 **PERUBAHAN RONDE 28 (P0 — Tambah Halaman Kosong / P1 — Duplicate materi-blok Registry):**
 
