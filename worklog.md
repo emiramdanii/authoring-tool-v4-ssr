@@ -77,3 +77,27 @@ Stage Summary:
 - Known P2: materi-section guided editor only exposes title (takeaways/selfCheck not editable via guided form)
 - Known P3: cover preset gets no project metadata when added via Tambah Halaman (expected behavior)
 - Known P3: accentColor field in materi-blok not read by renderer
+---
+Task ID: D8-P3B
+Agent: Main
+Task: D8 P3B — Guided Editor Roda Pertanyaan
+
+Work Log:
+- Read RodaGameBlock interface from blocks.ts: title, stepMode?, currentQuestionIndex?, questions[{q, diskusiHint?, opts[{text, correct}], feedbackCorrect?, feedbackWrong?}]
+- Read RodaGameRenderer.tsx: confirmed renderer reads title, questions[].q, questions[].opts[].text, questions[].opts[].correct, questions[].feedbackCorrect, questions[].feedbackWrong, questions[].diskusiHint; does NOT read stepMode, currentQuestionIndex, variant, accentColor
+- Added 'roda-game' entry to GUIDED_EDITOR_REGISTRY in guided-patch.ts with fields: title (text, required), questions[] (array, maxItems:6) containing q (textarea, required), opts[] (array, maxItems:4) containing text (text, required) + correct (boolean), feedbackCorrect (text), feedbackWrong (text), diskusiHint (text)
+- Sections: "Isi Utama" (title, questions) — single section, no Tampilan/Lanjutan since renderer doesn't use visual fields
+- Added 'roda-game' to TEACHER_ADDABLE_BLOCKS (9→10 items) and POPULAR_BLOCK_TYPES in AddBlockPanel.tsx
+- Updated comment: "gambar (P3A) and roda-game (P3B) have guided editors"
+- Updated CORE_VERIFICATION_REPORT.md with Ronde 31 section, updated curated block list (10 items), field exclusion table, sebelum/sesudah table
+- Build: PASS
+- Commit: a6a8636 "fix: add guided editor for roda game"
+- git pull --rebase origin main: no conflicts
+- Push: 677e2df..a6a8636 main → main
+
+Stage Summary:
+- D8 P3B PUSHED to origin/main (commit a6a8636)
+- TEACHER_ADDABLE_BLOCKS now has 10 items (added roda-game)
+- Roda-game has GuidedFormEditor, will NOT fall to SchemaDrivenEditor
+- stepMode/currentQuestionIndex/variant/accentColor intentionally excluded from guided form
+- Renderer, export, runtime score NOT modified
