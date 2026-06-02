@@ -1308,3 +1308,47 @@ Guru tidak bisa melihat tampilan template sebelum menggunakannya. `TemplateMarke
 ### Verdict Sprint 1: **PARTIAL**
 
 Alasan: Workspace layout solid (poin 9-10 PASS). "Mulai dari Template" ada (poin 2). Template mudah ditemukan (poin 4). Flow ke Canvas benar (poin 8). Tapi **absennya template preview** (poin 3, 5, 7 FAIL) adalah gap kritis — guru harus commit ke template tanpa melihatnya. TemplateMarketplace yang punya fitur ini dihapus dari UI (regresi). Sampai preview diaktifkan kembali atau mekanisme preview baru ditambahkan, teacher flow tidak lengkap.
+
+---
+
+## Ronde 28 — D5 PropertySchema vs GuidedEditorSchema Drift Fix (P0/P1)
+
+Tanggal: 2026-06-02
+
+### Masalah
+
+PropertySchema dan GuidedEditorSchema menggunakan key yang berbeda dari schema type + renderer. PropertySchema memakai nama Inggris (label/content/color/cards) sementara schema type dan renderer memakai nama Indonesia (judul/isi/warna/kartu). Akibatnya, data yang ditulis via right-panel/advanced mode **hilang diam-diam** karena renderer tidak membacanya.
+
+### Drift yang Ditemukan
+
+| # | Block | Drift Type | Severity |
+|---|-------|-----------|----------|
+| D5.1 | tab-icons | PropertySchema: `label/content/color` → harusnya `judul/isi/warna` | P0 |
+| D5.2 | accordion | PropertySchema: `title/content` → harusnya `judul/isi`; phantom `color` | P0 |
+| D5.3 | infografis | PropertySchema: `cards/title/body/color` → harusnya `kartu/judul/isi/warna`; phantom `stat` | P0 |
+| D5.4 | alur | GuidedEditor: `fase` → harusnya `dot` (color token) | P1 |
+
+### Fix yang Diterapkan
+
+**File: `src/core/editor/property-schemas/content.ts`**
+
+1. **tab-icons** — Ganti `tabs[].label`→`tabs[].judul`, `tabs[].content`→`tabs[].isi`, `tabs[].color`→`tabs[].warna`. Tambah field `intro`, `layout`, `animation`, `required` di title.
+
+2. **accordion** — Ganti `items[].title`→`items[].judul`, `items[].content`→`items[].isi`. Hapus phantom `items[].color`. Tambah `intro`, `required` di title.
+
+3. **infografis** — Ganti `cards`→`kartu`, `cards[].title`→`kartu[].judul`, `cards[].body`→`kartu[].isi`, `cards[].color`→`kartu[].warna`. Hapus phantom `stat`. Tambah `intro`, `layout`, `required` di title.
+
+**File: `src/core/schema/guided-patch.ts`**
+
+4. **alur** — Ganti `key: 'fase'` → `key: 'dot'` dengan value mapping: Pendahuluan→`y`, Inti→`c`, Penutup→`r` (color tokens yang match AlurBlock type).
+
+### Build Result: PASS
+
+### Standar PASS
+
+- [x] tab-icons tidak lagi menulis label/content/color
+- [x] accordion tidak lagi menulis title/content untuk item
+- [x] infografis tidak lagi menulis cards/title/body/color
+- [x] alur tidak lagi menulis fase
+- [x] Semua key sesuai schema/renderer
+- [x] Build berhasil

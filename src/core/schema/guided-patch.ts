@@ -973,10 +973,10 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         type: 'array',
         maxItems: 6,
         fields: [
-          { key: 'fase', label: 'Fase', type: 'select', options: [
-            { label: 'Pendahuluan', value: 'Pendahuluan' },
-            { label: 'Inti', value: 'Inti' },
-            { label: 'Penutup', value: 'Penutup' },
+          { key: 'dot', label: 'Fase', type: 'select', options: [
+            { label: 'Pendahuluan', value: 'y' },
+            { label: 'Inti', value: 'c' },
+            { label: 'Penutup', value: 'r' },
           ]},
           { key: 'durasi', label: 'Durasi', type: 'text', placeholder: '10 menit' },
           { key: 'judul', label: 'Nama Kegiatan', type: 'text', required: true, placeholder: 'Apersepsi' },
