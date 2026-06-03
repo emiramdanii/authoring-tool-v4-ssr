@@ -144,3 +144,32 @@ Stage Summary:
 - "Tambah Konten" renamed to "Tambah Isi" across all UI surfaces
 - Advanced mode unchanged (still shows all addable blocks)
 - Commit: 82f62da, pushed to origin/main
+---
+Task ID: Sprint-X.1-v2
+Agent: Main Agent
+Task: Sprint X.1 — Primary Edit Target Resolver (re-created after git rebase loss)
+
+Work Log:
+- Previous X.1 commits (d047ea0, 5a8cc46, 98aee76) were lost during git rebase/merge conflict resolution
+- Re-created src/core/schema/primary-edit-target.ts — domain resolver for template-first editor
+  - resolvePrimaryEditableTarget(page) — pure function, no side effects, no store access
+  - 5-level resolution: pattern metadata → phase mapping → GuidedEditor → first block → null
+  - PHASE_PRIMARY_BLOCK mapping for all 15 template types
+  - Future-proof: ready for PagePatternRegistry without refactoring
+- Re-created src/core/schema/__tests__/primary-edit-target.test.ts — 15 tests, all passing
+- Modified src/store/canva/page-slice.ts:
+  - addTemplatePage() calls resolvePrimaryEditableTarget → sets selectedBlockId/Type/Ids
+  - duplicatePage() also auto-selects primary edit target on the cloned page
+  - addPage() clears stale selectedBlockId/Type/Ids (bug fix from QA)
+- Build PASS, tests 15/15 PASS
+- Flow QA: 7/7 required types PASS, 1 cosmetic PARTIAL (sortir-game displayName)
+- Commit: 4653b01 "fix: resolve primary edit target for new pages"
+- Push: FAILED — no GitHub credentials in environment
+
+Stage Summary:
+- Sprint X.1 code complete and committed locally
+- After Tambah Halaman, panel kanan langsung "Edit Materi"/"Edit Kuis"/etc.
+- Resolver is domain-layer, not UI-layer — consumed by store
+- Pattern-first ready: Step 1 of resolver checks for pattern metadata
+- No renderer/export/AddBlockPanel changes — minimal surface area
+- Push requires manual authentication from user
