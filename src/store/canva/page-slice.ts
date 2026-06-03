@@ -18,6 +18,7 @@ import { assertDocumentPurity } from '@/core/schema/session-state';
 import { saveCrashCheckpoint } from '@/core/recovery';
 import { patchHistory } from '@/core/editor/patch-history';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
+import { resolvePrimaryEditableTarget } from '@/core/schema/primary-edit-target';
 
 export type PageSlice = Pick<
   CanvaState,
@@ -62,7 +63,19 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const pages = get().pages;
     const newPage = createPage('Halaman ' + (pages.length + 1), 'custom');
     get()._pushHistory();
-    set({ pages: [...pages, newPage], currentPageIndex: pages.length, selectedElId: null, activeTabId: null });
+    // Sprint X.1: clear stale block selection from previous page.
+    // Without this, the right panel shows a guided editor for a block
+    // that belongs to a different page.
+    set({
+      pages: [...pages, newPage],
+      currentPageIndex: pages.length,
+      selectedElId: null,
+      activeTabId: null,
+      selectedBlockId: null,
+      selectedBlockType: null,
+      editingBlockId: null,
+      selectedBlockIds: [],
+    });
     toast.success('Halaman baru ditambahkan');
   },
 
@@ -74,8 +87,24 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     // directly by the PresetRegistry. No lazy migration needed.
     const newPage = createPageFromPreset(templateType, pages.length);
 
+    // ═══ Sprint X.1: Primary Edit Target ═══════════════════════
+    // After page creation, resolve which block is the primary editable
+    // target. This ensures the right panel opens "Edit Materi" /
+    // "Edit Kuis" / etc. immediately — not the generic "Edit Halaman".
+    const primaryTarget = resolvePrimaryEditableTarget(newPage);
+
     get()._pushHistory();
-    set({ pages: [...pages, newPage], currentPageIndex: pages.length, selectedElId: null, activeTabId: null });
+    set({
+      pages: [...pages, newPage],
+      currentPageIndex: pages.length,
+      selectedElId: null,
+      activeTabId: null,
+      // Auto-select primary block — the foundation of template-first UX
+      selectedBlockId: primaryTarget.blockId,
+      selectedBlockType: primaryTarget.blockType,
+      editingBlockId: null,
+      selectedBlockIds: primaryTarget.blockId ? [primaryTarget.blockId] : [],
+    });
     toast.success(`${newPage.label} ditambahkan`);
   },
 
@@ -117,8 +146,20 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     }
     const newPages = [...pages];
     newPages.splice(currentPageIndex + 1, 0, clone);
+    // Sprint X.1: Auto-select primary edit target on duplicated page
+    const dupePrimaryTarget = resolvePrimaryEditableTarget(clone);
+
     get()._pushHistory();
-    set({ pages: newPages, currentPageIndex: currentPageIndex + 1, selectedElId: null, activeTabId: null });
+    set({
+      pages: newPages,
+      currentPageIndex: currentPageIndex + 1,
+      selectedElId: null,
+      activeTabId: null,
+      selectedBlockId: dupePrimaryTarget.blockId,
+      selectedBlockType: dupePrimaryTarget.blockType,
+      editingBlockId: null,
+      selectedBlockIds: dupePrimaryTarget.blockId ? [dupePrimaryTarget.blockId] : [],
+    });
     toast.success('Halaman diduplikat');
   },
 
