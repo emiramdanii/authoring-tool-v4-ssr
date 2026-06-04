@@ -278,3 +278,33 @@ Stage Summary:
 - 9 files changed, 92 insertions, 23 deletions
 - Build PASS confirmed
 - Push requires manual authentication
+---
+Task ID: D-P0C-git-sync
+Agent: Main Agent
+Task: Resolve git sync issue and cleanly apply D-P0C changes on top of origin/main
+
+Work Log:
+- Analyzed divergence: local had 3 commits since 82f62da, remote had 22 commits since 82f62da
+- Found that local commit d1f01e0 was based on stale history — could not rebase cleanly
+- Strategy: reset local to origin/main, then manually re-apply D-P0C code changes on top of current remote
+- Read all 8 affected files from remote version
+- Applied all D-P0C changes manually (not via git am) to avoid conflicts:
+  1. schema-apply.ts: skipHistory on 3 apply functions + 2 overflow wrappers
+  2. schema-apply/write.ts: skipHistory on 3 apply functions (consistency)
+  3. types.ts: skipHistory in UpdateSchemaBlockOptions
+  4. schema-crud-slice.ts: guard _pushHistory() with skipHistory
+  5. TransformHandles.tsx: push history before drag/resize, skipHistory during mousemove
+  6. block-properties/index.tsx: use applyGuidedSchemaPatch with pageId
+  7. regenerate.ts: push history 1x per regenerate action, skipHistory on apply
+  8. use-auto-generate.ts: push history 1x per apply/generate, skipHistory on apply
+- Build PASS on local
+- Committed as f9668a4 (clean on top of a867a64 = origin/main)
+- Push failed (no credentials) — patch backup created
+- Verified patch applies cleanly on origin/main with build PASS
+
+Stage Summary:
+- Commit f9668a4: fix: stabilize schema edit history and page scope
+- Patch: /home/z/my-project/download/d-p0c-stabilize-schema-edit-history-and-page-scope.patch
+- No conflicts — patch applies cleanly on origin/main
+- No guided editor entries lost, no report rounds deleted
+- Build PASS on both local and patched branch
