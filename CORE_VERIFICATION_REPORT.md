@@ -1796,6 +1796,209 @@ BERTAHAP (P2 — 15 item, non-blocking):
 19-33.  Cleanup bertahap saat menyentuh area terkait
 ```
 
+---
+
+## Ronde 36 — D-P0B Audit: Schema vs Elements Render Source
+
+**Tanggal:** 2026-06-04
+**Fokus:** Dualisme antara `page.schema` (sistem baru) vs legacy `elements[]`/`templateData`/`bgColor`/`bgDataUrl`/`overlay`
+**Status:** AUDIT SELESAI — belum coding
+
+### 1. Peta Dualisme
+
+CanvaPage punya **15 field**, dibagi:
+
+| Kategori | Jumlah | Field |
+|----------|--------|-------|
+| **🟢 Schema (baru)** | 2 | `schema: ScreenSchema?`, `pageMode: 'schema'\|'elements'?` |
+| **🔴 Legacy — Deprecated** | 3 | `elements: CanvaElement[]`, `templateData: Record<string,unknown>`, `overlayElements?: CanvaElement[]` |
+| **⚠️ Legacy BG (implisit)** | 3 | `bgDataUrl`, `bgColor`, `overlay` |
+| **⚠️ Legacy (implisit)** | 2 | `colorPalette`, `navConfig` |
+| **Netral** | 5 | `id`, `label`, `templateType`, `templateVariant`, `contractId` |
+
+**Strict subtypes** mencegah pembuatan halaman dual-state:
+- `SchemaCanvaPage`: `pageMode='schema'`, `schema` wajib, `elements=[]`
+- `ElementsCanvaPage`: `pageMode='elements'`, `elements` wajib, `schema=undefined`
+
+### 2. Temuan Dualisme Kritis
+
+#### 2a. schemaThemeId — DUAL WRITE, DUAL READ (P0)
+
+`schemaThemeId` ditulis ke **dua tempat** dan dibaca dari **dua tempat**, tapi tidak sinkron:
+
+| # | Lokasi | Baca/Tulis | Source |
+|---|--------|-----------|--------|
+| 1 | `background-slice.ts:168-170` — `setSchemaThemeId()` | **TULIS** | `templateData.schemaThemeId` saja |
+| 2 | `TemplateWizard.tsx:148` | **TULIS** | `templateData.schemaThemeId` + `schema.background` |
+| 3 | `TemplateMarketplace.tsx:521` | **TULIS** | `templateData.schemaThemeId` + `schema.background` |
+| 4 | `Dashboard.tsx:291` | **TULIS** | `templateData.schemaThemeId` + `schema.background` |
+| 5 | `SchemaEngine.utils.ts:110` | **TULIS** | `templateData.schemaThemeId` |
+| 6 | `PageRenderer.tsx:102-104` | **BACA** | `page.schema?.background?.type` → fallback `templateData.schemaThemeId` |
+| 7 | `PageFrame.tsx:376` | **BACA** | `templateData.schemaThemeId` saja — **TIDAK cek schema** |
+| 8 | `BackgroundSection.tsx:33` | **BACA** | `templateData.schemaThemeId` saja — **TIDAK cek schema** |
+| 9 | `LearningMediaShell.tsx:715` | **BACA** | `schema.themeId` → fallback `templateData.schemaThemeId` |
+| 10 | `ExportApp.tsx:638` | **BACA** | `schema.themeId` → fallback `templateData.schemaThemeId` |
+
+**Masalah:**
+- `setSchemaThemeId()` (satu-satunya action store) hanya tulis ke `templateData` — TIDAK ke `schema`
+- `PageFrame.tsx:376` dan `BackgroundSection.tsx:33` hanya baca dari `templateData` — TIDAK cek `schema`
+- TemplateWizard/Marketplace/Dashboard tulis ke **keduanya** tapi setSchemaThemeId hanya ke satu
+- Hasil: guru pilih tema dari panel kanan → theme ID hanya di `templateData`, tidak di `schema.background`
+
+**Dampak guru:** Tema berbeda antara canvas render dan preview/export. Token system membaca `schema.background.type` (kosong), PageFrame membaca `templateData.schemaThemeId` (ada). Visual mismatch.
+
+#### 2b. Stage vs PageRenderer Schema Disagreement (P0)
+
+| Komponen | Cara menentukan schema-driven | Bisa disagree? |
+|----------|-------------------------------|----------------|
+| **Stage** (`stage/index.tsx:364`) | `!!page?.schema` (cek langsung) | **YA** |
+| **PageRenderer** (`PageRenderer.tsx:122`) | `!!ensurePageSchema(page)` (4-path resolution) | Tidak |
+
+**Skenario dual render:**
+1. Halaman punya `templateType='materi'` tapi `page.schema = undefined`
+2. Halaman punya `elements = [materi, teks, kuis]` (legacy)
+3. Stage lihat `isSchemaDriven = false` → render `StageElement` overlay
+4. PageRenderer panggil `ensurePageSchema()` → Path 3 (TemplateAdapter) → return schema
+5. PageRenderer lihat `useSchemaRenderer = true` → render `SchemaScreenRenderer`
+6. **Keduanya render sekaligus** — Stage elements DAN PageRenderer schema content
+
+**Mitigasi:** `migrateAllPages()` di load-time membersihkan `elements[]` untuk halaman schema. Tapi jika migrasi gagal/skip (corrupt localStorage, race condition), disagreement bertahan sampai save+load berikutnya.
+
+#### 2c. loadFromDB() Bug — migrateAllSchemas Return Value Discarded (P1)
+
+```typescript
+// persistence-slice.ts:397
+migrateAllSchemas(pages); // Return value DISCARDED!
+```
+
+Bandingkan `loadFromStorage()`:
+```typescript
+// persistence-slice.ts:224
+const { migratedCount } = migrateAllSchemas(pages); // Captured correctly
+```
+
+`migrateAllSchemas()` mengembalikan `{ pages, migratedCount }` — array baru dengan schema versi terbaru. Tapi di `loadFromDB()`, hasilnya dibuang. Schema versi upgrade dari DB load hilang diam-diam.
+
+**Catatan:** `migrateAllPages()` Step 4 sudah melakukan migrasi versi, jadi seharusnya `migrateAllSchemas()` adalah no-op. Tapi jika ada edge case yang terlewat, migrasi dari DB load akan gagal.
+
+#### 2d. StatusBar Double-Counting (P2)
+
+```typescript
+// StatusBar.tsx:162-164
+const schemaBlocks = page ? (ensurePageSchema(page)?.blocks.length ?? 0) : 0;
+const legacyElements = page?.elements?.length || 0;
+const totalElements = schemaBlocks + legacyElements;
+```
+
+Untuk halaman yang punya schema DAN elements (dual-data bug), counter menunjukkan angka ganda. Ini **indikator** dual-data, bukan penyebab.
+
+#### 2e. Unguarded Legacy Reads (P1)
+
+5 lokasi membaca `page.elements` atau `page.templateData` tanpa cek `pageMode`/`isSchemaDriven`:
+
+| File | Line | Baca apa | Risk |
+|------|------|----------|------|
+| `use-stage-drag.ts` | 62, 73 | `page.elements.find()` | Snap lines untuk elemen yang seharusnya kosong |
+| `ElementProperties.tsx` | 23, 63 | `page.elements.find()` | Hanya muncul jika legacy element terseleksi — rendah |
+| `use-stable-selectors.ts` | 160 | `page.elements.length` | Hook count untuk elemen legacy — rendah |
+| `PageFrame.tsx` | 376 | `templateData.schemaThemeId` | **Tema salah** — P0 |
+| `BackgroundSection.tsx` | 33 | `templateData.schemaThemeId` | **Tema salah** — P0 |
+
+### 3. Source of Truth — Teacher Flow
+
+```txt
+Teacher Flow: page.schema ADALAH source of truth.
+
+Render:   SchemaScreenRenderer membaca schema.blocks → blok ditampilkan
+Edit:     schema-crud-slice / schema-ops-slice menulis ke page.schema
+Export:   export-projection.ts membaca schema.blocks → payload ekspor
+Preview:  SchemaPlayer membaca schema.screens → live preview
+Nav:      schema.nav menggantikan navConfig
+BG:       schema.background menggantikan bgColor/bgDataUrl/overlay
+Theme:    schema.background.type menggantikan templateData.schemaThemeId
+```
+
+**Pengecualian:** `page.elements[]` adalah source of truth HANYA untuk `ElementsCanvaPage` (`pageMode='elements'`) — halaman yang belum pernah disimpan/di-load sejak migrasi schema aktif. Populasi ini menyusut seiring waktu.
+
+### 4. Apakah Legacy Elements Masih Boleh Hidup?
+
+**YA, tapi dengan batasan ketat:**
+
+| Kondisi | `pageMode` | `elements[]` | `schema` | Boleh? |
+|---------|------------|-------------|----------|--------|
+| Halaman baru guru | `'schema'` | `[]` | ✅ | ✅ Wajib |
+| Halaman lama yang sudah di-load ulang | `'schema'` | `[]` | ✅ | ✅ Sudah dimigrasi |
+| Halaman lama yang BELUM di-load (DB/localStorage) | undefined | populated | undefined | ⚠️ Sementara — akan dimigrasi saat load |
+| Halaman custom yang dibuat pre-schema | `'elements'` | populated | undefined | ⚠️ Legacy — masih didukung |
+| Test/internal | `'elements'` | populated | undefined | ✅ OK |
+
+**Kesimpulan:** `element-slice.ts` dan `viewport-slice.ts` harus tetap ada untuk `ElementsCanvaPage`. Tapi untuk `SchemaCanvaPage`, semua action di slice itu harus no-op atau redirect ke schema CRUD.
+
+### 5. Rekomendasi Fix Minimal
+
+#### Fix 1: schemaThemeId Unification (P0 — D-P0B.1)
+
+**Scope:**
+1. `background-slice.ts:setSchemaThemeId()` — tulis ke `schema.background.type` JUGA (bukan hanya `templateData`)
+2. `PageFrame.tsx:376` — baca `schema.background.type` dulu, fallback `templateData.schemaThemeId`
+3. `BackgroundSection.tsx:33` — baca `schema.background.type` dulu, fallback `templateData.schemaThemeId`
+4. `SchemaEngine.utils.ts:110` — tulis ke `schema.background.type` JUGA
+
+**Jangan:** Hapus `templateData` field, hapus `setSchemaThemeId()`, ubah TemplateAdapter
+
+**Dampak guru:** Tema yang dipilih guru konsisten antara canvas, preview, dan export.
+
+#### Fix 2: Stage isSchemaDriven → ensurePageSchema (P0 — D-P0B.2)
+
+**Scope:**
+1. `stage/index.tsx:364` — ganti `!!page?.schema` dengan `!!ensurePageSchema(page)` supaya sejalan dengan PageRenderer
+
+**Jangan:** Hapus element overlay, ubah PageRenderer, ubah migrateAllPages
+
+**Dampak guru:** Tidak ada konten ganda jika halaman legacy tanpa `page.schema` tapi punya `templateType`.
+
+#### Fix 3: loadFromDB migrateAllSchemas Result (P1 — D-P0B.3)
+
+**Scope:**
+1. `persistence-slice.ts:397` — capture return value `migrateAllSchemas(pages)` dan assign ke `pages`
+
+**Jangan:** Ubah migrateAllSchemas, ubah loadFromStorage
+
+**Dampak guru:** Tidak ada (data loss prevention).
+
+#### Fix 4: StatusBar Counting (P2 — D-P0B.4)
+
+**Scope:**
+1. `StatusBar.tsx:162-164` — gunakan `Math.max(schemaBlocks, legacyElements)` bukan penjumlahan
+
+**Jangan:** Ubah rendering, ubah store
+
+**Dampak guru:** Counter "3 konten" bukan "6 konten" untuk halaman dual-data.
+
+### 6. Prioritas
+
+| ID | Fix | Prioritas | File Diubah | Risiko |
+|----|-----|-----------|-------------|--------|
+| D-P0B.1 | schemaThemeId unification | **P0** | 4-5 file | Rendah — additive write + fallback read |
+| D-P0B.2 | Stage isSchemaDriven sync | **P0** | 1 file | Rendah — satu line change |
+| D-P0B.3 | loadFromDB result capture | **P1** | 1 file | Rendah — satu line change |
+| D-P0B.4 | StatusBar counting | **P2** | 1 file | Rendah — satu line change |
+
+### 7. Statistik Audit
+
+| Metrik | Angka |
+|--------|-------|
+| File yang baca `page.schema` | 48+ |
+| File yang baca `page.elements` | 16 |
+| File yang baca `page.templateData` | 21 |
+| Dual-read sites (schema + legacy di path yang sama) | 8 |
+| Dual-write sites | 4 |
+| Unguarded legacy reads | 5 |
+| Bug ditemukan | 1 (loadFromDB) |
+| Total dualisme aktif | 4 (2 P0, 1 P1, 1 P2) |
+
+---
+
 ### Prinsip
 
 ```txt

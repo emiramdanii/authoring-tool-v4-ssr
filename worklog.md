@@ -227,3 +227,28 @@ Stage Summary:
 - Dead client-export.ts removed
 - Legacy export/ folder marked deprecated
 - Prinsip "No hidden fallback, No silent downgrade" enforced
+
+---
+Task ID: D-P0B-audit
+Agent: Main
+Task: D-P0B — Schema vs Elements Render Source Audit
+
+Work Log:
+- Created backup patch for D-P0A commit (d69f817) at /home/z/my-project/download/d-p0a-unify-page-creation-flow.patch
+- Push attempt failed — no GitHub credentials in environment
+- Launched 5 parallel audit agents: Legacy Fields, Schema Readers, Legacy Readers, Migration Code, Dual Render
+- Verified critical findings directly: CanvaPage types.ts, PageRenderer.tsx, stage/index.tsx, background-slice.ts, persistence-slice.ts, StatusBar.tsx, schema-migration.ts
+- Found 4 active dualisms: 2 P0, 1 P1, 1 P2
+- Found 1 bug: loadFromDB() discards migrateAllSchemas() return value
+- Wrote comprehensive audit report in CORE_VERIFICATION_REPORT.md Ronde 36
+
+Stage Summary:
+- D-P0A patch saved, push requires manual authentication
+- D-P0B audit complete — 4 dualisms found:
+  - D-P0B.1 (P0): schemaThemeId dual write/read — setSchemaThemeId only writes templateData, PageFrame/BackgroundSection only read templateData
+  - D-P0B.2 (P0): Stage isSchemaDriven uses !!page?.schema, PageRenderer uses !!ensurePageSchema(page) — can disagree for legacy pages
+  - D-P0B.3 (P1): loadFromDB() discards migrateAllSchemas() return value
+  - D-P0B.4 (P2): StatusBar double-counts schema blocks + legacy elements
+- Source of truth confirmed: page.schema for teacher flow
+- Legacy elements[] allowed only for ElementsCanvaPage (pre-schema pages)
+- No coding done — awaiting approval
