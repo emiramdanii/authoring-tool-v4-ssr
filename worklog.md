@@ -326,3 +326,28 @@ Stage Summary:
 - D-P0C fully complete and pushed to remote
 - D-P0D audit complete, report pending
 - Key dualisms: 2 registries (CourseTemplate vs LessonTemplate), 3 duplicated apply flows, label drift, dead code
+---
+Task ID: 5
+Agent: Main Agent
+Task: D-P0D.1 — Shared Apply Template Flow
+
+Work Log:
+- Created new shared helper: src/core/template/apply-template-to-store.ts
+  - applyTemplateToStore(templateId, options) — single official apply flow
+  - Configurable: persist strategy, primary target selection, workspace navigation
+  - Returns ApplyTemplateResult { success, templateName, pageCount, dbPersisted, error? }
+- Updated Dashboard._applyRegistryTemplate() to use helper (persist: 'localstorage')
+- Updated TemplateWizard.handleCreate() to use helper (persist: 'db', createProjectFn)
+- Updated TemplateMarketplace.handleApply() to use helper (persist: 'localstorage')
+- Removed unused imports: createProjectFromTemplate, getTemplateThemeId from all 3 consumers
+- Removed unused imports: useCanvaStore, useAuthoringStore, useDirtyStore from TemplateWizard & TemplateMarketplace
+- TypeScript check: 0 errors
+- Committed: 1277db5 fix: unify template apply flow (D-P0D.1)
+- git pull --rebase: clean, no conflicts
+- Pushed to origin/main: 5a7fd82..1277db5
+
+Stage Summary:
+- D-P0D.1 complete and pushed
+- All 3 template entry points now use same shared helper
+- New behavior improvement: auto-select primary editable target (was missing before)
+- Legacy Dashboard handleTemplateClick/applyTemplate NOT changed (D-P0D.2 scope)
