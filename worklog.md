@@ -308,3 +308,21 @@ Stage Summary:
 - No conflicts — patch applies cleanly on origin/main
 - No guided editor entries lost, no report rounds deleted
 - Build PASS on both local and patched branch
+---
+Task ID: 4
+Agent: Main Agent
+Task: D-P0D Audit — Template Registry Source
+
+Work Log:
+- Pushed D-P0C commit f9668a4 to origin/main (push successful a867a64..5a7fd82)
+- Verified 5 D-P0C completion criteria: all PASS
+- Launched 7 parallel audit agents for D-P0D scope
+- Compiled comprehensive dualism findings across all template registries
+- Identified 8 dualism issues, graded P0-P2
+- Determined CourseTemplateRegistry as single source of truth
+- Identified PagePresetRegistry as separate scope (single-page, not template)
+
+Stage Summary:
+- D-P0C fully complete and pushed to remote
+- D-P0D audit complete, report pending
+- Key dualisms: 2 registries (CourseTemplate vs LessonTemplate), 3 duplicated apply flows, label drift, dead code

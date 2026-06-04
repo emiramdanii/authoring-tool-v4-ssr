@@ -2038,6 +2038,226 @@ Catatan: `loadFromStorage()` juga punya bug yang sama — `migratedCount` ditang
 
 ---
 
+## Ronde 37 — D-P0C: Stabilize Schema Edit History and Page Scope
+
+### Status: PASS ✅
+
+### Perubahan
+
+D-P0C menstabilkan schema edit history dan page scope — memastikan **1 aksi guru = 1 langkah undo**, bukan N snapshot per operasi.
+
+#### D-P0C.1 — skipHistory Pattern pada Apply Functions ✅
+
+3 fungsi apply di `schema-apply.ts` ditambah opsi `{ skipHistory?: boolean }`:
+
+| Fungsi | Default | skipHistory: true |
+|--------|---------|-------------------|
+| `applyBlocksToPages()` | Push history | Caller responsible |
+| `applyBlockToPages()` | Push history | Caller responsible |
+| `setPageSchemaBlocks()` | Push history | Caller responsible |
+
+#### D-P0C.2 — Caller Updates (9 sites) ✅
+
+| Caller | Perubahan |
+|--------|-----------|
+| `handleApply()` (use-auto-generate) | Push 1x, pass `skipHistory: true` |
+| `handleGenerateFullLesson()` | Push 1x, pass `skipHistory: true` |
+| `handleGeneratePertemuan()` | Push 1x, pass `skipHistory: true` |
+| 5× `regenerateXxxSchema()` | Push 1x, pass `skipHistory: true` |
+| `regenerateAllToSchema()` | Push 1x, pass `skipHistory: true` |
+
+#### D-P0C.3 — Auto-generate Undo History ✅
+
+| Skenario | Sebelum | Sesudah |
+|----------|---------|---------|
+| Drag/resize block | 1 snapshot ✅ | Tidak berubah |
+| Auto-generate halaman | 1 snapshot ✅ | Tidak berubah |
+| Regenerate block | 1 snapshot ✅ | Tidak berubah |
+| Batch generate (full lesson) | N snapshot ❌ | 1 snapshot ✅ |
+| Batch regenerate (all blocks) | N snapshot ❌ | 1 snapshot ✅ |
+
+#### Git Sync
+
+- Commit `f9668a4` berhasil di-push ke `origin/main`
+- Base clean di atas `a867a64` (origin/main terbaru saat itu)
+- Build PASS, 5 kriteria penyelesaian terverifikasi
+
+---
+
+## Ronde 38 — D-P0D Audit: Template Registry Source
+
+### Status: AUDIT SELESAI — Menunggu Keputusan
+
+### 1. Peta Registry Template
+
+Codebase memiliki **4 registry/template source** yang saling tumpang tindih:
+
+| # | Registry | File | Status | Entries | Scope |
+|---|----------|------|--------|---------|-------|
+| 1 | **CourseTemplateRegistry** | `src/core/template/CourseTemplateRegistry.ts` | ✅ AKTIF | 22 (7 active, 15 legacy) | Multi-page course blueprint |
+| 2 | **template-gallery.ts** | `src/core/template/template-gallery.ts` | ❄️ FROZEN | 16 LessonTemplate | Multi-page lesson template |
+| 3 | **course-templates-legacy.ts** | `src/core/template/legacy/course-templates-legacy.ts` | ❄️ FROZEN | 18 CourseTemplate | Archival legacy |
+| 4 | **PagePresetRegistry** | `src/core/preset/PagePresetRegistry.ts` | ✅ AKTIF | 16 preset | Single-page creation config |
+
+### 2. Daftar Dualisme Template
+
+#### DUAL-1: Dua Interface Template yang Tumpang Tindih (P0)
+
+| Aspek | `CourseTemplate` (aktif) | `LessonTemplate` (frozen) |
+|-------|--------------------------|---------------------------|
+| Scene spec | `scenes: SceneTemplateSpec[]` (rich: label, suggestedBlocks, variant, sceneType) | `pageTypes: PageTemplateType[]` (flat array) |
+| Status field | ✅ `active`/`legacy`/`hidden`/`experimental` | ❌ Tidak ada |
+| Theme/Contract | `theme` + `contractId` | `color` (Tailwind key) saja |
+| Instantiation | `createProjectFromTemplate()` | `instantiateTemplate()` |
+| Pipeline | 3-tier (golden → preset → schema factory) | 3-level (presetId → mock data → empty) |
+| Mock data | Tidak ada | 15 `SUBJECT_MOCK_DATA` entries (~450 baris) |
+| Digunakan oleh | TemplateWizard, Marketplace, Dashboard | TemplateGalleryPanel (LeftPanel) |
+
+**Dampak guru**: Template yang dipilih dari Dashboard/Wizard menghasilkan konten berbeda dengan template yang dipilih dari LeftPanel Template tab. Guru tidak tahu bahwa dua sistem berbeda aktif bersamaan.
+
+#### DUAL-2: Tiga Jalur Apply yang Duplikat (P0)
+
+Tiga komponen memiliki implementasi `handleApply`/`handleCreate` yang hampir identik:
+
+| Komponen | Source | DB Persist | Authoring Meta | Store |
+|----------|--------|------------|----------------|-------|
+| `TemplateWizard` | CourseTemplateRegistry | ✅ `createProject()` | ✅ updateMeta | canva + authoring |
+| `TemplateMarketplace` | CourseTemplateRegistry | ❌ localStorage only | ❌ Tidak | canva only |
+| `Dashboard._applyRegistryTemplate` | CourseTemplateRegistry | ❌ localStorage only | ✅ updateMeta | canva + authoring |
+
+**Dampak guru**: Project yang dibuat via Marketplace tidak muncul di daftar project Dashboard (karena tidak di-persist ke DB). Metadata (mapel, kelas) berbeda-beda tergantung entry point.
+
+#### DUAL-3: Dashboard Dual Click Path (P0)
+
+Dashboard masih memiliki **2 jalur klik** yang menghasilkan state berbeda:
+
+- **Jalur Lama**: `handleTemplateClick('blank')` → `applyFullPreset()` + `resetCanvas()` (legacy authoring-store path)
+- **Jalur Baru**: `handleUseTemplate()` → `createProjectFromTemplate()` (registry path)
+
+Hanya `handleTemplateClick('blank')` yang masih aktif (untuk Proyek Kosong). Jalur lama untuk preset lain sudah dead code, tapi fungsi dan data masih ada.
+
+**Dampak guru**: "Proyek Kosong" di Dashboard menggunakan jalur yang berbeda dari template lain, menghasilkan state yang tidak konsisten.
+
+#### DUAL-4: Label Drift antara PagePresetRegistry dan template-data.ts (P1)
+
+| templateType | PagePresetRegistry.label | template-data.ts getTemplateLabel() |
+|--------------|--------------------------|-------------------------------------|
+| `materi` | "Materi" | "Materi Pembelajaran" |
+| `kuis` | "Kuis" | "Kuis Interaktif" |
+| `game` | "Game" | "Game Interaktif" |
+| `diskusi` | "Diskusi" | "Diskusi & Pertanyaan" |
+| `hasil` | "Hasil" | "Hasil & Apresiasi" |
+
+`createPageFromPreset()` memanggil `getTemplateLabel()` (dari template-data.ts), BUKAN `preset.label`. Jadi label di galeri preset ≠ label di halaman yang dibuat.
+
+**Dampak guru**: Label yang dilihat saat memilih halaman ≠ label yang muncul setelah halaman dibuat.
+
+#### DUAL-5: TemplateWizard Dead Code di LeftPanel (P1)
+
+`TemplateWizard` di-import dan di-render di `LeftPanel.tsx`, tapi state `wizardOpen` **tidak pernah diset `true`** oleh UI apapun di LeftPanel. Wizard tidak bisa dibuka dari LeftPanel.
+
+**Dampak guru**: Tidak ada — teacher mode menyembunyikan Template tab. Tapi ini dead code yang menyesatkan developer.
+
+#### DUAL-6: `addPage()` vs `addTemplatePage()` (P1)
+
+Dua fungsi penambahan halaman di `page-slice.ts`:
+
+- `addPage()` — membuat halaman kosong tanpa schema (legacy, `createPage('Halaman N', 'custom')`)
+- `addTemplatePage(templateType)` — membuat halaman dengan schema dari preset
+
+`addPage()` seharusnya sudah di-redirect ke `addTemplatePage('custom')` sejak D-P0A. Belum dilakukan.
+
+**Dampak guru**: Jika ada kode yang masih memanggil `addPage()`, halaman yang dihasilkan tidak punya schema dan tidak bisa diedit via guided editor.
+
+#### DUAL-7: `template-gallery.ts` Mock Data — Asset Berharga di File Frozen (P2)
+
+`SUBJECT_MOCK_DATA` (~450 baris) berisi konten edukasi kontekstual (PPKn, IPA, MTK, dll.) yang **tidak ada** di `CourseTemplateRegistry`. Data ini digunakan oleh Level 2 pipeline (fallback saat preset tidak ada). File FROZEN, artinya tidak bisa ditambah/diperbaiki.
+
+**Dampak guru**: Template universal (materi-kuis, dll.) yang tidak punya presetId menghasilkan placeholder generik. Mock data yang lebih kontekstual ada tapi terkunci di file frozen.
+
+#### DUAL-8: `page-types.ts` — Definisi Page Type Terpisah (P2)
+
+`src/store/page-types.ts` memiliki definisi page type sendiri (`utama`, `materi`, `kuis`, `custom`) dengan label dan warna berbeda dari PagePresetRegistry. File ini digunakan oleh auto-generate settings panel.
+
+**Dampak guru**: Minimal — label di settings panel mungkin berbeda dari label di preset gallery. Tapi secara arsitektural, ini sumber definisi ketiga untuk konsep yang sama.
+
+### 3. Source of Truth Final
+
+```
+┌─────────────────────────────────────────────────────┐
+│  CourseTemplateRegistry.ts  =  SINGLE SOURCE OF TRUTH  │
+│  untuk TEMPLATE (multi-page course blueprint)           │
+│                                                         │
+│  PagePresetRegistry.ts  =  SOURCE OF TRUTH              │
+│  untuk PRESET (single-page creation config)              │
+│                                                         │
+│  Hubungan: CourseTemplate MENGGUNAKAN PagePreset        │
+│  (setiap scene.templateType merujuk ke preset yang sama) │
+└─────────────────────────────────────────────────────┘
+
+YANG BUKAN SOURCE OF TRUTH:
+  ❌ template-gallery.ts (LessonTemplate) — FROZEN, akan dihapus
+  ❌ course-templates-legacy.ts — FROZEN, akan dihapus
+  ❌ template-data.ts labelMap — akan di-consolidate ke PagePresetRegistry
+  ❌ page-types.ts — akan di-consolidate ke PagePresetRegistry
+  ❌ Dashboard hardcoded templates[] — DEAD CODE, akan dihapus
+```
+
+### 4. Rekomendasi Fix Minimal
+
+#### P0 — Harus diperbaiki sebelum fitur baru
+
+| # | Fix | Scope | Risiko |
+|---|-----|-------|--------|
+| P0-1 | **Migrasi TemplateGalleryPanel** dari `template-gallery.ts` ke `CourseTemplateRegistry` | 2 file UI + hapus import dari template-gallery | Sedang — UI tetap render, source berganti |
+| P0-2 | **Extract shared `applyTemplateToStore()`** — satu fungsi yang digunakan Wizard, Marketplace, Dashboard | 3 file komponen | Rendah — logic sama, tinggal extract |
+| P0-3 | **Unify Dashboard click path** — hapus `handleTemplateClick/applyTemplate`, redirect Proyek Kosong ke `createProjectFromTemplate('template-kosong')` | 1 file Dashboard | Rendah — template-kosong sudah ada di registry |
+| P0-4 | **Tambah DB persist ke Marketplace** — gunakan `createProject()` dari useProjectManager | 1 file TemplateMarketplace | Rendah — tambah 1 call |
+
+#### P1 — Harus diperbaiki, tapi tidak blocking
+
+| # | Fix | Scope | Risiko |
+|---|-----|-------|--------|
+| P1-1 | **Consolidate label** — pindahkan label map ke PagePresetRegistry, hapus `getTemplateLabel()` dari template-data.ts | 2 file | Sedang — label berubah di beberapa tempat |
+| P1-2 | **Redirect `addPage()` ke `addTemplatePage('custom')`** | 1 file page-slice.ts | Rendah — behavioral match |
+| P1-3 | **Hapus TemplateWizard dead code di LeftPanel** | 1 file LeftPanel.tsx | Rendah — hapus import + state |
+| P1-4 | **Migrasi SUBJECT_MOCK_DATA** ke format CourseTemplateRegistry (sebagai preset content atau golden flow) | 2 file | Sedang — format beda |
+
+#### P2 — Bisa diperbaiki nanti
+
+| # | Fix | Scope | Risiko |
+|---|-----|-------|--------|
+| P2-1 | **Hapus file FROZEN** — `template-gallery.ts`, `course-templates-legacy.ts` | 2 file | Rendah — pastikan tidak ada import aktif |
+| P2-2 | **Consolidate page-types.ts** ke PagePresetRegistry | 1 file | Sedang — perlu update settings panel |
+| P2-3 | **Golden template flag** — ganti hardcoded `templateId === 'modul-ppkn-vii'` dengan `template.isGolden` property | 1 file CTR | Rendah — refaktor internal |
+
+### 5. Dependency Map — Urutan Fix
+
+```
+P0-3 (unify Dashboard click) ──┐
+P0-2 (extract applyTemplateToStore) ──┼──→ P0-4 (Marketplace DB persist)
+P0-1 (migrate TemplateGalleryPanel) ──┘
+                                       │
+                                       ├──→ P1-1 (consolidate labels)
+                                       ├──→ P1-2 (redirect addPage)
+                                       ├──→ P1-3 (remove dead wizard)
+                                       └──→ P1-4 (migrate mock data)
+                                              │
+                                              └──→ P2-1 (delete frozen files)
+                                                   P2-2 (consolidate page-types)
+                                                   P2-3 (golden flag)
+```
+
+### 6. Estimasi Effort
+
+| Batch | Items | File Terdampak | Est. Baris |
+|-------|-------|----------------|------------|
+| P0 (4 fix) | P0-1 ~ P0-4 | ~6 file | ~200 baris |
+| P1 (4 fix) | P1-1 ~ P1-4 | ~4 file | ~150 baris |
+| P2 (3 fix) | P2-1 ~ P2-3 | ~3 file | ~50 baris + deletions |
+
+---
+
 ### Prinsip
 
 ```txt
