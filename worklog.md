@@ -201,3 +201,29 @@ Stage Summary:
 - Legacy store actions redirect to schema-aware actions for schema pages
 - Legacy bg fields preserved during migration (not deleted yet)
 - No changes to renderer, export, guided editor, game logic
+---
+Task ID: d1-d3
+Agent: Main
+Task: D1/D3 — Disable Degraded Export Fallback
+
+Work Log:
+- Audited export pipeline: exportWithFallback, client-export.ts, export/ folder
+- Found exportWithFallback ALREADY FIXED — no silent fallback, shows clear error on Path A failure
+- Found src/lib/client-export.ts has 0 imports — dead code
+- Found src/lib/export/ still imported by use-vite-export.ts (exportClientSide for dev/debug) and test files
+- Deleted src/lib/client-export.ts (162 lines of dead code)
+- Marked src/lib/export/index.ts as DEPRECATED with detailed header comment
+- Fixed use-export-actions.ts misleading comment ("auto-picks best method" → "Vite SSR only")
+- Did NOT delete src/lib/export/ folder — still used for dev/debug and tests
+- Did NOT change ExportApp, PageRenderer, SchemaRenderer, SCORM route, runtime, template system
+- Build: PASS
+- git pull --rebase: up to date (no conflicts)
+- Commit: 9157e27
+- Push: SUCCESS to origin/main
+
+Stage Summary:
+- D1/D3 Export Fallback Safety: FINAL PASS
+- No silent fallback to degraded vanilla JS export
+- Dead client-export.ts removed
+- Legacy export/ folder marked deprecated
+- Prinsip "No hidden fallback, No silent downgrade" enforced
