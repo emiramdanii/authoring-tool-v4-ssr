@@ -23,7 +23,7 @@ export function useExportActions() {
   const { exportWithFallback, previewHTML } = useViteExport();
   const { exportJSON } = useSharedExportActions();
 
-  /** Download HTML — auto-picks best method (Vite → client-side fallback) */
+  /** Download HTML — uses Vite SSR (Path A) only. Shows error if export fails. */
   const exportHtml = useCallback(async () => {
     setIsExporting(true);
     try {

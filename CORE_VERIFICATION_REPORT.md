@@ -38,11 +38,31 @@ D8 P3C — Gambar Interaktif / Hotspot: PARKIR (Sprint 3) — audit selesai, blo
 P0 — Tambah Halaman Kosong: PASS (Ronde 28) — PagePresetRegistry.buildPresetWithCreate() sekarang menggunakan createDefaultSchemaForTemplateType() bukan ensurePageSchema()/TemplateAdapter, semua preset menghasilkan konten bermakna
 P1 — Duplicate materi-blok Registry: PASS (Ronde 28) — Entry duplikat dihapus, entry aktif diperluas dengan kutipan+gambar (8 tipe), karakter field ditambahkan
 D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty tracking + optional overflow check, caller prioritas tinggi di-upgrade
-D1/D3 — Export Fallback Safety: PASS — exportWithFallback tidak lagi diam-diam fallback ke degraded vanilla JS, error jelas jika Path A gagal
+D1/D3 — Export Fallback Safety: PASS (Ronde 34) — exportWithFallback tidak lagi diam-diam fallback ke degraded vanilla JS, error jelas jika Path A gagal, client-export.ts dihapus (0 import), src/lib/export/ ditandai deprecated, use-export-actions.ts comment diperbaiki
 D6 — createPage schema.background gap: PASS — createPage() dan setTemplateType() custom sekarang menghasilkan schema.background default dari creation-time
 D7 — Dual Score Store: ACCEPTABLE/FIXED — dual store adalah separation of concerns yang intentional, gap R7.1 (stale scores di Preview/Present) ditutup
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
+
+**PERUBAHAN RONDE 34 (D1/D3 — Disable Degraded Export Fallback):**
+
+1. D1/D3 FIX: Export fallback deprecated secara eksplisit
+2. `exportWithFallback()` sudah tidak fallback otomatis (diperbaiki sebelumnya) — jika Path A gagal, tampil error jelas, bukan HTML degraded
+3. `src/lib/client-export.ts` dihapus — 0 import, kode mati
+4. `src/lib/export/index.ts` ditandai DEPRECATED — header comment menjelaskan pipeline ini menghasilkan output degraded dan hanya untuk dev/debug
+5. `use-export-actions.ts` comment diperbaiki: "Download HTML — uses Vite SSR (Path A) only. Shows error if export fails." bukan "auto-picks best method (Vite → client-side fallback)"
+6. `src/lib/export/` folder TIDAK dihapus — masih dipakai oleh exportClientSide (dev/debug) dan test files
+7. Tidak mengubah: ExportApp, PageRenderer, SchemaRenderer, SCORM route, runtime, template system
+8. Build: PASS
+
+**D1/D3 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Path A gagal | Silent fallback ke vanilla JS HTML (degraded) | Error jelas, tidak ada download |
+| `client-export.ts` | Ada (0 import — dead code) | Dihapus |
+| `src/lib/export/` | Tidak ada peringatan deprecated | Header DEPRECATED, penjelasan lengkap |
+| `use-export-actions.ts` comment | "auto-picks best method (Vite → fallback)" | "uses Vite SSR (Path A) only. Shows error if fails." |
 
 **PERUBAHAN RONDE 32 (Sprint 2C.1 — Diskusi label/icon/color polish):**
 

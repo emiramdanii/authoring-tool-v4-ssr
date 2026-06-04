@@ -1,8 +1,20 @@
 // ═══════════════════════════════════════════════════════════════════════
-// EXPORT INDEX — Main entry point for the client-side export pipeline
+// EXPORT INDEX — DEPRECATED client-side export pipeline
 // ═══════════════════════════════════════════════════════════════════════
-// Generates a self-contained HTML file that renders the MPI without
-// any server dependency. All CSS, JS, and data are inlined.
+// ⚠️ DEPRECATED: This folder contains the legacy vanilla JS export
+// pipeline. It produces DEGRADED output — no navigation locks, no
+// contract-aware rendering, no premium effects, basic quiz layout.
+//
+// The ONLY production export is Path A: Vite SSR via /api/export.
+// If Path A fails, the user gets a clear error message — NOT a
+// silent fallback to this degraded pipeline.
+//
+// This code is kept ONLY for:
+//   - Dev/debug use (exportClientSide in use-vite-export.ts)
+//   - Test files (export-pipeline.test.ts, rc-stabilization.test.ts)
+//
+// Do NOT use this for the teacher export flow.
+// Do NOT add new features here — add them to the Vite SSR pipeline.
 // ═══════════════════════════════════════════════════════════════════════
 
 import type { CanvaPage } from '@/components/canva/types';
