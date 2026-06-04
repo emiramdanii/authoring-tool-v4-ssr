@@ -154,14 +154,13 @@ export default function StatusBar() {
     return `${diffHr} jam lalu`;
   })();
 
-  // FIX: Count BOTH schema blocks AND legacy elements.
-  // Schema-driven pages store blocks in page.schema.blocks,
-  // legacy pages store elements in page.elements.
-  // Previously only counted page.elements → always showed "0 konten"
-  // for schema-driven pages even when they had blocks.
+  // D-P0B.4: Use Math.max instead of addition to avoid double-counting.
+  // Schema pages have elements=[] and blocks in schema; legacy pages have elements and no schema.
+  // In the rare dual-data case (migration in progress), both counts refer to the same content,
+  // so taking the max gives the correct count. Adding them would show 2x the actual count.
   const schemaBlocks = page ? (ensurePageSchema(page)?.blocks.length ?? 0) : 0;
   const legacyElements = page?.elements?.length || 0;
-  const totalElements = schemaBlocks + legacyElements;
+  const totalElements = Math.max(schemaBlocks, legacyElements);
   const templateBadge = TEMPLATE_BADGE_MAP[page?.templateType || 'custom'];
 
   const saveConfig = SAVE_INDICATOR_CONFIG[saveStatus];

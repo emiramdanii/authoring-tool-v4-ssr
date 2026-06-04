@@ -11,6 +11,7 @@ import { StageElement } from './StageElement';
 import { useStageKeyboard } from './use-stage-keyboard';
 import { useStageDrag } from './use-stage-drag';
 import { Z } from './constants';
+import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import {
   ZOOM_FIT,
   ZOOM_MIN,
@@ -361,7 +362,10 @@ export default function Stage() {
 
   // ── Derived state ─────────────────────────────────────────────
   const isTemplateMode = page && page.templateType && page.templateType !== 'custom';
-  const isSchemaDriven = !!page?.schema;
+  // D-P0B.2: Use ensurePageSchema() like PageRenderer does, so Stage and PageRenderer
+  // agree on whether a page is schema-driven. Previously Stage only checked !!page?.schema,
+  // which could disagree with PageRenderer's ensurePageSchema() for legacy template pages.
+  const isSchemaDriven = !!ensurePageSchema(page);
   const isMultiSelected = (elId: string) => selectedElIds.includes(elId) && selectedElIds.length > 1;
 
   // ── Empty state: no pages at all ──────────────────────────────────

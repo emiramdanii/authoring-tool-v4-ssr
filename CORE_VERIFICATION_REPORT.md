@@ -1997,6 +1997,45 @@ Theme:    schema.background.type menggantikan templateData.schemaThemeId
 | Bug ditemukan | 1 (loadFromDB) |
 | Total dualisme aktif | 4 (2 P0, 1 P1, 1 P2) |
 
+### 8. D-P0B Mini Fix — Hasil Coding
+
+**Tanggal:** 2026-06-04
+**Commit:** lokal (belum push)
+
+#### D-P0B.1 — schemaThemeId Unification ✅
+
+| File | Perubahan |
+|------|-----------|
+| `src/core/schema/types/schema.ts` | Tambah `themeId?: string` ke `ScreenSchema` — canonical source untuk TokenResolver |
+| `src/store/canva/background-slice.ts` | `setSchemaThemeId()` sekarang tulis ke `schema.themeId` JUGA (bukan hanya `templateData`) |
+| `src/components/canva/page-renderer/PageFrame.tsx:376` | Baca `page.schema?.themeId` dulu, fallback `templateData.schemaThemeId` |
+| `src/components/canva/right-panel/BackgroundSection.tsx:33` | Baca `page.schema?.themeId` dulu, fallback `templateData.schemaThemeId` |
+| `src/core/engine/SchemaEngine.utils.ts:114` | `schema: { ...stabilizedScreen, themeId: schema.themeId }` — tulis themeId ke schema saat auto-generate |
+
+#### D-P0B.2 — Stage vs PageRenderer Agreement ✅
+
+| File | Perubahan |
+|------|-----------|
+| `src/components/canva/stage/index.tsx:14` | Tambah import `ensurePageSchema` dari `@/core/schema/ensure-schema` |
+| `src/components/canva/stage/index.tsx:368` | `isSchemaDriven = !!ensurePageSchema(page)` (sebelumnya `!!page?.schema`) |
+
+#### D-P0B.3 — loadFromDB Migration Result ✅
+
+| File | Perubahan |
+|------|-----------|
+| `src/store/canva/persistence-slice.ts:225` | `loadFromStorage()`: Capture `migratedPages` dari `migrateAllSchemas()`, gunakan untuk `stripRuntimeFieldsFromPages()` |
+| `src/store/canva/persistence-slice.ts:398` | `loadFromDB()`: Sama — capture `migratedPages`, gunakan untuk `stripRuntimeFieldsFromPages()` |
+
+Catatan: `loadFromStorage()` juga punya bug yang sama — `migratedCount` ditangkap tapi `pages` array yang digunakan bukan hasil migrasi. Diperbaiki sekalian.
+
+#### D-P0B.4 — StatusBar Double-Counting ✅
+
+| File | Perubahan |
+|------|-----------|
+| `src/components/canva/StatusBar.tsx:163` | `Math.max(schemaBlocks, legacyElements)` (sebelumnya `schemaBlocks + legacyElements`) |
+
+#### Build: PASS ✅
+
 ---
 
 ### Prinsip

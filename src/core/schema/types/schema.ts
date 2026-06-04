@@ -156,6 +156,11 @@ export interface ScreenSchema {
     /** Timer configuration (from auto-generate blueprint) */
     timer?: Record<string, unknown>;
   };
+  /** Theme preset ID — canonical source for TokenResolver.
+   *  D-P0B.1: When set, TokenResolver uses this instead of templateData.schemaThemeId.
+   *  Kept in sync by setSchemaThemeId() which writes to BOTH schema.themeId and templateData.schemaThemeId.
+   *  templateData.schemaThemeId remains as legacy bridge until full removal. */
+  themeId?: string;
   /** Background style */
   background?: {
     type: 'solid' | 'gradient' | 'radial';

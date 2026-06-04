@@ -373,7 +373,8 @@ export const PageFrame = React.memo(function PageFrame({
   const showBottomNav = showNavbar && !isCoverPage && !externalNavigation;
 
   // Use shared TokenResolver from PageRenderer (ensures palette overrides are consistent)
-  const themeId = (page.templateData?.schemaThemeId as string) || undefined;
+  // D-P0B.1: Read schema.themeId first (canonical), fallback to templateData.schemaThemeId (legacy bridge)
+  const themeId = page.schema?.themeId || (page.templateData?.schemaThemeId as string) || undefined;
   const displayMode = useCanvaStore((s) => s.displayMode);
   const computedTokens = React.useMemo(() => new TokenResolver(themeId, displayMode), [themeId, displayMode]);
   const tokens = externalTokens || computedTokens;

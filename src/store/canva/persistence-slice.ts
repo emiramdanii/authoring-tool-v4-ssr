@@ -220,8 +220,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // Apply schema migration + clear elements[] for schema pages
         const pages = migrateAllPages(rawPages);
 
-        // Apply schema version migrations (v0→v1, etc.)
-        const { migratedCount } = migrateAllSchemas(pages);
+        // D-P0B.3: Apply schema version migrations (v0→v1, etc.) and USE the result.
+        // Previously only migratedCount was captured but the migrated pages array was discarded.
+        const { pages: migratedPages, migratedCount } = migrateAllSchemas(pages);
         if (migratedCount > 0 && process.env.NODE_ENV === 'development') {
           console.log(`[Persistence] Migrated ${migratedCount} page schemas to latest version`);
         }
@@ -229,7 +230,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // ── Strip derived runtime fields from legacy data ──
         // Older versions may have _compressedHeight in compression hints.
         // Remove it before the purity check so we don't throw on old data.
-        const cleanPages = stripRuntimeFieldsFromPages(pages);
+        const cleanPages = stripRuntimeFieldsFromPages(migratedPages);
 
         // ── Purity Guard: Check loaded data for runtime state leakage ──
         // WRAPPED: Skip purity check if it throws (e.g., stack overflow from deep/corrupted schema)
@@ -393,11 +394,12 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // Apply schema migration + clear elements[] for schema pages
         const pages = migrateAllPages(rawPages);
 
-        // Apply schema version migrations (v0→v1, etc.)
-        migrateAllSchemas(pages);
+        // D-P0B.3: Apply schema version migrations (v0→v1, etc.) and USE the result.
+        // Previously the return value was discarded — migrated schemas were lost.
+        const { pages: migratedPages } = migrateAllSchemas(pages);
 
         // ── Strip derived runtime fields from legacy data ──
-        const cleanPages = stripRuntimeFieldsFromPages(pages);
+        const cleanPages = stripRuntimeFieldsFromPages(migratedPages);
 
         // ── Purity Guard: Check loaded data for runtime state leakage ──
         try {

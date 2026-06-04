@@ -111,7 +111,8 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
       },
       // FASE 3: Schema-first — set page.schema directly.
       // No need to store in templateData and promote on read.
-      schema: stabilizedScreen,
+      // D-P0B.1: Also store themeId on schema so readers don't need templateData.
+      schema: { ...stabilizedScreen, themeId: schema.themeId },
       // STANDAR: Contract enforcement on every page
       // Map themeId → contractId: 'macam-norma' theme uses the 'macam-norma' contract
       // (teal accent, solid dark cards), everything else uses golden-pertemuan

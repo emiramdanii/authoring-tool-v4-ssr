@@ -30,7 +30,8 @@ export default function BackgroundSection() {
   // ── Derived values from page ─────────────────────────────────
   const isSchemaDriven = !!page?.schema;
   const schemaBg = page?.schema?.background;
-  const schemaThemeId = (page?.templateData?.schemaThemeId as string) || undefined;
+  // D-P0B.1: Read schema.themeId first (canonical), fallback to templateData.schemaThemeId (legacy bridge)
+  const schemaThemeId = page?.schema?.themeId || (page?.templateData?.schemaThemeId as string) || undefined;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -156,20 +156,37 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
 
   // ── Schema Theme ID action ────────────────────────────────
   // Changes the theme preset for the current page.
-  // Stored in page.templateData.schemaThemeId for backward compat.
+  // D-P0B.1 fix: Writes to BOTH schema.themeId AND templateData.schemaThemeId.
+  // schema.themeId is the canonical source for schema pages.
+  // templateData.schemaThemeId is kept as legacy bridge until full removal.
   setSchemaThemeId: (themeId: string) => {
     get()._pushHistory();
     const { pages, currentPageIndex } = get();
     const page = pages[currentPageIndex];
     if (!page) return;
     const newPages = [...pages];
-    newPages[currentPageIndex] = {
-      ...page,
-      templateData: {
-        ...(page.templateData || {}),
-        schemaThemeId: themeId,
-      },
+    // Always write to templateData for legacy bridge compat
+    const updatedTemplateData = {
+      ...(page.templateData || {}),
+      schemaThemeId: themeId,
     };
+    if (page.schema) {
+      // Schema page — write to BOTH schema.themeId AND templateData
+      newPages[currentPageIndex] = {
+        ...page,
+        schema: {
+          ...page.schema,
+          themeId, // canonical source for TokenResolver
+        },
+        templateData: updatedTemplateData,
+      };
+    } else {
+      // Legacy page (no schema) — only templateData
+      newPages[currentPageIndex] = {
+        ...page,
+        templateData: updatedTemplateData,
+      };
+    }
     set({ pages: newPages });
   },
 
