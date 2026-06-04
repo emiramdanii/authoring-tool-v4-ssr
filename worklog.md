@@ -252,3 +252,29 @@ Stage Summary:
 - Source of truth confirmed: page.schema for teacher flow
 - Legacy elements[] allowed only for ElementsCanvaPage (pre-schema pages)
 - No coding done — awaiting approval
+
+---
+Task ID: D-P0B-coding
+Agent: Main
+Task: D-P0B — Schema vs Elements Render Source Mini Fix (coding)
+
+Work Log:
+- D-P0B.1: Added `themeId?: string` to ScreenSchema type in schema.ts
+- D-P0B.1: Updated `setSchemaThemeId()` in background-slice.ts to write to both `schema.themeId` AND `templateData.schemaThemeId`
+- D-P0B.1: Updated `PageFrame.tsx:376` to read `page.schema?.themeId` first, fallback `templateData.schemaThemeId`
+- D-P0B.1: Updated `BackgroundSection.tsx:33` to read `page.schema?.themeId` first, fallback `templateData.schemaThemeId`
+- D-P0B.1: Updated `SchemaEngine.utils.ts:114` to include `themeId: schema.themeId` when building schema pages
+- D-P0B.2: Added `import { ensurePageSchema }` to stage/index.tsx
+- D-P0B.2: Changed `isSchemaDriven = !!page?.schema` to `!!ensurePageSchema(page)` in stage/index.tsx
+- D-P0B.3: Fixed both `loadFromStorage()` and `loadFromDB()` to capture `migratedPages` from `migrateAllSchemas()` and use it
+- D-P0B.4: Changed `totalElements = schemaBlocks + legacyElements` to `Math.max(schemaBlocks, legacyElements)` in StatusBar.tsx
+- Build: PASS
+- Commit: b7f8748 "fix: align schema render and migration sources (D-P0B)"
+- Push: FAILED — no GitHub credentials
+- Patch: /home/z/my-project/download/d-p0b-schema-elements-alignment.patch
+
+Stage Summary:
+- D-P0B all 4 fixes implemented and committed locally
+- 9 files changed, 92 insertions, 23 deletions
+- Build PASS confirmed
+- Push requires manual authentication
