@@ -1662,3 +1662,114 @@ Field `butir` menggunakan pola `key: ''` untuk string array, yang sudah didukung
 - [x] tipe infobox → field infoboxStyle tampil
 - [x] Field tidak relevan tidak tampil (showWhen filtering)
 - [x] Build berhasil
+
+---
+
+## Sprint D — Dualism Audit Luas (Ronde 35)
+
+**Tanggal**: 2026-06-04
+**Tujuan**: Cari semua dualisme arsitektur yang masih hidup sebelum lanjut fitur
+
+### Statistik Audit
+
+```
+Area diaudit: 6 (Page Data, Template, Rendering, Editing, Runtime, UI/Navigation)
+Dualisme ditemukan: 33 (setelah deduplikasi)
+Sudah ditutup sebelumnya: P0 Background, D1/D3 Export Fallback
+```
+
+### P0 — DUALISME KRITIS (harus ditutup sebelum fitur baru)
+
+| # | Dualisme | Area | File Lokasi | Dampak Guru | Source of Truth Benar | Rekomendasi Fix Minimal |
+|---|---------|------|------------|-------------|----------------------|------------------------|
+| **P0-1** | Schema vs Elements (konten render 2x) | Page Data | `types.ts:110-184`, `PageRenderer.tsx:428-440` | Jika migrateAllPages miss, konten muncul 2x di preview | `page.schema` canonical, `elements[]` harus `[]` | Tambah invariant check di production (bukan dev-only), pastikan migrateAllPages 100% coverage |
+| **P0-2** | Dua write path: `updateSchemaBlock` vs `applyGuidedSchemaPatch` | Editing | `schema-crud-slice.ts:37`, `guided-patch.ts:140` | Undo inconsistency, page-scope bug (currentPageIndex vs pageId), overflow diam-diam | Semua edit lewat `applyGuidedSchemaPatch` (pageId-scoped, overflow-aware) | Deprecate `updateSchemaBlock`, migrate callers |
+| **P0-3** | Dua template registry: CourseTemplateRegistry vs template-gallery.ts | Template | `CourseTemplateRegistry.ts:175`, `template-gallery.ts:645` | Template sama → output berbeda tergantung entry point | `CourseTemplateRegistry` (SINGLE SOURCE OF TRUTH) | Hapus/FREEZE template-gallery.ts, migrate sisa consumers |
+| **P0-4** | Dua template application path di Dashboard | Template | `Dashboard.tsx:219` (applyFullPreset) vs `Dashboard.tsx:266` (_applyRegistryTemplate) | Klik template yang sama dari lokasi berbeda → store state berbeda | Semua lewat `createProjectFromTemplate()` | Hapus `handleTemplateClick/applyTemplate` path, remove old `templates[]` array |
+| **P0-5** | `addPage()` vs `addTemplatePage()` — dua page creation | UI/Nav | `page-slice.ts:62-80` vs `page-slice.ts:82-109` | "+" button di BottomPageStrip bikin blank page tanpa schema | Semua lewat `addTemplatePage()` | Redirect `addPage()` → `addTemplatePage('custom')`, BottomPageStrip "+" pakai FloatingPageMenu |
+| **P0-6** | `activePanel` vs `panelRequest` — dua navigation state | UI/Nav | `navigation-slice.ts:9-12`, `types.ts:89-91` | Navigation bisa miss, one-shot bisa hilang jika 2 fire sekaligus | Semua lewat `useAuthoringStore.setActivePanel()` | Hapus `panelRequest`, ganti semua write ke `setActivePanel()` langsung |
+| **P0-7** | `displayMode` vs `eduViewingMode` — dua viewing mode state | UI/Nav | `session-slice.ts:82,226`, `edu-viewing-mode-slice.ts:42-66` | Diverge: `'student'` vs `'student-screen'`, satu ephemeral satu persist | Single `eduViewingMode` field | Merge ke satu field, hapus `displayMode` |
+| **P0-8** | SCORM completion vs contract completion | Runtime | `scorm/route.ts:171-188`, `page-runtime-contract.ts:118-132` | SCORM reports "completed" saat student sampai halaman terakhir tanpa kerjakan quiz | Contract-based completion (sama dengan Path A) | SCORM wrapper harus baca dari React store, bukan vanilla JS counter |
+
+### P1 — DUALISME TINGGI (ditutup setelah P0, sebelum Sprint X.2)
+
+| # | Dualisme | Area | File Lokasi | Dampak Guru | Source of Truth Benar | Rekomendasi Fix Minimal |
+|---|---------|------|------------|-------------|----------------------|------------------------|
+| **P1-1** | `schemaThemeId` dual storage: `templateData.schemaThemeId` vs `schema.themeId` | Page Data | `types.ts:126`, `background-slice.ts:159-174` | Theme selector bisa broken saat `schema.background.type` diset | `schema.themeId` | `setSchemaThemeId()` harus write ke `schema.themeId`, bukan templateData |
+| **P1-2** | Dua schema registry: PropertySchema vs GuidedEditorSchema | Editing | `property-schemas.ts`, `guided-patch.ts:528-580` | Field type berbeda untuk data yang sama, drift risk | Single `BlockEditorSchema` dengan mode flag | Merge ke satu registry per block type |
+| **P1-3** | Duplicate section labels: SchemaScreenRenderer + ScreenShell | Rendering | `SchemaRenderer.tsx:633`, `ScreenShell.tsx:154` | Student lihat 2 section label, guru lihat 1 | Satu section label per mode | `hideSectionLabel` prop di SchemaScreenRenderer saat dalam ScreenShell |
+| **P1-4** | Dual sidebar di Dashboard | UI/Nav | `AuthoringTool.tsx:318-462`, `Dashboard.tsx:398-509` | Double-sidebar layout, content terdorong | AuthoringTool sidebar only | Hapus `<aside>` di Dashboard.tsx |
+| **P1-5** | Quiz scoring formula: `*20` vs raw count | Runtime | `KuisRenderer.tsx:417`, `scripts.ts:138-139` | Preview: 60/100, SCORM: 3/5 | `*20` scale (0-100) | SCORM harus pakai skala yang sama |
+| **P1-6** | Quiz display: one-at-a-time vs all-at-once | Runtime | `KuisRenderer.tsx:355`, `quiz-renderers.ts:32-44` | Cognitive experience berbeda | One-at-a-time (matches LearningMediaShell) | Path B deprecated — tidak perlu fix, cukup pastikan tidak dipakai |
+| **P1-7** | Navigation locks: ada vs tidak ada | Runtime | `page-runtime-contract.ts:118`, `scripts.ts:40-41` | Student bisa skip quiz di Path B | Contract-based locks | Path B deprecated — pastikan tidak dipakai produksi |
+| **P1-8** | Completion: 6 types vs last-page | Runtime | `page-runtime-contract.ts:25-31`, `scripts.ts:75-76` | False "completed" di SCORM | 6 completion types | SCORM harus pakai contract logic |
+| **P1-9** | `templateData` shadow schema | Page Data | `types.ts:142`, `ensure-schema.ts:131` | Stale `templateData.schemaScreen` bisa revert edits | `page.schema` only | Empty templateData after migration confirmed |
+| **P1-10** | Golden Flow vs CourseTemplate mismatch | Template | `golden/interactive-lesson.ts:57`, `CourseTemplateRegistry.ts:179` | 11 scenes vs 10 scenes, tipe berbeda | Golden Flow canonical | CourseTemplate.scenes derive dari GOLDEN_FLOW |
+
+### P2 — DUALISME SEDERHANA (cleanup bertahap, tidak blocking)
+
+| # | Dualisme | Area | File Lokasi | Dampak Guru | Rekomendasi Fix |
+|---|---------|------|------------|-------------|----------------|
+| **P2-1** | `page.templateType` vs `schema.templateType` | Page Data | `types.ts:118`, `schema.ts:126` | Bisa diverge, no invariant check | Tambah invariant check |
+| **P2-2** | `page.templateVariant` vs `block.variant` | Page Data | `types.ts:158`, `base.ts:82` | Block baru dapat variant salah | Auto-inherit variant saat addSchemaBlock |
+| **P2-3** | DB Blocks table vs schemaData | Page Data | `schema.prisma:44-64` | Partial save → degraded content | schemaData only, Block table sebagai archive |
+| **P2-4** | Legacy templates defined twice | Template | `CourseTemplateRegistry.ts:204`, `legacy/course-templates-legacy.ts:15` | Divergent definitions | Consolidate ke satu file |
+| **P2-5** | addTemplatePage generic factory | Template | `page-slice.ts:82-88` | New page tidak match template quality | Context-aware: use active preset |
+| **P2-6** | PresentMode uses `mode="preview"` | Rendering | `PresentMode.tsx:240` | Present can never have distinct behavior | Add `'present'` to PageRendererMode |
+| **P2-7** | Canvas vs non-canvas different chrome | Rendering | `PageRenderer.tsx:340-406` | Teacher sees different chrome than students | Align styling tokens |
+| **P2-8** | SchemaPlayer bypasses PageRenderer | Rendering | `SchemaPlayer.tsx:244-268` | LivePreview "Dengan Skema" different visual | Use PageRenderer in SchemaPlayer |
+| **P2-9** | Two inline editors: InlineTextEditor vs InlineEditableText | Editing | `InlineTextEditor.tsx`, `InlineEditableText.tsx` | Different UX + write path for same text | Deprecate InlineEditableText |
+| **P2-10** | Two BlockPropertiesPanel files | Editing | `block-properties/index.tsx` (dead), `BlockPropertiesPanel.tsx` | Misimport risk | Delete dead file |
+| **P2-11** | Konten Tab vs Right Panel editing | Editing | `konten/*.tsx`, `BlockPropertiesPanel.tsx` | Same block two editors | Share editor component |
+| **P2-12** | SceneList vs BottomPageStrip "+" behavior | UI/Nav | `SceneList.tsx:84-263`, `BottomPageStrip.tsx:26-127` | "+" creates different page structures | Unify "+" to use FloatingPageMenu |
+| **P2-13** | SchemaBlockTree vs SchemaNavigatorPanel | UI/Nav | `SchemaBlockTree.tsx:315`, `SchemaNavigatorPanel.tsx:641` | Different icons, features, BLOCK_DISPLAY maps | Unify BLOCK_DISPLAY, consider merging |
+| **P2-14** | Local activeTab vs store leftTab | UI/Nav | `LeftPanel.tsx:83-104` | Brief stale state during sync | Remove local state |
+| **P2-15** | Edit vs Learn navigation state desync | UI/Nav | `CanvaBuilder.tsx:136-148` vs `LearningMediaShell.tsx:438` | Teacher on page 3 → Learn mode starts at screen 0 | Sync currentPageIndex → currentScreenIndex on mode switch |
+
+### Dualisme Sudah Ditutup (sebelum audit ini)
+
+| Dualisme | Sprint | Status |
+|---------|--------|--------|
+| Background: 3 lokasi → schema.background | P0 Ronde 33 | PASS — redirect + migration |
+| Export fallback: Path B deprecated | D1/D3 Ronde 34 | PASS — no silent fallback |
+| Dual score store | D7 Ronde 27 | ACCEPTABLE — separation of concerns |
+| createPage background gap | D6 Ronde 26 | PASS — creation-time background |
+| updateSchemaBlock alignment | D2 Ronde 24 | PASS — dirty tracking + overflow |
+
+### Rekomendasi Prioritas Eksekusi
+
+```txt
+SEKARANG (P0 — 8 item, blocking fitur baru):
+1. P0-1  Schema vs Elements invariant
+2. P0-2  Unify write path (updateSchemaBlock → applyGuidedSchemaPatch)
+3. P0-3  Freeze template-gallery.ts
+4. P0-4  Unify Dashboard template application
+5. P0-5  Redirect addPage → addTemplatePage
+6. P0-6  Remove panelRequest
+7. P0-7  Merge displayMode → eduViewingMode
+8. P0-8  SCORM contract-based completion
+
+SELANJUTNYA (P1 — 10 item, sebelum Sprint X.2):
+9.  P1-1  schemaThemeId redirect
+10. P1-2  Merge schema registries
+11. P1-3  Fix duplicate section labels
+12. P1-4  Remove Dashboard duplicate sidebar
+13. P1-5  SCORM scoring scale
+14. P1-6  Quiz display mode (deprecated path)
+15. P1-7  Navigation locks (deprecated path)
+16. P1-8  Completion types (deprecated path)
+17. P1-9  templateData cleanup
+18. P1-10 Golden Flow ↔ CourseTemplate alignment
+
+BERTAHAP (P2 — 15 item, non-blocking):
+19-33.  Cleanup bertahap saat menyentuh area terkait
+```
+
+### Prinsip
+
+```txt
+No hidden fallback.
+No silent downgrade.
+Preview = Export.
+One source of truth per function.
+```
