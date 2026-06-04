@@ -33,12 +33,16 @@ import { SchemaDrivenEditor } from './SchemaDrivenEditor';
 import { CapabilityBadge } from './CapabilityBadge';
 import { BlockVariantSwitcher } from './BlockVariantSwitcher';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
+import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
 
 export default function BlockPropertiesPanel() {
   const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
   const selectedBlockType = useCanvaStore(s => s.selectedBlockType);
   const selectBlock = useCanvaStore(s => s.selectBlock);
-  const updateSchemaBlock = useCanvaStore(s => s.updateSchemaBlock);
+  const currentPageId = useCanvaStore(s => {
+    const page = s.pages[s.currentPageIndex];
+    return page?.id ?? '';
+  });
   const editingBlockId = useCanvaStore(s => s.editingBlockId);
   const stopEditing = useCanvaStore(s => s.stopEditing);
   const teacherMode = useCanvaStore(s => s.teacherMode);
@@ -127,7 +131,13 @@ export default function BlockPropertiesPanel() {
           <SchemaDrivenEditor
             block={block}
             schema={propertySchema}
-            onUpdate={(updates) => updateSchemaBlock(selectedBlockId, updates, { overflowPolicy: 'warn', source: 'user' })}
+            onUpdate={(updates) => applyGuidedSchemaPatch({
+              pageId: currentPageId,
+              blockId: selectedBlockId!,
+              patch: updates,
+              overflowPolicy: 'warn',
+              source: 'user',
+            })}
           />
         )}
 

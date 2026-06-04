@@ -28,6 +28,7 @@ import {
 } from '@/core/schema/generators';
 import { applyBlocksToPages, applyBlockToPages } from '@/core/schema/schema-apply';
 import { scanAllPagesOverflow } from '@/core/schema/guided-patch';
+import { useCanvaStore } from '@/store/canva-store';
 import type { SchemaBlock } from '@/core/schema/types';
 
 /** localStorage key used by the auto-generate hook */
@@ -142,7 +143,8 @@ export function regenerateMateriSchema(
   if (!parsed) return null;
 
   const materiBlocks = genMateriSchema(parsed, meta);
-  applyBlocksToPages('materi', materiBlocks);
+  useCanvaStore.getState()._pushHistory();
+  applyBlocksToPages('materi', materiBlocks, { skipHistory: true });
   return materiBlocks;
 }
 
@@ -157,7 +159,8 @@ export function regenerateSkenarioSchema(
   if (!parsed) return null;
 
   const skenarioBlock = genSkenarioSchema(parsed, meta);
-  applyBlockToPages('skenario', skenarioBlock);
+  useCanvaStore.getState()._pushHistory();
+  applyBlockToPages('skenario', skenarioBlock, { skipHistory: true });
   return skenarioBlock;
 }
 
@@ -173,7 +176,8 @@ export function regenerateKuisSchema(
   if (!parsed) return null;
 
   const kuisBlock = genKuisSchema(parsed, jumlah, jumlahPertemuan);
-  applyBlockToPages('kuis', kuisBlock);
+  useCanvaStore.getState()._pushHistory();
+  applyBlockToPages('kuis', kuisBlock, { skipHistory: true });
   return kuisBlock;
 }
 
@@ -189,7 +193,8 @@ export function regenerateDiskusiSchema(
   if (!parsed) return null;
 
   const diskusiBlock = genDiskusiSchema(parsed, tp, meta);
-  applyBlocksToPages('diskusi', [diskusiBlock]);
+  useCanvaStore.getState()._pushHistory();
+  applyBlocksToPages('diskusi', [diskusiBlock], { skipHistory: true });
   return diskusiBlock;
 }
 
@@ -204,7 +209,8 @@ export function regenerateRefleksiSchema(
   if (!parsed) return null;
 
   const refleksiBlock = genRefleksiSchema(parsed, meta);
-  applyBlocksToPages('refleksi', [refleksiBlock]);
+  useCanvaStore.getState()._pushHistory();
+  applyBlocksToPages('refleksi', [refleksiBlock], { skipHistory: true });
   return refleksiBlock;
 }
 
@@ -343,18 +349,21 @@ export function regenerateAllToSchema(opts: {
   const parsed = parseStoredText();
   if (!parsed) return null;
 
+  // Push history ONCE before all applies — 1 undo step per regenerate action
+  useCanvaStore.getState()._pushHistory();
+
   // Generate schema blocks and apply to canvas
   const materiBlocks = genMateriSchema(parsed, opts.meta);
-  applyBlocksToPages('materi', materiBlocks);
+  applyBlocksToPages('materi', materiBlocks, { skipHistory: true });
 
   const kuisBlock = genKuisSchema(parsed, opts.jumlahKuis, opts.jumlahPertemuan);
-  applyBlockToPages('kuis', kuisBlock);
+  applyBlockToPages('kuis', kuisBlock, { skipHistory: true });
 
   const diskusiBlock = genDiskusiSchema(parsed, opts.tp, opts.meta);
-  applyBlocksToPages('diskusi', [diskusiBlock]);
+  applyBlocksToPages('diskusi', [diskusiBlock], { skipHistory: true });
 
   const refleksiBlock = genRefleksiSchema(parsed, opts.meta);
-  applyBlocksToPages('refleksi', [refleksiBlock]);
+  applyBlocksToPages('refleksi', [refleksiBlock], { skipHistory: true });
 
   // Phase 4: Post-regenerate overflow scan
   // After bulk writing content, scan all pages for overflow and auto-split.

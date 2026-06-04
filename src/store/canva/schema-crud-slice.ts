@@ -59,7 +59,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const overflowPolicy = options?.overflowPolicy ?? 'none';
     const source = options?.source ?? 'user';
 
-    get()._pushHistory();
+    if (!options?.skipHistory) get()._pushHistory();
 
     let newSchema: ScreenSchema;
     let blockType: string;

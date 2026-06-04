@@ -113,6 +113,8 @@ export function applyBlocksToPages(
     firstOnly?: boolean;
     /** Create a new page if no match found */
     createIfMissing?: boolean;
+    /** Skip pushing history snapshot (caller manages history) */
+    skipHistory?: boolean;
   },
 ): number {
   const store = useCanvaStore.getState();
@@ -169,6 +171,7 @@ export function applyBlocksToPages(
   }
 
   if (updatedCount > 0) {
+    if (!options?.skipHistory) useCanvaStore.getState()._pushHistory();
     useCanvaStore.setState({ pages });
   }
 
@@ -186,6 +189,10 @@ export function applyBlocksToPages(
 export function applyBlockToPages(
   templateType: string,
   newBlocks: SchemaBlock | SchemaBlock[],
+  options?: {
+    /** Skip pushing history snapshot (caller manages history) */
+    skipHistory?: boolean;
+  },
 ): number {
   const store = useCanvaStore.getState();
   const pages = [...store.pages];
@@ -228,6 +235,7 @@ export function applyBlockToPages(
   }
 
   if (updatedCount > 0) {
+    if (!options?.skipHistory) useCanvaStore.getState()._pushHistory();
     useCanvaStore.setState({ pages });
   }
 
@@ -266,6 +274,10 @@ export function applyBlocksByBlockType(
 export function setPageSchemaBlocks(
   pageId: string,
   blocks: SchemaBlock[],
+  options?: {
+    /** Skip pushing history snapshot (caller manages history) */
+    skipHistory?: boolean;
+  },
 ): boolean {
   const store = useCanvaStore.getState();
   const pages = [...store.pages];
@@ -308,6 +320,7 @@ export function setPageSchemaBlocks(
     };
   }
 
+  if (!options?.skipHistory) useCanvaStore.getState()._pushHistory();
   useCanvaStore.setState({ pages });
   return true;
 }

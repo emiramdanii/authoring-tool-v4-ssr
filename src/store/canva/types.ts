@@ -63,6 +63,8 @@ export interface UpdateSchemaBlockOptions {
   overflowPolicy?: 'none' | 'warn' | 'reject' | 'auto-split';
   /** Source of the edit — for edit bus tracking. Default: 'user' */
   source?: 'user' | 'ai' | 'system';
+  /** Skip pushing history snapshot (caller manages history). Default: false */
+  skipHistory?: boolean;
 }
 
 // ── Full store interface ──────────────────────────────────────

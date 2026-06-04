@@ -101,6 +101,9 @@ export function TransformHandles({ blockId, capabilities }: TransformHandlesProp
       height: toNum(layout?.height, 50),
     };
 
+    // Push history BEFORE resize starts — 1 undo step per resize action
+    useCanvaStore.getState()._pushHistory();
+
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const dx = moveEvent.clientX - startX;
       const dy = moveEvent.clientY - startY;
@@ -145,7 +148,7 @@ export function TransformHandles({ blockId, capabilities }: TransformHandlesProp
         newLayout.width = Math.round(newW * 10) / 10;
       }
 
-      updateSchemaBlock(blockId, { layout: newLayout });
+      updateSchemaBlock(blockId, { layout: newLayout }, { skipHistory: true });
     };
 
     const handleMouseUp = () => {
@@ -208,6 +211,11 @@ export function useTransformDrag({ blockId, isCompact, isSelected, isMovable }: 
     const DRAG_THRESHOLD = 3;
     let dragStarted = false;
 
+    // Push history BEFORE drag starts — 1 undo step per drag action
+    // (pushed here so the snapshot captures pre-drag state even if
+    // drag threshold isn't met — harmless if no actual drag occurs)
+    useCanvaStore.getState()._pushHistory();
+
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const dx = moveEvent.clientX - startX;
       const dy = moveEvent.clientY - startY;
@@ -236,7 +244,7 @@ export function useTransformDrag({ blockId, isCompact, isSelected, isMovable }: 
           x: Math.round(newX * 10) / 10,
           y: Math.round(newY * 10) / 10,
         },
-      });
+      }, { skipHistory: true });
     };
 
     const handleMouseUp = () => {

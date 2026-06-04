@@ -253,6 +253,8 @@ export function useAutoGenerate() {
       // Types WITHOUT schema blocks (cp, atp, matching, truefalse):
       // still write projection directly (no schema to derive from).
       const applySchemaOnly = (schemaWrite: () => void) => {
+        // Push history BEFORE writing — 1 undo step per teacher apply action
+        useCanvaStore.getState()._pushHistory();
         schemaWrite();
         // Projection sync handles the rest automatically via init.ts
       };
@@ -287,8 +289,8 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const tpBlock = genTpSchema(parsed, settings);
-                applyBlockToPages('dokumen', [tpBlock]);
-                applyBlockToPages('tujuan', [tpBlock]);
+                applyBlockToPages('dokumen', [tpBlock], { skipHistory: true });
+                applyBlockToPages('tujuan', [tpBlock], { skipHistory: true });
               }
             },
           );
@@ -318,7 +320,7 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const alurBlock = genAlurSchema(parsed, settings, meta);
-                applyBlockToPages('dokumen', [alurBlock]);
+                applyBlockToPages('dokumen', [alurBlock], { skipHistory: true });
               }
             },
           );
@@ -333,7 +335,7 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const kuisBlock = genKuisSchema(parsed, settings.jumlahKuis, settings.pertemuan);
-                applyBlockToPages('kuis', kuisBlock);
+                applyBlockToPages('kuis', kuisBlock, { skipHistory: true });
               }
             },
           );
@@ -348,7 +350,7 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const skenarioBlock = genSkenarioSchema(parsed, meta);
-                applyBlockToPages('skenario', [skenarioBlock]);
+                applyBlockToPages('skenario', [skenarioBlock], { skipHistory: true });
               }
             },
           );
@@ -363,7 +365,7 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const flashcardBlock = genFlashcardSchema(parsed);
-                applyBlockToPages('materi', [flashcardBlock]);
+                applyBlockToPages('materi', [flashcardBlock], { skipHistory: true });
               }
             },
           );
@@ -378,7 +380,7 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const matchingBlock = genMatchingSchema(parsed);
-                applyBlockToPages('game', [matchingBlock]);
+                applyBlockToPages('game', [matchingBlock], { skipHistory: true });
               }
             },
           );
@@ -393,7 +395,7 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const tfBlock = genTrueFalseSchema(parsed);
-                applyBlockToPages('game', [tfBlock]);
+                applyBlockToPages('game', [tfBlock], { skipHistory: true });
               }
             },
           );
@@ -408,7 +410,7 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const schemaBlocks = genMateriSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-                applyBlocksToPages('materi', schemaBlocks);
+                applyBlocksToPages('materi', schemaBlocks, { skipHistory: true });
               }
             },
           );
@@ -423,7 +425,7 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const diskusiBlock = genDiskusiSchema(parsed, store.getState().tp, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-                applyBlockToPages('diskusi', [diskusiBlock]);
+                applyBlockToPages('diskusi', [diskusiBlock], { skipHistory: true });
               }
             },
           );
@@ -438,7 +440,7 @@ export function useAutoGenerate() {
             () => {
               if (parsed) {
                 const refleksiBlock = genRefleksiSchema(parsed, { judulPertemuan: meta.judulPertemuan, namaBab: meta.namaBab });
-                applyBlockToPages('refleksi', [refleksiBlock]);
+                applyBlockToPages('refleksi', [refleksiBlock], { skipHistory: true });
               }
             },
           );
@@ -648,21 +650,23 @@ export function useAutoGenerate() {
 
         // 2. Apply each section of the full lesson to canvas pages
         let pageCount = 0;
-        if (lessonSchema.cover) { applyBlockToPages('cover', [lessonSchema.cover]); pageCount++; }
-        if (lessonSchema.petunjuk) { applyBlockToPages('petunjuk', [lessonSchema.petunjuk]); pageCount++; }
-        if (lessonSchema.tp) { applyBlockToPages('tujuan', [lessonSchema.tp]); applyBlockToPages('dokumen', [lessonSchema.tp]); pageCount++; }
-        if (lessonSchema.alur) { applyBlockToPages('dokumen', [lessonSchema.alur]); pageCount++; }
-        if (lessonSchema.motivasi) { applyBlockToPages('motivasi', [lessonSchema.motivasi]); pageCount++; }
-        if (lessonSchema.tujuan) { applyBlockToPages('dokumen', [lessonSchema.tujuan]); pageCount++; }
-        if (lessonSchema.materi.length) { applyBlocksToPages('materi', lessonSchema.materi); pageCount++; }
-        if (lessonSchema.skenario) { applyBlockToPages('skenario', [lessonSchema.skenario]); pageCount++; }
-        if (lessonSchema.kuis) { applyBlockToPages('kuis', [lessonSchema.kuis]); pageCount++; }
-        if (lessonSchema.flashcard) { applyBlockToPages('materi', [lessonSchema.flashcard]); pageCount++; }
-        if (lessonSchema.diskusi) { applyBlockToPages('diskusi', [lessonSchema.diskusi]); pageCount++; }
-        if (lessonSchema.refleksi) { applyBlockToPages('refleksi', [lessonSchema.refleksi]); pageCount++; }
-        if (lessonSchema.rangkuman) { applyBlockToPages('rangkuman', [lessonSchema.rangkuman]); pageCount++; }
-        if (lessonSchema.hasil) { applyBlockToPages('hasil', [lessonSchema.hasil]); pageCount++; }
-        if (lessonSchema.penutup) { applyBlockToPages('penutup', [lessonSchema.penutup]); pageCount++; }
+        // Push history ONCE before all applies — 1 undo step per teacher action
+        useCanvaStore.getState()._pushHistory();
+        if (lessonSchema.cover) { applyBlockToPages('cover', [lessonSchema.cover], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.petunjuk) { applyBlockToPages('petunjuk', [lessonSchema.petunjuk], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.tp) { applyBlockToPages('tujuan', [lessonSchema.tp], { skipHistory: true }); applyBlockToPages('dokumen', [lessonSchema.tp], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.alur) { applyBlockToPages('dokumen', [lessonSchema.alur], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.motivasi) { applyBlockToPages('motivasi', [lessonSchema.motivasi], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.tujuan) { applyBlockToPages('dokumen', [lessonSchema.tujuan], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.materi.length) { applyBlocksToPages('materi', lessonSchema.materi, { skipHistory: true }); pageCount++; }
+        if (lessonSchema.skenario) { applyBlockToPages('skenario', [lessonSchema.skenario], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.kuis) { applyBlockToPages('kuis', [lessonSchema.kuis], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.flashcard) { applyBlockToPages('materi', [lessonSchema.flashcard], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.diskusi) { applyBlockToPages('diskusi', [lessonSchema.diskusi], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.refleksi) { applyBlockToPages('refleksi', [lessonSchema.refleksi], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.rangkuman) { applyBlockToPages('rangkuman', [lessonSchema.rangkuman], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.hasil) { applyBlockToPages('hasil', [lessonSchema.hasil], { skipHistory: true }); pageCount++; }
+        if (lessonSchema.penutup) { applyBlockToPages('penutup', [lessonSchema.penutup], { skipHistory: true }); pageCount++; }
 
         // 3. Write projections to authoring store
         // Phase 5: Content projections (tp, kuis, materi, diskusi, refleksi, alur)
@@ -763,10 +767,12 @@ export function useAutoGenerate() {
 
           // 2. Apply each section to canvas pages
           let pageCount = 0;
-          if (lessonSchema.materi.length) { applyBlocksToPages('materi', lessonSchema.materi); pageCount++; }
-          if (lessonSchema.diskusi) { applyBlockToPages('diskusi', [lessonSchema.diskusi]); pageCount++; }
-          if (lessonSchema.kuis) { applyBlockToPages('kuis', [lessonSchema.kuis]); pageCount++; }
-          if (lessonSchema.refleksi) { applyBlockToPages('refleksi', [lessonSchema.refleksi]); pageCount++; }
+          // Push history ONCE before all applies — 1 undo step per teacher action
+          useCanvaStore.getState()._pushHistory();
+          if (lessonSchema.materi.length) { applyBlocksToPages('materi', lessonSchema.materi, { skipHistory: true }); pageCount++; }
+          if (lessonSchema.diskusi) { applyBlockToPages('diskusi', [lessonSchema.diskusi], { skipHistory: true }); pageCount++; }
+          if (lessonSchema.kuis) { applyBlockToPages('kuis', [lessonSchema.kuis], { skipHistory: true }); pageCount++; }
+          if (lessonSchema.refleksi) { applyBlockToPages('refleksi', [lessonSchema.refleksi], { skipHistory: true }); pageCount++; }
 
           // 3. Projections auto-derived from schema by startProjectionSync()
           // Phase 5: Removed manual projection writes — the init.ts subscription
