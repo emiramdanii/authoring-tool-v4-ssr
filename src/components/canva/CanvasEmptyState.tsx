@@ -38,8 +38,11 @@ export default function CanvasEmptyState() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const { isSederhana } = useTeacherMode();
 
+  // D-P0A: Use addTemplatePage('custom') instead of addPage() — ensures
+  // schema-consistent page creation with primary edit target resolution,
+  // even for blank pages. addPage() is reserved for advanced/internal/test.
   const handleBlankPage = useCallback(() => {
-    useCanvaStore.getState().addPage();
+    useCanvaStore.getState().addTemplatePage('custom');
   }, []);
 
   const handleTemplate = useCallback(() => {

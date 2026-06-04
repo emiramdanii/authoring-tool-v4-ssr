@@ -41,7 +41,38 @@ D2 — Align Schema Block Update Path: PASS — updateSchemaBlock sekarang dirty
 D1/D3 — Export Fallback Safety: PASS (Ronde 34) — exportWithFallback tidak lagi diam-diam fallback ke degraded vanilla JS, error jelas jika Path A gagal, client-export.ts dihapus (0 import), src/lib/export/ ditandai deprecated, use-export-actions.ts comment diperbaiki
 D6 — createPage schema.background gap: PASS — createPage() dan setTemplateType() custom sekarang menghasilkan schema.background default dari creation-time
 D7 — Dual Score Store: ACCEPTABLE/FIXED — dual store adalah separation of concerns yang intentional, gap R7.1 (stale scores di Preview/Present) ditutup
+D-P0A — Unify Page Creation Flow: PASS (Ronde 36) — BottomPageStrip "+" sekarang buka FloatingPageMenu bukan blank page, CanvasEmptyState "Halaman Kosong" pakai addTemplatePage('custom') bukan addPage(), tidak ada addPage() teacher-facing tersisa
+Sprint D — Dualism Audit Luas: SELESAI (Ronde 35) — 33 dualisme ditemukan di 6 area, 8 P0 / 10 P1 / 15 P2, prioritas cleanup ditetapkan
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
+```
+
+**PERUBAHAN RONDE 36 (D-P0A — Unify Page Creation Flow):**
+
+1. D-P0A FIX: Semua teacher-facing page creation sekarang lewat `addTemplatePage()`, bukan `addPage()`
+2. `BottomPageStrip.tsx`: Tombol "+" tidak lagi memanggil `addPage()` langsung — sekarang membuka `FloatingPageMenu` popover, sama seperti SceneList. Guru harus memilih jenis halaman sebelum halaman dibuat.
+3. `CanvasEmptyState.tsx`: Card "Halaman Kosong" sekarang memakai `addTemplatePage('custom')` bukan `addPage()`. Ini tetap membuat halaman kosong, tapi schema-consistent dan lewat jalur template page yang punya primary edit target resolution.
+4. `addPage()` di store TIDAK dihapus — tetap tersedia untuk advanced/internal/test
+5. FloatingPageMenu tetap filter out `'custom'` — guru tidak bisa buat blank page diam-diam dari menu
+6. Pola BottomPageStrip "+" sekarang identik dengan SceneList "Tambah Halaman" — konsistensi UI
+7. Tidak mengubah: addTemplatePage, createPageFromPreset, FloatingPageMenu, renderer, export, template system
+8. Build: PASS
+
+**D-P0A sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| BottomPageStrip "+" | `addPage()` → blank custom page tanpa schema | FloatingPageMenu → pilih jenis → `addTemplatePage()` → schema + primary block |
+| CanvasEmptyState "Halaman Kosong" | `addPage()` → blank page tanpa primary edit target | `addTemplatePage('custom')` → schema-consistent blank page |
+| Guru bisa buat blank page diam-diam? | Ya — klik "+" langsung blank | Tidak — harus pilih jenis halaman dari FloatingPageMenu |
+| addPage() teacher-facing callers | 2 (BottomPageStrip + CanvasEmptyState) | 0 |
+| Pola BottomPageStrip vs SceneList | Berbeda — "+" vs FloatingPageMenu | Sama — keduanya FloatingPageMenu |
+
+**D-P0A prinsip teacher page creation flow:**
+
+```txt
+Teacher mode → Tambah Halaman = pilih jenis halaman → addTemplatePage()
+Internal/advanced/test → addPage() boleh tetap ada
+Tidak boleh: blank page diam-diam di teacher flow
 ```
 
 **PERUBAHAN RONDE 34 (D1/D3 — Disable Degraded Export Fallback):**

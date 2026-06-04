@@ -3,6 +3,8 @@
 import { useRef, useEffect, useMemo } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
+import { FloatingPageMenu } from '@/components/canva/left-panel/FloatingPageMenu';
+import type { PageTemplateType } from '@/components/canva/types';
 
 // ═══════════════════════════════════════════════════════════════════
 // BOTTOM PAGE STRIP — Horizontal page navigator below the canvas
@@ -12,22 +14,21 @@ import { TEMPLATE_BADGE_MAP } from '@/lib/canva-icon-maps';
 //
 // Architecture:
 //   READ:  CanvaStore.pages[] + currentPageIndex
-//   NAV:   goPage(idx) for navigation, addPage() for new page
+//   NAV:   goPage(idx) for navigation
+//   ADD:   FloatingPageMenu → addTemplatePage() for new page
 //   ICON:  TEMPLATE_BADGE_MAP for page type emoji
 //
-// Sprint 1E.2 — Minimal implementation:
-//   - Horizontal scroll with overflow-x-auto
-//   - Auto-scroll to active page pill
-//   - Active page highlight
-//   - "+" button for adding pages
-//   - No block/technical information shown
+// D-P0A Fix: "+" button now opens FloatingPageMenu instead of
+// creating a blank page via addPage(). This ensures all teacher-facing
+// page creation goes through the template flow:
+//   guru pilih jenis → addTemplatePage() → schema dibuat → primary block dipilih
 // ═══════════════════════════════════════════════════════════════════
 
 export function BottomPageStrip() {
   const pages = useCanvaStore(s => s.pages);
   const currentPageIndex = useCanvaStore(s => s.currentPageIndex);
   const goPage = useCanvaStore(s => s.goPage);
-  const addPage = useCanvaStore(s => s.addPage);
+  const addTemplatePage = useCanvaStore(s => s.addTemplatePage);
 
   // Ref for auto-scrolling to the active pill
   const activePillRef = useRef<HTMLButtonElement>(null);
@@ -106,22 +107,27 @@ export function BottomPageStrip() {
         ))}
       </div>
 
-      {/* Add page button — always visible at the end */}
-      <button
-        onClick={() => addPage()}
-        className="
-          flex items-center justify-center gap-1 px-2 py-1 rounded-lg
-          border border-dashed border-silse-outline-variant/50
-          text-silse-on-surface-variant hover:border-silse-primary/40
-          hover:bg-silse-primary/5 hover:text-silse-primary
-          text-[10px] font-medium flex-shrink-0 transition-[border-color,background-color,color] duration-150
-        "
-        title="Tambah Halaman"
-        aria-label="Tambah halaman baru"
+      {/* D-P0A: Add page button — opens FloatingPageMenu, same pattern as SceneList */}
+      <FloatingPageMenu
+        onSelect={(templateType: PageTemplateType) => addTemplatePage(templateType)}
+        align="end"
+        side="top"
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span>
-        <span className="hidden sm:inline">Tambah</span>
-      </button>
+        <button
+          className="
+            flex items-center justify-center gap-1 px-2 py-1 rounded-lg
+            border border-dashed border-silse-outline-variant/50
+            text-silse-on-surface-variant hover:border-silse-primary/40
+            hover:bg-silse-primary/5 hover:text-silse-primary
+            text-[10px] font-medium flex-shrink-0 transition-[border-color,background-color,color] duration-150
+          "
+          title="Tambah Halaman"
+          aria-label="Tambah halaman baru"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span>
+          <span className="hidden sm:inline">Tambah</span>
+        </button>
+      </FloatingPageMenu>
     </div>
   );
 }
