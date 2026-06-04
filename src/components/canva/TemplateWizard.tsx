@@ -28,9 +28,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 // All icons migrated to Material Symbols Outlined
-import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
-import { useDirtyStore } from '@/store/dirty-store';
 import { useProjectManager } from '@/hooks/use-project-manager';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
@@ -40,11 +37,10 @@ import {
   SEMESTER_OPTIONS,
   getCourseTemplatesFiltered,
   getTemplateFlowPreview,
-  createProjectFromTemplate,
-  getTemplateThemeId,
   type CourseTemplate,
   type ProjectMetadata,
 } from '@/core/template/CourseTemplateRegistry';
+import { applyTemplateToStore } from '@/core/template/apply-template-to-store';
 
 // ── Step indicator ─────────────────────────────────────────────
 
@@ -124,88 +120,33 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
         sekolah: sekolah.trim() || undefined,
       };
 
-      const rawPages = await createProjectFromTemplate(selectedTemplateId, metadata);
-
-      // Get theme from template
-      const themeId = getTemplateThemeId(selectedTemplateId);
-
-      // Apply theme IMMUTABLY — schemas may be deepFrozen in dev mode,
-      // so we must create new page objects instead of mutating in place.
-      const pages = rawPages.map(page => {
-        if (!page.schema) return page;
-
-        const updatedSchema = {
-          ...page.schema,
-          background: {
-            ...(page.schema.background ?? {}),
-            type: page.schema.background?.type ?? 'gradient',
-          } as NonNullable<import('@/core/schema/types').ScreenSchema['background']>,
-        };
-
-        return {
-          ...page,
-          schema: updatedSchema,
-          templateData: { ...page.templateData, schemaThemeId: themeId },
-        };
+      // D-P0D.1: Use shared apply flow — same logic as Dashboard & Marketplace
+      const result = await applyTemplateToStore(selectedTemplateId, {
+        metadata,
+        persist: 'db',
+        createProjectFn: createProject,
       });
 
-      // Set pages in canva store (replaces current project)
-      const store = useCanvaStore.getState();
-      store._pushHistory();
-      useCanvaStore.setState({
-        pages,
-        currentPageIndex: 0,
-        selectedElId: null,
-        selectedElIds: [],
-        selectedBlockId: null,
-        selectedBlockType: null,
-        editingBlockId: null,
-        selectedBlockIds: [],
-      });
+      if (result.success) {
+        toast.success(`Project "${result.templateName}" berhasil dibuat!`);
+        onOpenChange(false);
 
-      // Update authoring store metadata so Dashboard reflects the new project
-      const authoringStore = useAuthoringStore.getState();
-      if (title.trim()) authoringStore.updateMeta('judulPertemuan', title.trim());
-      if (subject) authoringStore.updateMeta('mapel', subject);
-      if (grade) authoringStore.updateMeta('kelas', grade);
-      // Mark as dirty so user is prompted to save
-      useDirtyStore.getState().markDirty();
-
-      // Persist to database via ProjectManager
-      try {
-        await createProject({
-          title: title.trim(),
-          subject,
-          grade,
-        });
-      } catch (dbErr) {
-        // DB save failed — project is still in memory, just log warning
-        logger.warn('TemplateWizard', 'DB persist failed, project is in memory only: ' + String(dbErr));
-        // Save to localStorage as fallback
-        useCanvaStore.getState().saveToStorage();
-        useAuthoringStore.getState().saveToStorage();
+        // Reset wizard state
+        setStep(1);
+        setSubject('');
+        setGrade('');
+        setSemester('');
+        setSelectedTemplateId('');
+        setTitle('');
+        setGuru('');
+        setSekolah('');
+      } else {
+        toast.error('Gagal membuat project. Silakan coba lagi.');
+        logger.error('TemplateWizard', 'applyTemplateToStore failed: ' + (result.error || 'unknown'));
       }
-
-      toast.success(`Project "${title.trim()}" berhasil dibuat!`);
-      onOpenChange(false);
-
-      // Phase 3: Navigate to Canva editor via panelRequest
-      setTimeout(() => {
-        useCanvaStore.setState({ panelRequest: 'canva' });
-      }, 300);
-
-      // Reset wizard state
-      setStep(1);
-      setSubject('');
-      setGrade('');
-      setSemester('');
-      setSelectedTemplateId('');
-      setTitle('');
-      setGuru('');
-      setSekolah('');
     } catch (err) {
       toast.error('Gagal membuat project. Silakan coba lagi.');
-      logger.error('TemplateWizard', 'createProjectFromTemplate error: ' + String(err));
+      logger.error('TemplateWizard', 'handleCreate error: ' + String(err));
     } finally {
       setIsCreating(false);
     }

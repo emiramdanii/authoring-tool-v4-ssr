@@ -20,14 +20,9 @@ import { ShowTransition } from '@/lib/transition';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useCanvaStore } from '@/store/canva-store';
-import { useAuthoringStore } from '@/store/authoring-store';
-import { useDirtyStore } from '@/store/dirty-store';
 import {
   getAllCourseTemplates,
   getCourseTemplatesFiltered,
-  createProjectFromTemplate,
-  getTemplateThemeId,
   SUBJECTS,
   GRADE_OPTIONS as REGISTRY_GRADE_OPTIONS,
   type CourseTemplate,
@@ -35,6 +30,7 @@ import {
   type SceneTemplateSpec,
   type ProjectMetadata,
 } from '@/core/template/CourseTemplateRegistry';
+import { applyTemplateToStore } from '@/core/template/apply-template-to-store';
 import { resolveTokens } from '@/core/themes/tokens';
 import TemplatePreviewThumbnail from '@/components/shared/TemplatePreviewThumbnail';
 import { toast } from 'sonner';
@@ -496,65 +492,20 @@ export default function TemplateMarketplace({
         kelas: template.grade !== '*' ? template.grade : undefined,
       };
 
-      // Create populated pages using the schema factory bridge
-      const rawPages = await createProjectFromTemplate(template.id, metadata);
-
-      // Get theme from template
-      const themeId = getTemplateThemeId(template.id);
-
-      // Apply theme IMMUTABLY — schemas may be deepFrozen in dev mode,
-      // so we must create new page objects instead of mutating in place.
-      const pages = rawPages.map(page => {
-        if (!page.schema) return page;
-
-        const updatedSchema = {
-          ...page.schema,
-          background: {
-            ...(page.schema.background ?? {}),
-            type: page.schema.background?.type ?? 'gradient',
-          } as NonNullable<import('@/core/schema/types').ScreenSchema['background']>,
-        };
-
-        return {
-          ...page,
-          schema: updatedSchema,
-          templateData: { ...page.templateData, schemaThemeId: themeId },
-        };
+      // D-P0D.1: Use shared apply flow — same logic as Dashboard & TemplateWizard
+      const result = await applyTemplateToStore(template.id, {
+        metadata,
+        persist: 'localstorage',
       });
 
-      // Set pages in canva store (replaces current project)
-      const store = useCanvaStore.getState();
-      store._pushHistory();
-      useCanvaStore.setState({
-        pages,
-        currentPageIndex: 0,
-        selectedElId: null,
-        selectedElIds: [],
-        selectedBlockId: null,
-        selectedBlockType: null,
-        editingBlockId: null,
-        selectedBlockIds: [],
-      });
-
-      // Update authoring store metadata so Dashboard reflects the new project
-      const authoringStore = useAuthoringStore.getState();
-      authoringStore.updateMeta('judulPertemuan', template.name);
-      if (template.subject !== '*') authoringStore.updateMeta('mapel', template.subject);
-      if (template.grade !== '*') authoringStore.updateMeta('kelas', template.grade);
-      useDirtyStore.getState().markDirty();
-
-      // Save to localStorage as fallback
-      useCanvaStore.getState().saveToStorage();
-      useAuthoringStore.getState().saveToStorage();
-
-      toast.success(`Template "${template.name}" berhasil diterapkan!`);
-      setPreviewTemplate(null);
-      onClose();
-
-      // Navigate to Canva editor after a short delay
-      setTimeout(() => {
-        useCanvaStore.setState({ panelRequest: 'canva' });
-      }, 300);
+      if (result.success) {
+        toast.success(`Template "${result.templateName}" berhasil diterapkan!`);
+        setPreviewTemplate(null);
+        onClose();
+      } else {
+        toast.error('Gagal menerapkan template. Silakan coba lagi.');
+        logger.error('Marketplace', 'applyTemplateToStore failed: ' + (result.error || 'unknown'));
+      }
     } catch (err) {
       toast.error('Gagal menerapkan template. Silakan coba lagi.');
       logger.error('Marketplace', 'handleApply error: ' + String(err));

@@ -23,11 +23,10 @@ import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
 import {
   getCourseTemplatesFiltered,
-  createProjectFromTemplate,
-  getTemplateThemeId,
   type CourseTemplate as RegistryCourseTemplate,
   type ProjectMetadata,
 } from '@/core/template/CourseTemplateRegistry';
+import { applyTemplateToStore } from '@/core/template/apply-template-to-store';
 import { useDirtyStore } from '@/store/dirty-store';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
@@ -263,6 +262,7 @@ export default function Dashboard() {
     _applyRegistryTemplate(template);
   };
 
+  // ── Apply template via shared helper (D-P0D.1) ────────────
   const _applyRegistryTemplate = async (template: RegistryCourseTemplate) => {
     setIsApplyingTemplate(true);
     try {
@@ -272,58 +272,18 @@ export default function Dashboard() {
         kelas: template.grade !== '*' ? template.grade : undefined,
       };
 
-      const rawPages = await createProjectFromTemplate(template.id, metadata);
-      const themeId = getTemplateThemeId(template.id);
-
-      // Apply theme IMMUTABLY
-      const pages = rawPages.map(page => {
-        if (!page.schema) return page;
-        const updatedSchema = {
-          ...page.schema,
-          background: {
-            ...(page.schema.background ?? {}),
-            type: page.schema.background?.type ?? 'gradient',
-          } as NonNullable<import('@/core/schema/types').ScreenSchema['background']>,
-        };
-        return {
-          ...page,
-          schema: updatedSchema,
-          templateData: { ...page.templateData, schemaThemeId: themeId },
-        };
+      const result = await applyTemplateToStore(template.id, {
+        metadata,
+        persist: 'localstorage',
       });
 
-      // Set pages in canva store
-      const store = useCanvaStore.getState();
-      store._pushHistory();
-      useCanvaStore.setState({
-        pages,
-        currentPageIndex: 0,
-        selectedElId: null,
-        selectedElIds: [],
-        selectedBlockId: null,
-        selectedBlockType: null,
-        editingBlockId: null,
-        selectedBlockIds: [],
-      });
-
-      // Update authoring store metadata
-      const authoringStore = useAuthoringStore.getState();
-      authoringStore.updateMeta('judulPertemuan', template.name);
-      if (template.subject !== '*') authoringStore.updateMeta('mapel', template.subject);
-      if (template.grade !== '*') authoringStore.updateMeta('kelas', template.grade);
-      useDirtyStore.getState().markDirty();
-
-      // Save to localStorage as fallback
-      useCanvaStore.getState().saveToStorage();
-      useAuthoringStore.getState().saveToStorage();
-
-      toast.success(`Template "${template.name}" berhasil diterapkan!`);
-      setPreviewTemplate(null);
-
-      // Navigate to Canva editor (Edit Media)
-      setTimeout(() => {
-        useCanvaStore.setState({ panelRequest: 'canva' });
-      }, 300);
+      if (result.success) {
+        toast.success(`Template "${result.templateName}" berhasil diterapkan!`);
+        setPreviewTemplate(null);
+      } else {
+        toast.error('Gagal menerapkan template. Silakan coba lagi.');
+        logger.error('Dashboard', 'applyTemplateToStore failed: ' + (result.error || 'unknown'));
+      }
     } catch (err) {
       toast.error('Gagal menerapkan template. Silakan coba lagi.');
       logger.error('Dashboard', 'handleUseTemplate error: ' + String(err));

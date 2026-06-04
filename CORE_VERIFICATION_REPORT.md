@@ -2258,6 +2258,87 @@ P0-1 (migrate TemplateGalleryPanel) ──┘
 
 ---
 
+## Ronde 39 — D-P0D.1: Shared Apply Template Flow
+
+### Status: PASS ✅
+
+### Perubahan
+
+D-P0D.1 menghilangkan dualisme cara menerapkan template. Sebelumnya, Dashboard, TemplateWizard, dan TemplateMarketplace masing-masing punya logic apply template sendiri yang menghasilkan state berbeda. Sekarang ketiganya memanggil **satu helper resmi**.
+
+#### File Baru: `src/core/template/apply-template-to-store.ts` ✅
+
+Helper `applyTemplateToStore(templateId, options)` bertanggung jawab:
+
+1. Ambil template dari CourseTemplateRegistry
+2. `createProjectFromTemplate(templateId, metadata)` → `CanvaPage[]`
+3. Apply theme secara immutable ke setiap page
+4. Resolve primary editable target halaman pertama
+5. Set pages ke canva store + push history
+6. Update authoring store metadata
+7. Mark dirty
+8. Persist (configurable: `db` | `localstorage` | `none`)
+9. Navigate to workspace (configurable)
+
+Opsi yang bisa dikonfigurasi:
+
+| Opsi | Default | Fungsi |
+|------|---------|--------|
+| `persist` | `'localstorage'` | Strategi persistence |
+| `createProjectFn` | — | Fungsi DB persist, wajib jika `persist='db'` |
+| `selectPrimaryTarget` | `true` | Auto-select primary block di halaman pertama |
+| `navigateToWorkspace` | `true` | Navigate ke Canva editor setelah apply |
+
+Return: `ApplyTemplateResult { success, templateName, pageCount, dbPersisted, error? }`
+
+#### Dashboard — Pakai Helper ✅
+
+Sebelum: ~50 baris logic apply sendiri (createProjectFromTemplate, theme apply, store set, authoring update, localStorage save)
+Sesudah: ~10 baris — `applyTemplateToStore(template.id, { metadata, persist: 'localstorage' })`
+
+Perubahan behavior:
+- ✅ **Baru**: Auto-select primary editable target (sebelumnya tidak ada)
+- ✅ Sama: localStorage persistence
+- ✅ Sama: toast, navigate, error handling
+
+#### TemplateWizard — Pakai Helper ✅
+
+Sebelum: ~90 baris logic apply sendiri (termasuk inline theme apply, store set, authoring update, DB persist dengan try/catch fallback, wizard state reset)
+Sesudah: ~20 baris — `applyTemplateToStore(selectedTemplateId, { metadata, persist: 'db', createProjectFn })`
+
+Perubahan behavior:
+- ✅ **Baru**: Auto-select primary editable target (sebelumnya tidak ada)
+- ✅ Sama: DB persistence dengan fallback localStorage
+- ✅ Sama: wizard state reset, navigate
+- ✅ Lebih bersih: DB persist fallback logic sekarang ada di helper
+
+#### TemplateMarketplace — Pakai Helper ✅
+
+Sebelum: ~70 baris logic apply sendiri (sama seperti Dashboard)
+Sesudah: ~12 baris — `applyTemplateToStore(template.id, { metadata, persist: 'localstorage' })`
+
+Perubahan behavior:
+- ✅ **Baru**: Auto-select primary editable target (sebelumnya tidak ada)
+- ✅ Sama: localStorage persistence
+- ✅ Sama: onClose(), navigate, toast
+
+#### Import Cleanup ✅
+
+- Dashboard: hapus `createProjectFromTemplate`, `getTemplateThemeId` import (masih ada import lain dari CTR)
+- TemplateWizard: hapus `createProjectFromTemplate`, `getTemplateThemeId`, `useCanvaStore`, `useAuthoringStore`, `useDirtyStore` imports
+- TemplateMarketplace: hapus `createProjectFromTemplate`, `getTemplateThemeId`, `useCanvaStore`, `useAuthoringStore`, `useDirtyStore` imports
+
+#### Yang TIDAK Diubah
+
+- ❌ Legacy `applyTemplate` / `handleTemplateClick` di Dashboard (itu D-P0D.2)
+- ❌ TemplateGalleryPanel (itu D-P0D.3)
+- ❌ Marketplace DB persist (itu D-P0D.4, sekarang masih `localstorage`)
+- ❌ Renderer, export, DB schema, UI tampilan
+
+#### TypeScript Check: 0 error ✅
+
+---
+
 ### Prinsip
 
 ```txt
