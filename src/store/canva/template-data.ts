@@ -43,6 +43,11 @@ export function getTemplateLabel(templateType: PageTemplateType, pageCount: numb
 // ── Get extra page properties for a template type ─────────────
 
 export function getTemplateExtraProps(templateType: PageTemplateType): Partial<Record<string, unknown>> {
-  // White background for all template types — SMP teachers need visible canvas
-  return { bgColor: '#ffffff' };
+  // P0 fix: Schema pages use page.schema.background as source of truth.
+  // Writing bgColor/bgDataUrl/overlay to schema pages creates dead data
+  // that's never read by SchemaScreenRenderer. Only set legacy fields
+  // for pages that might still use element-mode rendering.
+  // Since ALL pages are now pageMode:'schema' (createPage sets it),
+  // there's no reason to set legacy bg fields here.
+  return {};
 }

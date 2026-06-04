@@ -18,8 +18,16 @@ export type BackgroundSlice = Pick<
 export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundSlice> = (set, get) => ({
   // ── Background actions ───────────────────────────────────────
   setBgColor: (hex) => {
-    get()._pushHistory();
     const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    // P0 fix: If this is a schema page, redirect to updateScreenBackground.
+    // Writing to page.bgColor on a schema page is a silent no-op
+    // (SchemaScreenRenderer never reads it), which confuses teachers.
+    if (page?.schema) {
+      get().updateScreenBackground({ color1: hex, type: 'solid' });
+      return;
+    }
+    get()._pushHistory();
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...newPages[currentPageIndex], bgColor: hex };
     set({ pages: newPages });
@@ -27,6 +35,14 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
 
   setBgImage: (dataUrl) => {
     const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    // P0 fix: If this is a schema page, redirect to updateScreenBackground.
+    // Writing to page.bgDataUrl on a schema page is a silent no-op
+    // (SchemaScreenRenderer never reads it), which confuses teachers.
+    if (page?.schema) {
+      get().updateScreenBackground({ imageUrl: dataUrl, overlay: page.schema.background?.overlay ?? 40 });
+      return;
+    }
     // Compress image if it's too large — resize to max 1200px width, JPEG 80% quality
     // This prevents export HTML from bloating to 20-50+ MB with uncompressed backgrounds
     const compressImage = (url: string): Promise<string> => {
@@ -61,8 +77,16 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
   },
 
   setOverlay: (val) => {
-    get()._pushHistory();
     const { pages, currentPageIndex } = get();
+    const page = pages[currentPageIndex];
+    // P0 fix: If this is a schema page, redirect to updateScreenBackground.
+    // Writing to page.overlay on a schema page is a silent no-op
+    // (SchemaScreenRenderer never reads it), which confuses teachers.
+    if (page?.schema) {
+      get().updateScreenBackground({ overlay: val });
+      return;
+    }
+    get()._pushHistory();
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...newPages[currentPageIndex], overlay: val };
     set({ pages: newPages });

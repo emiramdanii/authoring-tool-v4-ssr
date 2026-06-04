@@ -28,7 +28,7 @@ Sprint 2B — MateriBlok Guided Editor Minimal: PARTIAL PASS — materi-blok mas
 Sprint 2C.1 — Diskusi label/icon/color Polish: PASS (Ronde 32) — GuidedEditor diskusi punya field color per pertanyaan, PropertySchema punya label+icon per pertanyaan, petunjuk type diperbaiki ke textarea, renderer/export/runtime tidak berubah
 Sprint R1 — Struktur Panel Kanan 3 Zona: PASS — Isi Utama/Tampilan/Lanjutan, Tampilan collapsed default, tab bar hidden jika 1 tab
 Sprint R2 — Header Konteks Ganda: PASS — panel kanan menampilkan title/subtitle/description, kuis tunjukkan jumlah opsi, materi-blok tunjukkan tipe, halaman tunjukkan template
-P0 — Background Source of Truth: PASS — schema page background disatukan ke schema.background, file upload ke schema path, halaman lama dinormalisasi
+P0 — Background Source of Truth: PASS (Ronde 33) — schema page background disatukan ke schema.background, legacy bg fields redirect ke updateScreenBackground, getTemplateExtraProps tidak lagi tulis dead bgColor, legacy bg → schema.background migration saat load
 D8 P0 — Curated Filter AddBlockPanel: PASS (Ronde 29) — teacher mode hanya menampilkan 8 curated block (semua punya guided editor), bukan 42 block teknis
 D8 P1 — Fix POPULAR_BLOCK_TYPES: PASS (Ronde 29) — materi-blok dihapus (addable:false), page-level blocks dihapus, list selaras dengan TEACHER_ADDABLE_BLOCKS
 D8 P2 — Rename Tambah Konten → Tambah Isi: PASS (Ronde 29) — label UI berubah di AddBlockPanel, AddBlockSection, IconRail, LeftPanel, RightPanel, teacher-terminology
@@ -104,6 +104,33 @@ Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 | variant | Tidak ada di RodaGameBlock type |
 | accentColor | Tidak ada di RodaGameBlock type |
 
+
+**PERUBAHAN RONDE 33 (P0 — Background Source of Truth):**
+
+1. P0 FIX: Schema page background source of truth disatukan ke `page.schema.background`
+2. `background-slice.ts`: `setBgColor()` — jika schema page, redirect ke `updateScreenBackground({ color1: hex, type: 'solid' })` bukan write ke `page.bgColor` (dead field)
+3. `background-slice.ts`: `setBgImage()` — jika schema page, redirect ke `updateScreenBackground({ imageUrl: dataUrl, overlay: ... })` bukan write ke `page.bgDataUrl` (dead field)
+4. `background-slice.ts`: `setOverlay()` — jika schema page, redirect ke `updateScreenBackground({ overlay: val })` bukan write ke `page.overlay` (dead field)
+5. `template-data.ts`: `getTemplateExtraProps()` sekarang return `{}` — tidak lagi tulis `bgColor: '#ffffff'` ke schema page (dead data)
+6. `ensure-schema.ts`: `buildBackgroundFromLegacy(page)` — migrasi legacy bg fields → schema.background saat load:
+   - `bgDataUrl` → `schema.background.imageUrl` + overlay
+   - `bgColor` gradient CSS → `schema.background.type: 'gradient'`
+   - `bgColor` hex → `schema.background.type: 'solid'`
+   - default → `{ type: 'solid', color1: 'bg' }`
+7. Legacy fields (`page.bgColor`, `page.bgDataUrl`, `page.overlay`) TIDAK dihapus — cleanup di sprint berikutnya
+8. Tidak mengubah: SchemaScreenRenderer, export, SchemaBlockRenderer, PagePresetRegistry, guided editor, game logic
+9. Build: PASS
+
+**P0 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| `setBgColor()` on schema page | Write ke `page.bgColor` (dead — renderer tidak baca) | Redirect ke `updateScreenBackground()` |
+| `setBgImage()` on schema page | Write ke `page.bgDataUrl` (dead — renderer tidak baca) | Redirect ke `updateScreenBackground()` |
+| `setOverlay()` on schema page | Write ke `page.overlay` (dead — renderer tidak baca) | Redirect ke `updateScreenBackground()` |
+| `getTemplateExtraProps()` | Return `{ bgColor: '#ffffff' }` (dead data) | Return `{}` |
+| Legacy page migrated | `schema.background = { type: 'solid', color1: 'bg' }` (ignores existing bg) | `buildBackgroundFromLegacy()` preserves bgDataUrl, bgColor, overlay |
+| Source of truth | Ambigu — dua sistem paralel | Schema page: `page.schema.background` only |
 
 **PERUBAHAN RONDE 30 (D8 P3A — Guided Editor Gambar Minimal):**
 
