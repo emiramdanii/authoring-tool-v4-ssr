@@ -173,3 +173,31 @@ Stage Summary:
 - Pattern-first ready: Step 1 of resolver checks for pattern metadata
 - No renderer/export/AddBlockPanel changes — minimal surface area
 - Push requires manual authentication from user
+---
+Task ID: p0-bg
+Agent: Main
+Task: P0 — Background Source of Truth
+
+Work Log:
+- Audited full dualism: schema pages have page.schema.background, legacy pages have page.bgColor/bgDataUrl/overlay
+- Found SchemaScreenRenderer ONLY reads page.schema.background — never reads legacy fields
+- Found BackgroundSection.tsx already dispatches correctly (schema → updateScreenBackground, legacy → setBgImage)
+- Found schema-factory.ts already creates correct defaults (cover/hero → radial, others → solid)
+- Found ensurePageSchema step 3b already normalizes undefined background
+- Identified 3 remaining bugs: (1) setBgColor/setBgImage/setOverlay write to dead fields on schema pages, (2) getTemplateExtraProps writes dead bgColor: '#ffffff', (3) migrateAllPages drops legacy bg values
+- Fixed setBgColor: redirect to updateScreenBackground for schema pages
+- Fixed setBgImage: redirect to updateScreenBackground for schema pages
+- Fixed setOverlay: redirect to updateScreenBackground for schema pages
+- Fixed getTemplateExtraProps: return {} instead of { bgColor: '#ffffff' }
+- Added buildBackgroundFromLegacy() in ensure-schema.ts: migrates bgDataUrl → imageUrl, bgColor → type/color1, overlay → overlay
+- Updated CORE_VERIFICATION_REPORT.md with Ronde 33
+- Build: PASS
+- Commit: 0c3d8b0
+- Push: SUCCESS to origin/main
+
+Stage Summary:
+- P0 Background Source of Truth: FIXED
+- Schema pages now use page.schema.background as single source of truth
+- Legacy store actions redirect to schema-aware actions for schema pages
+- Legacy bg fields preserved during migration (not deleted yet)
+- No changes to renderer, export, guided editor, game logic
