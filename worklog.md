@@ -373,3 +373,29 @@ Stage Summary:
 - No more newProject()/resetCanvas()/applyFullPreset() for template creation
 - ~70 lines dead code removed
 - template-kosong from CourseTemplateRegistry is now the official source for blank projects
+
+---
+Task ID: 2c
+Agent: Main
+Task: Sprint 2C — Sortir/Roda Guided Editor Minimal
+
+Work Log:
+- Audit sortir-game and roda-game data structures, registry entries, and current editor status
+- Discovered both games already had GuidedFormEditor entries in registry from previous sprints
+- Found critical bug: GuidedArrayField.addItem() doesn't generate `id` field for array items — sortir-game kolom/pool items created without id break renderer
+- Found UX issue: pool[].category was text field requiring teacher to type technical IDs
+- Added `autoId?: boolean` and `optionsFrom?: { field: string; labelKey: string; valueKey: string }` to GuidedFieldDef
+- Updated GuidedArrayField.addItem() to auto-generate nanoid(6) id when autoId=true or existing items have id
+- Added resolveSelectOptions() helper to resolve static + dynamic (optionsFrom) select options from block data
+- Updated GuidedSelectField to accept resolvedOptions prop
+- Updated GuidedArrayField to accept blockData prop for optionsFrom resolution in sub-field selects
+- Updated sortir-game registry: kolom autoId:true, pool autoId:true, category changed from text to select with optionsFrom
+- Build: PASS
+- Commit: f680f1a "fix: improve guided editor for sorting game"
+- Push: origin main (2c374cf..f680f1a)
+
+Stage Summary:
+- 3 files changed: guided-patch.ts, guided-field-renderer.tsx, CORE_VERIFICATION_REPORT.md
+- sortir-game: new items get valid id, category is dropdown from kolom labels
+- roda-game: no changes needed, verified no regression
+- Renderer, export, scoring, runtime untouched
