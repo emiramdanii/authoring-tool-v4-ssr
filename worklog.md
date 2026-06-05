@@ -351,3 +351,25 @@ Stage Summary:
 - All 3 template entry points now use same shared helper
 - New behavior improvement: auto-select primary editable target (was missing before)
 - Legacy Dashboard handleTemplateClick/applyTemplate NOT changed (D-P0D.2 scope)
+---
+Task ID: 6
+Agent: Main Agent
+Task: D-P0D.2 — Dashboard Click Path Unification
+
+Work Log:
+- Replaced "Proyek Kosong" click: handleTemplateClick('blank') → handleApplyTemplate('template-kosong')
+- Replaced sidebar "Proyek Baru" button: newProject() → handleApplyTemplate('template-kosong')
+- Unified all template apply paths through _applyTemplate() → applyTemplateToStore()
+- Removed dead code: SCHEMA_DRIVEN_PRESETS, applyTemplate(), handleTemplateClick(), templates[], colorMap, activeColorMap, iconColorMap, applyFullPreset/newProject imports
+- Simplified "Langkah Selanjutnya" Desain Canva action: removed SCHEMA_DRIVEN_PRESETS branching, just navigate
+- TypeScript check: 0 new errors
+- Committed: b938d79 fix: unify dashboard template click paths (D-P0D.2)
+- git pull --rebase: clean
+- Pushed to origin/main: 1277db5..b938d79
+
+Stage Summary:
+- D-P0D.2 complete and pushed
+- ALL Dashboard click paths now go through shared applyTemplateToStore()
+- No more newProject()/resetCanvas()/applyFullPreset() for template creation
+- ~70 lines dead code removed
+- template-kosong from CourseTemplateRegistry is now the official source for blank projects
