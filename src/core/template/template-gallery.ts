@@ -1,12 +1,25 @@
 // ═══════════════════════════════════════════════════════════════════
-// TEMPLATE GALLERY — FROZEN since SILSE v2.1
+// TEMPLATE GALLERY — FROZEN + DEPRECATED since SILSE v2.1
 // ═══════════════════════════════════════════════════════════════════
 // ❄️ STATUS: FROZEN — Data di bawah ini TIDAK AKTIF di pipeline utama.
 //    Hanya tersedia untuk backward compatibility dan Level 2 fallback.
 //
-// 🔄 PENGGANTI: Golden Flow — src/core/template/golden/interactive-lesson.ts
+// ⛔ DEPRECATED — This file is the LEGACY template data source.
+//    - Do NOT add new templates here.
+//    - Do NOT use this for teacher template flow.
+//    - Official template source: CourseTemplateRegistry.ts
+//    - Official apply flow: applyTemplateToStore()
+//    - This file is only consumed by:
+//        1. TemplateGalleryPanel (advanced mode only, deprecated)
+//        2. AITemplateGenerator (feature-flagged)
+//        3. TemplateCustomizeDialog (via TemplateGalleryPanel)
+//        4. template-mutation-isolation.test.ts (unit test)
+//    - See D-P0D.3 audit for migration plan.
+//
+// 🔄 PENGGANTI: CourseTemplateRegistry.ts
+//    Source of truth untuk multi-page templates.
 //    Filosofi baru: experience → template → system
-//    Hanya 1 alur template aktif (hakikat-norma preset).
+//    Official pipeline: applyTemplateToStore()
 //
 // ⚠️ JANGAN tambahkan template baru di sini.
 //    Template baru harus melalui proses: define Visual DNA → build

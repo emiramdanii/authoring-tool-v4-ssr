@@ -3,6 +3,17 @@
 // ═══════════════════════════════════════════════════════════════════
 // TEMPLATE GALLERY PANEL — Pre-built lesson template browser
 // ═══════════════════════════════════════════════════════════════════
+// ⛔ DEPRECATED — This component uses the legacy template-gallery.ts
+//    pipeline (LessonTemplate + instantiateTemplate), NOT the official
+//    CourseTemplateRegistry + applyTemplateToStore pipeline.
+//
+//    - Do NOT use this for teacher template flow.
+//    - Official template source: CourseTemplateRegistry.ts
+//    - Official apply flow: applyTemplateToStore()
+//    - This panel is only accessible in advanced/lengkap mode.
+//    - Teacher (sederhana) mode cannot reach this panel.
+//    - See D-P0D.3 audit for migration plan.
+//
 // Shows a grid of template cards for common SMP subjects.
 // Teachers can filter by mapel, pattern, search by title/tags, and
 // apply a template to instantly generate a complete lesson.

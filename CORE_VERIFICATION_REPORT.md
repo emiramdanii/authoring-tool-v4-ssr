@@ -42,6 +42,10 @@ D1/D3 — Export Fallback Safety: PASS (Ronde 34) — exportWithFallback tidak l
 D6 — createPage schema.background gap: PASS — createPage() dan setTemplateType() custom sekarang menghasilkan schema.background default dari creation-time
 D7 — Dual Score Store: ACCEPTABLE/FIXED — dual store adalah separation of concerns yang intentional, gap R7.1 (stale scores di Preview/Present) ditutup
 D-P0A — Unify Page Creation Flow: PASS (Ronde 36) — BottomPageStrip "+" sekarang buka FloatingPageMenu bukan blank page, CanvasEmptyState "Halaman Kosong" pakai addTemplatePage('custom') bukan addPage(), tidak ada addPage() teacher-facing tersisa
+D-P0C — Stabilize Schema Edit History: PASS (Ronde 37) — 1 teacher action = 1 undo step, skipHistory pattern, history boundary fixes
+D-P0D.1 — Shared Apply Template Flow: PASS (Ronde 39) — applyTemplateToStore() shared helper, Dashboard/TemplateWizard/TemplateMarketplace all delegate to it
+D-P0D.2 — Dashboard Click Path Unification: PASS (Ronde 40) — Proyek Kosong + Proyek Baru both use applyTemplateToStore('template-kosong'), dead code deleted
+D-P0D.3 — Legacy Template Cleanup: PASS (Ronde 41) — course-templates-legacy.ts deleted (0 import), TemplateGalleryPanel + template-gallery.ts marked DEPRECATED, teacher mode confirmed still hides Template tab
 Sprint D — Dualism Audit Luas: SELESAI (Ronde 35) — 33 dualisme ditemukan di 6 area, 8 P0 / 10 P1 / 15 P2, prioritas cleanup ditetapkan
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
@@ -2440,4 +2444,62 @@ No hidden fallback.
 No silent downgrade.
 Preview = Export.
 One source of truth per function.
+```
+
+## Ronde 41 — D-P0D.3: Legacy Template Gallery Cleanup
+
+**PERUBAHAN RONDE 41 (D-P0D.3 — Legacy Template Gallery Cleanup):**
+
+1. D-P0D.3 IMPLEMENTASI: Cleanup aman — hapus dead code + tandai legacy path deprecated
+2. `src/core/template/legacy/course-templates-legacy.ts` DIHAPUS — 0 import di seluruh codebase, 18 CourseTemplate duplikat data yang sudah ada di CourseTemplateRegistry
+3. `src/core/template/legacy/` directory DIHAPUS — kosong setelah file dihapus
+4. `TemplateGalleryPanel.tsx` ditandai DEPRECATED — header comment: "⛔ DEPRECATED — This component uses the legacy template-gallery.ts pipeline, NOT the official CourseTemplateRegistry + applyTemplateToStore pipeline. Do NOT use this for teacher template flow."
+5. `template-gallery.ts` ditandai FROZEN + DEPRECATED — header comment: "⛔ DEPRECATED — This file is the LEGACY template data source. Do NOT add new templates here. Do NOT use this for teacher template flow. Official template source: CourseTemplateRegistry.ts. Official apply flow: applyTemplateToStore(). This file is only consumed by: TemplateGalleryPanel (advanced mode only, deprecated), AITemplateGenerator (feature-flagged), TemplateCustomizeDialog (via TemplateGalleryPanel), template-mutation-isolation.test.ts (unit test)."
+6. Teacher mode verifikasi: IconRail teacherOnly=true filter → tab Template HIDDEN, LeftPanel redirect templates→pages, LeftPanel conditional render !isSederhana — guru TIDAK bisa akses TemplateGalleryPanel
+7. Tidak mengubah: AITemplateGenerator, TemplateCustomizeDialog, CourseTemplate interface, template-gallery data/logic, applyTemplateToStore, CourseTemplateRegistry
+8. Tidak menghapus: template-gallery.ts (masih 4 consumer aktif), TemplateGalleryPanel (masih dipakai advanced mode)
+9. Build: PASS (0 new errors)
+
+**D-P0D.3 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| `course-templates-legacy.ts` | Ada (0 import — dead code) | Dihapus |
+| `src/core/template/legacy/` | Ada (1 file) | Dihapus (empty directory) |
+| `TemplateGalleryPanel.tsx` header | No deprecated notice | ⛔ DEPRECATED — legacy pipeline, do not use for teacher flow |
+| `template-gallery.ts` header | FROZEN only | FROZEN + ⛔ DEPRECATED — lists 4 consumers, points to CourseTemplateRegistry |
+| Teacher mode akses Template tab | Hidden (already correct) | Hidden (unchanged, confirmed) |
+| `template-gallery.ts` deleted? | No | No — masih 4 consumer aktif |
+| `TemplateGalleryPanel` deleted? | No | No — masih dipakai advanced mode |
+
+**D-P0D.3 audit findings (5 dualisms documented):**
+
+| # | Dualism | Status | Priority |
+|---|---------|--------|----------|
+| DUAL-1 | Dua sistem template paralel (CourseTemplate vs LessonTemplate) | Documented, deprecated | P1/P2 migration |
+| DUAL-2 | Dua interface template (CourseTemplate vs LessonTemplate) | Documented, deprecated | P2 merge |
+| DUAL-3 | Dua apply pipeline (applyTemplateToStore vs instantiateTemplate) | Documented, deprecated | P1 migrate |
+| DUAL-4 | AITemplateGenerator bypass applyTemplateToStore | Documented | P1 |
+| DUAL-5 | course-templates-legacy.ts dead code | **Deleted** | P0 DONE |
+
+**Template system status after D-P0D.3:**
+
+```txt
+Dashboard template flow       → ✅ Unified (applyTemplateToStore)
+Proyek Kosong / Baru          → ✅ Unified (applyTemplateToStore)
+TemplateWizard                → ✅ Unified (applyTemplateToStore)
+TemplateMarketplace           → ✅ Unified (applyTemplateToStore)
+course-templates-legacy.ts    → 🗑️ Deleted
+template-gallery.ts           → ⚠️ Deprecated, advanced-only
+TemplateGalleryPanel          → ⚠️ Deprecated, advanced-only
+```
+
+**D-P0D.3 prinsip cleanup aman:**
+
+```txt
+1. Hapus dead code yang 0 import — risiko nol
+2. Tandai legacy path deprecated — mencegah developer baru menambah template ke jalur lama
+3. Jangan hapus file yang masih punya consumer — template-gallery.ts masih 4 consumer
+4. Jangan migrasi pipeline dulu — butuh extend applyTemplateToStore untuk insert mode
+5. Guru mode tetap aman — Template tab tidak terlihat di sederhana mode
 ```
