@@ -12,6 +12,11 @@
 // export. The client-side export (exportClientSide) is still
 // available for explicit dev/debug use but is NOT automatically
 // called. Path A is the only production source of truth.
+//
+// D-P0F: Strengthened — if Path A fails, NO degraded fallback is
+// offered. exportClientSide/previewClientSide are DEPRECATED and
+// should not be used in production. src/lib/client-export.ts has
+// been deleted (0 imports). Only Path A (Vite SSR) is official.
 // ═══════════════════════════════════════════════════════════════════════
 
 'use client';
@@ -177,20 +182,24 @@ export function useViteExport() {
   }, [pages, ratioId]);
 
   // ═══════════════════════════════════════════════════════════════════
-  // CLIENT-SIDE EXPORT — Dev/debug only (NOT production source of truth)
+  // CLIENT-SIDE EXPORT — ⛔ DEPRECATED — Do NOT use in production
   //
   // This path uses vanilla JS string templates that produce DEGRADED
   // output: no navigation locks, no contract-aware rendering, no
   // premium effects, no sound, basic quiz layout (all-at-once).
   // It is intentionally NOT called automatically from exportWithFallback().
-  // Use only for explicit dev/debug purposes.
+  //
+  // D-P0F: These functions are DEPRECATED. They remain for dev/debug
+  // only. The ONLY production export is Path A (Vite SSR) via /api/export.
+  // If Path A fails, the user sees a clear error — NOT a degraded fallback.
   // ═══════════════════════════════════════════════════════════════════
 
   /**
-   * Export HTML using the client-side generator.
+   * ⛔ DEPRECATED — Export HTML using the client-side generator.
    * Generates a self-contained HTML file entirely in the browser.
    * ⚠️ DEGRADED OUTPUT — no navigation locks, no premium effects,
-   * basic quiz rendering. For dev/debug only, not production use.
+   * basic quiz rendering. For dev/debug only, NOT production use.
+   * This function will be removed in a future sprint.
    */
   const exportClientSide = useCallback(async () => {
     toast.loading(`Mengekspor ${pages.length} halaman (Mode Terbatas)...`, { id: 'export-client' });
@@ -219,8 +228,9 @@ export function useViteExport() {
   }, [pages, ratioId, buildPayload]);
 
   /**
-   * Preview using the client-side generator in a new tab.
+   * ⛔ DEPRECATED — Preview using the client-side generator in a new tab.
    * ⚠️ DEGRADED OUTPUT — for dev/debug only.
+   * This function will be removed in a future sprint.
    */
   const previewClientSide = useCallback(() => {
     try {
@@ -258,11 +268,15 @@ export function useViteExport() {
       const errMsg = err instanceof Error ? err.message : String(err);
       logger.error('Export', 'Vite SSR export gagal: ' + errMsg);
 
+      // D-P0F: Clear, actionable error messages — no silent fallback.
       // Detect template-missing error from the API route
       const isTemplateMissing = errMsg.includes('template') || errMsg.includes('export:build');
+      const isServerDown = errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('Failed to fetch');
       const userMessage = isTemplateMissing
-        ? `Export utama gagal — template export belum tersedia. Jalankan \"npm run export:build\" terlebih dahulu.`
-        : `Export gagal: ${errMsg}`;
+        ? `Export utama gagal. Template export belum tersedia atau server export bermasalah. Jalankan "npm run export:build" atau hubungi admin.`
+        : isServerDown
+        ? `Export utama gagal. Server export tidak dapat dijangkau. Periksa koneksi atau hubungi admin.`
+        : `Export gagal: ${errMsg}. Hubungi admin jika masalah berlanjut.`;
 
       toast.error(userMessage, { id: 'export-primary', duration: 8000 });
     }

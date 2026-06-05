@@ -2568,3 +2568,59 @@ Migration (load time):
 
 **TypeScript Check: 0 new error ✅**
 **Build: PASS ✅**
+
+## Ronde 43 — D-P0F: Export Fallback / No Silent Downgrade
+
+**PERUBAHAN RONDE 43 (D-P0F — Export Fallback / No Silent Downgrade):**
+
+1. D-P0F IMPLEMENTASI: Disable degraded export fallback — no silent downgrade
+2. `src/lib/client-export.ts` DIHAPUS — 0 import di seluruh codebase, duplikat minimal dari src/lib/export/index.ts
+3. `exportWithFallback()` error messages DIPERKUAT — 3 scenario: template missing, server down, generic error. Semua dengan "hubungi admin" jika perlu
+4. `exportClientSide` / `previewClientSide` ditandai ⛔ DEPRECATED — header comment + JSDoc, akan dihapus di sprint mendatang
+5. `src/lib/export/index.ts` deprecation comment DIPERKUAT — catat client-export.ts dihapus, exportClientSide deprecated
+6. `src/lib/use-vite-export.ts` header DIPERBARUI — catat D-P0F: hanya Path A (Vite SSR) yang official
+
+**D-P0F sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| `src/lib/client-export.ts` | Ada (0 import — dead code) | Dihapus |
+| `exportWithFallback` error | 2 scenario (template, generic) | 3 scenario (template, server down, generic) + "hubungi admin" |
+| `exportClientSide` JSDoc | "Dev/debug only" | "⛔ DEPRECATED — will be removed" |
+| `previewClientSide` JSDoc | "Dev/debug only" | "⛔ DEPRECATED — will be removed" |
+| Client-side section comment | "Dev/debug only" | "⛔ DEPRECATED — Do NOT use in production" |
+| `src/lib/export/index.ts` header | "DEPRECATED" | "⛔ DEPRECATED" + D-P0F notes |
+
+**Export pipeline status after D-P0F:**
+
+```txt
+Teacher export flow:
+  Toolbar → useExportActions → exportWithFallback() → Path A (Vite SSR /api/export)
+  If Path A fails → clear error message, NO degraded fallback
+
+Preview flow:
+  Toolbar → previewHTML() → Path A (Vite SSR /api/export)
+
+SCORM flow:
+  Toolbar → exportScorm() → /api/export/scorm
+  (separate pipeline, not affected by D-P0F)
+
+Deprecated (dev/debug only):
+  exportClientSide() → generateClientExportHtml() via src/lib/export/
+  previewClientSide() → generateClientExportHtml() via src/lib/export/
+  ⚠️ These produce DEGRADED output, NOT same as preview
+```
+
+**D-P0F prinsip:**
+
+```txt
+1. Preview harus sama dengan Export — hanya Path A (Vite SSR)
+2. Tidak boleh ada fallback diam-diam yang menghasilkan output lebih rendah
+3. Jika export utama gagal → error jelas, bukan degraded download
+4. Dead code (0 import) dihapus — client-export.ts
+5. Legacy code yang masih punya consumer ditandai deprecated — src/lib/export/
+6. Jangan ubah ExportApp, PageRenderer, SchemaRenderer, SCORM route
+```
+
+**TypeScript Check: 0 new error ✅**
+**Build: PASS ✅**

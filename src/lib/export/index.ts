@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════
-// EXPORT INDEX — DEPRECATED client-side export pipeline
+// EXPORT INDEX — ⛔ DEPRECATED client-side export pipeline
 // ═══════════════════════════════════════════════════════════════════════
-// ⚠️ DEPRECATED: This folder contains the legacy vanilla JS export
+// ⛔ DEPRECATED: This folder contains the legacy vanilla JS export
 // pipeline. It produces DEGRADED output — no navigation locks, no
 // contract-aware rendering, no premium effects, basic quiz layout.
 //
@@ -9,8 +9,12 @@
 // If Path A fails, the user gets a clear error message — NOT a
 // silent fallback to this degraded pipeline.
 //
+// D-P0F: src/lib/client-export.ts has been deleted (0 imports).
+// exportClientSide/previewClientSide are deprecated and should not
+// be used in production. This folder will be removed in a future sprint.
+//
 // This code is kept ONLY for:
-//   - Dev/debug use (exportClientSide in use-vite-export.ts)
+//   - Dev/debug use (exportClientSide in use-vite-export.ts) — DEPRECATED
 //   - Test files (export-pipeline.test.ts, rc-stabilization.test.ts)
 //
 // Do NOT use this for the teacher export flow.
