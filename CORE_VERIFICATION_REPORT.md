@@ -46,6 +46,9 @@ D-P0C — Stabilize Schema Edit History: PASS (Ronde 37) — 1 teacher action = 
 D-P0D.1 — Shared Apply Template Flow: PASS (Ronde 39) — applyTemplateToStore() shared helper, Dashboard/TemplateWizard/TemplateMarketplace all delegate to it
 D-P0D.2 — Dashboard Click Path Unification: PASS (Ronde 40) — Proyek Kosong + Proyek Baru both use applyTemplateToStore('template-kosong'), dead code deleted
 D-P0D.3 — Legacy Template Cleanup: PASS (Ronde 41) — course-templates-legacy.ts deleted (0 import), TemplateGalleryPanel + template-gallery.ts marked DEPRECATED, teacher mode confirmed still hides Template tab
+D-P0E — Background Source of Truth: PASS (Ronde 42) — TemplateAdapter non-cover/hero pages now get {type:'solid',color1:'bg'}, ensureSchemaBackground() defensive helper added
+D-P0F — Export Fallback / No Silent Downgrade: PASS (Ronde 43) — exportWithFallback no silent degraded fallback, client-export.ts deleted, error messages clarified
+D-P0E.1 — Schema Background Image Compression: PASS (Ronde 44) — schema background upload now compresses images (max 1200px, JPEG 80%), shared compressImage utility extracted
 Sprint D — Dualism Audit Luas: SELESAI (Ronde 35) — 33 dualisme ditemukan di 6 area, 8 P0 / 10 P1 / 15 P2, prioritas cleanup ditetapkan
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
@@ -2620,6 +2623,56 @@ Deprecated (dev/debug only):
 4. Dead code (0 import) dihapus — client-export.ts
 5. Legacy code yang masih punya consumer ditandai deprecated — src/lib/export/
 6. Jangan ubah ExportApp, PageRenderer, SchemaRenderer, SCORM route
+```
+
+**TypeScript Check: 0 new error ✅**
+**Build: PASS ✅**
+
+## Ronde 44 — D-P0E.1: Schema Background Image Compression
+
+**PERUBAHAN RONDE 44 (D-P0E.1 — Schema Background Image Compression):**
+
+1. D-P0E.1 IMPLEMENTASI: Schema background upload sekarang mengompres gambar sama seperti legacy path
+2. `src/lib/compress-image.ts` (BARU): Shared utility `compressImage(url: string): Promise<string>` — max 1200px width, JPEG 80% quality, pass-through untuk non-data-URL dan gambar kecil, fallback ke original jika error
+3. `src/store/canva/background-slice.ts`: Import `compressImage` dari shared utility, hapus inline `compressImage` function, `setBgImage()` sekarang kompres SEBELUM routing ke schema/legacy path — kedua path menerima hasil kompresi yang sama
+4. `src/components/canva/right-panel/BackgroundSection.tsx`: Import `compressImage` dari shared utility, schema branch `handleFileUpload` sekarang `compressImage(dataUrl).then(...)` sebelum `updateScreenBackground`
+5. External URL (https://…) tetap pass-through — `compressImage` tidak memproses non-data-URL
+6. Legacy page upload tetap terkompresi — tidak ada perubahan perilaku
+7. Tidak mengubah: renderer, export, template system, ImageUploader, schema-factory, store besar
+
+**D-P0E.1 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Schema upload file → `schema.background.imageUrl` | Raw data URL (bisa 5-20+ MB) | Compressed: max 1200px, JPEG 80% |
+| Legacy upload file → `page.bgDataUrl` | Compressed (inline function) | Compressed (shared utility — same behavior) |
+| `setBgImage()` schema redirect | Raw data URL → `updateScreenBackground` | Compressed → `updateScreenBackground` |
+| `BackgroundSection.handleFileUpload` schema branch | Raw data URL → `updateScreenBackground` | Compressed → `updateScreenBackground` |
+| External URL (https://) | Pass-through | Pass-through (tidak berubah) |
+| `compressImage` location | Inline di `background-slice.ts` | Shared utility di `src/lib/compress-image.ts` |
+
+**D-P0E.1 compression pipeline (unified):**
+
+```txt
+File upload (schema page):
+  FileReader → dataUrl → compressImage() → compressedUrl → updateScreenBackground({imageUrl: compressedUrl})
+
+File upload (legacy page):
+  FileReader → dataUrl → setBgImage() → compressImage() → compressedUrl → page.bgDataUrl
+
+setBgImage redirect (schema page):
+  compressImage() → compressedUrl → updateScreenBackground({imageUrl: compressedUrl})
+
+External URL:
+  Pass-through (tidak dikompres)
+```
+
+**D-P0E.1 prinsip:**
+
+```txt
+Schema dan legacy path harus kompres gambar dengan parameter yang sama
+Kalau gambar besar masuk ke schema.background.imageUrl, project membengkak
+compressImage adalah shared utility — satu implementasi, banyak consumer
 ```
 
 **TypeScript Check: 0 new error ✅**

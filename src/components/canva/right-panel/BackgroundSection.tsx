@@ -7,6 +7,7 @@ import { GRADIENT_PRESETS } from '../types';
 import Section from './Section';
 import type { ScreenSchema } from '@/core/schema/types';
 import { THEME_PRESETS } from '@/core/themes/tokens';
+import { compressImage } from '@/lib/compress-image';
 
 /** Schema background type for updates */
 type SchemaBg = NonNullable<ScreenSchema['background']>
@@ -40,10 +41,13 @@ export default function BackgroundSection() {
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
       if (!dataUrl) return;
-      // P0 fix: schema page → write to schema.background.imageUrl
-      // Legacy page → write to page.bgDataUrl
+      // D-P0E.1: Compress before writing to either path.
+      // Schema page → compressImage → schema.background.imageUrl
+      // Legacy page → setBgImage (which also compresses internally)
       if (isSchemaDriven) {
-        updateScreenBackground({ imageUrl: dataUrl, overlay: schemaBg?.overlay ?? 40 });
+        compressImage(dataUrl).then((compressedUrl) => {
+          updateScreenBackground({ imageUrl: compressedUrl, overlay: schemaBg?.overlay ?? 40 });
+        });
       } else {
         setBgImage(dataUrl);
       }
