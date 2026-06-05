@@ -556,6 +556,11 @@ export interface GuidedFieldDef {
    *  Used when the schema type requires an `id` field on array items
    *  (e.g. sortir-game kolom/pool) but the id should not be shown to teachers. */
   autoId?: boolean;
+  /** For array type: how to display array items in the guided editor.
+   *  - 'expanded' (default): all items rendered vertically in a scrollable container
+   *  - 'tab': show a tab selector (1|2|3|...) and render only the active item.
+   *    Ideal for quiz questions where displaying all items would make the panel too long. */
+  displayMode?: 'expanded' | 'tab';
   /** Conditional visibility: show this field only when another field's value is in `values`.
    *  If undefined, the field is always shown (backward-compatible). */
   showWhen?: { field: string; values: string[] };
@@ -637,8 +642,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         key: 'questions',
         label: 'Soal',
         type: 'array',
-        maxItems: 1,
-        helpText: 'STANDAR: 1 soal per halaman. Tambah halaman baru untuk soal berikutnya.',
+        maxItems: 10,
+        displayMode: 'tab',
+        helpText: 'Maksimal 10 soal per sesi kuis.',
         fields: [
           { key: 'q', label: 'Pertanyaan', type: 'textarea', required: true, placeholder: 'Tulis pertanyaan di sini...' },
           { key: 'opts', label: 'Pilihan Jawaban', type: 'array', maxItems: 4, fields: [

@@ -29,6 +29,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { PropertyGroup } from './PropertyGroup';
 import { renderGuidedField } from './guided-field-renderer';
 import { OverflowWarningBanner } from './OverflowWarningBanner';
+import { KuisImportPanel } from './KuisImportPanel';
 
 interface GuidedFormEditorProps {
   /** The block being edited */
@@ -161,6 +162,11 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
           </PropertyGroup>
         );
       })}
+
+      {/* ── Import JSON Panel (kuis only) ── */}
+      {guidedSchema.blockType === 'kuis' && (
+        <KuisImportPanel pageId={pageId} blockId={blockId} />
+      )}
     </div>
   );
 }

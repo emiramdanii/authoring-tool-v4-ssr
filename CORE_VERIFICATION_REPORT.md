@@ -2848,3 +2848,43 @@ Guru edit sortir-game → lihat "Kolom Kategori" → tambah kolom "Norma Agama"
 | `___` marker | Tanpa panduan | helpText: "Gunakan ___ untuk menandai tempat jawaban" |
 
 **Build:** PASS
+
+### Sprint 2E — Import JSON Multi-Question untuk Kuis
+
+**Tujuan:** Guru bisa paste/import JSON dari AI eksternal untuk mengisi block kuis dengan banyak soal sekaligus, bukan mengisi satu per satu. Prinsip: 1 halaman = 1 sesi kuis, 1 block kuis = banyak soal.
+
+**File yang diubah:**
+- `src/core/schema/kuis-import.ts` (BARU) — Validator + mapper untuk JSON import
+- `src/core/schema/guided-patch.ts` — maxItems: 1 → 10, displayMode: 'tab', helpText update
+- `src/components/canva/right-panel/block-properties/guided-field-renderer.tsx` — Tab mode untuk array field
+- `src/components/canva/right-panel/block-properties/KuisImportPanel.tsx` (BARU) — Import JSON UI
+- `src/components/canva/right-panel/block-properties/GuidedFormEditor.tsx` — Integrasi KuisImportPanel
+
+**File yang TIDAK diubah:**
+- KuisRenderer.tsx ✅
+- scoring/runtime ✅
+- export ✅
+
+**Fitur:**
+1. Kuis bisa berisi hingga 10 soal dalam 1 block (sebelumnya maxItems: 1)
+2. Editor soal menggunakan mode tab: hanya 1 soal aktif ditampilkan
+3. Import JSON: paste → validasi → terapkan → semua soal masuk ke block.questions[]
+4. Validator: JSON valid, questions 1-10, q wajib, opts min 2 max 6, ans valid index
+5. Error blokir apply, warning hanya tampilkan
+6. Format JSON resmi: { title?, questions: [{ q, opts, ans, ex? }] }
+7. KuisImportPanel: collapsible, Salin Contoh Format, Validasi, Terapkan
+8. displayMode: 'tab' — field GuidedFieldDef baru, backward-compatible (default: 'expanded')
+
+**Sprint 2E sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Kuis questions maxItems | 1 soal per halaman | 10 soal per sesi kuis |
+| Editor soal | Semua soal terbuka memanjang | Tab mode: 1 soal aktif |
+| Import soal | Manual satu per satu | Paste JSON → semua soal masuk |
+| Validator JSON | Tidak ada | validateKuisImportPayload() |
+| Mapper JSON | Tidak ada | mapKuisImportToPatch() |
+| Import UI | Tidak ada | KuisImportPanel (collapsible) |
+| displayMode field | Tidak ada | 'expanded' (default) / 'tab' |
+
+**Build:** PASS

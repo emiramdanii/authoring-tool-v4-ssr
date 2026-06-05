@@ -538,6 +538,17 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId, blockD
   const subFields = fieldDef.fields || [];
   const maxItems = fieldDef.maxItems;
   const isAtLimit = maxItems ? items.length >= maxItems : false;
+  const displayMode = fieldDef.displayMode || 'expanded';
+
+  // Tab mode: track which item is currently active
+  const [activeTab, setActiveTab] = React.useState(0);
+  // Keep activeTab within bounds when items change
+  React.useEffect(() => {
+    if (displayMode === 'tab') {
+      if (items.length === 0) setActiveTab(0);
+      else if (activeTab >= items.length) setActiveTab(items.length - 1);
+    }
+  }, [items.length, displayMode, activeTab]);
 
   const updateItem = (idx: number, field: string, value: unknown) => {
     const newItems = [...items];
@@ -559,7 +570,10 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId, blockD
     // Check both existing items and the fieldDef's autoId flag.
     const needsId = fieldDef.autoId || (items.length > 0 && items.some(it => it.id != null && it.id !== ''));
     if (needsId) newItem.id = nanoid(6);
-    onUpdate([...items, newItem]);
+    const newItems = [...items, newItem];
+    onUpdate(newItems);
+    // Switch to the newly added item in tab mode
+    if (displayMode === 'tab') setActiveTab(newItems.length - 1);
   };
 
   const removeItem = (idx: number) => {
@@ -574,6 +588,92 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId, blockD
     [newItems[idx]!, newItems[targetIdx]!] = [newItems[targetIdx]!, newItems[idx]!];
     onUpdate(newItems);
   };
+
+  // ── Sub-field renderer for a single item ──
+  const renderSubFields = (item: Record<string, unknown>, idx: number) => (
+    subFields.map(subField => (
+      <div key={subField.key}>
+        {subField.type === 'boolean' ? (
+          <div className="flex items-center justify-between py-1">
+            <span className="text-sm font-bold text-silse-on-surface-variant">{subField.label}</span>
+            <button
+              onClick={() => updateItem(idx, subField.key, !item[subField.key])}
+              className={`relative w-9 h-5 rounded-full transition-all duration-200 ${item[subField.key] ? 'bg-silse-primary' : 'bg-silse-surface-container-high'}`}
+              type="button"
+            >
+              <div className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all duration-200 ${item[subField.key] ? 'left-4 bg-silse-on-primary' : 'left-0.5 bg-silse-surface-container-lowest'}`} />
+            </button>
+          </div>
+        ) : subField.type === 'array' && subField.fields ? (
+          <InlineGuidedNestedArray
+            fieldDef={subField}
+            items={(item[subField.key] as Array<Record<string, unknown>>) || []}
+            onUpdate={v => updateItem(idx, subField.key, v)}
+          />
+        ) : subField.type === 'color' ? (
+          <div>
+            <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">
+              {subField.label}
+            </label>
+            <InlineColorPicker
+              value={String(item[subField.key] || 'y')}
+              options={subField.options}
+              onChange={v => updateItem(idx, subField.key, v)}
+            />
+          </div>
+        ) : subField.type === 'textarea' ? (
+          <div>
+            <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">
+              {subField.label}
+              {subField.required && <span className="material-symbols-outlined inline ml-0.5 text-silse-error" style={ { fontSize: '8px' } }>star</span>}
+            </label>
+            <textarea
+              value={String(item[subField.key] || '')}
+              onChange={e => updateItem(idx, subField.key, e.target.value)}
+              placeholder={subField.placeholder}
+              rows={2}
+              className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all resize-y"
+            />
+          </div>
+        ) : subField.type === 'select' && (subField.options || subField.optionsFrom) ? (
+          <div>
+            <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">{subField.label}</label>
+            <select
+              value={item[subField.key] != null ? String(item[subField.key]) : ''}
+              onChange={e => {
+                const raw = e.target.value;
+                // Auto-convert numeric strings to numbers (e.g. "0"→0 for ans index)
+                const parsed = raw !== '' && !isNaN(Number(raw)) ? Number(raw) : raw;
+                updateItem(idx, subField.key, parsed);
+              }}
+              className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all"
+            >
+              <option value="">— pilih —</option>
+              {resolveSelectOptions(subField, blockData || {}).map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div>
+            <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">
+              {subField.label}
+              {subField.required && <span className="material-symbols-outlined inline ml-0.5 text-silse-error" style={ { fontSize: '8px' } }>star</span>}
+            </label>
+            <input
+              type={subField.type === 'number' ? 'number' : 'text'}
+              value={String(item[subField.key] || '')}
+              onChange={e => updateItem(idx, subField.key, subField.type === 'number' ? Number(e.target.value) : e.target.value)}
+              placeholder={subField.placeholder}
+              min={subField.min}
+              max={subField.max}
+              className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all"
+            />
+          </div>
+        )}
+      </div>
+    ))
+  );
 
   return (
     <div className="space-y-3">
@@ -604,131 +704,110 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId, blockD
         </div>
       )}
 
-      {/* Items */}
-      <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar pr-1">
-        {items.map((item, idx) => (
-          <div key={idx} className="bg-silse-surface-container-low rounded-xl border border-silse-outline-variant/50 p-3 space-y-2.5">
-            {/* Item header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-silse-on-surface-variant/40 cursor-grab" style={ { fontSize: '14px' } }>drag_indicator</span>
-                <span className="text-sm font-bold text-silse-on-surface-variant">#{idx + 1}</span>
-                <div className="flex gap-0.5">
-                  {idx > 0 && (
-                    <button onClick={() => moveItem(idx, 'up')} className="p-1 rounded-lg hover:bg-silse-surface-container-high text-silse-on-surface-variant transition-colors" title="Pindah ke atas" type="button">
-                      <span className="text-[10px]">↑</span>
-                    </button>
-                  )}
-                  {idx < items.length - 1 && (
-                    <button onClick={() => moveItem(idx, 'down')} className="p-1 rounded-lg hover:bg-silse-surface-container-high text-silse-on-surface-variant transition-colors" title="Pindah ke bawah" type="button">
-                      <span className="text-[10px]">↓</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+      {/* ── TAB MODE: show tab selector + active item only ── */}
+      {displayMode === 'tab' && items.length > 0 ? (
+        <div className="space-y-3">
+          {/* Tab selector row */}
+          <div className="flex items-center gap-1 flex-wrap">
+            {items.map((_, idx) => (
               <button
-                onClick={() => removeItem(idx)}
+                key={idx}
+                onClick={() => setActiveTab(idx)}
+                className={`min-w-[28px] h-7 px-2 rounded-lg text-xs font-bold transition-all duration-150 ${
+                  idx === activeTab
+                    ? 'bg-silse-primary text-silse-on-primary shadow-sm'
+                    : 'bg-silse-surface-container-low text-silse-on-surface-variant hover:bg-silse-surface-container-high border border-silse-outline-variant/30'
+                }`}
+                type="button"
+              >
+                {idx + 1}
+              </button>
+            ))}
+          </div>
+
+          {/* Active item label */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-silse-on-surface-variant">
+              Soal aktif: {activeTab + 1} dari {items.length}
+            </span>
+            <div className="flex items-center gap-1">
+              {activeTab > 0 && (
+                <button onClick={() => moveItem(activeTab, 'up')} className="p-1 rounded-lg hover:bg-silse-surface-container-high text-silse-on-surface-variant transition-colors" title="Pindah ke atas" type="button">
+                  <span className="text-[10px]">↑</span>
+                </button>
+              )}
+              {activeTab < items.length - 1 && (
+                <button onClick={() => moveItem(activeTab, 'down')} className="p-1 rounded-lg hover:bg-silse-surface-container-high text-silse-on-surface-variant transition-colors" title="Pindah ke bawah" type="button">
+                  <span className="text-[10px]">↓</span>
+                </button>
+              )}
+              <button
+                onClick={() => { removeItem(activeTab); }}
                 className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-red-400/70 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                title="Hapus item"
+                title="Hapus soal ini"
                 type="button"
               >
                 <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>delete</span> Hapus
               </button>
             </div>
+          </div>
 
-            {/* Sub-fields */}
-            {subFields.map(subField => (
-              <div key={subField.key}>
-                {subField.type === 'boolean' ? (
-                  <div className="flex items-center justify-between py-1">
-                    <span className="text-sm font-bold text-silse-on-surface-variant">{subField.label}</span>
-                    <button
-                      onClick={() => updateItem(idx, subField.key, !item[subField.key])}
-                      className={`relative w-9 h-5 rounded-full transition-all duration-200 ${item[subField.key] ? 'bg-silse-primary' : 'bg-silse-surface-container-high'}`}
-                      type="button"
-                    >
-                      <div className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all duration-200 ${item[subField.key] ? 'left-4 bg-silse-on-primary' : 'left-0.5 bg-silse-surface-container-lowest'}`} />
-                    </button>
+          {/* Render only the active item */}
+          <div className="bg-silse-surface-container-low rounded-xl border border-silse-outline-variant/50 p-3 space-y-2.5">
+            {renderSubFields(items[activeTab]!, activeTab)}
+          </div>
+        </div>
+      ) : displayMode === 'tab' && items.length === 0 ? (
+        /* Tab mode empty state */
+        <div className="text-sm text-silse-on-surface-variant italic text-center py-4 bg-silse-surface-container-low rounded-xl border border-dashed border-silse-outline-variant">
+          Belum ada soal. Klik &ldquo;Tambah&rdquo; atau gunakan Import JSON.
+        </div>
+      ) : (
+        /* ── EXPANDED MODE (default): all items visible in scrollable container ── */
+        <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar pr-1">
+          {items.map((item, idx) => (
+            <div key={idx} className="bg-silse-surface-container-low rounded-xl border border-silse-outline-variant/50 p-3 space-y-2.5">
+              {/* Item header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-silse-on-surface-variant/40 cursor-grab" style={ { fontSize: '14px' } }>drag_indicator</span>
+                  <span className="text-sm font-bold text-silse-on-surface-variant">#{idx + 1}</span>
+                  <div className="flex gap-0.5">
+                    {idx > 0 && (
+                      <button onClick={() => moveItem(idx, 'up')} className="p-1 rounded-lg hover:bg-silse-surface-container-high text-silse-on-surface-variant transition-colors" title="Pindah ke atas" type="button">
+                        <span className="text-[10px]">↑</span>
+                      </button>
+                    )}
+                    {idx < items.length - 1 && (
+                      <button onClick={() => moveItem(idx, 'down')} className="p-1 rounded-lg hover:bg-silse-surface-container-high text-silse-on-surface-variant transition-colors" title="Pindah ke bawah" type="button">
+                        <span className="text-[10px]">↓</span>
+                      </button>
+                    )}
                   </div>
-                ) : subField.type === 'array' && subField.fields ? (
-                  <InlineGuidedNestedArray
-                    fieldDef={subField}
-                    items={(item[subField.key] as Array<Record<string, unknown>>) || []}
-                    onUpdate={v => updateItem(idx, subField.key, v)}
-                  />
-                ) : subField.type === 'color' ? (
-                  <div>
-                    <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">
-                      {subField.label}
-                    </label>
-                    <InlineColorPicker
-                      value={String(item[subField.key] || 'y')}
-                      options={subField.options}
-                      onChange={v => updateItem(idx, subField.key, v)}
-                    />
-                  </div>
-                ) : subField.type === 'textarea' ? (
-                  <div>
-                    <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">
-                      {subField.label}
-                      {subField.required && <span className="material-symbols-outlined inline ml-0.5 text-silse-error" style={ { fontSize: '8px' } }>star</span>}
-                    </label>
-                    <textarea
-                      value={String(item[subField.key] || '')}
-                      onChange={e => updateItem(idx, subField.key, e.target.value)}
-                      placeholder={subField.placeholder}
-                      rows={2}
-                      className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all resize-y"
-                    />
-                  </div>
-                ) : subField.type === 'select' && (subField.options || subField.optionsFrom) ? (
-                  <div>
-                    <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">{subField.label}</label>
-                    <select
-                      value={item[subField.key] != null ? String(item[subField.key]) : ''}
-                      onChange={e => {
-                        const raw = e.target.value;
-                        // Auto-convert numeric strings to numbers (e.g. "0"→0 for ans index)
-                        const parsed = raw !== '' && !isNaN(Number(raw)) ? Number(raw) : raw;
-                        updateItem(idx, subField.key, parsed);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all"
-                    >
-                      <option value="">— pilih —</option>
-                      {resolveSelectOptions(subField, blockData || {}).map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">
-                      {subField.label}
-                      {subField.required && <span className="material-symbols-outlined inline ml-0.5 text-silse-error" style={ { fontSize: '8px' } }>star</span>}
-                    </label>
-                    <input
-                      type={subField.type === 'number' ? 'number' : 'text'}
-                      value={String(item[subField.key] || '')}
-                      onChange={e => updateItem(idx, subField.key, subField.type === 'number' ? Number(e.target.value) : e.target.value)}
-                      placeholder={subField.placeholder}
-                      min={subField.min}
-                      max={subField.max}
-                      className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all"
-                    />
-                  </div>
-                )}
+                </div>
+                <button
+                  onClick={() => removeItem(idx)}
+                  className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-red-400/70 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                  title="Hapus item"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined" style={ { fontSize: '12px' } }>delete</span> Hapus
+                </button>
               </div>
-            ))}
-          </div>
-        ))}
 
-        {/* Empty state */}
-        {items.length === 0 && (
-          <div className="text-sm text-silse-on-surface-variant italic text-center py-4 bg-silse-surface-container-low rounded-xl border border-dashed border-silse-outline-variant">
-            Belum ada item. Klik &ldquo;Tambah&rdquo; untuk menambah.
-          </div>
-        )}
-      </div>
+              {/* Sub-fields */}
+              {renderSubFields(item, idx)}
+            </div>
+          ))}
+
+          {/* Empty state */}
+          {items.length === 0 && (
+            <div className="text-sm text-silse-on-surface-variant italic text-center py-4 bg-silse-surface-container-low rounded-xl border border-dashed border-silse-outline-variant">
+              Belum ada item. Klik &ldquo;Tambah&rdquo; untuk menambah.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Help text */}
       <HelpText text={fieldDef.helpText} />
