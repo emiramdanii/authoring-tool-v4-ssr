@@ -50,6 +50,7 @@ D-P0E — Background Source of Truth: PASS (Ronde 42) — TemplateAdapter non-co
 D-P0F — Export Fallback / No Silent Downgrade: PASS (Ronde 43) — exportWithFallback no silent degraded fallback, client-export.ts deleted, error messages clarified
 D-P0E.1 — Schema Background Image Compression: PASS (Ronde 44) — schema background upload now compresses images (max 1200px, JPEG 80%), shared compressImage utility extracted
 Sprint 2B — MateriBlok Guided Editor Minimal: PASS (Ronde 45) — materi-blok uses GuidedFormEditor with showWhen conditional fields, 8 tipe (6 utama + kutipan/gambar), accentColor showWhen added
+Sprint 2C — Sortir/Roda Guided Editor: PASS (Ronde 46) — sortir-game autoId for kolom/pool items, pool[].category now select dropdown from kolom labels (optionsFrom), roda-game verified no regression
 Sprint D — Dualism Audit Luas: SELESAI (Ronde 35) — 33 dualisme ditemukan di 6 area, 8 P0 / 10 P1 / 15 P2, prioritas cleanup ditetapkan
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
@@ -2736,3 +2737,57 @@ MateriBlokRenderer TIDAK diubah — guided editor hanya mengubah cara edit, buka
 
 **TypeScript Check: 0 new error ✅**
 **Build: PASS ✅**
+
+## Ronde 46 — Sprint 2C: Sortir/Roda Guided Editor
+
+**PERUBAHAN RONDE 46 (Sprint 2C — Sortir/Roda Guided Editor):**
+
+1. Sprint 2C IMPLEMENTASI: Perbaiki guided editor sortir-game yang sudah ada — fix bug kritis item tanpa id + UX improvement category dropdown
+2. AUDIT TEMUAN: sortir-game dan roda-game sudah punya GuidedFormEditor dari sprint sebelumnya. Masalah: (1) item/kolom baru dari GuidedArrayField bisa tanpa `id`, membuat SortirGameRenderer rusak total; (2) `pool[].category` masih text field yang meminta guru mengetik ID teknis
+3. `guided-patch.ts`: Tambah `optionsFrom` dan `autoId` ke `GuidedFieldDef` interface
+   - `optionsFrom?: { field: string; labelKey: string; valueKey: string }` — populate select options dari data block lain secara dinamis
+   - `autoId?: boolean` — auto-generate nanoid(6) untuk field `id` pada array items tanpa menampilkan field ke guru
+4. `guided-patch.ts`: Update sortir-game registry entry:
+   - `kolom` array: tambah `autoId: true` — item baru otomatis dapat id
+   - `pool` array: tambah `autoId: true` — item baru otomatis dapat id
+   - `pool[].category`: ubah dari `type: 'text'` ke `type: 'select'` dengan `optionsFrom: { field: 'kolom', labelKey: 'label', valueKey: 'id' }` — guru pilih dari dropdown label kolom, value tersimpan sebagai kolom id
+5. `guided-field-renderer.tsx`: Tambah `resolveSelectOptions(fieldDef, blockData)` helper — resolve static `options` atau dynamic `optionsFrom` dari block data
+6. `guided-field-renderer.tsx`: Tambah import `nanoid` dari `nanoid` package
+7. `guided-field-renderer.tsx`: `addItem()` di `GuidedArrayField` sekarang auto-generate `id` field via `nanoid(6)` ketika `fieldDef.autoId === true` atau existing items punya `id`
+8. `guided-field-renderer.tsx`: `GuidedSelectField` menerima `resolvedOptions` prop — pre-resolved dari `resolveSelectOptions()`
+9. `guided-field-renderer.tsx`: `GuidedArrayField` menerima `blockData` prop — untuk resolve `optionsFrom` di sub-field select
+10. `guided-field-renderer.tsx`: Sub-field select di array items sekarang support `optionsFrom` — guru bisa pilih kategori dari dropdown label kolom
+11. Roda-game TIDAK diubah — tidak ada bug, editor tetap fungsional
+12. Tidak mengubah: SortirGameRenderer, RodaGameRenderer, scoring/runtime, export, game lain, PropertySchema
+13. Build: PASS
+
+**Sprint 2C sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Kolom baru di sortir-game | Tanpa `id` → renderer crash | `autoId: true` → item baru dapat nanoid(6) |
+| Pool baru di sortir-game | Tanpa `id` → React key warning | `autoId: true` → item baru dapat nanoid(6) |
+| `pool[].category` field | `type: 'text'` — guru ketik ID teknis "kolom-1" | `type: 'select'` + `optionsFrom` — guru pilih dari dropdown label kolom |
+| Category value tersimpan | String yang guru ketik (mungkin salah) | `kolom[].id` — selalu valid karena dari dropdown |
+| Roda-game editor | Fungsional | Tidak berubah (verified) |
+| `GuidedFieldDef` | `options`, `showWhen` | +`optionsFrom`, +`autoId` |
+| `resolveSelectOptions()` | Tidak ada | Helper untuk resolve static + dynamic options |
+| `GuidedArrayField` | Tidak terima `blockData` | Terima `blockData` untuk resolve `optionsFrom` |
+
+**Sprint 2C GuidedFieldDef extension:**
+
+```ts
+// New optional fields added to GuidedFieldDef:
+optionsFrom?: { field: string; labelKey: string; valueKey: string };
+autoId?: boolean;
+```
+
+**Sprint 2C sortir-game category dropdown flow:**
+
+```txt
+Guru edit sortir-game → lihat "Kolom Kategori" → tambah kolom "Norma Agama"
+                        → lihat "Kartu Sortir" → tambah kartu →
+                        → pilih "Kolom Tujuan" dari dropdown → pilih "Norma Agama"
+                        → value tersimpan = kolom.id (bukan label)
+                        → SortirGameRenderer baca kolom.id → game berfungsi
+```

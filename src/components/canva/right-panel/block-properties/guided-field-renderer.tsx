@@ -23,11 +23,36 @@
 import React from 'react';
 // All icons migrated to Material Symbols Outlined
 import type { GuidedFieldDef } from '@/core/schema/guided-patch';
+import { nanoid } from 'nanoid';
 
 // ── Shared SILSE v4 Styles ──────────────────────────────────────
 
 const INPUT_BASE = 'w-full px-3 py-2.5 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-silse-on-surface text-sm focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200 placeholder:text-silse-on-surface-variant/40';
 const LABEL_BASE = 'text-[12px] font-bold text-silse-on-surface mb-1.5 block tracking-wide';
+
+// ── Resolve select options (static + dynamic optionsFrom) ───
+
+function resolveSelectOptions(
+  fieldDef: GuidedFieldDef,
+  blockData: Record<string, unknown>,
+): Array<{ label: string; value: string }> {
+  // If optionsFrom is defined, try to resolve dynamic options from block data
+  if (fieldDef.optionsFrom) {
+    const { field, labelKey, valueKey } = fieldDef.optionsFrom;
+    const sourceArray = blockData[field] as Array<Record<string, unknown>> | undefined;
+    if (sourceArray && Array.isArray(sourceArray) && sourceArray.length > 0) {
+      return sourceArray
+        .filter(item => item[labelKey] != null && item[valueKey] != null)
+        .map(item => ({
+          label: String(item[labelKey]),
+          value: String(item[valueKey]),
+        }));
+    }
+    // Fallback to static options if dynamic source is empty
+    return fieldDef.options || [];
+  }
+  return fieldDef.options || [];
+}
 
 // ── Main Render Dispatch ──────────────────────────────────────
 
@@ -96,7 +121,8 @@ export function renderGuidedField(
         />
       );
 
-    case 'select':
+    case 'select': {
+      const resolvedOptions = resolveSelectOptions(field, blockData);
       return (
         <GuidedSelectField
           key={field.key}
@@ -104,8 +130,10 @@ export function renderGuidedField(
           fieldDef={field}
           value={String(value || '')}
           onChange={v => handleUpdate(v)}
+          resolvedOptions={resolvedOptions}
         />
       );
+    }
 
     case 'boolean':
       return (
@@ -147,6 +175,7 @@ export function renderGuidedField(
           fieldDef={field}
           items={items}
           onUpdate={handleArrayUpdate}
+          blockData={blockData}
         />
       );
     }
@@ -398,14 +427,16 @@ function GuidedColorField({ fieldDef, value, onChange, fieldId }: {
 
 // ── Select Field ──────────────────────────────────────────────
 
-function GuidedSelectField({ fieldDef, value, onChange, fieldId }: {
+function GuidedSelectField({ fieldDef, value, onChange, fieldId, resolvedOptions }: {
   fieldDef: GuidedFieldDef;
   value: string;
   onChange: (v: string) => void;
   fieldId: string;
+  /** Pre-resolved options (from static options + optionsFrom) */
+  resolvedOptions?: Array<{ label: string; value: string }>;
 }) {
   const helpId = fieldDef.helpText ? `${fieldId}-help` : undefined;
-  const options = fieldDef.options || [];
+  const options = resolvedOptions || fieldDef.options || [];
 
   return (
     <div>
@@ -496,11 +527,13 @@ function GuidedIconField({ fieldDef, value, onChange, fieldId }: {
 
 // ── Array Field — card-based item editor ──────────────────────
 
-function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
+function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId, blockData }: {
   fieldDef: GuidedFieldDef;
   items: Array<Record<string, unknown>>;
   onUpdate: (items: Array<Record<string, unknown>>) => void;
   fieldId: string;
+  /** Block data for resolving dynamic options (optionsFrom) in sub-fields */
+  blockData?: Record<string, unknown>;
 }) {
   const subFields = fieldDef.fields || [];
   const maxItems = fieldDef.maxItems;
@@ -521,6 +554,11 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
       else if (f.type === 'number') newItem[f.key] = f.min ?? 0;
       else newItem[f.key] = '';
     });
+    // Auto-generate id if existing items have an 'id' field (e.g. sortir-game kolom/pool).
+    // This ensures new items have a valid id without exposing the field to teachers.
+    // Check both existing items and the fieldDef's autoId flag.
+    const needsId = fieldDef.autoId || (items.length > 0 && items.some(it => it.id != null && it.id !== ''));
+    if (needsId) newItem.id = nanoid(6);
     onUpdate([...items, newItem]);
   };
 
@@ -643,7 +681,7 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                       className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all resize-y"
                     />
                   </div>
-                ) : subField.type === 'select' && subField.options ? (
+                ) : subField.type === 'select' && (subField.options || subField.optionsFrom) ? (
                   <div>
                     <label className="text-sm font-bold text-silse-on-surface-variant block mb-1">{subField.label}</label>
                     <select
@@ -656,7 +694,8 @@ function GuidedArrayField({ fieldDef, items, onUpdate, fieldId: _fieldId }: {
                       }}
                       className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-sm text-silse-on-surface focus:border-silse-secondary focus:outline-none transition-all"
                     >
-                      {subField.options.map(opt => (
+                      <option value="">— pilih —</option>
+                      {resolveSelectOptions(subField, blockData || {}).map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                     </select>

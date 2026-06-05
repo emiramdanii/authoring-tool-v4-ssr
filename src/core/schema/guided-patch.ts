@@ -542,11 +542,20 @@ export interface GuidedFieldDef {
   fields?: GuidedFieldDef[];
   /** For array type: max items */
   maxItems?: number;
-  /** For select type: options */
+  /** For select type: static options (use optionsFrom for dynamic options from block data) */
   options?: Array<{ label: string; value: string }>;
+  /** For select type: dynamically populate options from another field in the block.
+   *  Reads block[optionsFrom.field] as an array, maps each item to
+   *  { label: item[optionsFrom.labelKey], value: item[optionsFrom.valueKey] }.
+   *  Falls back to `options` if the source array is empty or missing. */
+  optionsFrom?: { field: string; labelKey: string; valueKey: string };
   /** For number type: min/max */
   min?: number;
   max?: number;
+  /** For array type: auto-generate an `id` field (nanoid) when adding new items.
+   *  Used when the schema type requires an `id` field on array items
+   *  (e.g. sortir-game kolom/pool) but the id should not be shown to teachers. */
+  autoId?: boolean;
   /** Conditional visibility: show this field only when another field's value is in `values`.
    *  If undefined, the field is always shown (backward-compatible). */
   showWhen?: { field: string; values: string[] };
@@ -1166,9 +1175,11 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     ],
   },
 
-  // ── Sprint 2C Prep: Sortir Game Guided Editor ──────────────────
-  // Teachers need to edit game title, pool items, and kolom columns
-  // via the right panel guided form, not raw SchemaDrivenEditor.
+  // ── Sprint 2C: Sortir Game Guided Editor ──────────────────────
+  // Teachers edit game title, kolom columns, and pool items.
+  // - kolom/pool use autoId so new items get a valid nanoid id.
+  // - pool[].category uses optionsFrom to show kolom labels as dropdown
+  //   instead of requiring teachers to type technical IDs.
 
   'sortir-game': {
     blockType: 'sortir-game',
@@ -1181,6 +1192,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         key: 'kolom',
         label: 'Kolom Kategori',
         type: 'array',
+        autoId: true,
         maxItems: 4,
         helpText: 'Kolom tujuan — siswa memindahkan kartu ke kolom yang benar',
         fields: [
@@ -1192,11 +1204,12 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         key: 'pool',
         label: 'Kartu Sortir',
         type: 'array',
+        autoId: true,
         maxItems: 8,
         helpText: 'Kartu yang harus dikelompokkan — setiap kartu milik satu kolom',
         fields: [
           { key: 'text', label: 'Teks Kartu', type: 'text', required: true, placeholder: 'Tulis teks kartu...' },
-          { key: 'category', label: 'Kolom Tujuan', type: 'text', helpText: 'ID kolom tempat kartu ini benar (harus cocok dengan kolom di atas)' },
+          { key: 'category', label: 'Kolom Tujuan', type: 'select', optionsFrom: { field: 'kolom', labelKey: 'label', valueKey: 'id' }, helpText: 'Pilih kolom tempat kartu ini benar' },
         ],
       },
     ],
