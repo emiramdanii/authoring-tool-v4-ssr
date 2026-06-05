@@ -399,3 +399,27 @@ Stage Summary:
 - sortir-game: new items get valid id, category is dropdown from kolom labels
 - roda-game: no changes needed, verified no regression
 - Renderer, export, scoring, runtime untouched
+
+---
+Task ID: 2E
+Agent: main
+Task: Sprint 2E — Import JSON Multi-Question untuk Kuis
+
+Work Log:
+- Audited KuisBlock type, KuisRenderer, GuidedFormEditor, update functions, replaceAllQuestions
+- Confirmed KuisRenderer already supports multi-question (current state, Lanjut button, progress, score)
+- Identified GuidedFormEditor maxItems:1 as blocker
+- Created kuis-import.ts with validator + mapper + parser + sample JSON
+- Updated guided-patch.ts: maxItems 1→10, displayMode: 'tab', helpText update
+- Updated guided-field-renderer.tsx: added displayMode 'tab' support (tab selector, active item only)
+- Created KuisImportPanel.tsx: collapsible import UI with validate/apply
+- Integrated KuisImportPanel in GuidedFormEditor.tsx (kuis only)
+- Updated CORE_VERIFICATION_REPORT.md
+- Build PASS, committed c4fa10d, pushed to origin main
+
+Stage Summary:
+- Kuis now supports 1-10 questions per block (was 1)
+- Editor uses tab mode: only 1 active question displayed
+- JSON import: paste → validate → apply all questions to block
+- KuisRenderer unchanged, scoring unchanged, export unchanged
+- 6 files changed, 728 insertions, 117 deletions
