@@ -54,14 +54,9 @@ const SIDEBAR_SECONDARY_ITEMS: { id: string; label: string; icon: string; panelR
 // Lazy-load TemplateWizard — it's a modal that's not always visible
 const TemplateWizard = dynamic(() => import('@/components/canva/TemplateWizard'), { ssr: false });
 
-// Schema-driven presets use this path for beautiful rendering
-const SCHEMA_DRIVEN_PRESETS = new Set([
-  'hakikat-norma', 'macam-norma', 'perilaku-patuh', 'nilai-pancasila',
-  'bhinneka-tunggal-ika', 'ham-hak-kewajiban', 'demokrasi-pancasila',
-  'globalisasi', 'misi-penjelajah-pancasila',
-  'sistem-pernapasan', 'persamaan-linear',
-  'gerak-dasar-lokomotor', 'permainan-bola-besar', 'kebugaran-jasmani',
-]);
+// D-P0D.2: SCHEMA_DRIVEN_PRESETS removed — all templates now use
+// applyTemplateToStore() via CourseTemplateRegistry. No more preset-key
+// branching needed.
 
 // ── Adaptive "Langkah Selanjutnya" logic ─────────────────────────
 interface NextStep {
@@ -135,10 +130,8 @@ export default function Dashboard() {
   }, [pages]);
   const activePreset = useAuthoringStore((s) => s.activePreset);
   const calcCompleteness = useAuthoringStore((s) => s.calcCompleteness);
-  const applyFullPreset = useAuthoringStore((s) => s.applyFullPreset);
   // Phase 3: setActivePanel migrated → panelRequest
   const setActivePanel = (_panel: string) => useCanvaStore.setState({ panelRequest: _panel });
-  const newProject = useAuthoringStore((s) => s.newProject);
   const saveToStorage = useAuthoringStore((s) => s.saveToStorage);
   const { saveProject, currentProjectId } = useProjectManager();
   const { isSederhana } = useTeacherMode();
@@ -214,66 +207,14 @@ export default function Dashboard() {
     URL.revokeObjectURL(url);
   };
 
-  // ── Template click handler ─────────────────────────────────────
-  const applyTemplate = (pKey: string) => {
-    if (SCHEMA_DRIVEN_PRESETS.has(pKey)) {
-      applyFullPreset(pKey);
-      setTimeout(async () => {
-        await useCanvaStore.getState().loadSchemaPreset(pKey);
-        setActivePanel('canva');
-      }, 100);
-    } else if (pKey === 'blank') {
-      useAuthoringStore.getState().newProject();
-      setTimeout(() => {
-        useCanvaStore.getState().resetCanvas();
-        setActivePanel('canva');
-      }, 100);
-    } else {
-      applyFullPreset(pKey);
-      setTimeout(() => {
-        useCanvaStore.getState().resetCanvas();
-        setActivePanel('canva');
-      }, 300);
-    }
-  };
-
-  const handleTemplateClick = (pKey: string) => {
-    if (hasData) {
-      showConfirm(
-        'Timpa Data?',
-        'Template akan menimpa data saat ini. Lanjutkan?',
-        () => applyTemplate(pKey),
-      );
-      return;
-    }
-    applyTemplate(pKey);
-  };
-
-  // ── Apply template from CourseTemplateRegistry (preview flow) ──
-  const handleUseTemplate = async (template: RegistryCourseTemplate) => {
-    if (hasData) {
-      showConfirm(
-        'Timpa Data?',
-        'Template akan menimpa data saat ini. Lanjutkan?',
-        () => _applyRegistryTemplate(template),
-      );
-      return;
-    }
-    _applyRegistryTemplate(template);
-  };
-
-  // ── Apply template via shared helper (D-P0D.1) ────────────
-  const _applyRegistryTemplate = async (template: RegistryCourseTemplate) => {
+  // ── Apply template via shared helper (D-P0D.1 + D-P0D.2) ──────
+  // ALL template application in Dashboard goes through this single path.
+  // No more legacy applyTemplate/handleTemplateClick/newProject paths.
+  const _applyTemplate = async (templateId: string, metadata?: ProjectMetadata) => {
     setIsApplyingTemplate(true);
     try {
-      const metadata: ProjectMetadata = {
-        title: template.name,
-        mapel: template.subject !== '*' ? template.subject : undefined,
-        kelas: template.grade !== '*' ? template.grade : undefined,
-      };
-
-      const result = await applyTemplateToStore(template.id, {
-        metadata,
+      const result = await applyTemplateToStore(templateId, {
+        metadata: metadata || { title: 'Proyek Kosong' },
         persist: 'localstorage',
       });
 
@@ -286,51 +227,37 @@ export default function Dashboard() {
       }
     } catch (err) {
       toast.error('Gagal menerapkan template. Silakan coba lagi.');
-      logger.error('Dashboard', 'handleUseTemplate error: ' + String(err));
+      logger.error('Dashboard', '_applyTemplate error: ' + String(err));
     } finally {
       setIsApplyingTemplate(false);
     }
   };
 
-  // ── Template data with lucide icons ────────────────────────────
-  const templates = [
-    // PPKn
-    { key: 'hakikat-norma', icon: 'groups', label: 'Hakikat Norma', sub: 'PPKn VII · Bab 3 P1', color: 'emerald' },
-    { key: 'macam-norma', icon: 'scroll', label: 'Macam Norma', sub: 'PPKn VII · Bab 3 P2', color: 'emerald' },
-    { key: 'perilaku-patuh', icon: 'balance', label: 'Perilaku Patuh', sub: 'PPKn VII · Bab 3 P3', color: 'emerald' },
-    { key: 'nilai-pancasila', icon: 'menu_book', label: 'Nilai Pancasila', sub: 'PPKn VII · Bab 3 P4', color: 'amber' },
-    { key: 'bhinneka-tunggal-ika', icon: 'groups', label: 'Bhinneka Tunggal Ika', sub: 'PPKn VII · Bab 3 P5', color: 'emerald' },
-    { key: 'ham-hak-kewajiban', icon: 'balance', label: 'HAM & Kewajiban', sub: 'PPKn VII · Bab 3 P6', color: 'emerald' },
-    { key: 'demokrasi-pancasila', icon: 'scroll', label: 'Demokrasi Pancasila', sub: 'PPKn VII · Bab 3 P7', color: 'amber' },
-    { key: 'globalisasi', icon: 'school', label: 'Globalisasi', sub: 'PPKn VII · Bab 3 P8', color: 'emerald' },
-    { key: 'misi-penjelajah-pancasila', icon: 'rocket_launch', label: 'Misi Penjelajah', sub: 'PPKn VII · Bab 3 P9', color: 'emerald' },
-    // IPA
-    { key: 'sistem-pernapasan', icon: 'menu_book', label: 'Sistem Pernapasan', sub: 'IPA VIII', color: 'emerald' },
-    // MTK
-    { key: 'persamaan-linear', icon: 'scroll', label: 'Persamaan Linear', sub: 'MTK VIII', color: 'amber' },
-    // PJOK
-    { key: 'gerak-dasar-lokomotor', icon: 'rocket_launch', label: 'Gerak Dasar Lokomotor', sub: 'PJOK VII', color: 'emerald' },
-    { key: 'permainan-bola-besar', icon: 'school', label: 'Permainan Bola Besar', sub: 'PJOK VII', color: 'emerald' },
-    { key: 'kebugaran-jasmani', icon: 'groups', label: 'Kebugaran Jasmani', sub: 'PJOK VII', color: 'amber' },
-    // Blank
-    { key: 'blank', icon: 'assignment', label: 'Proyek Kosong', sub: 'Isi semua manual', color: 'slate' },
-  ];
+  // Unified confirmation + apply flow for all Dashboard template triggers
+  const handleApplyTemplate = async (templateId: string, metadata?: ProjectMetadata) => {
+    if (hasData) {
+      showConfirm(
+        'Timpa Data?',
+        'Template akan menimpa data saat ini. Lanjutkan?',
+        () => _applyTemplate(templateId, metadata),
+      );
+      return;
+    }
+    _applyTemplate(templateId, metadata);
+  };
 
-  const colorMap: Record<string, string> = {
-    amber: 'hover:border-silse-tertiary-container/30 hover:bg-silse-tertiary-container/5',
-    emerald: 'hover:border-silse-primary-container/30 hover:bg-silse-primary-container/5',
-    slate: 'hover:border-silse-outline-variant/40 hover:bg-silse-surface-container-high/5',
+  // Preview dialog → Gunakan Template
+  const handleUseTemplate = async (template: RegistryCourseTemplate) => {
+    handleApplyTemplate(template.id, {
+      title: template.name,
+      mapel: template.subject !== '*' ? template.subject : undefined,
+      kelas: template.grade !== '*' ? template.grade : undefined,
+    });
   };
-  const activeColorMap: Record<string, string> = {
-    amber: 'border-silse-tertiary-container/50 bg-silse-tertiary-container/10 ring-1 ring-silse-tertiary-container/20',
-    emerald: 'border-silse-primary-container/50 bg-silse-primary-container/10 ring-1 ring-silse-primary-container/20',
-    slate: 'border-silse-outline-variant/50 bg-silse-surface-container-high/10 ring-1 ring-silse-outline-variant/20',
-  };
-  const iconColorMap: Record<string, string> = {
-    amber: 'text-silse-tertiary-container bg-silse-tertiary-container/10',
-    emerald: 'text-silse-primary bg-silse-primary-container/10',
-    slate: 'text-silse-on-surface-variant bg-silse-surface-container-high/30',
-  };
+
+  // D-P0D.2: Dead code removed — templates[], colorMap, activeColorMap,
+  // iconColorMap were for the old hardcoded template grid that was never
+  // rendered in JSX. Template cards now come from CourseTemplateRegistry.
 
   // ── Flow Steps (mode-aware labels) ──────────────────────────
   const flowSteps = [
@@ -377,13 +304,7 @@ export default function Dashboard() {
         {/* New Project Button */}
         <div className="px-4 pb-3">
           <button
-            onClick={() => {
-              if (hasData) {
-                showConfirm('Buat Proyek Baru?', 'Data yang belum disimpan akan hilang.', () => newProject());
-              } else {
-                newProject();
-              }
-            }}
+            onClick={() => handleApplyTemplate('template-kosong')}
             className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-silse-primary-container text-silse-on-primary-container font-bold border-b-2 border-silse-primary hover:scale-95 transition-transform"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
@@ -679,7 +600,7 @@ export default function Dashboard() {
 
               {/* Proyek Kosong card — direct action */}
               <button
-                onClick={() => handleTemplateClick('blank')}
+                onClick={() => handleApplyTemplate('template-kosong')}
                 className="rounded-[24px] p-4 text-center border-2 border-dashed border-silse-outline-variant bg-transparent hover:border-silse-primary/30 hover:bg-silse-primary/5 group transition-colors cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-full mb-2 mx-auto flex items-center justify-center bg-silse-primary/5 text-silse-primary group-hover:bg-silse-primary-container transition-colors">
@@ -811,13 +732,9 @@ export default function Dashboard() {
                   icon: 'palette',
                   accentClass: 'bg-silse-tertiary-container/10 text-silse-tertiary-container',
                   action: () => {
-                    const currentPreset = useAuthoringStore.getState().activePreset;
-                    if (SCHEMA_DRIVEN_PRESETS.has(currentPreset || '')) {
-                      setActivePanel('canva');
-                    } else {
-                      useCanvaStore.getState().resetCanvas();
-                      setActivePanel('canva');
-                    }
+                    // D-P0D.2: All pages are now schema-driven (pageMode:'schema').
+                    // No need for SCHEMA_DRIVEN_PRESETS branching — just navigate.
+                    setActivePanel('canva');
                   },
                 }] : []),
               ].map((action) => {
@@ -877,13 +794,7 @@ export default function Dashboard() {
               <>
                 <div className="w-px h-5 bg-silse-outline-variant mx-1" />
                 <button
-                  onClick={() => {
-                    if (hasData) {
-                      showConfirm('Buat Proyek Baru?', 'Data yang belum disimpan akan hilang.', () => newProject());
-                    } else {
-                      newProject();
-                    }
-                  }}
+                  onClick={() => handleApplyTemplate('template-kosong')}
                   className="p-1.5 text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high rounded-lg transition-colors"
                   title="Proyek Baru"
                 >

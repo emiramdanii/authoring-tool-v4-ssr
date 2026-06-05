@@ -2339,6 +2339,100 @@ Perubahan behavior:
 
 ---
 
+## Ronde 40 — D-P0D.2: Dashboard Click Path Unification
+
+### Status: PASS ✅
+
+### Perubahan
+
+D-P0D.2 menyatukan semua jalur klik di Dashboard ke shared `applyTemplateToStore()`. Sebelumnya, "Proyek Kosong" dan "Proyek Baru" masih memakai legacy path (`newProject()` + `resetCanvas()`), menghasilkan state yang berbeda dari template lain.
+
+#### Proyek Kosong → `applyTemplateToStore('template-kosong')` ✅
+
+Sebelum: `handleTemplateClick('blank')` → `applyTemplate('blank')` → `newProject()` + `resetCanvas()` + `setActivePanel('canva')`
+Sesudah: `handleApplyTemplate('template-kosong')` → `applyTemplateToStore('template-kosong', ...)`
+
+Perubahan behavior:
+- ✅ **Baru**: Undo history didukung (sebelumnya tidak ada)
+- ✅ **Baru**: Auto-select primary editable target (sebelumnya tidak ada)
+- ✅ **Baru**: Dirty marking + localStorage persist (sebelumnya tidak ada)
+- ✅ **Baru**: Halaman dibuat dari template (Cover + Penutup), bukan canvas kosong tanpa schema
+- ✅ Sama: Navigasi ke workspace
+
+#### Sidebar "Proyek Baru" → `applyTemplateToStore('template-kosong')` ✅
+
+Sebelum: `newProject()` langsung (hanya reset authoring store, canva store tidak)
+Sesudah: `handleApplyTemplate('template-kosong')` → shared flow dengan confirm dialog jika ada data
+
+Perubahan behavior:
+- ✅ **Baru**: Confirm dialog jika ada data unsaved (sebelumnya langsung newProject tanpa konfirmasi yang memadai)
+- ✅ **Baru**: State konsisten dengan template lain
+- ✅ **Baru**: Pages punya schema dari awal
+
+#### Preview Dialog → Gunakan Template ✅
+
+Sudah unified di D-P0D.1. Handler di-refactor sedikit:
+- `handleUseTemplate` → `handleApplyTemplate(template.id, metadata)` (via shared confirm + apply)
+- `handleApplyTemplate` → `_applyTemplate` → `applyTemplateToStore()`
+
+#### Dead Code Dihapus ✅
+
+| Item | Baris dihapus | Keterangan |
+|------|---------------|------------|
+| `SCHEMA_DRIVEN_PRESETS` | ~7 | Set 14 preset key, tidak dipakai lagi |
+| `applyTemplate()` | ~20 | Legacy handler dengan 3 branch |
+| `handleTemplateClick()` | ~10 | Legacy wrapper dengan confirm |
+| `templates[]` | ~20 | 15 hardcoded template entries, NEVER rendered |
+| `colorMap` | ~4 | CSS classes untuk templates[] yang sudah dihapus |
+| `activeColorMap` | ~4 | CSS classes untuk templates[] yang sudah dihapus |
+| `iconColorMap` | ~4 | CSS classes untuk templates[] yang sudah dihapus |
+| `applyFullPreset` import | 1 | Hanya dipakai oleh applyTemplate |
+| `newProject` import | 1 | Hanya dipakai oleh Proyek Baru/Kosong legacy |
+
+Total: ~70 baris dead code dihapus
+
+#### Langkah Selanjutnya — Simplified ✅
+
+Sebelum: `SCHEMA_DRIVEN_PRESETS.has(currentPreset)` branching → `resetCanvas()` atau `setActivePanel('canva')`
+Sesudah: `setActivePanel('canva')` langsung — semua halaman sudah schema-driven
+
+#### Struktur Handler Baru
+
+```
+Dashboard click path (SESEUDAH D-P0D.2):
+  ├── Template Card → setPreviewTemplate → Preview Dialog → handleUseTemplate
+  │     └── handleApplyTemplate(templateId, metadata)
+  │           └── _applyTemplate(templateId, metadata)
+  │                 └── applyTemplateToStore(templateId, options)   ← SHARED
+  │
+  ├── Proyek Kosong → handleApplyTemplate('template-kosong')
+  │     └── _applyTemplate('template-kosong')
+  │           └── applyTemplateToStore('template-kosong', options)  ← SHARED
+  │
+  ├── Proyek Baru (sidebar) → handleApplyTemplate('template-kosong')
+  │     └── _applyTemplate('template-kosong')
+  │           └── applyTemplateToStore('template-kosong', options)  ← SHARED
+  │
+  ├── Filter & Kustomisasi → TemplateWizard
+  │     └── applyTemplateToStore(templateId, options)               ← SHARED (D-P0D.1)
+  │
+  └── Legacy Template Toggle → setPreviewTemplate → same as Template Card
+        └── applyTemplateToStore(templateId, options)               ← SHARED
+```
+
+#### Yang TIDAK Diubah
+
+- ❌ CourseTemplateRegistry
+- ❌ TemplateWizard
+- ❌ TemplateMarketplace
+- ❌ Store definitions
+- ❌ Renderer, export, DB schema
+- ❌ UI tampilan (hanya handler logic)
+
+#### TypeScript Check: 0 new error ✅
+
+---
+
 ### Prinsip
 
 ```txt
