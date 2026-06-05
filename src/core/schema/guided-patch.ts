@@ -1156,7 +1156,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       // P3 NOTE: accentColor exists in MateriBlokBlock type but is not
       // read by MateriBlokRenderer. Keeping field for forward compat
       // but renderer does not use it yet. See P3 backlog.
-      { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
+      // S2B: Added showWhen so it only shows for types that might use it,
+      // reducing visual noise for types where color is irrelevant (teks, poin, checklist).
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', showWhen: { field: 'tipe', values: ['definisi', 'highlight', 'infobox'] } },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'karakter', 'butir'] },

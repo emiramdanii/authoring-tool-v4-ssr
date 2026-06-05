@@ -49,6 +49,7 @@ D-P0D.3 — Legacy Template Cleanup: PASS (Ronde 41) — course-templates-legacy
 D-P0E — Background Source of Truth: PASS (Ronde 42) — TemplateAdapter non-cover/hero pages now get {type:'solid',color1:'bg'}, ensureSchemaBackground() defensive helper added
 D-P0F — Export Fallback / No Silent Downgrade: PASS (Ronde 43) — exportWithFallback no silent degraded fallback, client-export.ts deleted, error messages clarified
 D-P0E.1 — Schema Background Image Compression: PASS (Ronde 44) — schema background upload now compresses images (max 1200px, JPEG 80%), shared compressImage utility extracted
+Sprint 2B — MateriBlok Guided Editor Minimal: PASS (Ronde 45) — materi-blok uses GuidedFormEditor with showWhen conditional fields, 8 tipe (6 utama + kutipan/gambar), accentColor showWhen added
 Sprint D — Dualism Audit Luas: SELESAI (Ronde 35) — 33 dualisme ditemukan di 6 area, 8 P0 / 10 P1 / 15 P2, prioritas cleanup ditetapkan
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
@@ -2673,6 +2674,64 @@ External URL:
 Schema dan legacy path harus kompres gambar dengan parameter yang sama
 Kalau gambar besar masuk ke schema.background.imageUrl, project membengkak
 compressImage adalah shared utility — satu implementasi, banyak consumer
+```
+
+**TypeScript Check: 0 new error ✅**
+**Build: PASS ✅**
+
+## Ronde 45 — Sprint 2B: MateriBlok Guided Editor Minimal
+
+**PERUBAHAN RONDE 45 (Sprint 2B — MateriBlok Guided Editor Minimal):**
+
+1. Sprint 2B AUDIT & POLISH: Entry materi-blok di GUIDED_EDITOR_REGISTRY sudah ada dari sprint sebelumnya (Ronde 28). Audit mengkonfirmasi semua field dan showWhen sudah terdefinisi. Perbaikan minor dilakukan.
+2. `guided-patch.ts`: Tambah `showWhen` ke field `accentColor` — sebelumnya selalu tampil, sekarang hanya tampil untuk tipe yang relevan (`definisi`, `highlight`, `infobox`). Ini mengurangi visual noise untuk tipe teks/poin/checklist yang tidak menggunakan warna aksen.
+3. Entry materi-blok GUIDED_EDITOR_REGISTRY sudah lengkap:
+   - 8 tipe: teks, definisi, poin, checklist, infobox, highlight, kutipan, gambar
+   - `showWhen` conditional visibility sudah berfungsi di GuidedFormEditor
+   - `isi` textarea tampil untuk teks/definisi/infobox/highlight/kutipan/gambar
+   - `butir` array tampil untuk poin/checklist (flat string[] support)
+   - `warna` color tampil untuk definisi/highlight
+   - `icon` tampil untuk highlight
+   - `infoboxStyle` select tampil untuk infobox
+   - `karakter` text tampil untuk kutipan
+   - `accentColor` color tampil untuk definisi/highlight/infobox (S2B fix)
+4. GuidedFormEditor `showWhen` logic: `visibleFields` di-filter berdasarkan `b[field.showWhen.field]` — reaktif terhadap perubahan block data, jadi field muncul/hilang secara real-time saat guru mengubah tipe
+5. BlockPropertiesPanel routing: `hasGuidedEditor('materi-blok')` = true → GuidedFormEditor (bukan SchemaDrivenEditor)
+6. Flat string array support: `butir` (string[]) menggunakan sub-field `key: ''` → `GuidedArrayField` otomatis convert
+7. Tidak mengubah: MateriBlokRenderer, export, schema types (blocks.ts), game editor, style variant/adaptive style
+
+**Sprint 2B sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Guru pilih materi-blok | Jatuh ke SchemaDrivenEditor mentah | GuidedFormEditor — form ramah guru |
+| Tipe konten | Edit via raw schema property | Select dropdown: Paragraf/Definisi/Poin/Checklist/Info Box/Highlight/Kutipan/Gambar |
+| Field isi vs butir | Keduanya selalu tampil | `isi` tampil untuk teks/definisi/infobox/highlight; `butir` tampil untuk poin/checklist |
+| Field warna | Selalu tampil | Tampil hanya untuk definisi/highlight |
+| Field infoboxStyle | Selalu tampil | Tampil hanya untuk infobox |
+| Field accentColor | Selalu tampil (dead field, noise) | Tampil hanya untuk definisi/highlight/infobox |
+| Field icon | Tidak pernah tampil | Tampil untuk highlight |
+
+**Sprint 2B materi-blok field visibility per tipe:**
+
+| Field | teks | definisi | poin | checklist | infobox | highlight | kutipan | gambar |
+|-------|------|----------|------|-----------|---------|-----------|---------|--------|
+| tipe | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| judul | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| isi | ✅ | ✅ | - | - | ✅ | ✅ | ✅ | ✅ |
+| karakter | - | - | - | - | - | - | ✅ | - |
+| butir | - | - | ✅ | ✅ | - | - | - | - |
+| warna | - | ✅ | - | - | - | ✅ | - | - |
+| icon | - | - | - | - | - | ✅ | - | - |
+| infoboxStyle | - | - | - | - | ✅ | - | - | - |
+| accentColor | - | ✅ | - | - | ✅ | ✅ | - | - |
+
+**Sprint 2B prinsip:**
+
+```txt
+Guru memilih tipe konten → hanya field yang relevan yang tampil
+showWhen conditional visibility = form yang bersih, bukan form yang penuh noise
+MateriBlokRenderer TIDAK diubah — guided editor hanya mengubah cara edit, bukan cara render
 ```
 
 **TypeScript Check: 0 new error ✅**
