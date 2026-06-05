@@ -1275,6 +1275,60 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
     ],
   },
+
+  // ── D8 P3D: True/False + Fill Blank Guided Editors ──────────────
+  // Simple question arrays — no autoId needed (index-based access),
+  // no optionsFrom needed (no cross-field references).
+
+  'true-false-game': {
+    blockType: 'true-false-game',
+    displayName: 'Benar / Salah',
+    description: 'Tentukan apakah pernyataan benar atau salah',
+    icon: '✅',
+    fields: [
+      { key: 'title', label: 'Judul Game', type: 'text', required: true, placeholder: 'Benar atau Salah?' },
+      {
+        key: 'questions',
+        label: 'Pernyataan',
+        type: 'array',
+        maxItems: 5,
+        helpText: 'STANDAR: Maksimal 5 pernyataan per halaman',
+        fields: [
+          { key: 'text', label: 'Pernyataan', type: 'textarea', required: true, placeholder: 'Tulis pernyataan...' },
+          { key: 'correct', label: 'Jawaban Benar', type: 'boolean', helpText: 'Aktifkan jika pernyataan ini benar' },
+          { key: 'explanation', label: 'Penjelasan', type: 'text', placeholder: 'Jelaskan mengapa benar/salah...' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
+    ],
+  },
+
+  'fill-blank-game': {
+    blockType: 'fill-blank-game',
+    displayName: 'Isian Singkat',
+    description: 'Isi jawaban pada teks rumpang',
+    icon: '✏️',
+    fields: [
+      { key: 'title', label: 'Judul Game', type: 'text', required: true, placeholder: 'Game Isian' },
+      {
+        key: 'questions',
+        label: 'Soal Isian',
+        type: 'array',
+        maxItems: 5,
+        helpText: 'STANDAR: Maksimal 5 soal per halaman',
+        fields: [
+          { key: 'text', label: 'Teks Soal', type: 'textarea', required: true, helpText: 'Gunakan ___ untuk menandai tempat jawaban', placeholder: 'Norma ___ bersumber dari Tuhan' },
+          { key: 'answer', label: 'Jawaban', type: 'text', required: true, helpText: 'Gunakan / untuk beberapa jawaban yang diterima', placeholder: 'agama' },
+          { key: 'hint', label: 'Petunjuk', type: 'text', placeholder: 'Petunjuk opsional untuk siswa...' },
+        ],
+      },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
+    ],
+  },
 };
 
 // ── Overflow Detection ─────────────────────────────────────────

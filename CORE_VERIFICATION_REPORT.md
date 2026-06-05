@@ -2791,3 +2791,60 @@ Guru edit sortir-game → lihat "Kolom Kategori" → tambah kolom "Norma Agama"
                         → value tersimpan = kolom.id (bukan label)
                         → SortirGameRenderer baca kolom.id → game berfungsi
 ```
+
+---
+
+### Sprint 2D — True/False + Fill Blank Guided Editor
+
+**Tanggal:** 2026-06-05
+**Status:** PASS
+
+**Tujuan:** true-false-game dan fill-blank-game tidak lagi jatuh ke SchemaDrivenEditor mentah. Guru bisa mengedit lewat GuidedFormEditor.
+
+**Perubahan:**
+
+1. `guided-patch.ts`: Tambah `true-false-game` entry ke `GUIDED_EDITOR_REGISTRY`
+2. `guided-patch.ts`: Tambah `fill-blank-game` entry ke `GUIDED_EDITOR_REGISTRY`
+
+**true-false-game GuidedEditorSchema:**
+
+| Field | Type | Label | Catatan |
+|-------|------|-------|---------|
+| `title` | text | Judul Game | required |
+| `questions[]` | array | Pernyataan | maxItems: 5 |
+| `questions[].text` | textarea | Pernyataan | required |
+| `questions[].correct` | boolean | Jawaban Benar | helpText: "Aktifkan jika pernyataan ini benar" |
+| `questions[].explanation` | text | Penjelasan | opsional |
+
+**fill-blank-game GuidedEditorSchema:**
+
+| Field | Type | Label | Catatan |
+|-------|------|-------|---------|
+| `title` | text | Judul Game | required |
+| `questions[]` | array | Soal Isian | maxItems: 5 |
+| `questions[].text` | textarea | Teks Soal | required, helpText: "Gunakan ___ untuk menandai tempat jawaban" |
+| `questions[].answer` | text | Jawaban | required, helpText: "Gunakan / untuk beberapa jawaban yang diterima" |
+| `questions[].hint` | text | Petunjuk | opsional |
+
+**Tidak perlu:**
+
+- `autoId` — array items tidak punya field `id` (index-based access)
+- `optionsFrom` — tidak ada relasi antar-field
+- Renderer change — sudah baca field yang sama
+- Runtime/scoring change — tidak disentuh
+- Export change — belum ada, scope lain
+- Type change — sudah benar
+- PropertySchema change — masih dipakai SchemaDrivenEditor sebagai fallback
+
+**Sprint 2D sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| true-false-game editor | SchemaDrivenEditor mentah | GuidedFormEditor (teacher-friendly) |
+| fill-blank-game editor | SchemaDrivenEditor mentah | GuidedFormEditor (teacher-friendly) |
+| Field teknis (variant, interactive) | Tampil di SchemaDrivenEditor | Auto-hidden (tidak ada di GuidedEditorSchema) |
+| `correct` boolean | Label "Benar" saja | Label "Jawaban Benar" + helpText |
+| `answer` text | Tanpa helpText | helpText: "Gunakan / untuk beberapa jawaban" |
+| `___` marker | Tanpa panduan | helpText: "Gunakan ___ untuk menandai tempat jawaban" |
+
+**Build:** PASS
