@@ -2503,3 +2503,68 @@ TemplateGalleryPanel          → ⚠️ Deprecated, advanced-only
 4. Jangan migrasi pipeline dulu — butuh extend applyTemplateToStore untuk insert mode
 5. Guru mode tetap aman — Template tab tidak terlihat di sederhana mode
 ```
+
+## Ronde 42 — D-P0E: Background Source of Truth
+
+**PERUBAHAN RONDE 42 (D-P0E — Background Source of Truth):**
+
+1. D-P0E IMPLEMENTASI: Unify schema.background sebagai source of truth tunggal untuk semua schema page
+2. `TemplateAdapter.ts` — FIX: Non-cover/hero pages sebelumnya mendapat `background: undefined`. Sekarang mendapat `background: { type: 'solid', color1: 'bg' }`, konsisten dengan schema-factory.ts
+3. `ensure-schema.ts` — DEFENSIVE: Semua return path di `ensurePageSchema()` dan `ensurePageSchemaWithMigration()` sekarang menggunakan `ensureSchemaBackground()` helper yang menambahkan default background jika `schema.background === undefined`
+4. BackgroundSection upload routing — VERIFIED: Sudah benar (schema → updateScreenBackground, legacy → setBgImage)
+5. Store legacy action redirects — VERIFIED: setBgImage/setBgColor/setOverlay sudah redirect ke updateScreenBackground untuk schema pages
+6. Tidak mengubah: renderer, export, template system, legacy field definitions, PageFrame, SchemaScreenRenderer
+
+**D-P0E sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| TemplateAdapter non-cover/hero background | `undefined` | `{ type: 'solid', color1: 'bg' }` |
+| ensurePageSchema Path 1 return | May return schema without background | Always has background (via ensureSchemaBackground) |
+| ensurePageSchema Path 2 return | May return schema without background | Always has background (via ensureSchemaBackground) |
+| ensurePageSchema Path 3 return | May return schema without background | Always has background (via ensureSchemaBackground) |
+| ensurePageSchemaWithMigration fast path | Returns page.schema as-is | Returns with background guaranteed |
+| BackgroundSection upload routing | Already correct | Verified, unchanged |
+| Store legacy redirect | Already correct | Verified, unchanged |
+| migrateAllPages Step 3b | Already correct | Unchanged (belt-and-suspenders) |
+
+**Background source of truth hierarchy after D-P0E:**
+
+```txt
+Schema page:
+  WRITE → schema.background (via updateScreenBackground)
+  READ  → schema.background (via SchemaScreenRenderer)
+  FALLBACK → ensureSchemaBackground() guarantees background is never undefined
+  LEGACY FIELDS → page.bgColor/bgDataUrl/overlay (stale, never cleaned, never read)
+
+Legacy page:
+  WRITE → page.bgColor/bgDataUrl/overlay (via setBgColor/setBgImage/setOverlay)
+  READ  → page.bgColor/bgDataUrl/overlay (via PageFrame)
+
+Migration (load time):
+  migrateAllPages Step 3b → buildBackgroundFromLegacy() if schema.background undefined
+  ensurePageSchema → ensureSchemaBackground() if schema.background undefined (defensive)
+```
+
+**Schema background creation — all sources covered:**
+
+| Source | Cover/Hero | Other types |
+|--------|-----------|-------------|
+| schema-factory.ts | `{type:'radial',color1:'y',color2:'bg'}` | `{type:'solid',color1:'bg'}` |
+| TemplateAdapter.ts | `{type:'radial',color1:'y',color2:'bg'}` | `{type:'solid',color1:'bg'}` (FIXED) |
+| migrateAllPages Step 1b | `{type:'solid',color1:'bg'}` | `{type:'solid',color1:'bg'}` |
+| migrateAllPages Step 3b | `buildBackgroundFromLegacy()` | `buildBackgroundFromLegacy()` |
+| ensureSchemaBackground() | `{type:'solid',color1:'bg'}` (defensive) | `{type:'solid',color1:'bg'}` (defensive) |
+
+**D-P0E prinsip:**
+
+```txt
+1. Source of truth tunggal: schema.background untuk schema page
+2. Defensive guarantee: ensureSchemaBackground() di semua return path
+3. Fix the SOURCE (TemplateAdapter) + add SAFETY NET (ensurePageSchema)
+4. Jangan hapus legacy field — masih dibaca oleh legacy renderer
+5. Jangan ubah renderer/export/template system
+```
+
+**TypeScript Check: 0 new error ✅**
+**Build: PASS ✅**

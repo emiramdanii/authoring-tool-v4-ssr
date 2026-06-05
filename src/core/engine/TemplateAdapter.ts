@@ -212,11 +212,18 @@ export function convertToSchema(page: CanvaPage): ScreenSchema | null {
     sectionLabel: getSectionLabel(tt),
     sectionColor: getSectionColor(tt),
     blocks,
+    // D-P0E: ALL schema pages must have a background field.
+    // Before this fix, non-cover/hero pages got background: undefined,
+    // which caused BackgroundSection UI to show mismatched controls
+    // and SchemaRenderer to use fallback mode instead of schema.background.
     background: tt === 'cover' || tt === 'hero' ? {
       type: 'radial',
       color1: 'y',
       color2: 'bg',
-    } : undefined,
+    } : {
+      type: 'solid',
+      color1: 'bg',
+    },
     nav: {},
   };
 }

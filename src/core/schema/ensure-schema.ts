@@ -68,7 +68,7 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     if (!Array.isArray(page.schema.blocks)) {
       logger.warn('ensurePageSchema', `page.schema.blocks is not an array — creating empty blocks. Value: ${String(page.schema.blocks)}`);
       // Return schema with corrected blocks array
-      const fixedSchema = { ...page.schema, blocks: [] };
+      const fixedSchema = ensureSchemaBackground({ ...page.schema, blocks: [] });
       return deepFreeze(deepClone(fixedSchema));
     }
 
@@ -85,10 +85,10 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
       }
       // IMPORTANT: Clone before freezing so we don't freeze the Zustand store object in place!
       try {
-        return deepFreeze(deepClone(migrated));
+        return deepFreeze(deepClone(ensureSchemaBackground(migrated)));
       } catch (cloneErr) {
         logger.warn('ensurePageSchema', 'deepClone/deepFreeze failed for migrated schema — returning unfrozen clone: ' + String(cloneErr));
-        try { return deepClone(migrated); } catch { return migrated; }
+        try { return ensureSchemaBackground(deepClone(migrated)); } catch { return ensureSchemaBackground(migrated); }
       }
     }
     // Dev-mode purity guard: ensure no runtime state has leaked into schema
@@ -111,18 +111,18 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     // deepFreeze(page.schema) was mutating the store, causing produceWithPatches
     // to fail silently when adding blocks — the root cause of "blocks don't appear on canvas".
     try {
-      return deepFreeze(deepClone(page.schema));
+      return deepFreeze(deepClone(ensureSchemaBackground(page.schema)));
     } catch (cloneErr) {
       // Fallback: if deepClone fails (e.g., non-cloneable runtime state in schema),
       // use JSON parse/stringify as fallback, or return the schema without freezing.
       logger.warn('ensurePageSchema', 'deepClone/deepFreeze failed — using JSON fallback: ' + String(cloneErr));
       try {
-        const jsonCloned = JSON.parse(JSON.stringify(page.schema)) as ScreenSchema;
+        const jsonCloned = ensureSchemaBackground(JSON.parse(JSON.stringify(page.schema)) as ScreenSchema);
         return deepFreeze(jsonCloned);
       } catch (jsonErr) {
         // Last resort: return shallow copy without deep freeze
         logger.warn('ensurePageSchema', 'JSON clone also failed — returning shallow copy without freeze: ' + String(jsonErr));
-        return { ...page.schema, blocks: [...(page.schema.blocks || [])] };
+        return ensureSchemaBackground({ ...page.schema, blocks: [...(page.schema.blocks || [])] });
       }
     }
   }
@@ -143,7 +143,7 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
     } catch (e) {
       logger.warn('ensurePageSchema', 'Purity check failed (non-fatal): ' + String(e));
     }
-    return deepFreeze(deepClone(migrated));
+    return deepFreeze(deepClone(ensureSchemaBackground(migrated)));
   }
 
   // ═══ Path 3: Legacy template page — convert via TemplateAdapter ═══
@@ -168,7 +168,7 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
       } catch (e) {
         logger.warn('ensurePageSchema', 'Purity check failed (non-fatal): ' + String(e));
       }
-      return deepFreeze(deepClone(migrated));
+      return deepFreeze(deepClone(ensureSchemaBackground(migrated)));
     }
   }
 
@@ -182,7 +182,7 @@ export function ensurePageSchema(page: CanvaPage): ScreenSchema | null {
  * Use this when you need to know if the page object changed.
  */
 export function ensurePageSchemaWithMigration(page: CanvaPage): { schema: ScreenSchema | null; needsUpdate: boolean } {
-  if (page.schema) return { schema: page.schema, needsUpdate: false };
+  if (page.schema) return { schema: ensureSchemaBackground(page.schema), needsUpdate: page.schema.background === undefined };
 
   const schema = ensurePageSchema(page);
   return { schema, needsUpdate: schema !== null };
@@ -535,4 +535,17 @@ function buildBackgroundFromLegacy(page: CanvaPage): NonNullable<ScreenSchema['b
 
   // Case 4: Default solid background
   return { type: 'solid' as const, color1: 'bg' };
+}
+
+/**
+ * D-P0E: Ensure a ScreenSchema has a background field.
+ * Old schemas created by TemplateAdapter had background: undefined for
+ * non-cover/hero pages. This adds a default solid background if missing.
+ *
+ * Returns the same schema reference if background already exists (no allocation).
+ * Only creates a new object when the fix is needed.
+ */
+function ensureSchemaBackground(schema: ScreenSchema): ScreenSchema {
+  if (schema.background !== undefined) return schema;
+  return { ...schema, background: { type: 'solid', color1: 'bg' } };
 }
