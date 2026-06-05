@@ -2888,3 +2888,41 @@ Guru edit sortir-game → lihat "Kolom Kategori" → tambah kolom "Norma Agama"
 | displayMode field | Tidak ada | 'expanded' (default) / 'tab' |
 
 **Build:** PASS
+
+### Sprint 2F — Import JSON Sortir
+
+**Tujuan:** Guru bisa paste/import JSON dari AI eksternal untuk mengisi game sortir dengan kolom dan kartu sekaligus, termasuk relasi kategori. Prinsip: AI hanya mengisi data, app yang membuat id.
+
+**File yang diubah:**
+- `src/core/schema/sortir-import.ts` (BARU) — Validator + mapper + parser + sample JSON
+- `src/components/canva/right-panel/block-properties/SortirImportPanel.tsx` (BARU) — Import JSON UI
+- `src/components/canva/right-panel/block-properties/GuidedFormEditor.tsx` — Tambah kondisi sortir-game
+
+**File yang TIDAK diubah:**
+- SortirGameRenderer.tsx ✅
+- scoring/runtime ✅
+- export ✅
+- guided-patch.ts ✅
+- guided-field-renderer.tsx ✅
+
+**Fitur:**
+1. Import JSON sortir: kolom (2-4) + pool/kartu (2-8)
+2. Validator cek FK integrity: pool[].category harus cocok kolom[].label (case-insensitive)
+3. Mapper generate nanoid(6) untuk kolom.id dan pool.id
+4. Mapper melakukan label→id translation: pool[].category label → kolom.id
+5. Kolom label duplikat ditolak (case-insensitive)
+6. SortirImportPanel: collapsible, Salin Contoh Format, Validasi, Terapkan
+7. Format JSON resmi: { title?, kolom: [{ label, color? }], pool: [{ text, category }] }
+
+**Sprint 2F sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Import sortir | Manual satu per satu | Paste JSON → semua kolom+pool masuk |
+| ID generation | autoId di editor saja | Mapper juga generate nanoid |
+| Category FK | Guru pilih dropdown | Mapper label→id translation |
+| Validator sortir | Tidak ada | validateSortirImportPayload() |
+| Mapper sortir | Tidak ada | mapSortirImportToPatch() |
+| Import UI sortir | Tidak ada | SortirImportPanel (collapsible) |
+
+**Build:** PASS

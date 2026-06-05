@@ -30,6 +30,7 @@ import { PropertyGroup } from './PropertyGroup';
 import { renderGuidedField } from './guided-field-renderer';
 import { OverflowWarningBanner } from './OverflowWarningBanner';
 import { KuisImportPanel } from './KuisImportPanel';
+import { SortirImportPanel } from './SortirImportPanel';
 
 interface GuidedFormEditorProps {
   /** The block being edited */
@@ -163,9 +164,12 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
         );
       })}
 
-      {/* ── Import JSON Panel (kuis only) ── */}
+      {/* ── Import JSON Panel ── */}
       {guidedSchema.blockType === 'kuis' && (
         <KuisImportPanel pageId={pageId} blockId={blockId} />
+      )}
+      {guidedSchema.blockType === 'sortir-game' && (
+        <SortirImportPanel pageId={pageId} blockId={blockId} />
       )}
     </div>
   );
