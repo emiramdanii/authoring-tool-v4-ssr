@@ -423,3 +423,27 @@ Stage Summary:
 - JSON import: paste → validate → apply all questions to block
 - KuisRenderer unchanged, scoring unchanged, export unchanged
 - 6 files changed, 728 insertions, 117 deletions
+
+---
+Task ID: 2F
+Agent: main
+Task: Sprint 2F — Import JSON Sortir
+
+Work Log:
+- Audited SortirGameBlock type (pool[].id, pool[].category → kolom[].id FK)
+- Audited guided editor (autoId, optionsFrom, maxItems 4/8)
+- Audited SortirGameRenderer (item.category === kolomId validation)
+- Created sortir-import.ts with validator + mapper + parser + sample JSON
+- Validator checks FK integrity: pool[].category must match kolom[].label
+- Mapper generates nanoid(6) for kolom.id and pool.id
+- Mapper does label→id translation (case-insensitive)
+- Created SortirImportPanel.tsx (collapsible import UI)
+- Integrated SortirImportPanel in GuidedFormEditor.tsx (blockType === 'sortir-game')
+- Did NOT touch SortirGameRenderer, scoring, export, guided-patch, guided-field-renderer
+- Updated CORE_VERIFICATION_REPORT.md
+- Build PASS, committed f046083, pushed to origin main
+
+Stage Summary:
+- Sortir game now has JSON import with FK validation and label→id translation
+- 4 files changed, 592 insertions, 1 deletion
+- Pattern: AI/guru writes labels, app generates ids, mapper bridges the gap
