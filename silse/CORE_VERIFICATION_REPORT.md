@@ -447,6 +447,34 @@ Final PASS: menunggu P1.2 (KuisRenderer readability) atau visual QA terakhir
 | Renderer/runtime/export tidak berubah | PASS | Zero changes |
 | Build PASS | PASS | Compiled successfully |
 
+### Sprint 2H.3: QA End-to-End AI Import Flow
+
+| Item | Status | Detail |
+|------|--------|--------|
+| Kuis flow: fenced JSON → import | PASS | 4/4 tests PASS |
+| Sortir flow: fenced JSON → import | PASS | 3/3 tests PASS, kolom.id + pool.category FK benar |
+| Roda flow: fenced JSON → import | PASS | 3/3 tests PASS, ans → correct boolean conversion benar |
+| Negative cases: invalid/overflow/bad FK | PASS | 7/7 tests PASS |
+| Edge: JSON + trailing text tanpa fence | **FAIL** | `stripJsonFence` fast path terlalu agresif |
+| Verdict | **PARTIAL** | 1 bug ditemukan di `stripJsonFence` fast path |
+
+### Sprint 2H.4: Fix stripJsonFence Trailing Text
+
+| Item | Status | Detail |
+|------|--------|--------|
+| Fast path: add `&& s.endsWith('}')` check | PASS | `if ((s.startsWith('{') && s.endsWith('}')) \|\| ...)` |
+| JSON object + trailing text → extract | PASS | Brace matching fallback aktif |
+| Pure JSON object → still fast path | PASS | Return as-is |
+| Pure JSON array → still fast path | PASS | Return as-is |
+| Fenced JSON → still PASS | PASS | Code block extraction |
+| Teks pembuka + fenced JSON → still PASS | PASS | Code block extraction |
+| Input bukan JSON → error jelas | PASS | JSON.parse gives clear error |
+| Build PASS | PASS | Compiled successfully |
+
+### Files Changed (Sprint 2H.4)
+
+1. `src/core/schema/strip-json-fence.ts` — Fix fast path: tambah `&& s.endsWith('}')` dan `&& s.endsWith(']')`
+
 ### Files Changed (Sprint 2H)
 
 1. `src/core/schema/kuis-import.ts` — Tambah `KUIS_AI_PROMPT` constant

@@ -50,7 +50,7 @@ export function stripJsonFence(raw: string): string {
   const s = raw.trim();
 
   // ── Fast path: already looks like valid JSON ──
-  if (s.startsWith('{') || s.startsWith('[')) {
+  if ((s.startsWith('{') && s.endsWith('}')) || (s.startsWith('[') && s.endsWith(']'))) {
     return s;
   }
 
