@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-07 (Sprint 2F — Import JSON Sortir)
+Tanggal: 2026-06-07 (Sprint 2G — Import JSON Roda)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -54,6 +54,7 @@ Sprint 2C — Sortir/Roda Guided Editor: PASS (Ronde 46) — sortir-game autoId 
 Sprint D — Dualism Audit Luas: SELESAI (Ronde 35) — 33 dualisme ditemukan di 6 area, 8 P0 / 10 P1 / 15 P2, prioritas cleanup ditetapkan
 Sprint 2E — Import JSON Multi-Question Kuis: PASS — guru paste JSON dari AI → semua soal masuk ke block kuis, maxItems 10, displayMode tab, validator + mapper + KuisImportPanel
 Sprint 2F — Import JSON Sortir: PASS — guru paste JSON dari AI → kolom+pool masuk ke block sortir, nanoid generation, label→id FK translation, validator + mapper + SortirImportPanel
+Sprint 2G — Import JSON Roda: PASS — guru paste JSON dari AI → soal+opsi masuk ke block roda, dual format (native correct + AI-friendly ans), validator + mapper + RodaImportPanel
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -2926,5 +2927,44 @@ Guru edit sortir-game → lihat "Kolom Kategori" → tambah kolom "Norma Agama"
 | Validator sortir | Tidak ada | validateSortirImportPayload() |
 | Mapper sortir | Tidak ada | mapSortirImportToPatch() |
 | Import UI sortir | Tidak ada | SortirImportPanel (collapsible) |
+
+**Build:** PASS
+
+### Sprint 2G — Import JSON Roda
+
+**Tujuan:** Guru bisa paste/import JSON dari AI eksternal untuk mengisi roda-game dengan pertanyaan, opsi, jawaban benar, feedback, dan hint diskusi sekaligus. Mendukung dua format: native roda (opts: [{ text, correct }]) dan AI-friendly (opts: string[] + ans).
+
+**File yang diubah:**
+- `src/core/schema/roda-import.ts` (BARU) — Validator + mapper + parser + sample JSON
+- `src/components/canva/right-panel/block-properties/RodaImportPanel.tsx` (BARU) — Import JSON UI
+- `src/components/canva/right-panel/block-properties/GuidedFormEditor.tsx` — Tambah kondisi roda-game
+
+**File yang TIDAK diubah:**
+- RodaGameRenderer.tsx ✅
+- scoring/runtime ✅
+- export ✅
+- guided-patch.ts ✅
+- guided-field-renderer.tsx ✅
+
+**Fitur:**
+1. Import JSON roda: questions 1–6, opts 2–4 per soal
+2. Dual format support: Format A (native: opts [{ text, correct }]) dan Format B (AI-friendly: opts string[] + ans number)
+3. Mapper otomatis konversi Format B → Format A: ans index → correct boolean
+4. Validator cek: minimal 1 correct per soal (Format A), ans valid index (Format B), >1 correct → warning
+5. Feedback dan diskusiHint opsional, default empty string
+6. RodaImportPanel: collapsible, Salin Contoh Format, Validasi, Terapkan
+7. Format JSON resmi mendukung kedua gaya dalam 1 payload
+
+**Sprint 2G sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Import roda | Manual satu per satu | Paste JSON → semua soal masuk |
+| Format AI-friendly | Tidak didukung | opts string[] + ans → dikonversi ke correct boolean |
+| >1 correct per soal | Tidak ada validasi | Warning (tidak blokir) |
+| 0 correct per soal | Tidak ada validasi | Error (blokir apply) |
+| Validator roda | Tidak ada | validateRodaImportPayload() |
+| Mapper roda | Tidak ada | mapRodaImportToPatch() |
+| Import UI roda | Tidak ada | RodaImportPanel (collapsible) |
 
 **Build:** PASS

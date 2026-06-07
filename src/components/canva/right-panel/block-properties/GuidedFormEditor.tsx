@@ -31,6 +31,7 @@ import { renderGuidedField } from './guided-field-renderer';
 import { OverflowWarningBanner } from './OverflowWarningBanner';
 import { KuisImportPanel } from './KuisImportPanel';
 import { SortirImportPanel } from './SortirImportPanel';
+import { RodaImportPanel } from './RodaImportPanel';
 
 interface GuidedFormEditorProps {
   /** The block being edited */
@@ -170,6 +171,9 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
       )}
       {guidedSchema.blockType === 'sortir-game' && (
         <SortirImportPanel pageId={pageId} blockId={blockId} />
+      )}
+      {guidedSchema.blockType === 'roda-game' && (
+        <RodaImportPanel pageId={pageId} blockId={blockId} />
       )}
     </div>
   );
