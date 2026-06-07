@@ -41,6 +41,8 @@ export function SortirImportPanel({ pageId, blockId }: SortirImportPanelProps) {
   const [validation, setValidation] = useState<SortirImportValidation | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [applied, setApplied] = useState(false);
+  const [copiedSample, setCopiedSample] = useState(false);
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
 
   // ── Validate handler ──
   const handleValidate = useCallback(() => {
@@ -87,7 +89,8 @@ export function SortirImportPanel({ pageId, blockId }: SortirImportPanelProps) {
   // ── Copy sample format ──
   const handleCopySample = useCallback(() => {
     navigator.clipboard.writeText(SORTIR_IMPORT_SAMPLE).then(() => {
-      // Brief visual feedback
+      setCopiedSample(true);
+      setTimeout(() => setCopiedSample(false), 2000);
     }).catch(() => {
       // Fallback: no clipboard access
     });
@@ -95,7 +98,10 @@ export function SortirImportPanel({ pageId, blockId }: SortirImportPanelProps) {
 
   // ── Copy AI prompt ──
   const handleCopyAIPrompt = useCallback(() => {
-    navigator.clipboard.writeText(SORTIR_AI_PROMPT).catch(() => {
+    navigator.clipboard.writeText(SORTIR_AI_PROMPT).then(() => {
+      setCopiedPrompt(true);
+      setTimeout(() => setCopiedPrompt(false), 2000);
+    }).catch(() => {
       // Fallback: no clipboard access
     });
   }, []);
@@ -120,6 +126,12 @@ export function SortirImportPanel({ pageId, blockId }: SortirImportPanelProps) {
       {/* Collapsible content */}
       {isOpen && (
         <div className="p-3 space-y-3 bg-silse-surface-container-lowest">
+          {/* Step guide */}
+          <div className="flex items-start gap-1.5 px-1 text-[10px] text-silse-on-surface-variant/70 leading-relaxed">
+            <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '13px' }}>info</span>
+            <span>Langkah: ① Salin Prompt AI → ② Paste ke ChatGPT → ③ Copy &amp; paste hasilnya di sini</span>
+          </div>
+
           {/* Copy buttons */}
           <div className="flex items-center gap-2">
             <button
@@ -128,7 +140,7 @@ export function SortirImportPanel({ pageId, blockId }: SortirImportPanelProps) {
               type="button"
             >
               <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>content_copy</span>
-              Salin Contoh Format
+              {copiedSample ? 'Tersalin!' : 'Salin Contoh Format'}
             </button>
             <button
               onClick={handleCopyAIPrompt}
@@ -136,7 +148,7 @@ export function SortirImportPanel({ pageId, blockId }: SortirImportPanelProps) {
               type="button"
             >
               <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>psychology</span>
-              Salin Prompt AI
+              {copiedPrompt ? 'Tersalin!' : 'Salin Prompt AI'}
             </button>
           </div>
 
@@ -144,7 +156,7 @@ export function SortirImportPanel({ pageId, blockId }: SortirImportPanelProps) {
           <textarea
             value={jsonText}
             onChange={e => { setJsonText(e.target.value); setValidation(null); setParseError(null); setApplied(false); }}
-            placeholder={'Paste JSON sortir di sini...\n\nContoh:\n{\n  "title": "Sortir ...",\n  "kolom": [\n    { "label": "Agama", "color": "y" }\n  ],\n  "pool": [\n    { "text": "Berdoa", "category": "Agama" }\n  ]\n}'}
+            placeholder={'Paste hasil dari ChatGPT/AI di sini...\n\nContoh:\n{\n  "title": "Sortir ...",\n  "kolom": [\n    { "label": "Agama", "color": "y" }\n  ],\n  "pool": [\n    { "text": "Berdoa", "category": "Agama" }\n  ]\n}'}
             rows={6}
             className="w-full px-3 py-2 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-xs text-silse-on-surface focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all resize-y font-mono"
           />

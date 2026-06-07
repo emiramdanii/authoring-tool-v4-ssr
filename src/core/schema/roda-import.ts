@@ -324,7 +324,7 @@ export function parseRodaImportJSON(raw: string): { data: RodaImportPayload | nu
     parsed = JSON.parse(stripJsonFence(trimmed));
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    return { data: null, error: `JSON tidak valid: ${msg}` };
+    return { data: null, error: `Format tidak valid. Pastikan Anda menyalin seluruh hasil dari AI, lalu coba lagi. Detail: ${msg}` };
   }
 
   return { data: parsed as RodaImportPayload, error: null };

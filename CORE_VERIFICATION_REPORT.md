@@ -55,6 +55,10 @@ Sprint D — Dualism Audit Luas: SELESAI (Ronde 35) — 33 dualisme ditemukan di
 Sprint 2E — Import JSON Multi-Question Kuis: PASS — guru paste JSON dari AI → semua soal masuk ke block kuis, maxItems 10, displayMode tab, validator + mapper + KuisImportPanel
 Sprint 2F — Import JSON Sortir: PASS — guru paste JSON dari AI → kolom+pool masuk ke block sortir, nanoid generation, label→id FK translation, validator + mapper + SortirImportPanel
 Sprint 2G — Import JSON Roda: PASS — guru paste JSON dari AI → soal+opsi masuk ke block roda, dual format (native correct + AI-friendly ans), validator + mapper + RodaImportPanel
+Sprint 2H — AI Prompt Templates: PASS — KUIS/SORTIR/RODA_AI_PROMPT constants, "Salin Prompt AI" button di 3 panel, psychology icon
+Sprint 2H.2 — Robust AI JSON Parser: PASS — stripJsonFence() helper strips markdown fences + leading/trailing text, 3 parsers updated
+Sprint 2H.4 — Fix Trailing Text Parser Bug: PASS — stripJsonFence fast path now checks s.endsWith('}') / s.endsWith(']')
+Sprint 2I.1 — AI Import UX Polish: PASS — step guide, copy feedback "Tersalin!", teacher-friendly parse errors, placeholder menyebut ChatGPT/AI
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -2968,3 +2972,39 @@ Guru edit sortir-game → lihat "Kolom Kategori" → tambah kolom "Norma Agama"
 | Import UI roda | Tidak ada | RodaImportPanel (collapsible) |
 
 **Build:** PASS
+
+**PERUBAHAN SPRINT 2I.1 — AI Import UX Polish:**
+
+1. Step guide ditambahkan di 3 panel import (Kuis, Sortir, Roda):
+   - "Langkah: ① Salin Prompt AI → ② Paste ke ChatGPT → ③ Copy & paste hasilnya di sini"
+   - Icon info, style kecil lembut (10px), tidak mendominasi
+   - Muncul di atas tombol copy saat panel dibuka
+
+2. Copy feedback visual "Tersalin!" di 6 tombol (2 per panel):
+   - `copiedSample` state → tombol "Salin Contoh Format" berubah jadi "Tersalin!" selama 2 detik
+   - `copiedPrompt` state → tombol "Salin Prompt AI" berubah jadi "Tersalin!" selama 2 detik
+   - navigator.clipboard.writeText() → then() callback → setTimeout reset 2000ms
+
+3. Placeholder textarea update di 3 panel:
+   - Kuis: "Paste JSON kuis di sini..." → "Paste hasil dari ChatGPT/AI di sini..."
+   - Sortir: "Paste JSON sortir di sini..." → "Paste hasil dari ChatGPT/AI di sini..."
+   - Roda: "Paste JSON roda di sini..." → "Paste hasil dari ChatGPT/AI di sini..."
+   - Contoh format tetap ditampilkan di bawah
+
+4. Parse error ramah guru di 3 parser:
+   - Sebelum: `"JSON tidak valid: Unexpected token } in JSON at position 45"`
+   - Sesudah: `"Format tidak valid. Pastikan Anda menyalin seluruh hasil dari AI, lalu coba lagi. Detail: Unexpected token } in JSON at position 45"`
+   - Pesan utama manusiawi, detail teknis tetap tersedia
+
+5. Tidak mengubah: validator logic, mapper logic, stripJsonFence, renderer, export, GuidedFormEditor, backend
+6. 6 file diubah: 3 panel + 3 parser
+7. Build: PASS
+
+**Sprint 2I.1 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Panduan langkah | Tidak ada — guru harus menebak alur | Step guide ①②③ terlihat jelas |
+| Feedback copy | Tidak ada — guru bingung apakah tersalin | "Tersalin!" selama 2 detik |
+| Placeholder | "Paste JSON kuis di sini..." (teknis) | "Paste hasil dari ChatGPT/AI di sini..." (ramah) |
+| Parse error | "JSON tidak valid: Unexpected token..." (teknis) | "Format tidak valid. Pastikan Anda menyalin seluruh hasil dari AI..." (ramah) |
