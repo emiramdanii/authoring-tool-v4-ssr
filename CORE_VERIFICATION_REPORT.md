@@ -66,6 +66,7 @@ Sprint 2J.5 — Perluas Warna MateriBlok: PASS — warna field expanded to 9 saf
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
+Sprint 2K.2 — Block Style Preset Grid UI: PASS — BlockStylePresetGrid.tsx, Gaya Cepat grid di section Tampilan, resolver-driven, active state, no dead fields
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -3264,3 +3265,79 @@ Dengan options → hanya tampilkan 6 warna aksen
 7. 44 unit test PASS — termasuk edge case: unknown preset, unknown block, dead fields
 8. Tidak ada UI berubah, tidak ada renderer/export berubah
 9. Build berhasil, test berhasil
+
+## Round 54 — Sprint 2K.2: Block Style Preset Grid UI
+
+**PERUBAHAN RONDE 54 (Sprint 2K.2 — Block Style Preset Grid UI):**
+
+1. Sprint 2K.2 IMPLEMENTASI: Grid "Gaya Cepat" di section Tampilan GuidedFormEditor — guru bisa menerapkan preset block style dengan sekali klik
+2. `BlockStylePresetGrid.tsx` (BARU): Komponen grid 3 kolom dengan 7 preset cards (Ceria/Formal/Modern/Petualangan/Minimal/Hangat/Berani)
+3. Setiap card preset menampilkan: emoji icon, label, color swatch dari accentColor token
+4. Klik preset → `resolveBlockStylePreset(presetId, blockType)` → `onApplyPreset(resolvedPatch)` → `applyGuidedSchemaPatch()` via `handleUpdate`
+5. Guard: patch kosong TIDAK diterapkan (`Object.keys(resolved).length === 0` check)
+6. Guard: grid hanya muncul di section Tampilan (`sectionKey === 'appearance'`) untuk blockType yang `blockTypeSupportsPresets(blockType) === true`
+7. Active state: jika semua field block saat ini cocok dengan resolved preset, card diberi border aktif + ring highlight
+8. `getPresetDisplayColor()`: menentukan swatch warna berdasarkan supported fields (accentColor/borderColor → tampilkan swatch, variant-only → tanpa swatch)
+9. `isPresetActive()`: membandingkan current block data dengan resolved preset, return true jika semua field cocok
+10. ACCENT_SWATCHES: mapping lokal 6 token warna (y/c/g/p/o/r) — mirrors TOKEN_COLORS dari guided-field-renderer tanpa coupling
+11. `GuidedFormEditor.tsx`: Import BlockStylePresetGrid + blockTypeSupportsPresets, sisipkan grid di atas field Tampilan
+12. Tidak mengubah: renderer, export, guided-patch, block-style-presets data layer, token system, ThemePreset
+13. Build: PASS
+14. 44 unit test (block-style-presets): PASS — tidak ada regresi
+
+**Sprint 2K.2 data flow:**
+
+```txt
+Guru klik preset card
+  → resolveBlockStylePreset('ceria', 'materi-section')
+  → { accentColor: 'y', variant: 'B' }
+  → handleUpdate(resolvedPatch)
+  → applyGuidedSchemaPatch({ pageId, blockId, patch, source: 'guided-form' })
+  → schema update → block re-render → color swatch + variant update
+```
+
+**Sprint 2K.2 safety guarantees:**
+
+```txt
+1. Grid hanya muncul jika blockTypeSupportsPresets(blockType) === true
+2. Klik preset memakai resolver → field palsu TIDAK ditulis
+3. Patch kosong TIDAK diterapkan
+4. Block tanpa capability → grid tidak muncul
+5. Renderer/export TIDAK berubah
+6. Data layer (2K.1) TIDAK berubah
+```
+
+**Sprint 2K.2 contoh resolver behavior per block type:**
+
+| Block Type | Preset Ceria | Preset Formal | Grid Muncul? |
+|-----------|-------------|--------------|-------------|
+| materi-section | { accentColor: 'y', variant: 'B' } | { accentColor: 'c', variant: 'A' } | Ya |
+| kuis | { variant: 'B' } | { variant: 'A' } | Ya |
+| sortir-game | { accentColor: 'y' } | { accentColor: 'c' } | Ya |
+| def-box | {} | {} | Tidak (resolver return {}) |
+| tp | {} | {} | Tidak (no capabilities) |
+
+**Sprint 2K.2 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Guru terapkan style per block | Edit accentColor + variant manual | Klik "Gaya Cepat" → 1 klik |
+| Section Tampilan | Hanya individual fields | Individual fields + preset grid di atas |
+| Block tanpa style capability | Tidak ada Tampilan | Sama (grid tidak muncul) |
+| Field palsu di schema | Tidak ada | Tidak ada (resolver memfilter) |
+
+**Sprint 2K.2 files changed:**
+
+| File | Change |
+|------|--------|
+| `src/components/canva/right-panel/block-properties/BlockStylePresetGrid.tsx` | BARU — Gaya Cepat grid component |
+| `src/components/canva/right-panel/block-properties/GuidedFormEditor.tsx` | Import + sisipkan BlockStylePresetGrid di section Tampilan |
+| `CORE_VERIFICATION_REPORT.md` | Sprint 2K.2 entry |
+
+**Sprint 2K.2 dicatat untuk follow-up (2K.3):**
+
+| Item | Alasan |
+|------|--------|
+| materi-blok warna → accentColor mapping | Special case, perlu field mapping |
+| def-box borderColor dari preset accentColor | Perlu mapping preset.accentColor → def-box.borderColor |
+| Active state refinement | Saat ini minimal compare, bisa diperhalus |

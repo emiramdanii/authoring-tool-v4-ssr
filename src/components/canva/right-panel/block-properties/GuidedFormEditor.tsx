@@ -32,6 +32,8 @@ import { OverflowWarningBanner } from './OverflowWarningBanner';
 import { KuisImportPanel } from './KuisImportPanel';
 import { SortirImportPanel } from './SortirImportPanel';
 import { RodaImportPanel } from './RodaImportPanel';
+import { BlockStylePresetGrid } from './BlockStylePresetGrid';
+import { blockTypeSupportsPresets } from '@/core/schema/block-style-presets';
 
 interface GuidedFormEditorProps {
   /** The block being edited */
@@ -160,6 +162,14 @@ export function GuidedFormEditor({ block, guidedSchema, pageId, blockId }: Guide
 
         return (
           <PropertyGroup key={sectionKey} label={sectionLabel} defaultCollapsed={sectionDef?.collapsed ?? false}>
+            {/* Gaya Cepat preset grid — only in Tampilan section for supported block types */}
+            {sectionKey === 'appearance' && blockTypeSupportsPresets(guidedSchema.blockType) && (
+              <BlockStylePresetGrid
+                blockType={guidedSchema.blockType}
+                block={block}
+                onApplyPreset={handleUpdate}
+              />
+            )}
             {fields.map(field => renderGuidedField(field, b, handleUpdate))}
           </PropertyGroup>
         );
