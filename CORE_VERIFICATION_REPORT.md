@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-02 (Ronde 32 — Sprint 2C.1 Diskusi label/icon/color polish)
+Tanggal: 2026-06-07 (Sprint 2F — Import JSON Sortir)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -52,6 +52,8 @@ D-P0E.1 — Schema Background Image Compression: PASS (Ronde 44) — schema back
 Sprint 2B — MateriBlok Guided Editor Minimal: PASS (Ronde 45) — materi-blok uses GuidedFormEditor with showWhen conditional fields, 8 tipe (6 utama + kutipan/gambar), accentColor showWhen added
 Sprint 2C — Sortir/Roda Guided Editor: PASS (Ronde 46) — sortir-game autoId for kolom/pool items, pool[].category now select dropdown from kolom labels (optionsFrom), roda-game verified no regression
 Sprint D — Dualism Audit Luas: SELESAI (Ronde 35) — 33 dualisme ditemukan di 6 area, 8 P0 / 10 P1 / 15 P2, prioritas cleanup ditetapkan
+Sprint 2E — Import JSON Multi-Question Kuis: PASS — guru paste JSON dari AI → semua soal masuk ke block kuis, maxItems 10, displayMode tab, validator + mapper + KuisImportPanel
+Sprint 2F — Import JSON Sortir: PASS — guru paste JSON dari AI → kolom+pool masuk ke block sortir, nanoid generation, label→id FK translation, validator + mapper + SortirImportPanel
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
