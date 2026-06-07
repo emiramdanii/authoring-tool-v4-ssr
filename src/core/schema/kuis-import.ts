@@ -28,6 +28,8 @@
 //   }
 // ═══════════════════════════════════════════════════════════════════
 
+import { stripJsonFence } from './strip-json-fence';
+
 // ── Types ──────────────────────────────────────────────────────
 
 export interface KuisImportQuestion {
@@ -204,7 +206,7 @@ export function parseKuisImportJSON(raw: string): { data: KuisImportPayload | nu
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(trimmed);
+    parsed = JSON.parse(stripJsonFence(trimmed));
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return { data: null, error: `JSON tidak valid: ${msg}` };

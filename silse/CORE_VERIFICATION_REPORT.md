@@ -417,6 +417,36 @@ Final PASS: menunggu P1.2 (KuisRenderer readability) atau visual QA terakhir
 | Build PASS | PASS | Compiled successfully |
 | Validator/mapper tidak berubah | PASS | Hanya tambah constant + UI button |
 
+### Sprint 2H.1: QA Prompt AI Workflow
+
+| Item | Status | Detail |
+|------|--------|--------|
+| Prompt vs Validator cocok | PASS | Ketiga prompt 100% sesuai validator & mapper |
+| Parser handle markdown code fence | FAIL | `JSON.parse(raw)` gagal pada output AI dengan ` ```json ``` ` |
+| Parser handle teks pembuka/penutup | FAIL | `JSON.parse(raw)` gagal jika ada teks di luar JSON |
+| Validator handle ans sebagai string | PASS | Conversion sudah ada |
+| Sortir kategori beda kapital | PASS | Case-insensitive match |
+| Verdict | **PARTIAL** | Perlu `stripJsonFence()` pre-parser helper |
+
+### Sprint 2H.2: Robust AI JSON Parser
+
+| Item | Status | Detail |
+|------|--------|--------|
+| `strip-json-fence.ts` helper | PASS | `stripJsonFence()`: strip markdown fence, extract JSON by brace matching |
+| Kuis parser pakai `stripJsonFence` | PASS | `JSON.parse(stripJsonFence(trimmed))` |
+| Sortir parser pakai `stripJsonFence` | PASS | `JSON.parse(stripJsonFence(trimmed))` |
+| Roda parser pakai `stripJsonFence` | PASS | `JSON.parse(stripJsonFence(trimmed))` |
+| JSON valid langsung → parse PASS | PASS | Fast path: `startsWith('{')` → return as-is |
+| ` ```json fenced``` ` → parse PASS | PASS | Code block extraction |
+| Teks pembuka + fenced JSON → PASS | PASS | Code block extraction |
+| Teks pembuka + JSON langsung → PASS | PASS | Brace matching extraction |
+| JSON + teks penutup → PASS | PASS | Brace matching: first `{` to last `}` |
+| Multiple code blocks → ambil pertama | PASS | Regex iterasi, return first block starting with `{` |
+| Input bukan JSON → error jelas | PASS | Fallback returns trimmed input, JSON.parse gives clear error |
+| Validator/mapper tidak berubah | PASS | Hanya pre-parser cleanup |
+| Renderer/runtime/export tidak berubah | PASS | Zero changes |
+| Build PASS | PASS | Compiled successfully |
+
 ### Files Changed (Sprint 2H)
 
 1. `src/core/schema/kuis-import.ts` — Tambah `KUIS_AI_PROMPT` constant
@@ -425,3 +455,10 @@ Final PASS: menunggu P1.2 (KuisRenderer readability) atau visual QA terakhir
 4. `src/components/canva/right-panel/block-properties/KuisImportPanel.tsx` — Import `KUIS_AI_PROMPT`, tambah handler + tombol "Salin Prompt AI"
 5. `src/components/canva/right-panel/block-properties/SortirImportPanel.tsx` — Import `SORTIR_AI_PROMPT`, tambah handler + tombol "Salin Prompt AI"
 6. `src/components/canva/right-panel/block-properties/RodaImportPanel.tsx` — Import `RODA_AI_PROMPT`, tambah handler + tombol "Salin Prompt AI"
+
+### Files Changed (Sprint 2H.2)
+
+1. `src/core/schema/strip-json-fence.ts` — BARU: `stripJsonFence()` pre-parser helper
+2. `src/core/schema/kuis-import.ts` — Import `stripJsonFence`, ganti `JSON.parse(trimmed)` → `JSON.parse(stripJsonFence(trimmed))`
+3. `src/core/schema/sortir-import.ts` — Import `stripJsonFence`, ganti `JSON.parse(trimmed)` → `JSON.parse(stripJsonFence(trimmed))`
+4. `src/core/schema/roda-import.ts` — Import `stripJsonFence`, ganti `JSON.parse(trimmed)` → `JSON.parse(stripJsonFence(trimmed))`

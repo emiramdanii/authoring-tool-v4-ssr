@@ -31,6 +31,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { nanoid } from 'nanoid';
+import { stripJsonFence } from './strip-json-fence';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -243,7 +244,7 @@ export function parseSortirImportJSON(raw: string): { data: SortirImportPayload 
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(trimmed);
+    parsed = JSON.parse(stripJsonFence(trimmed));
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return { data: null, error: `JSON tidak valid: ${msg}` };
