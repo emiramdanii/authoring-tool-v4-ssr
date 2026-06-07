@@ -59,6 +59,7 @@ Sprint 2H — AI Prompt Templates: PASS — KUIS/SORTIR/RODA_AI_PROMPT constants
 Sprint 2H.2 — Robust AI JSON Parser: PASS — stripJsonFence() helper strips markdown fences + leading/trailing text, 3 parsers updated
 Sprint 2H.4 — Fix Trailing Text Parser Bug: PASS — stripJsonFence fast path now checks s.endsWith('}') / s.endsWith(']')
 Sprint 2I.1 — AI Import UX Polish: PASS — step guide, copy feedback "Tersalin!", teacher-friendly parse errors, placeholder menyebut ChatGPT/AI
+Sprint 2J.1 — Activate Existing Style Controls: PASS — section Tampilan + variant untuk kuis, accentColor + variant untuk materi-section, no dead fields, no renderer changes
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -3008,3 +3009,46 @@ Guru edit sortir-game → lihat "Kolom Kategori" → tambah kolom "Norma Agama"
 | Feedback copy | Tidak ada — guru bingung apakah tersalin | "Tersalin!" selama 2 detik |
 | Placeholder | "Paste JSON kuis di sini..." (teknis) | "Paste hasil dari ChatGPT/AI di sini..." (ramah) |
 | Parse error | "JSON tidak valid: Unexpected token..." (teknis) | "Format tidak valid. Pastikan Anda menyalin seluruh hasil dari AI..." (ramah) |
+
+**PERUBAHAN RONDE 47 (Sprint 2J.1 — Activate Existing Style Controls):**
+
+1. Sprint 2J.1 IMPLEMENTASI: Aktifkan kontrol style yang sudah ada di sistem token/renderer — guru bisa mengubah tampilan block tanpa CSS bebas
+2. `guided-patch.ts`: Entry `kuis` — tambah field `variant` (select: Klasik/Kartu/Ringkas) + section "Tampilan" (collapsed)
+3. `guided-patch.ts`: Entry `materi-section` — tambah field `accentColor` (color: Kuning/Cyan/Hijau/Ungu/Oranye/Merah) + field `variant` (select: Klasik/Majalah/Pill) + section "Tampilan" (collapsed)
+4. KUIS: `accentColor` TIDAK dimunculkan — KuisRenderer hardcodes 'y'; KuisBlock type tidak punya field accentColor
+5. MATERI-SECTION: `accentColor` + `variant` dimunculkan — MateriSectionRenderer membaca keduanya secara aktif
+6. SORTIR-GAME: Tidak ditambahkan — SortirGameRenderer tidak membaca accentColor/variant → GAP
+7. RODA-GAME: Tidak ditambahkan — RodaGameRenderer tidak membaca accentColor/variant → GAP
+8. MATERI-BLOK: Sudah punya section "Tampilan" — accentColor ada tapi dead field (P3 backlog); warna/infoboxStyle berfungsi
+9. Tidak mengubah: renderer, export, runtime/scoring, token system, TemplateThemeContract, background system
+10. Build: PASS
+
+**S2J.1 prinsip style control activation:**
+
+```txt
+Hanya ekspos field yang renderer AKTIF membaca.
+Jangan buat field palsu yang tidak berdampak visual.
+Jika renderer belum membaca → catat sebagai gap, jangan aktifkan.
+Section Tampilan selalu collapsed default.
+```
+
+**S2J.1 style controls per block:**
+
+| Block | accentColor | variant | Tampilan Section | Catatan |
+|-------|-------------|---------|-----------------|---------|
+| kuis | ❌ not in type | ✅ A/B/C (Klasik/Kartu/Ringkas) | ✅ NEW (collapsed) | Renderer reads variant, hardcodes accentColor='y' |
+| materi-section | ✅ y/c/g/p/o/r | ✅ A/B/C (Klasik/Majalah/Pill) | ✅ NEW (collapsed) | Renderer reads both |
+| sortir-game | GAP | GAP | ❌ | Renderer hardcodes 'y', no variant support |
+| roda-game | GAP | GAP | ❌ | Renderer hardcodes 'y', no variant support |
+| materi-blok | P3 dead field | GAP | ✅ existing | accentColor not read by renderer; warna/infoboxStyle work |
+
+**S2J.1 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Guru ubah variant kuis | Hanya via inline VariantSelector di canvas | Juga via GuidedFormEditor "Model Tampilan" |
+| Guru ubah accentColor materi | Hanya via SchemaDrivenEditor advanced | Juga via GuidedFormEditor "Warna Aksen" |
+| Guru ubah variant materi | Hanya via inline VariantSelector | Juga via GuidedFormEditor "Model Tampilan" |
+| Section Tampilan kuis | Tidak ada | Ada (collapsed) — variant only |
+| Section Tampilan materi-section | Tidak ada | Ada (collapsed) — accentColor + variant |
+| Dead style fields | 0 (tidak ada) | 0 (tidak ada — prinsip dijaga) |

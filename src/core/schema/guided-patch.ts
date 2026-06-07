@@ -659,9 +659,17 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'ex', label: 'Penjelasan', type: 'textarea', helpText: 'Penjelasan mengapa jawaban ini benar', placeholder: 'Jelaskan alasan jawaban benar...' },
         ],
       },
+      // S2J.1: variant exposed — KuisRenderer reads block.variant (A=Klasik, B=Kartu, C=Ringkas).
+      // accentColor NOT exposed — KuisRenderer hardcodes 'y'; KuisBlock type has no accentColor field.
+      { key: 'variant', label: 'Model Tampilan', type: 'select', options: [
+        { label: 'Klasik', value: 'A' },
+        { label: 'Kartu', value: 'B' },
+        { label: 'Ringkas', value: 'C' },
+      ], helpText: 'Pilih tampilan soal kuis' },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['variant'], collapsed: true },
     ],
   },
 
@@ -728,9 +736,24 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'title', label: 'Judul Materi', type: 'text', required: true },
       // Note: content is an array of nested SchemaBlocks — too complex for simple guided form
       // The guided form for materi-section will be enhanced in Phase 2
+      // S2J.1: accentColor + variant exposed — MateriSectionRenderer reads both.
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: [
+        { label: 'Kuning', value: 'y' },
+        { label: 'Cyan', value: 'c' },
+        { label: 'Hijau', value: 'g' },
+        { label: 'Ungu', value: 'p' },
+        { label: 'Oranye', value: 'o' },
+        { label: 'Merah', value: 'r' },
+      ], helpText: 'Warna aksen untuk header dan elemen materi' },
+      { key: 'variant', label: 'Model Tampilan', type: 'select', options: [
+        { label: 'Klasik', value: 'A' },
+        { label: 'Majalah', value: 'B' },
+        { label: 'Pill', value: 'C' },
+      ], helpText: 'Pilih tampilan bagian materi' },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor', 'variant'], collapsed: true },
     ],
   },
 
