@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { RotateCcw, Gamepad2, CheckCircle2, XCircle, Flame } from 'lucide-react';
 import type { KuisBlock } from '../../schema/types';
 import type { TokenResolver } from '../types';
@@ -11,6 +11,7 @@ import { playSound } from '@/lib/sounds';
 import { useBlockCompression } from '../../layout/useBlockCompression';
 import { IOS_SPACING } from '../../themes/ios-visual-contract';
 import type { EduRenderingContext } from '../../edu/EduRenderingContext';
+import { useCanvaStore } from '@/store/canva/store';
 
 // ── Background-image-aware styling helpers ────────────────────────
 // When a background image is active, quiz options/feedback need more
@@ -360,10 +361,16 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
   const edu = tokens.edu('kuis', isCompact);
 
   // ── Variant state ───────────────────────────────────────────
+  // Sprint 2K.4: Persist variant changes to schema (same pattern as other renderers)
+  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
   const [currentVariant, setCurrentVariant] = useState<'A' | 'B' | 'C'>(
     (block.variant as 'A' | 'B' | 'C') || 'A'
   );
   const variant = currentVariant;
+  const handleVariantChange = useCallback((v: 'A' | 'B' | 'C') => {
+    setCurrentVariant(v);
+    if (block.id) updateSchemaBlock(block.id, { variant: v });
+  }, [block.id, updateSchemaBlock]);
 
   // ── Compression-aware rendering (step-reveal strategy) ──────
   // Kuis naturally shows one question at a time (step-reveal).
@@ -545,7 +552,7 @@ export const KuisRenderer = React.memo(function KuisRenderer({ block, tokens, in
       {/* ── Variant selector (only in editing mode) ──────────────── */}
       {isEditing && (
         <div style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 45 }}>
-          <VariantSelector active={variant} onChange={setCurrentVariant} tokens={tokens} />
+          <VariantSelector active={variant} onChange={handleVariantChange} tokens={tokens} />
         </div>
       )}
 
