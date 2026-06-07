@@ -304,6 +304,8 @@ export interface KuisBlock extends BaseBlock {
 export interface SortirGameBlock extends BaseBlock {
   type: 'sortir-game';
   title: string;
+  /** Accent color token key (y/c/g/p/o/r). Controls wrapper, progress, badge colors. */
+  accentColor?: string;
   pool: Array<{
     id: string;
     text: string;
@@ -319,6 +321,8 @@ export interface SortirGameBlock extends BaseBlock {
 export interface RodaGameBlock extends BaseBlock {
   type: 'roda-game';
   title: string;
+  /** Accent color token key (y/c/g/p/o/r). Controls wrapper, progress, border colors. Does NOT change wheel segment colors. */
+  accentColor?: string;
   /** Whether to show one question at a time ('single') or all at once ('all') */
   stepMode?: 'single' | 'all';
   /** Starting question index (0-based). Runtime tracks progress via interactive store. */

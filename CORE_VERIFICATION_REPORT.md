@@ -60,6 +60,8 @@ Sprint 2H.2 — Robust AI JSON Parser: PASS — stripJsonFence() helper strips m
 Sprint 2H.4 — Fix Trailing Text Parser Bug: PASS — stripJsonFence fast path now checks s.endsWith('}') / s.endsWith(']')
 Sprint 2I.1 — AI Import UX Polish: PASS — step guide, copy feedback "Tersalin!", teacher-friendly parse errors, placeholder menyebut ChatGPT/AI
 Sprint 2J.1 — Activate Existing Style Controls: PASS — section Tampilan + variant untuk kuis, accentColor + variant untuk materi-section, no dead fields, no renderer changes
+Sprint 2J.2 — Style Control Gap Audit for Games: PASS (audit only) — sortir/roda renderer hardcode accent='y', edu resolves quiz→'r', accentColor safe to add, variant not needed
+Sprint 2J.3 — Add Accent Color Support for Sortir/Roda: PASS — accentColor added to schema, renderers read it, GuidedFormEditor exposes it, no variant, no wheelColors change
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -3052,3 +3054,51 @@ Section Tampilan selalu collapsed default.
 | Section Tampilan kuis | Tidak ada | Ada (collapsed) — variant only |
 | Section Tampilan materi-section | Tidak ada | Ada (collapsed) — accentColor + variant |
 | Dead style fields | 0 (tidak ada) | 0 (tidak ada — prinsip dijaga) |
+
+**PERUBAHAN RONDE 49 (Sprint 2J.3 — Add Accent Color Support for Sortir/Roda):**
+
+1. Sprint 2J.3 IMPLEMENTASI: Guru bisa memilih warna aksen untuk game sortir dan roda dari panel kanan — field benar-benar berdampak visual pada wrapper, progress, dan badge
+2. `blocks.ts`: Tambah `accentColor?: string` ke `SortirGameBlock` dan `RodaGameBlock` (dengan JSDoc comment)
+3. `SortirGameRenderer.tsx`: Tambah `const accent = block.accentColor || 'y'` — ganti semua `accent="y"` pada `PremiumBlockWrapper`, `ReadingProgressIndicator`, `MicroInteraction`, `PremiumBadge` dengan `accent={accent}`
+4. `RodaGameRenderer.tsx`: Tambah `const accent = block.accentColor || 'y'` — ganti semua `accent="y"` pada `PremiumBlockWrapper`, `ReadingProgressIndicator`, `MicroInteraction` dengan `accent={accent}`
+5. `guided-patch.ts`: Entry `sortir-game` — tambah field `accentColor` (color options: Kuning/Cyan/Hijau/Ungu/Oranye/Merah) + section "Tampilan" (collapsed)
+6. `guided-patch.ts`: Entry `roda-game` — tambah field `accentColor` (color options: sama) + section "Tampilan" (collapsed)
+7. `guided-patch.ts`: Comment roda-game diupdate — "S2J.3: accentColor now exposed" bukan "accentColor are NOT shown"
+8. RodaGameRenderer `wheelColors` TIDAK diubah — segmen roda tetap 6 warna rainbow, accentColor hanya memengaruhi bingkai/progress
+9. SortirGameRenderer `kolom[].color` TIDAK diubah — warna kolom per-item tetap terpisah dari accentColor block
+10. Tidak menambahkan variant untuk sortir/roda — kedua game belum punya beberapa layout
+11. Tidak mengubah: export, runtime/scoring, token system, TemplateThemeContract, background system, materi-blok
+12. Build: PASS
+
+**S2J.3 prinsip accent color untuk game:**
+
+```txt
+accentColor memengaruhi: wrapper glow, progress bar, badge, button gradient
+accentColor TIDAK memengaruhi: roda segment colors (6 warna tetap), kolom warna (per-item)
+Label field: "Warna Aksen" (bukan "Warna Roda") — jangan buat guru kira semua warna berubah
+Default fallback: 'y' (Kuning) — konsisten dengan behavior sebelumnya
+Section Tampilan: collapsed default — guru fokus ke isi dulu
+```
+
+**S2J.3 style controls per game block (updated):**
+
+| Block | accentColor | variant | Tampilan Section | Catatan |
+|-------|-------------|---------|-----------------|---------|
+| kuis | ❌ not in type | ✅ A/B/C | ✅ (S2J.1) | Renderer hardcodes accentColor='y' |
+| materi-section | ✅ y/c/g/p/o/r | ✅ A/B/C | ✅ (S2J.1) | Renderer reads both |
+| sortir-game | ✅ y/c/g/p/o/r (NEW) | ❌ | ✅ NEW (collapsed) | Renderer now reads accentColor |
+| roda-game | ✅ y/c/g/p/o/r (NEW) | ❌ | ✅ NEW (collapsed) | Renderer reads accentColor; wheelColors unchanged |
+| materi-blok | P3 dead field | ❌ | ✅ existing | accentColor not read by renderer |
+
+**S2J.3 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| SortirGameBlock.accentColor | Tidak ada field | ✅ accentColor?: string |
+| RodaGameBlock.accentColor | Tidak ada field | ✅ accentColor?: string |
+| SortirGameRenderer accent | Hardcoded accent="y" | accent={block.accentColor \|\| 'y'} |
+| RodaGameRenderer accent | Hardcoded accent="y" | accent={block.accentColor \|\| 'y'} |
+| Guided editor sortir "Tampilan" | Tidak ada | ✅ Section collapsed + Warna Aksen |
+| Guided editor roda "Tampilan" | Tidak ada | ✅ Section collapsed + Warna Aksen |
+| Roda wheel colors | 6 warna rainbow | Tidak berubah (intentional) |
+| Sortir kolom colors | Per-item dari kolom[].color | Tidak berubah (intentional) |

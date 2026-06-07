@@ -82,6 +82,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  block: SortirGameBlock; tokens: TokenResolver; interactive: boolean; isCompact: boolean; isEditing?: boolean; pageIndex?: number;
 }) {
  const edu = tokens.edu('sortir-game', isCompact);
+ const accent = block.accentColor || 'y';
  const pool = block.pool || [];
  const kolom = block.kolom || [];
 
@@ -207,14 +208,14 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  const perfectScore = totalAttempts <= totalItems;
 
  return (
- <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0} gradientBorder>
+ <PremiumBlockWrapper tokens={tokens} accent={accent} staggerIndex={0} gradientBorder>
  <div className="text-center p-5 rounded-2xl"
  style={{
  background: edu.pageBg(),
  border: '2px solid ' + edu.accentAlpha(0.3),
  boxShadow: edu.shadow('elevated'),
  }}>
- <ReadingProgressIndicator progress={1} tokens={tokens} accent="y" height={3} position="top" />
+ <ReadingProgressIndicator progress={1} tokens={tokens} accent={accent} height={3} position="top" />
  <div className="text-3xl mb-3" style={{ animation: 'float 3s ease-in-out infinite' }}>
  {perfectScore ? '🌟' : '🎮'}
  </div>
@@ -230,7 +231,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  </PremiumBadge>
  )}
  {interactive && (
- <MicroInteraction tokens={tokens} accent="y" effect="squish">
+ <MicroInteraction tokens={tokens} accent={accent} effect="squish">
  <button className={"mt-3 px-5 py-2 rounded-xl font-extrabold" + tokens.iosButtonTw(interactive)}
  onClick={() => {
  setPoolState(pool.map(p => ({ ...p, placed: false })));
@@ -259,9 +260,9 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  }
 
  return (
- <PremiumBlockWrapper tokens={tokens} accent="y" staggerIndex={0}>
+ <PremiumBlockWrapper tokens={tokens} accent={accent} staggerIndex={0}>
  <div className="game-block" {...(interactive ? { role: 'application' } : {})} aria-label={`Sortir: ${totalPlaced} dari ${totalItems} item ditempatkan`} aria-describedby={`sortir-instructions-${block.id || 'sortir'}`} data-interactive>
- <ReadingProgressIndicator progress={totalItems > 0 ? totalPlaced / totalItems : 0} tokens={tokens} accent="y" height={3} position="top" />
+ <ReadingProgressIndicator progress={totalItems > 0 ? totalPlaced / totalItems : 0} tokens={tokens} accent={accent} height={3} position="top" />
  {/* Hidden instruction for screen readers */}
  <span id={`sortir-instructions-${block.id || 'sortir'}`} className="sr-only">Pilih item dari kolam, lalu klik kolom yang tepat untuk mengelompokkannya</span>
  {/* Screen reader live region for sort feedback */}
@@ -291,7 +292,7 @@ export const SortirGameRenderer = React.memo(function SortirGameRenderer({ block
  background: edu.accentAlpha(0.04),
  }}>
  <div className="w-full font-extrabold uppercase tracking-wider mb-2" style={{ ...edu.micro(), color: edu.accent() }}>
- <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>inventory_2</span> Pilih Item <PremiumBadge tokens={tokens} accent="y" variant="glass">{totalPlaced}/{totalItems}</PremiumBadge>
+ <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>inventory_2</span> Pilih Item <PremiumBadge tokens={tokens} accent={accent} variant="glass">{totalPlaced}/{totalItems}</PremiumBadge>
  </div>
  {unplacedPoolItems.map(p => (
  <button key={p.id} onClick={() => handlePoolClick(p.id)}

@@ -1241,9 +1241,19 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'category', label: 'Kolom Tujuan', type: 'select', optionsFrom: { field: 'kolom', labelKey: 'label', valueKey: 'id' }, helpText: 'Pilih kolom tempat kartu ini benar' },
         ],
       },
+      // S2J.3: accentColor exposed — SortirGameRenderer reads it for wrapper/progress/badge.
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: [
+        { label: 'Kuning', value: 'y' },
+        { label: 'Cyan', value: 'c' },
+        { label: 'Hijau', value: 'g' },
+        { label: 'Ungu', value: 'p' },
+        { label: 'Oranye', value: 'o' },
+        { label: 'Merah', value: 'r' },
+      ], helpText: 'Warna aksen untuk bingkai, progress, dan badge game' },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'kolom', 'pool'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
     ],
   },
 
@@ -1266,8 +1276,8 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
 
   // ── D8 P3B: Roda Game Guided Editor ────────────────────────────
   // Only fields the renderer actually reads are exposed.
-  // stepMode, currentQuestionIndex, variant, accentColor are NOT shown
-  // because RodaGameRenderer does not use them.
+  // S2J.3: accentColor now exposed — RodaGameRenderer reads it for wrapper/progress.
+  // stepMode, currentQuestionIndex, variant are NOT shown (renderer doesn't use them).
   'roda-game': {
     blockType: 'roda-game',
     displayName: 'Roda Pertanyaan',
@@ -1299,9 +1309,20 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'diskusiHint', label: 'Hint Diskusi', type: 'text' },
         ],
       },
+      // S2J.3: accentColor exposed — RodaGameRenderer reads it for wrapper/progress.
+      // Note: accentColor does NOT change wheel segment colors (those stay 6-color rainbow).
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: [
+        { label: 'Kuning', value: 'y' },
+        { label: 'Cyan', value: 'c' },
+        { label: 'Hijau', value: 'g' },
+        { label: 'Ungu', value: 'p' },
+        { label: 'Oranye', value: 'o' },
+        { label: 'Merah', value: 'r' },
+      ], helpText: 'Warna aksen untuk bingkai dan progress game' },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
     ],
   },
 
