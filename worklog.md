@@ -447,3 +447,20 @@ Stage Summary:
 - Sortir game now has JSON import with FK validation and label→id translation
 - 4 files changed, 592 insertions, 1 deletion
 - Pattern: AI/guru writes labels, app generates ids, mapper bridges the gap
+---
+Task ID: 2F-report
+Agent: Main
+Task: Sprint 2F — Update CORE_VERIFICATION_REPORT.md and push
+
+Work Log:
+- Verified all Sprint 2F files exist and are committed (sortir-import.ts, SortirImportPanel.tsx, GuidedFormEditor.tsx integration)
+- Ran build: PASS
+- Added Sprint 2E and 2F entries to Ringkasan Eksekutif section
+- Updated date header to 2026-06-07
+- Committed: 1f04944 "docs: update verification report for sprint 2F"
+- git pull --rebase: clean, no conflicts
+- Pushed to origin/main: f046083..1f04944
+
+Stage Summary:
+- Sprint 2F verification report updated and pushed
+- All 10 PASS criteria verified at code level
