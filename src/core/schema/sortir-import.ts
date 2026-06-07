@@ -319,6 +319,35 @@ export function mapSortirImportToPatch(data: SortirImportPayload): SortirImportP
 
 // ── Sample JSON for "Salin Contoh Format" ──────────────────────
 
+// ── AI Prompt Template for "Salin Prompt AI" ──────────────────
+
+export const SORTIR_AI_PROMPT = `Buatkan permainan sortir (pengelompokan) untuk mata pelajaran [TOPIK] kelas [KELAS] dalam format JSON berikut:
+
+{
+  "title": "Sortir [Judul]",
+  "kolom": [
+    { "label": "Nama Kategori 1", "color": "y" },
+    { "label": "Nama Kategori 2", "color": "r" }
+  ],
+  "pool": [
+    { "text": "Item yang dikategorikan", "category": "Nama Kategori 1" }
+  ]
+}
+
+Aturan:
+- "kolom" = 2-4 kategori (wajib)
+  - "label" = nama kategori (wajib, string, harus unik)
+  - "color" = kode warna (opsional): "y" kuning, "r" merah, "c" cyan, "p" ungu
+- "pool" = 2-8 kartu item (wajib)
+  - "text" = isi kartu (wajib, string)
+  - "category" = nama kategori tujuan (wajib, harus sama persis dengan label kolom)
+- "title" = judul game (opsional, string)
+- Setiap kolom harus punya minimal 1 kartu
+- Jangan tulis teks di luar JSON
+- Langsung berikan JSON saja tanpa penjelasan tambahan`;
+
+// ── Sample JSON for "Salin Contoh Format" ──────────────────────
+
 export const SORTIR_IMPORT_SAMPLE: string = JSON.stringify({
   title: 'Sortir Jenis Norma',
   kolom: [

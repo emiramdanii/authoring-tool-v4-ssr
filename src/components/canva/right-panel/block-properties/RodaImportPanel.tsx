@@ -24,6 +24,7 @@ import {
   validateRodaImportPayload,
   mapRodaImportToPatch,
   RODA_IMPORT_SAMPLE,
+  RODA_AI_PROMPT,
   type RodaImportValidation,
 } from '@/core/schema/roda-import';
 import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
@@ -93,6 +94,13 @@ export function RodaImportPanel({ pageId, blockId }: RodaImportPanelProps) {
     });
   }, []);
 
+  // ── Copy AI prompt ──
+  const handleCopyAIPrompt = useCallback(() => {
+    navigator.clipboard.writeText(RODA_AI_PROMPT).catch(() => {
+      // Fallback: no clipboard access
+    });
+  }, []);
+
   return (
     <div className="border border-silse-outline-variant/30 rounded-xl overflow-hidden">
       {/* Toggle header */}
@@ -113,15 +121,25 @@ export function RodaImportPanel({ pageId, blockId }: RodaImportPanelProps) {
       {/* Collapsible content */}
       {isOpen && (
         <div className="p-3 space-y-3 bg-silse-surface-container-lowest">
-          {/* Copy sample button */}
-          <button
-            onClick={handleCopySample}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-silse-secondary hover:bg-silse-secondary/10 rounded-lg transition-colors"
-            type="button"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>content_copy</span>
-            Salin Contoh Format
-          </button>
+          {/* Copy buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCopySample}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-silse-secondary hover:bg-silse-secondary/10 rounded-lg transition-colors"
+              type="button"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>content_copy</span>
+              Salin Contoh Format
+            </button>
+            <button
+              onClick={handleCopyAIPrompt}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-silse-tertiary hover:bg-silse-tertiary/10 rounded-lg transition-colors"
+              type="button"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>psychology</span>
+              Salin Prompt AI
+            </button>
+          </div>
 
           {/* JSON textarea */}
           <textarea

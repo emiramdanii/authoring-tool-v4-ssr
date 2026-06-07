@@ -381,3 +381,47 @@ Baru setelah semua PASS, boleh lanjut ke area berikutnya.
 Sprint 1G — Background-Based Media Mode: P0 PASS, P1.1 PASS
 Final PASS: menunggu P1.2 (KuisRenderer readability) atau visual QA terakhir
 ```
+
+---
+
+## L. SPRINT 2 — Guided Editor & Import JSON
+
+### Sprint 2A–2G: Guided Editor + Import JSON
+
+| Sprint | Fitur | Status |
+|--------|-------|--------|
+| 2A | Kuis Guided Editor Polish | PASS |
+| 2B | MateriBlok Guided Editor | PASS |
+| 2C | Sortir/Roda Guided Editor | PASS |
+| 2C.1 | QA Sortir/Roda | PASS |
+| 2D | True/False + Fill Blank | PASS |
+| 2E | Import JSON Multi-Question Kuis | PASS |
+| 2E.1 | QA Import JSON Kuis | PASS |
+| 2F | Import JSON Sortir | PASS |
+| 2G | Import JSON Roda | PASS |
+
+### Sprint 2H: AI Prompt Templates untuk Import JSON
+
+| Item | Status | Detail |
+|------|--------|--------|
+| `KUIS_AI_PROMPT` constant | PASS | Di `kuis-import.ts`, berisi prompt kuis dengan [TOPIK], [KELAS], aturan JSON |
+| `SORTIR_AI_PROMPT` constant | PASS | Di `sortir-import.ts`, berisi prompt sortir dengan [TOPIK], [KELAS], aturan kolom/pool |
+| `RODA_AI_PROMPT` constant | PASS | Di `roda-import.ts`, berisi prompt roda Format B (opts[]+ans) dengan [TOPIK], [KELAS] |
+| Tombol "Salin Prompt AI" di KuisImportPanel | PASS | Ikon `psychology`, warna tertiary, sejajar "Salin Contoh Format" |
+| Tombol "Salin Prompt AI" di SortirImportPanel | PASS | Ikon `psychology`, warna tertiary, sejajar "Salin Contoh Format" |
+| Tombol "Salin Prompt AI" di RodaImportPanel | PASS | Ikon `psychology`, warna tertiary, sejajar "Salin Contoh Format" |
+| Prompt berisi placeholder [TOPIK] [KELAS] | PASS | Ketiga prompt punya placeholder |
+| Prompt meminta output JSON saja | PASS | "Jangan tulis teks di luar JSON", "Langsung berikan JSON saja" |
+| Prompt sesuai validator | PASS | Aturan di prompt cocok dengan validator masing-masing |
+| Renderer/runtime/export tidak disentuh | PASS | Zero changes ke renderer, scoring, export |
+| Build PASS | PASS | Compiled successfully |
+| Validator/mapper tidak berubah | PASS | Hanya tambah constant + UI button |
+
+### Files Changed (Sprint 2H)
+
+1. `src/core/schema/kuis-import.ts` — Tambah `KUIS_AI_PROMPT` constant
+2. `src/core/schema/sortir-import.ts` — Tambah `SORTIR_AI_PROMPT` constant
+3. `src/core/schema/roda-import.ts` — Tambah `RODA_AI_PROMPT` constant
+4. `src/components/canva/right-panel/block-properties/KuisImportPanel.tsx` — Import `KUIS_AI_PROMPT`, tambah handler + tombol "Salin Prompt AI"
+5. `src/components/canva/right-panel/block-properties/SortirImportPanel.tsx` — Import `SORTIR_AI_PROMPT`, tambah handler + tombol "Salin Prompt AI"
+6. `src/components/canva/right-panel/block-properties/RodaImportPanel.tsx` — Import `RODA_AI_PROMPT`, tambah handler + tombol "Salin Prompt AI"

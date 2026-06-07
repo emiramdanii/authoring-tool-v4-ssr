@@ -253,6 +253,34 @@ export function mapKuisImportToPatch(data: KuisImportPayload): KuisImportPatch {
 
 // ── Sample JSON for "Salin Contoh Format" ──────────────────────
 
+// ── AI Prompt Template for "Salin Prompt AI" ──────────────────
+
+export const KUIS_AI_PROMPT = `Buatkan 5 soal kuis pilihan ganda untuk mata pelajaran [TOPIK] kelas [KELAS] dalam format JSON berikut:
+
+{
+  "title": "Kuis [Judul]",
+  "questions": [
+    {
+      "q": "Pertanyaan?",
+      "opts": ["Pilihan A", "Pilihan B", "Pilihan C", "Pilihan D"],
+      "ans": 0,
+      "ex": "Penjelasan singkat jawaban"
+    }
+  ]
+}
+
+Aturan:
+- "q" = pertanyaan (wajib, string)
+- "opts" = array 2-6 pilihan jawaban (wajib, string)
+- "ans" = index jawaban benar, dimulai dari 0 (wajib, angka)
+- "ex" = penjelasan singkat (disarankan, string)
+- "title" = judul kuis (opsional, string)
+- Maksimal 10 soal
+- Jangan tulis teks di luar JSON
+- Langsung berikan JSON saja tanpa penjelasan tambahan`;
+
+// ── Sample JSON for "Salin Contoh Format" ──────────────────────
+
 export const KUIS_IMPORT_SAMPLE: string = JSON.stringify({
   title: 'Kuis Macam-Macam Norma',
   questions: [

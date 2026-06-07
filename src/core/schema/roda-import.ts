@@ -397,6 +397,38 @@ export function mapRodaImportToPatch(data: RodaImportPayload): RodaImportPatch {
 
 // ── Sample JSON for "Salin Contoh Format" ──────────────────────
 
+// ── AI Prompt Template for "Salin Prompt AI" ──────────────────
+
+export const RODA_AI_PROMPT = `Buatkan 5 soal permainan roda (wheel game) untuk mata pelajaran [TOPIK] kelas [KELAS] dalam format JSON berikut:
+
+{
+  "title": "Roda [Judul]",
+  "questions": [
+    {
+      "q": "Pertanyaan?",
+      "opts": ["Pilihan A", "Pilihan B", "Pilihan C", "Pilihan D"],
+      "ans": 0,
+      "feedbackCorrect": "Feedback jika benar",
+      "feedbackWrong": "Feedback jika salah",
+      "diskusiHint": "Pertanyaan diskusi lanjutan"
+    }
+  ]
+}
+
+Aturan:
+- "q" = pertanyaan (wajib, string)
+- "opts" = array 2-4 pilihan jawaban (wajib, string)
+- "ans" = index jawaban benar, dimulai dari 0 (wajib, angka)
+- "feedbackCorrect" = pesan jika jawaban benar (disarankan, string)
+- "feedbackWrong" = pesan jika jawaban salah (disarankan, string)
+- "diskusiHint" = pertanyaan diskusi lanjutan (opsional, string)
+- "title" = judul game (opsional, string)
+- Maksimal 6 soal
+- Jangan tulis teks di luar JSON
+- Langsung berikan JSON saja tanpa penjelasan tambahan`;
+
+// ── Sample JSON for "Salin Contoh Format" ──────────────────────
+
 export const RODA_IMPORT_SAMPLE: string = JSON.stringify({
   title: 'Roda Pengetahuan Norma',
   questions: [
