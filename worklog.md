@@ -488,3 +488,25 @@ Stage Summary:
 - Roda game now has JSON import with dual format support
 - 4 files changed, 678 insertions, 1 deletion
 - Key innovation: app tolerates AI output format (opts string[] + ans) and converts internally
+---
+Task ID: 2K.4
+Agent: Main
+Task: Sprint 2K.4 — Preset Refinement + Edge Case Fix
+
+Work Log:
+- Discovered previous session's 2K.1/2K.2 commits were on remote (50b70fa) but local files were from before those changes
+- Recreated block-style-presets.ts with 2K.1 + 2K.4 enhancements combined (def-box borderColor mapping, materi-blok warna mapping, getApplicableBlockStylePresets dedup helper)
+- Created BlockStylePresetGrid.tsx with 2K.2 + 2K.4 features (uses getApplicableBlockStylePresets for dedup)
+- Updated GuidedFormEditor.tsx to integrate BlockStylePresetGrid in appearance section
+- Fixed KuisRenderer variant persistence (P0): added updateSchemaBlock call alongside setCurrentVariant
+- Wrote 38 unit tests for block-style-presets (all PASS)
+- Built successfully, pushed as commit 994d33d
+- Resolved rebase conflicts with remote (kept our 2K.4 versions which are superset of 2K.1/2K.2)
+
+Stage Summary:
+- KuisRenderer variant change now persists to schema (P0 fix)
+- def-box joins Gaya Cepat via borderColor mapping (P1)
+- materi-blok joins Gaya Cepat via warna mapping (P2)
+- Variant-only blocks (kuis, diskusi, nc-grid, tujuan-display) show only 3 unique presets instead of 7 with duplicates (P3)
+- 44 total unit tests PASS (38 new + 6 from previous session)
+- Build PASS, push successful
