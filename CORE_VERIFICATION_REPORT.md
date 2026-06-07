@@ -62,6 +62,8 @@ Sprint 2I.1 — AI Import UX Polish: PASS — step guide, copy feedback "Tersali
 Sprint 2J.1 — Activate Existing Style Controls: PASS — section Tampilan + variant untuk kuis, accentColor + variant untuk materi-section, no dead fields, no renderer changes
 Sprint 2J.2 — Style Control Gap Audit for Games: PASS (audit only) — sortir/roda renderer hardcode accent='y', edu resolves quiz→'r', accentColor safe to add, variant not needed
 Sprint 2J.3 — Add Accent Color Support for Sortir/Roda: PASS — accentColor added to schema, renderers read it, GuidedFormEditor exposes it, no variant, no wheelColors change
+Sprint 2J.5 — Perluas Warna MateriBlok: PASS — warna field expanded to 9 safe subtipes, accentColor dead field removed from guided editor, export preview alignment fix
+Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -3173,3 +3175,61 @@ This meant teachers could change `accentColor` and see NO visual change — unde
 | Export poin default color | #34d399 (green — MISMATCH) | #3ecfcf (cyan — matches TIPE_META) |
 | Export highlight warna usage | Raw token key (invalid CSS if 'y') | resolveColor(warna, '#fbbf24') |
 | Export checklist | No accent-color on checkbox | accent-color uses resolved warna |
+
+## Round 51 — Sprint 2J.7: Polish Color Options in Guided Editor
+
+**PERUBAHAN RONDE 51 (Sprint 2J.7 — Polish Color Options in Guided Editor):**
+
+1. Sprint 2J.7 IMPLEMENTASI: Hilangkan token teknis bg/card dari pilihan warna di panel kanan — guru hanya melihat 6 warna aksen yang bermakna
+2. `guided-patch.ts`: Tambah `ACCENT_COLOR_OPTIONS` constant — reusable array: Kuning(y), Cyan(c), Hijau(g), Ungu(p), Oranye(o), Merah(r)
+3. `guided-patch.ts`: 13 bare color fields (tanpa options) sekarang memakai `options: ACCENT_COLOR_OPTIONS` — sebelumnya menampilkan semua 8 TOKEN_COLORS termasuk bg/card
+4. `guided-patch.ts`: 4 inline color options (materi-section, sortir-game, roda-game) diganti dengan `options: ACCENT_COLOR_OPTIONS` — DRY, satu source of truth
+5. `guided-patch.ts`: def-box label "Warna Border" → "Warna Aksen" — konsisten dengan terminologi lain
+6. `guided-patch.ts`: def-box 'Pink' → 'Ungu' — konsisten dengan ACCENT_COLOR_OPTIONS dan token 'p' = Ungu
+7. Total 17 color fields sekarang memakai ACCENT_COLOR_OPTIONS — 0 bare color fields tersisa
+8. Tidak mengubah: renderer, export, token system, layout panel, guided-field-renderer component
+9. Build: PASS
+
+**S2J.7 field yang mendapat ACCENT_COLOR_OPTIONS:**
+
+| Block | Field | Sebelum | Sesudah |
+|-------|-------|---------|---------|
+| diskusi | questions[].color | bare (8 tokens) | ACCENT_COLOR_OPTIONS (6) |
+| materi-section | accentColor | inline 6 options | ACCENT_COLOR_OPTIONS |
+| def-box | borderColor | inline 6 options (Pink=p) | ACCENT_COLOR_OPTIONS (Ungu=p) |
+| nc-grid | cards[].color | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| tujuan-display | objectives[].color | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| rangkuman | concepts[].color | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| tp | items[].color | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| tab-icons | tabs[].warna | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| timeline | steps[].color | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| timeline | accentColor | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| infografis | kartu[].warna | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| infografis | accentColor | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| materi-blok | warna | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| sortir-game | kolom[].color | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| sortir-game | accentColor | inline 6 options | ACCENT_COLOR_OPTIONS |
+| gambar | accentColor | bare (8 tokens) | ACCENT_COLOR_OPTIONS |
+| roda-game | accentColor | inline 6 options | ACCENT_COLOR_OPTIONS |
+
+**S2J.7 prinsip color options polish:**
+
+```txt
+Token bg/card = teknis (layout system), bukan pilihan guru
+Guru hanya perlu: Kuning, Cyan, Hijau, Ungu, Oranye, Merah
+ACCENT_COLOR_OPTIONS = satu source of truth untuk semua color field
+Tanpa options → GuidedColorField/InlineColorPicker tampilkan semua 8 TOKEN_COLORS
+Dengan options → hanya tampilkan 6 warna aksen
+```
+
+**S2J.7 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Color picker untuk aksen | 8 pilihan (termasuk Background, Card) | 6 pilihan (Kuning, Cyan, Hijau, Ungu, Oranye, Merah) |
+| Guru lihat "Background" di color picker | Ya — membingungkan | Tidak |
+| Guru lihat "Card" di color picker | Ya — membingungkan | Tidak |
+| def-box label | "Warna Border" | "Warna Aksen" |
+| def-box 'Pink' value='p' | Inkonsisten (p=Ungu di sistem lain) | 'Ungu' (konsisten) |
+| Inline color options (4 block) | Duplikat array 6 warna | ACCENT_COLOR_OPTIONS (DRY) |
+| Bare color fields (13 field) | Menampilkan 8 token | ACCENT_COLOR_OPTIONS (6 warna) |

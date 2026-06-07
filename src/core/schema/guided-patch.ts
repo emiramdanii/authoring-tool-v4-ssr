@@ -615,6 +615,21 @@ export function hasGuidedEditor(blockType: string): boolean {
 // Maps blockType → GuidedEditorSchema
 // Add new block types here as Phase 2 progresses.
 
+// ── Reusable Accent Color Options (S2J.7) ────────────────────
+// 6 accent colors only — NO bg/card tokens.
+// Used by all color/warna/accentColor fields in guided editor.
+// When a color field has options, GuidedColorField and InlineColorPicker
+// show only those options instead of ALL 8 TOKEN_COLORS (which includes bg/card).
+
+const ACCENT_COLOR_OPTIONS: Array<{ label: string; value: string }> = [
+  { label: 'Kuning', value: 'y' },
+  { label: 'Cyan', value: 'c' },
+  { label: 'Hijau', value: 'g' },
+  { label: 'Ungu', value: 'p' },
+  { label: 'Oranye', value: 'o' },
+  { label: 'Merah', value: 'r' },
+];
+
 const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
   'cover': {
     blockType: 'cover',
@@ -692,7 +707,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'icon', label: 'Ikon', type: 'icon' },
           { key: 'teks', label: 'Teks Pertanyaan', type: 'textarea', required: true },
           { key: 'petunjuk', label: 'Petunjuk', type: 'textarea', helpText: 'Petunjuk untuk membantu siswa menjawab' },
-          { key: 'color', label: 'Warna', type: 'color' },
+          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
         ],
       },
     ],
@@ -737,14 +752,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       // Note: content is an array of nested SchemaBlocks — too complex for simple guided form
       // The guided form for materi-section will be enhanced in Phase 2
       // S2J.1: accentColor + variant exposed — MateriSectionRenderer reads both.
-      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: [
-        { label: 'Kuning', value: 'y' },
-        { label: 'Cyan', value: 'c' },
-        { label: 'Hijau', value: 'g' },
-        { label: 'Ungu', value: 'p' },
-        { label: 'Oranye', value: 'o' },
-        { label: 'Merah', value: 'r' },
-      ], helpText: 'Warna aksen untuk header dan elemen materi' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen untuk header dan elemen materi' },
       { key: 'variant', label: 'Model Tampilan', type: 'select', options: [
         { label: 'Klasik', value: 'A' },
         { label: 'Majalah', value: 'B' },
@@ -764,14 +772,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     icon: '📦',
     fields: [
       { key: 'content', label: 'Konten', type: 'richtext', required: true, helpText: 'Teks definisi atau penjelasan. Gunakan <strong> untuk cetak tebal.', placeholder: 'Tulis definisi atau penjelasan...' },
-      { key: 'borderColor', label: 'Warna Border', type: 'color', options: [
-        { label: 'Kuning', value: 'y' },
-        { label: 'Cyan', value: 'c' },
-        { label: 'Hijau', value: 'g' },
-        { label: 'Pink', value: 'p' },
-        { label: 'Oranye', value: 'o' },
-        { label: 'Merah', value: 'r' },
-      ]},
+      { key: 'borderColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['content'] },
@@ -795,7 +796,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'icon', label: 'Ikon', type: 'icon' },
           { key: 'title', label: 'Judul Kartu', type: 'text', required: true },
           { key: 'body', label: 'Isi Kartu', type: 'textarea', required: true },
-          { key: 'color', label: 'Warna', type: 'color' },
+          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
         ],
       },
     ],
@@ -820,7 +821,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         fields: [
           { key: 'icon', label: 'Ikon', type: 'icon' },
           { key: 'text', label: 'Teks Tujuan', type: 'textarea', required: true },
-          { key: 'color', label: 'Warna', type: 'color' },
+          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
         ],
       },
       { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'text' },
@@ -847,7 +848,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'icon', label: 'Ikon', type: 'icon' },
           { key: 'title', label: 'Judul Konsep', type: 'text', required: true },
           { key: 'body', label: 'Penjelasan', type: 'textarea', required: true },
-          { key: 'color', label: 'Warna', type: 'color' },
+          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
         ],
       },
       { key: 'closingStatement', label: 'Pernyataan Penutup', type: 'textarea' },
@@ -943,7 +944,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           ]},
           { key: 'desc', label: 'Deskripsi', type: 'textarea', required: true },
           { key: 'pertemuan', label: 'Pertemuan ke-', type: 'number', min: 1, max: 10 },
-          { key: 'color', label: 'Warna', type: 'color' },
+          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
         ],
       },
     ],
@@ -1040,7 +1041,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         fields: [
           { key: 'icon', label: 'Ikon', type: 'icon' },
           { key: 'judul', label: 'Judul Tab', type: 'text', required: true, placeholder: 'Tujuan 1' },
-          { key: 'warna', label: 'Warna', type: 'color' },
+          { key: 'warna', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
           { key: 'isi', label: 'Isi Tab', type: 'textarea', required: true, placeholder: 'Konten tab...' },
         ],
       },
@@ -1094,10 +1095,10 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'icon', label: 'Ikon', type: 'icon' },
           { key: 'label', label: 'Judul Langkah', type: 'text', required: true, placeholder: 'Apersepsi' },
           { key: 'description', label: 'Deskripsi', type: 'textarea', required: true, placeholder: 'Detail langkah...' },
-          { key: 'color', label: 'Warna', type: 'color' },
+          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
         ],
       },
-      { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'steps', 'accentColor'] },
@@ -1127,10 +1128,10 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'icon', label: 'Ikon', type: 'icon' },
           { key: 'judul', label: 'Judul Kartu', type: 'text', required: true, placeholder: 'Bernalar Kritis' },
           { key: 'isi', label: 'Isi', type: 'textarea', required: true, placeholder: 'Deskripsi kartu...' },
-          { key: 'warna', label: 'Warna', type: 'color' },
+          { key: 'warna', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
         ],
       },
-      { key: 'accentColor', label: 'Warna Aksen', type: 'color' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'kartu'] },
@@ -1185,7 +1186,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       ]},
       // S2J.5: warna is the REAL field that MateriBlokRenderer reads.
       // accentColor removed — it was a dead field (renderer never read it).
-      { key: 'warna', label: 'Warna Aksen', type: 'color', showWhen: { field: 'tipe', values: ['teks', 'definisi', 'poin', 'kutipan', 'checklist', 'gambar', 'tabel', 'timeline', 'highlight'] }, helpText: 'Warna aksen untuk elemen dekoratif blok' },
+      { key: 'warna', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, showWhen: { field: 'tipe', values: ['teks', 'definisi', 'poin', 'kutipan', 'checklist', 'gambar', 'tabel', 'timeline', 'highlight'] }, helpText: 'Warna aksen untuk elemen dekoratif blok' },
       { key: 'icon', label: 'Ikon', type: 'icon', showWhen: { field: 'tipe', values: ['highlight'] }, helpText: 'Ikon untuk blok highlight' },
       { key: 'infoboxStyle', label: 'Gaya Info Box', type: 'select', showWhen: { field: 'tipe', values: ['infobox'] }, options: [
         { label: 'Info', value: 'info' },
@@ -1226,7 +1227,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         helpText: 'Kolom tujuan — siswa memindahkan kartu ke kolom yang benar',
         fields: [
           { key: 'label', label: 'Label Kolom', type: 'text', required: true, placeholder: 'Nama kategori...' },
-          { key: 'color', label: 'Warna', type: 'color', helpText: 'Warna aksen kolom' },
+          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen kolom' },
         ],
       },
       {
@@ -1242,14 +1243,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         ],
       },
       // S2J.3: accentColor exposed — SortirGameRenderer reads it for wrapper/progress/badge.
-      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: [
-        { label: 'Kuning', value: 'y' },
-        { label: 'Cyan', value: 'c' },
-        { label: 'Hijau', value: 'g' },
-        { label: 'Ungu', value: 'p' },
-        { label: 'Oranye', value: 'o' },
-        { label: 'Merah', value: 'r' },
-      ], helpText: 'Warna aksen untuk bingkai, progress, dan badge game' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen untuk bingkai, progress, dan badge game' },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'kolom', 'pool'] },
@@ -1266,7 +1260,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'title', label: 'Judul Gambar', type: 'text', helpText: 'Judul opsional di atas gambar', placeholder: 'Contoh: Diagram Sistem Pernapasan' },
       { key: 'url', label: 'URL Gambar', type: 'text', required: true, helpText: 'Tempel tautan gambar dari internet.', placeholder: 'https://contoh.com/gambar.jpg' },
       { key: 'caption', label: 'Keterangan', type: 'textarea', helpText: 'Keterangan singkat di bawah gambar', placeholder: 'Sumber: Buku Paket Hal. 45' },
-      { key: 'accentColor', label: 'Warna Aksen', type: 'color', defaultValue: 'c' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, defaultValue: 'c' },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'url', 'caption'] },
@@ -1311,14 +1305,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       },
       // S2J.3: accentColor exposed — RodaGameRenderer reads it for wrapper/progress.
       // Note: accentColor does NOT change wheel segment colors (those stay 6-color rainbow).
-      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: [
-        { label: 'Kuning', value: 'y' },
-        { label: 'Cyan', value: 'c' },
-        { label: 'Hijau', value: 'g' },
-        { label: 'Ungu', value: 'p' },
-        { label: 'Oranye', value: 'o' },
-        { label: 'Merah', value: 'r' },
-      ], helpText: 'Warna aksen untuk bingkai dan progress game' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen untuk bingkai dan progress game' },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
