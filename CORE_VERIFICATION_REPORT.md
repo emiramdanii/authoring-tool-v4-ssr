@@ -67,6 +67,9 @@ Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPT
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
 Sprint 2K.2 — Block Style Preset Grid UI: PASS — BlockStylePresetGrid.tsx, Gaya Cepat grid di section Tampilan, resolver-driven, active state, no dead fields
+Sprint 2K.3 — Preset Refinement Audit: PASS (audit only) — 4 issue ditemukan: P0 kuis variant tidak tersimpan, P1 def-box mapping, P2 materi-blok mapping, P3 deduplicate
+Sprint 2K.4 — Preset Refinement + Edge Fix: PASS — P0 kuis variant tersimpan ke schema, P1+P2+P3 belum diimplementasi (ditemukan di QA 2K.5)
+Sprint 2K.5 — QA Gaya Cepat End-to-End: PASS (setelah fix) — 4/6 skenario FAIL awal karena P1/P2/P3 belum terimplementasi, fix di-commit b8e241c, 60 unit test PASS
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -3341,3 +3344,68 @@ Guru klik preset card
 | materi-blok warna → accentColor mapping | Special case, perlu field mapping |
 | def-box borderColor dari preset accentColor | Perlu mapping preset.accentColor → def-box.borderColor |
 | Active state refinement | Saat ini minimal compare, bisa diperhalus |
+
+## Round 55 — Sprint 2K.3/2K.4/2K.5: Preset Refinement + QA End-to-End
+
+**PERUBAHAN RONDE 55 (Sprint 2K.3–2K.5 — Preset Refinement + QA End-to-End):**
+
+1. Sprint 2K.3 AUDIT: 4 issue ditemukan — P0 kuis variant tidak tersimpan ke schema, P1 def-box mapping, P2 materi-blok mapping, P3 deduplicate identical presets
+2. Sprint 2K.4 P0 FIX: KuisRenderer `handleVariantChange` sekarang memanggil `setCurrentVariant(v)` + `updateSchemaBlock(block.id, { variant: v })` — variant dari canvas tersimpan ke schema (commit 994d33d)
+3. Sprint 2K.5 QA menemukan P1+P2+P3 dari 2K.4 belum diimplementasi — resolver return `{}` untuk def-box dan materi-blok, deduplication tidak ada
+4. Sprint 2K.5 P1 FIX: `FIELD_MAPPINGS` constant ditambahkan — maps `preset.accentColor → borderColor` untuk def-box, `preset.accentColor → warna` untuk materi-blok
+5. Sprint 2K.5 P1 FIX: Resolver diperbarui — jika direct lookup gagal, cek FIELD_MAPPINGS untuk mapped field
+6. Sprint 2K.5 P2 FIX: `'materi-blok': ['warna']` ditambahkan ke BLOCK_STYLE_CAPABILITIES
+7. Sprint 2K.5 P3 FIX: `getApplicableBlockStylePresets(blockType)` helper ditambahkan — resolves all presets, filters empty, deduplicates identical patches via JSON key comparison
+8. `BlockStylePresetGrid.tsx` diupdate: pakai `getApplicableBlockStylePresets()` bukan manual filter, `handlePresetClick` pakai pre-resolved patch
+9. `getPresetDisplayColor` diupdate: tambah `warna` support untuk materi-blok swatch
+10. Unit tests diperbarui: 60/60 PASS — def-box sekarang return `{ borderColor: 'y' }`, materi-blok return `{ warna: 'c' }`, deduplication verified (kuis: 3 presets, materi-section: 7, def-box: 6)
+11. Build: PASS
+12. Commit: b8e241c
+
+**Sprint 2K.5 QA 6 skenario end-to-end:**
+
+| # | Skenario | Hasil Awal | Hasil Setelah Fix |
+|---|----------|------------|-------------------|
+| 1 | Kuis → Gaya Cepat → Ceria → variant tersimpan | PASS | PASS |
+| 2 | Materi-section → Modern → warna + variant berubah | PASS | PASS |
+| 3 | Def-box → Berani → border berubah | FAIL | PASS (P1 fix) |
+| 4 | Materi-blok → Formal → warna berubah | FAIL | PASS (P2 fix) |
+| 5 | Sortir/roda → Petualangan → aksen berubah | PASS | PASS |
+| 6 | Block tanpa capability → Gaya Cepat tidak muncul | PASS | PASS |
+
+**Sprint 2K.5 resolver behavior per block type (setelah fix):**
+
+| Block Type | resolveBlockStylePreset('ceria', ...) | Deduplicated Count |
+|-----------|--------------------------------------|-------------------|
+| materi-section | `{ accentColor: 'y', variant: 'B' }` | 7 |
+| kuis | `{ variant: 'B' }` | 3 |
+| diskusi | `{ variant: 'B' }` | 3 |
+| nc-grid | `{ variant: 'B' }` | 3 |
+| tujuan-display | `{ variant: 'B' }` | 3 |
+| def-box | `{ borderColor: 'y' }` | 6 |
+| materi-blok | `{ warna: 'y' }` | 6 |
+| sortir-game | `{ accentColor: 'y' }` | 6 |
+| roda-game | `{ accentColor: 'y' }` | 6 |
+| tp | `{}` | 0 (grid hidden) |
+
+**Field mapping design principle:**
+
+```txt
+preset.accentColor → block field name
+  def-box    → borderColor (left accent stripe)
+  materi-blok → warna (tint/border color)
+  other      → accentColor (no mapping needed)
+
+Guru tetap melihat satu konsep sederhana: Gaya Cepat
+Bukan detail teknis nama field
+```
+
+**Sprint 2K.5 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| def-box + Gaya Cepat | Resolver return `{}` — grid kosong/hidden | `{ borderColor: 'y' }` — grid tampil 6 presets |
+| materi-blok + Gaya Cepat | Tidak ada di BLOCK_STYLE_CAPABILITIES | `{ warna: 'y' }` — grid tampil 6 presets |
+| Kuis/diskusi preset count | 7 presets (4 identik) | 3 presets (deduplicated) |
+| BlockStylePresetGrid data source | Manual filter + getAllBlockStylePresets | getApplicableBlockStylePresets (deduplicated) |
+| Kuis variant dari canvas | Tersimpan ke schema (P0 fix di 2K.4) | Tetap benar |
