@@ -16,6 +16,7 @@ import {
   blockTypeSupportsPresets,
   getBlockStylePreset,
   getAllBlockStylePresets,
+  getApplicableBlockStylePresets,
 } from '@/core/schema/block-style-presets';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -43,13 +44,31 @@ describe('resolveBlockStylePreset', () => {
     expect(result).not.toHaveProperty('variant');
   });
 
-  it('def-box + berani → {} (def-box only reads borderColor, preset does not set it)', () => {
+  it('def-box + berani → { borderColor: "r" } (accentColor mapped → borderColor)', () => {
     const result = resolveBlockStylePreset('berani', 'def-box');
-    // Preset 'berani' has accentColor='r' and variant='B',
-    // but def-box only supports borderColor.
-    // Neither accentColor nor variant is in def-box's capability list,
-    // and the preset doesn't set borderColor.
-    expect(result).toEqual({});
+    // Preset 'berani' has accentColor='r'
+    // def-box only supports borderColor, but FIELD_MAPPINGS maps
+    // accentColor → borderColor, so the resolver produces the mapped patch.
+    expect(result).toEqual({ borderColor: 'r' });
+    expect(result).not.toHaveProperty('accentColor');
+  });
+
+  it('def-box + ceria → { borderColor: "y" } (accentColor mapped → borderColor)', () => {
+    const result = resolveBlockStylePreset('ceria', 'def-box');
+    expect(result).toEqual({ borderColor: 'y' });
+  });
+
+  it('materi-blok + formal → { warna: "c" } (accentColor mapped → warna)', () => {
+    const result = resolveBlockStylePreset('formal', 'materi-blok');
+    // Preset 'formal' has accentColor='c'
+    // materi-blok supports 'warna', mapped from accentColor
+    expect(result).toEqual({ warna: 'c' });
+    expect(result).not.toHaveProperty('accentColor');
+  });
+
+  it('materi-blok + ceria → { warna: "y" } (accentColor mapped → warna)', () => {
+    const result = resolveBlockStylePreset('ceria', 'materi-blok');
+    expect(result).toEqual({ warna: 'y' });
   });
 
   // ── All 7 presets for materi-section (accentColor + variant) ──
@@ -306,12 +325,52 @@ describe('def-box special case', () => {
     expect(fields).not.toContain('accentColor');
   });
 
-  it('def-box returns empty patch for all current presets (none set borderColor)', () => {
-    const presetIds = ['ceria', 'formal', 'modern', 'petualangan', 'minimal', 'hangat', 'berani'];
-    for (const id of presetIds) {
-      const result = resolveBlockStylePreset(id, 'def-box');
-      expect(result).toEqual({});
+  it('def-box returns borderColor patch via accentColor mapping for all presets', () => {
+    const expected: Record<string, string> = {
+      ceria: 'y',
+      formal: 'c',
+      modern: 'p',
+      petualangan: 'g',
+      minimal: 'c',
+      hangat: 'o',
+      berani: 'r',
+    };
+    for (const [presetId, colorToken] of Object.entries(expected)) {
+      const result = resolveBlockStylePreset(presetId, 'def-box');
+      expect(result).toEqual({ borderColor: colorToken });
     }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// 6b. MATERI-BLOK SPECIAL CASE — warna, not accentColor
+// ═══════════════════════════════════════════════════════════════════
+
+describe('materi-blok special case', () => {
+  it('materi-blok capability includes warna, NOT accentColor', () => {
+    const fields = getSupportedStyleFields('materi-blok');
+    expect(fields).toContain('warna');
+    expect(fields).not.toContain('accentColor');
+  });
+
+  it('materi-blok returns warna patch via accentColor mapping for all presets', () => {
+    const expected: Record<string, string> = {
+      ceria: 'y',
+      formal: 'c',
+      modern: 'p',
+      petualangan: 'g',
+      minimal: 'c',
+      hangat: 'o',
+      berani: 'r',
+    };
+    for (const [presetId, colorToken] of Object.entries(expected)) {
+      const result = resolveBlockStylePreset(presetId, 'materi-blok');
+      expect(result).toEqual({ warna: colorToken });
+    }
+  });
+
+  it('materi-blok supports presets', () => {
+    expect(blockTypeSupportsPresets('materi-blok')).toBe(true);
   });
 });
 
@@ -331,12 +390,92 @@ describe('no dead fields in resolver output', () => {
   });
 
   it('never includes variant for blocks that do not support it', () => {
-    const noVariantBlocks = ['accordion', 'gambar', 'timeline', 'sortir-game', 'roda-game', 'cover'];
+    const noVariantBlocks = ['accordion', 'gambar', 'timeline', 'sortir-game', 'roda-game', 'cover', 'def-box', 'materi-blok'];
     for (const blockType of noVariantBlocks) {
       for (const preset of getAllBlockStylePresets()) {
         const result = resolveBlockStylePreset(preset.id, blockType);
         expect(result).not.toHaveProperty('variant');
       }
+    }
+  });
+
+  it('never includes accentColor for blocks that use field mapping', () => {
+    const mappedBlocks = ['def-box', 'materi-blok'];
+    for (const blockType of mappedBlocks) {
+      for (const preset of getAllBlockStylePresets()) {
+        const result = resolveBlockStylePreset(preset.id, blockType);
+        expect(result).not.toHaveProperty('accentColor');
+      }
+    }
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// 8. DEDUPLICATION — getApplicableBlockStylePresets
+// ═══════════════════════════════════════════════════════════════════
+
+describe('getApplicableBlockStylePresets', () => {
+  it('kuis returns only 3 deduplicated presets (A, B, C variants)', () => {
+    const applicable = getApplicableBlockStylePresets('kuis');
+    // 7 presets but only 3 unique patches: {variant:'A'}, {variant:'B'}, {variant:'C'}
+    expect(applicable).toHaveLength(3);
+    const variants = applicable.map(a => a.patch.variant).sort();
+    expect(variants).toEqual(['A', 'B', 'C']);
+  });
+
+  it('kuis deduplicated: first-of-each-variant wins', () => {
+    const applicable = getApplicableBlockStylePresets('kuis');
+    const ids = applicable.map(a => a.preset.id);
+    // Ceria(B), Formal(A), Modern(C) are the first presets for each variant
+    expect(ids).toContain('ceria');    // first variant:'B'
+    expect(ids).toContain('formal');   // first variant:'A'
+    expect(ids).toContain('modern');   // first variant:'C'
+    // Duplicates skipped: petualangan(B), minimal(C), hangat(A), berani(B)
+    expect(ids).not.toContain('petualangan');
+    expect(ids).not.toContain('minimal');
+    expect(ids).not.toContain('hangat');
+    expect(ids).not.toContain('berani');
+  });
+
+  it('diskusi also returns only 3 deduplicated presets', () => {
+    const applicable = getApplicableBlockStylePresets('diskusi');
+    expect(applicable).toHaveLength(3);
+  });
+
+  it('materi-section returns all 7 presets (all unique patches)', () => {
+    const applicable = getApplicableBlockStylePresets('materi-section');
+    expect(applicable).toHaveLength(7);
+  });
+
+  it('def-box returns 6 deduplicated presets (minimal and formal both → c)', () => {
+    const applicable = getApplicableBlockStylePresets('def-box');
+    // 7 presets map to: y,c,p,g,c,o,r → 6 unique (c appears twice: formal + minimal)
+    expect(applicable).toHaveLength(6);
+  });
+
+  it('materi-blok also returns 6 deduplicated presets (c duplicated)', () => {
+    const applicable = getApplicableBlockStylePresets('materi-blok');
+    expect(applicable).toHaveLength(6);
+  });
+
+  it('sortir-game returns 6 deduplicated presets (c duplicated)', () => {
+    const applicable = getApplicableBlockStylePresets('sortir-game');
+    // 7 presets map to accentColor: y,c,p,g,c,o,r → 6 unique
+    expect(applicable).toHaveLength(6);
+  });
+
+  it('returns empty array for blocks without capabilities', () => {
+    const applicable = getApplicableBlockStylePresets('tp');
+    expect(applicable).toEqual([]);
+  });
+
+  it('each entry has preset and patch properties', () => {
+    const applicable = getApplicableBlockStylePresets('kuis');
+    for (const entry of applicable) {
+      expect(entry.preset).toBeDefined();
+      expect(entry.preset.id).toBeTruthy();
+      expect(entry.patch).toBeDefined();
+      expect(Object.keys(entry.patch).length).toBeGreaterThan(0);
     }
   });
 });

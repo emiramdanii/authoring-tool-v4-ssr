@@ -80,6 +80,10 @@ export interface BlockStylePreset {
 //     → accentColor NOT listed for these block types
 //   - DefBox reads borderColor (not accentColor)
 //     → only borderColor listed for def-box
+//     → resolver maps preset.accentColor → borderColor (FIELD_MAPPINGS)
+//   - MateriBlok reads warna (not accentColor)
+//     → only warna listed for materi-blok
+//     → resolver maps preset.accentColor → warna (FIELD_MAPPINGS)
 //   - MateriSection variant is read by internal VariantSelector
 //     but not persisted — we still include it because the guided
 //     editor exposes it and it has visual impact while active
@@ -107,16 +111,37 @@ const BLOCK_STYLE_CAPABILITIES: Record<string, string[]> = {
   'tujuan-display':   ['variant'],
 
   // ── Def-box reads borderColor (not accentColor) ──
+  // Resolver maps preset.accentColor → borderColor
   'def-box':          ['borderColor'],
+
+  // ── Materi-blok reads warna (not accentColor) ──
+  // Resolver maps preset.accentColor → warna
+  'materi-blok':      ['warna'],
 
   // ── Blocks with no style fields read by renderer ──
   // These return [] from getSupportedStyleFields()
   // and {} from resolveBlockStylePreset()
   // (tp, refleksi, motivasi, petunjuk, penutup, cp, alur, atp,
-  //  true-false-game, fill-blank-game, materi-blok)
-  //
-  // materi-blok is a special case: it uses `warna` (not `accentColor`)
-  // and requires field mapping. TODO for future sprint (2K.3+).
+  //  true-false-game, fill-blank-game)
+};
+
+// ── Field Mappings ──────────────────────────────────────────────
+// Some blocks use different field names for what is semantically
+// the same concept as accentColor. For example:
+//   def-box uses `borderColor` for its left accent stripe
+//   materi-blok uses `warna` for its tint/border color
+//
+// When a preset defines `accentColor` but the block only supports
+// a mapped field (e.g., borderColor), the resolver will rename
+// accentColor → the mapped field name automatically.
+//
+// This keeps presets simple (they always use accentColor) while
+// respecting each renderer's actual schema field names.
+
+const FIELD_MAPPINGS: Record<string, Record<string, string>> = {
+  // preset field → block field
+  'def-box':    { accentColor: 'borderColor' },
+  'materi-blok': { accentColor: 'warna' },
 };
 
 // ── Preset Definitions ─────────────────────────────────────────
@@ -232,7 +257,7 @@ const PRESET_BY_ID: Map<string, BlockStylePreset> = new Map(
  *   // → { accentColor: 'y' }  (sortir-game has no variant)
  *
  *   resolveBlockStylePreset('ceria', 'def-box')
- *   // → {}  (def-box only reads borderColor, preset doesn't set it)
+ *   // → { borderColor: 'y' }  (accentColor mapped → borderColor)
  *
  *   resolveBlockStylePreset('unknown', 'materi-section')
  *   // → {}  (unknown preset)
@@ -250,12 +275,27 @@ export function resolveBlockStylePreset(
   const capabilities = BLOCK_STYLE_CAPABILITIES[blockType];
   if (!capabilities || capabilities.length === 0) return {};
 
-  // Filter preset values to only include fields the block type supports
+  // Get field mappings for this block type (e.g., accentColor → borderColor)
+  const fieldMap = FIELD_MAPPINGS[blockType] ?? {};
+
+  // Filter preset values to only include fields the block type supports.
+  // Also apply field mappings: if the block supports 'borderColor' and
+  // the preset has 'accentColor', map accentColor value → borderColor.
   const patch: Record<string, unknown> = {};
   for (const field of capabilities) {
-    const value = preset.values[field as keyof BlockStylePreset['values']];
-    if (value !== undefined) {
-      patch[field] = value;
+    // Direct lookup: preset.values[field]
+    const directValue = preset.values[field as keyof BlockStylePreset['values']];
+    if (directValue !== undefined) {
+      patch[field] = directValue;
+      continue;
+    }
+    // Mapped lookup: find which preset field maps to this block field
+    const mappedFrom = Object.entries(fieldMap).find(([, to]) => to === field);
+    if (mappedFrom) {
+      const sourceValue = preset.values[mappedFrom[0] as keyof BlockStylePreset['values']];
+      if (sourceValue !== undefined) {
+        patch[field] = sourceValue;
+      }
     }
   }
 
@@ -317,4 +357,54 @@ export function getAllBlockStylePresets(): BlockStylePreset[] {
 export function blockTypeSupportsPresets(blockType: string): boolean {
   const caps = BLOCK_STYLE_CAPABILITIES[blockType];
   return !!caps && caps.length > 0;
+}
+
+/**
+ * Get all applicable (non-empty, deduplicated) presets for a block type.
+ *
+ * Resolves each preset for the block type, filters out empty patches,
+ * then deduplicates presets that produce identical resolved patches.
+ *
+ * This is important for variant-only blocks (kuis, diskusi, nc-grid,
+ * tujuan-display) where multiple presets resolve to the same patch
+ * (e.g., Ceria→{variant:'B'} and Petualangan→{variant:'B'} are identical).
+ * Without deduplication, the grid would show 7 presets where only 3
+ * are actually different, which is confusing for teachers.
+ *
+ * @param blockType - Block type identifier
+ * @returns Array of { preset, patch } objects, deduplicated by patch content
+ *
+ * @example
+ *   getApplicableBlockStylePresets('kuis')
+ *   // → [
+ *   //     { preset: ceria,    patch: { variant: 'B' } },
+ *   //     { preset: formal,   patch: { variant: 'A' } },
+ *   //     { preset: modern,   patch: { variant: 'C' } },
+ *   //   ]
+ *   // (Petualangan/Minimal/Hangat/Berani skipped — identical to above)
+ *
+ *   getApplicableBlockStylePresets('materi-section')
+ *   // → all 7 presets (each produces a unique accentColor+variant combo)
+ */
+export function getApplicableBlockStylePresets(blockType: string): Array<{
+  preset: BlockStylePreset;
+  patch: Record<string, unknown>;
+}> {
+  const seen = new Map<string, { preset: BlockStylePreset; patch: Record<string, unknown> }>();
+
+  for (const preset of BLOCK_STYLE_PRESETS) {
+    const patch = resolveBlockStylePreset(preset.id, blockType);
+    if (Object.keys(patch).length === 0) continue;
+
+    // Create a stable key from the sorted patch entries
+    const key = JSON.stringify(
+      Object.entries(patch).sort(([a], [b]) => a.localeCompare(b)),
+    );
+
+    if (!seen.has(key)) {
+      seen.set(key, { preset, patch });
+    }
+  }
+
+  return Array.from(seen.values());
 }

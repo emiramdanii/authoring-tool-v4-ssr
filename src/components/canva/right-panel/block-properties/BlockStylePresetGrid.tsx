@@ -20,16 +20,23 @@
 //   - Only applies fields the renderer actually reads (via resolver)
 //   - Empty patches are never applied
 //   - Active state shows which preset currently matches block values
+//   - Duplicate patches are deduplicated (e.g., kuis shows 3, not 7)
+//
+// DEDUPLICATION (Sprint 2K.4):
+//   For variant-only blocks (kuis, diskusi, nc-grid, tujuan-display),
+//   multiple presets may resolve to identical patches. The grid uses
+//   getApplicableBlockStylePresets() which deduplicates by patch content,
+//   keeping only the first preset for each unique patch.
 //
 // ═══════════════════════════════════════════════════════════════════
 
 import { useCallback, useMemo } from 'react';
 import type { SchemaBlock } from '@/core/schema/types';
 import {
-  getAllBlockStylePresets,
   resolveBlockStylePreset,
   blockTypeSupportsPresets,
   getSupportedStyleFields,
+  getApplicableBlockStylePresets,
 } from '@/core/schema/block-style-presets';
 import type { BlockStylePreset } from '@/core/schema/block-style-presets';
 
@@ -76,8 +83,10 @@ function getPresetDisplayColor(preset: BlockStylePreset, supportedFields: string
   }
   if (supportedFields.includes('borderColor') && preset.values.accentColor) {
     // For def-box, borderColor maps from preset's accentColor value
-    // (but resolver won't include it unless preset has borderColor field)
-    // Still show the color visually as indicator of the preset's mood
+    return preset.values.accentColor;
+  }
+  if (supportedFields.includes('warna') && preset.values.accentColor) {
+    // For materi-blok, warna maps from preset's accentColor value
     return preset.values.accentColor;
   }
   // Block only has variant — no color swatch meaningful
@@ -109,25 +118,19 @@ export function BlockStylePresetGrid({ blockType, block, onApplyPreset }: BlockS
   const supported = blockTypeSupportsPresets(blockType);
   const supportedFields = useMemo(() => getSupportedStyleFields(blockType), [blockType]);
 
-  const presets = useMemo(() => getAllBlockStylePresets(), []);
-
-  // Filter to presets that produce a non-empty patch for this block type
+  // Get deduplicated applicable presets (filters empty + removes duplicate patches)
   const applicablePresets = useMemo(() => {
-    return presets.filter(p => {
-      const resolved = resolveBlockStylePreset(p.id, blockType);
-      return Object.keys(resolved).length > 0;
-    });
-  }, [presets, blockType]);
+    return getApplicableBlockStylePresets(blockType);
+  }, [blockType]);
 
   // Block data as Record for field comparison
   const blockData = block as unknown as Record<string, unknown>;
 
-  // Handle preset click — resolve + guard against empty patch
-  const handlePresetClick = useCallback((preset: BlockStylePreset) => {
-    const resolved = resolveBlockStylePreset(preset.id, blockType);
-    if (Object.keys(resolved).length === 0) return; // Empty patch — don't apply
-    onApplyPreset(resolved);
-  }, [blockType, onApplyPreset]);
+  // Handle preset click — use pre-resolved patch
+  const handlePresetClick = useCallback((preset: BlockStylePreset, patch: Record<string, unknown>) => {
+    if (Object.keys(patch).length === 0) return; // Empty patch — don't apply
+    onApplyPreset(patch);
+  }, [onApplyPreset]);
 
   if (!supported || applicablePresets.length === 0) {
     return null;
@@ -148,7 +151,7 @@ export function BlockStylePresetGrid({ blockType, block, onApplyPreset }: BlockS
 
       {/* Preset grid — 3 columns for compact layout */}
       <div className="grid grid-cols-3 gap-2">
-        {applicablePresets.map(preset => {
+        {applicablePresets.map(({ preset, patch }) => {
           const colorToken = getPresetDisplayColor(preset, supportedFields);
           const swatchInfo = colorToken ? ACCENT_SWATCHES[colorToken] : null;
           const isActive = isPresetActive(preset, blockType, blockData);
@@ -156,7 +159,7 @@ export function BlockStylePresetGrid({ blockType, block, onApplyPreset }: BlockS
           return (
             <button
               key={preset.id}
-              onClick={() => handlePresetClick(preset)}
+              onClick={() => handlePresetClick(preset, patch)}
               className={`
                 flex flex-col items-center gap-1 p-2 rounded-xl border transition-all duration-200
                 ${isActive
