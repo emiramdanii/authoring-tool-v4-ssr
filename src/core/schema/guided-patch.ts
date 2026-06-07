@@ -1183,7 +1183,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'butir', label: 'Butir-butir', type: 'array', maxItems: 6, showWhen: { field: 'tipe', values: ['poin', 'checklist'] }, helpText: 'Setiap butir menjadi satu poin/checklist', fields: [
         { key: '', label: 'Butir', type: 'text', placeholder: 'Tulis poin...' },
       ]},
-      { key: 'warna', label: 'Warna Border', type: 'color', showWhen: { field: 'tipe', values: ['definisi', 'highlight'] }, helpText: 'Warna aksen untuk kotak definisi/highlight' },
+      // S2J.5: warna is the REAL field that MateriBlokRenderer reads.
+      // accentColor removed — it was a dead field (renderer never read it).
+      { key: 'warna', label: 'Warna Aksen', type: 'color', showWhen: { field: 'tipe', values: ['teks', 'definisi', 'poin', 'kutipan', 'checklist', 'gambar', 'tabel', 'timeline', 'highlight'] }, helpText: 'Warna aksen untuk elemen dekoratif blok' },
       { key: 'icon', label: 'Ikon', type: 'icon', showWhen: { field: 'tipe', values: ['highlight'] }, helpText: 'Ikon untuk blok highlight' },
       { key: 'infoboxStyle', label: 'Gaya Info Box', type: 'select', showWhen: { field: 'tipe', values: ['infobox'] }, options: [
         { label: 'Info', value: 'info' },
@@ -1191,16 +1193,14 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         { label: 'Peringatan', value: 'warning' },
         { label: 'Berhasil', value: 'success' },
       ]},
-      // P3 NOTE: accentColor exists in MateriBlokBlock type but is not
-      // read by MateriBlokRenderer. Keeping field for forward compat
-      // but renderer does not use it yet. See P3 backlog.
-      // S2B: Added showWhen so it only shows for types that might use it,
-      // reducing visual noise for types where color is irrelevant (teks, poin, checklist).
-      { key: 'accentColor', label: 'Warna Aksen', type: 'color', showWhen: { field: 'tipe', values: ['definisi', 'highlight', 'infobox'] } },
+      // S2J.5: accentColor field REMOVED from guided editor.
+      // It was dead — MateriBlokRenderer reads block.warna, not block.accentColor.
+      // The accentColor field still exists on MateriBlokBlock type for backward
+      // compat, but it's no longer exposed to teachers.
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'karakter', 'butir'] },
-      { key: 'style', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle', 'accentColor'], collapsed: true },
+      { key: 'style', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle'], collapsed: true },
     ],
   },
 

@@ -3088,7 +3088,7 @@ Section Tampilan: collapsed default — guru fokus ke isi dulu
 | materi-section | ✅ y/c/g/p/o/r | ✅ A/B/C | ✅ (S2J.1) | Renderer reads both |
 | sortir-game | ✅ y/c/g/p/o/r (NEW) | ❌ | ✅ NEW (collapsed) | Renderer now reads accentColor |
 | roda-game | ✅ y/c/g/p/o/r (NEW) | ❌ | ✅ NEW (collapsed) | Renderer reads accentColor; wheelColors unchanged |
-| materi-blok | P3 dead field | ❌ | ✅ existing | accentColor not read by renderer |
+| materi-blok | P3 dead field → REMOVED from UI | ❌ | ✅ (warna only) | accentColor dead; warna is real field (S2J.5) |
 
 **S2J.3 sebelum/sesudah:**
 
@@ -3102,3 +3102,74 @@ Section Tampilan: collapsed default — guru fokus ke isi dulu
 | Guided editor roda "Tampilan" | Tidak ada | ✅ Section collapsed + Warna Aksen |
 | Roda wheel colors | 6 warna rainbow | Tidak berubah (intentional) |
 | Sortir kolom colors | Per-item dari kolom[].color | Tidak berubah (intentional) |
+
+---
+
+## Round 50 — Sprint 2J.5: Perluas Warna MateriBlok
+
+**Date:** 2026-06-07
+**Type:** Coding sprint
+**Status:** PASS
+
+### Problem
+
+Materi-blok had a **dual color field problem**:
+- `accentColor` — existed in guided editor but MateriBlokRenderer NEVER read it (dead field)
+- `warna` — the field the renderer actually reads, but only exposed for `definisi` and `highlight`
+
+This meant teachers could change `accentColor` and see NO visual change — undermining trust.
+
+### Solution
+
+1. **Removed `accentColor`** from guided editor materi-blok entry (dead field = worse than no field)
+2. **Renamed `warna` label** from "Warna Border" to "Warna Aksen" (more accurate)
+3. **Expanded `warna` showWhen** to 9 safe subtipes: teks, definisi, poin, kutipan, checklist, gambar, tabel, timeline, highlight
+4. **Updated MateriBlokRenderer** — 7 subtipes now read `block.warna` with correct fallback:
+   - teks: `block.warna || 'y'` (was hardcoded 'y')
+   - poin: `block.warna || 'c'` (was hardcoded 'c')
+   - kutipan: `block.warna || 'g'` (was hardcoded 'g')
+   - checklist: `block.warna || 'g'` (was hardcoded 'g')
+   - gambar: `block.warna || 'c'` (was hardcoded 'c')
+   - tabel: `block.warna || 'p'` (was hardcoded 'p')
+   - timeline: `block.warna || 'c'` (was hardcoded 'c')
+   - definisi: already read `block.warna || 'y'` (unchanged)
+   - highlight: already read `block.warna || 'y'` (unchanged)
+5. **Updated PremiumBlockWrapper accent** — for safe subtipes, uses `block.warna` if set, otherwise `meta.color`
+6. **Updated export renderer** — `renderMateriBlok()` now reads `block.warna` via `resolveColor()` for same 9 subtipes, aligning preview and export
+
+### NOT touched (unsafe subtipes)
+
+| Subtipe | Reason |
+|---------|--------|
+| infobox | Color comes from `infoboxStyle` semantic meaning (info=cyan, tip=green, warning=yellow) |
+| compare | Dual-column with inherent left/right color contrast |
+| statistik | Each item has its own `warna` — block-level color would conflict |
+| studi | Multi-color semantic (red situasi, yellow pertanyaan, green pesan) |
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `src/core/schema/guided-patch.ts` | Removed accentColor field, renamed warna label, expanded showWhen |
+| `src/core/renderer/blocks/MateriBlokRenderer.tsx` | 7 subtipes read block.warna; PremiumBlockWrapper uses warna for safe subtipes |
+| `src/lib/export/block-renderers.ts` | renderMateriBlok reads block.warna via resolveColor for safe subtipes |
+
+### S2J.5 sebelum/sesudah
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Guided editor accentColor | Dead field shown for definisi/highlight/infobox | REMOVED from UI entirely |
+| Guided editor warna label | "Warna Border" | "Warna Aksen" |
+| Guided editor warna showWhen | definisi, highlight | teks, definisi, poin, kutipan, checklist, gambar, tabel, timeline, highlight |
+| RenderTeks accent | Hardcoded 'y' | block.warna \|\| 'y' |
+| RenderPoin accent | Hardcoded 'c' | block.warna \|\| 'c' |
+| RenderKutipan accent | Hardcoded 'g' | block.warna \|\| 'g' |
+| RenderChecklist accent | Hardcoded 'g' | block.warna \|\| 'g' |
+| RenderGambar accent | Hardcoded 'c' | block.warna \|\| 'c' |
+| RenderTabel accent | Hardcoded 'p' | block.warna \|\| 'p' |
+| RenderTimeline accent | Hardcoded 'c' | block.warna \|\| 'c' |
+| PremiumBlockWrapper accent | Always meta.color | block.warna for safe subtipes, meta.color for unsafe |
+| Export teks default color | #3ecfcf (cyan — MISMATCH) | #fbbf24 (yellow — matches TIPE_META) |
+| Export poin default color | #34d399 (green — MISMATCH) | #3ecfcf (cyan — matches TIPE_META) |
+| Export highlight warna usage | Raw token key (invalid CSS if 'y') | resolveColor(warna, '#fbbf24') |
+| Export checklist | No accent-color on checkbox | accent-color uses resolved warna |

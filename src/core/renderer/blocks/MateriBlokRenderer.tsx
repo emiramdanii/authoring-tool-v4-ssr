@@ -72,8 +72,10 @@ function readableTintBorder(tokens: TokenResolver, colorKey: string, opacity: nu
 // ── 1. TEKS — Card dengan paragraf ──────────────────────────────
 function RenderTeks({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
+  // S2J.5: Read block.warna for accent color (border, background tint)
+  const colorKey = block.warna || 'y';
   return (
-    <div className="rounded-xl" style={{ background: readableTintBg(tokens, 'y', 0.06), border: `1px solid ${readableTintBorder(tokens, 'y', 0.12)}`, ...edu.componentPadding() }}>
+    <div className="rounded-xl" style={{ background: readableTintBg(tokens, colorKey, 0.06), border: `1px solid ${readableTintBorder(tokens, colorKey, 0.12)}`, ...edu.componentPadding() }}>
       {block.judul && (
         <h3 className="mb-2" style={{ ...edu.bodyLg(), fontWeight: 700, color: edu.textColor() }}>
           {block.judul}
@@ -119,8 +121,10 @@ function RenderDefinisi({ block, tokens, isCompact }: { block: MateriBlokBlock; 
 function RenderPoin({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
   const butir = block.butir || [];
+  // S2J.5: Read block.warna for accent color (border, bullet, tint)
+  const colorKey = block.warna || 'c';
   return (
-    <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha('c', 0.15)}`, boxShadow: edu.shadow('card') }}>
+    <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
         <div className="font-bold" style={{ ...edu.componentPadding(), paddingBottom: isCompact ? 6 : 8, ...edu.bodyLg(), fontWeight: 700, color: edu.textColor() }}>
           {block.judul}
@@ -128,9 +132,9 @@ function RenderPoin({ block, tokens, isCompact }: { block: MateriBlokBlock; toke
       )}
       <div style={{ ...edu.sectionPadding(), paddingTop: isCompact ? 6 : 8, paddingBottom: isCompact ? 10 : 14 }} className="flex flex-col gap-2">
         {butir.map((b, i) => (
-          <div key={i} className="flex items-start gap-2.5" style={{ ...edu.nestedPadding(), background: readableTintBg(tokens, 'c', 0.04), borderRadius: tokens.radius('sm') }}>
+          <div key={i} className="flex items-start gap-2.5" style={{ ...edu.nestedPadding(), background: readableTintBg(tokens, colorKey, 0.04), borderRadius: tokens.radius('sm') }}>
             <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{ background: tokens.colorAlpha('c', 0.2), color: tokens.color('c'), ...edu.caption() }}>
+              style={{ background: tokens.colorAlpha(colorKey, 0.2), color: tokens.color(colorKey), ...edu.caption() }}>
               {i + 1}
             </span>
             <span style={{ ...edu.body(), color: edu.textColor() }}>
@@ -149,8 +153,10 @@ function RenderTabel({ block, tokens, isCompact }: { block: MateriBlokBlock; tok
   const baris = block.baris || [];
   if (baris.length === 0) return null;
   const hasHeader = baris.length > 1;
+  // S2J.5: Read block.warna for accent color (border, header bg)
+  const colorKey = block.warna || 'p';
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha('p', 0.15)}`, boxShadow: edu.shadow('card') }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
         <div className="font-bold" style={{ ...edu.componentPadding(), paddingBottom: isCompact ? 6 : 8, ...edu.bodyLg(), fontWeight: 700, color: edu.textColor() }}>
           {block.judul}
@@ -160,13 +166,13 @@ function RenderTabel({ block, tokens, isCompact }: { block: MateriBlokBlock; tok
         <table style={{ width: '100%', borderCollapse: 'collapse', ...edu.body() }}>
           <tbody>
             {baris.map((row, ri) => (
-              <tr key={ri} style={{ borderBottom: `1px solid ${tokens.colorAlpha('p', 0.1)}` }}>
+              <tr key={ri} style={{ borderBottom: `1px solid ${tokens.colorAlpha(colorKey, 0.1)}` }}>
                 {row.map((cell, ci) => (
                   <td key={ci} style={{
                     ...edu.nestedPadding(),
                     color: edu.textColor(),
                     fontWeight: ri === 0 && hasHeader ? 700 : 400,
-                    background: ri === 0 && hasHeader ? tokens.colorAlpha('p', 0.08) : undefined,
+                    background: ri === 0 && hasHeader ? tokens.colorAlpha(colorKey, 0.08) : undefined,
                   }}>
                     <RichText content={cell} />
                   </td>
@@ -183,15 +189,17 @@ function RenderTabel({ block, tokens, isCompact }: { block: MateriBlokBlock; tok
 // ── 5. KUTIPAN — Quote block besar ──────────────────────────────
 function RenderKutipan({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
+  // S2J.5: Read block.warna for accent color (border, quote mark, karakter color)
+  const colorKey = block.warna || 'g';
   return (
-    <div className="rounded-xl" style={{ background: readableTintBg(tokens, 'g', 0.06), border: `1px solid ${readableTintBorder(tokens, 'g', 0.15)}`, borderLeft: `${edu.stripeWidth()}px solid ${tokens.color('g')}` }}>
+    <div className="rounded-xl" style={{ background: readableTintBg(tokens, colorKey, 0.06), border: `1px solid ${readableTintBorder(tokens, colorKey, 0.15)}`, borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}` }}>
       <div style={{ ...edu.componentPadding() }}>
         <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>format_quote</span>
         <div style={{ ...edu.bodyLg(), fontStyle: 'italic', color: edu.textColor() }}>
           &ldquo;<RichText content={block.isi || ''} />&rdquo;
         </div>
         {block.karakter && (
-          <div className="mt-3" style={{ ...edu.body(), fontWeight: 700, color: tokens.color('g') }}>
+          <div className="mt-3" style={{ ...edu.body(), fontWeight: 700, color: tokens.color(colorKey) }}>
             — {block.karakter}
           </div>
         )}
@@ -204,8 +212,10 @@ function RenderKutipan({ block, tokens, isCompact }: { block: MateriBlokBlock; t
 function RenderGambar({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
   const url = block.isi || '';
+  // S2J.5: Read block.warna for accent color (border, caption bg)
+  const colorKey = block.warna || 'c';
   if (!url) return (
-    <div className="rounded-xl flex items-center justify-center" style={{ background: readableTintBg(tokens, 'c', 0.06), border: `1px dashed ${readableTintBorder(tokens, 'c', 0.2)}`, height: isCompact ? '80px' : '160px' }}>
+    <div className="rounded-xl flex items-center justify-center" style={{ background: readableTintBg(tokens, colorKey, 0.06), border: `1px dashed ${readableTintBorder(tokens, colorKey, 0.2)}`, height: isCompact ? '80px' : '160px' }}>
       <div className="text-center">
         <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>image</span>
         <div style={{ ...edu.caption(), color: edu.mutedText(0.5), marginTop: '4px' }}>Masukkan URL gambar</div>
@@ -213,10 +223,10 @@ function RenderGambar({ block, tokens, isCompact }: { block: MateriBlokBlock; to
     </div>
   );
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${tokens.colorAlpha('c', 0.15)}` }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}` }}>
       <img src={url} alt={block.judul || 'Gambar'} style={{ width: '100%', maxHeight: isCompact ? '120px' : '280px', objectFit: 'cover' }} />
       {block.judul && (
-        <div style={{ ...edu.nestedPadding(), ...edu.caption(), color: edu.mutedText(0.7), background: readableTintBg(tokens, 'c', 0.04) }}>
+        <div style={{ ...edu.nestedPadding(), ...edu.caption(), color: edu.mutedText(0.7), background: readableTintBg(tokens, colorKey, 0.04) }}>
           {block.judul}
         </div>
       )}
@@ -228,8 +238,10 @@ function RenderGambar({ block, tokens, isCompact }: { block: MateriBlokBlock; to
 function RenderTimeline({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
   const langkah = block.langkah || [];
+  // S2J.5: Read block.warna for accent color (border, dots, vertical line)
+  const colorKey = block.warna || 'c';
   return (
-    <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha('c', 0.15)}`, boxShadow: edu.shadow('card') }}>
+    <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
         <div className="font-bold flex items-center gap-2" style={{ ...edu.componentPadding(), paddingBottom: isCompact ? 6 : 8, ...edu.bodyLg(), fontWeight: 700, color: edu.textColor() }}>
           <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>schedule</span>
@@ -241,11 +253,11 @@ function RenderTimeline({ block, tokens, isCompact }: { block: MateriBlokBlock; 
           <div key={i} className="flex gap-3" style={{ position: 'relative' }}>
             {/* Vertical line */}
             {i < langkah.length - 1 && (
-              <div style={{ position: 'absolute', left: isCompact ? '9px' : '11px', top: '22px', bottom: '-4px', width: '2px', background: tokens.colorAlpha('c', 0.2) }} />
+              <div style={{ position: 'absolute', left: isCompact ? '9px' : '11px', top: '22px', bottom: '-4px', width: '2px', background: tokens.colorAlpha(colorKey, 0.2) }} />
             )}
             {/* Step dot */}
             <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5"
-              style={{ background: tokens.colorAlpha('c', 0.2), border: `2px solid ${tokens.color('c')}`, zIndex: 1, ...edu.caption() }}>
+              style={{ background: tokens.colorAlpha(colorKey, 0.2), border: `2px solid ${tokens.color(colorKey)}`, zIndex: 1, ...edu.caption() }}>
               {step.icon || (i + 1)}
             </div>
             {/* Step content */}
@@ -353,8 +365,10 @@ function RenderInfobox({ block, tokens, isCompact }: { block: MateriBlokBlock; t
 function RenderChecklist({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
   const butir = block.butir || [];
+  // S2J.5: Read block.warna for accent color (border, checkbox, tint)
+  const colorKey = block.warna || 'g';
   return (
-    <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha('g', 0.15)}`, boxShadow: edu.shadow('card') }}>
+    <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
         <div className="font-bold flex items-center gap-2" style={{ ...edu.componentPadding(), paddingBottom: isCompact ? 6 : 8, ...edu.bodyLg(), fontWeight: 700, color: edu.textColor() }}>
           <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>check_box</span>
@@ -363,8 +377,8 @@ function RenderChecklist({ block, tokens, isCompact }: { block: MateriBlokBlock;
       )}
       <div style={{ ...edu.sectionPadding(), paddingTop: isCompact ? 6 : 8, paddingBottom: isCompact ? 10 : 14 }} className="flex flex-col gap-2">
         {butir.map((b, i) => (
-          <label key={i} className="flex items-start gap-2.5 cursor-pointer" style={{ ...edu.nestedPadding(), background: readableTintBg(tokens, 'g', 0.04), borderRadius: tokens.radius('sm') }}>
-            <input type="checkbox" className="mt-0.5 flex-shrink-0" style={{ accentColor: tokens.color('g') }} />
+          <label key={i} className="flex items-start gap-2.5 cursor-pointer" style={{ ...edu.nestedPadding(), background: readableTintBg(tokens, colorKey, 0.04), borderRadius: tokens.radius('sm') }}>
+            <input type="checkbox" className="mt-0.5 flex-shrink-0" style={{ accentColor: tokens.color(colorKey) }} />
             <span style={{ ...edu.body(), color: edu.textColor() }}>
               <RichText content={b} />
             </span>
@@ -499,8 +513,14 @@ export const MateriBlokRenderer = React.memo(function MateriBlokRenderer({ block
     );
   }
 
+  // S2J.5: For safe subtipes, use block.warna as PremiumBlockWrapper accent
+  // so the frame/glow effect matches the chosen color. Unsafe subtipes keep
+  // their semantic default from TIPE_META.
+  const SAFE_WARNA_TIPES = new Set(['teks', 'definisi', 'poin', 'kutipan', 'checklist', 'gambar', 'tabel', 'timeline', 'highlight']);
+  const wrapperAccent = (SAFE_WARNA_TIPES.has(tipe) && block.warna) ? block.warna : meta.color;
+
   return (
-    <PremiumBlockWrapper tokens={tokens} accent={meta.color} staggerIndex={0}>
+    <PremiumBlockWrapper tokens={tokens} accent={wrapperAccent} staggerIndex={0}>
       <Renderer block={block} tokens={tokens} isCompact={!!isCompact} />
     </PremiumBlockWrapper>
   );

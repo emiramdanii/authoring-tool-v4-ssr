@@ -666,30 +666,51 @@ function renderMateriBlok(b: Record<string, unknown>): string {
   const infoboxStyle = b.infoboxStyle as string || 'info';
   const items = b.items as Array<{ icon?: string; angka?: string; satuan?: string; label?: string; warna?: string }> || [];
 
+  // S2J.5: Default hex colors per safe subtipe, matching MateriBlokRenderer TIPE_META defaults.
+  // Used as fallback when block.warna is not set. resolveColor() maps token keys ('y','c',etc.)
+  // to actual hex colors, so warna='y' → '#fbbf24', warna=undefined → fallback hex.
+  const DEFAULT_ACCENT: Record<string, string> = {
+    teks: '#fbbf24',      // y (Kuning)
+    definisi: '#fbbf24',  // y
+    poin: '#3ecfcf',      // c (Cyan)
+    tabel: '#a78bfa',     // p (Ungu)
+    kutipan: '#34d399',   // g (Hijau)
+    gambar: '#3ecfcf',    // c
+    timeline: '#3ecfcf',  // c
+    highlight: '#fbbf24', // y
+    checklist: '#34d399', // g
+  };
+
+  // Resolve accent color for safe subtipes using block.warna
+  const c = resolveColor(warna, DEFAULT_ACCENT[tipe] || '#3ecfcf');
+
   switch (tipe) {
     case 'teks':
-      return `<div class="block materi-blok" style="border-left: 3px solid #3ecfcf; padding: 12px; background: #3ecfcf0d; border-radius: 10px;">${judul ? `<h3 style="color: #3ecfcf; font-size: 13px;">${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
+      return `<div class="block materi-blok" style="border-left: 3px solid ${c}; padding: 12px; background: ${c}0d; border-radius: 10px;">${judul ? `<h3 style="color: ${c}; font-size: 13px;">${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
     case 'definisi':
-      return `<div class="block materi-blok" style="border-left: 4px solid #fbbf24; padding: 12px; background: #fbbf240d; border-radius: 10px;">${judul ? `<h3 style="color: #fbbf24; font-size: 13px;">📖 ${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
+      return `<div class="block materi-blok" style="border-left: 4px solid ${c}; padding: 12px; background: ${c}0d; border-radius: 10px;">${judul ? `<h3 style="color: ${c}; font-size: 13px;">📖 ${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
     case 'poin':
-      return `<div class="block materi-blok" style="border-left: 3px solid #34d399; padding: 12px; background: #34d3990d; border-radius: 10px;">${judul ? `<h3 style="color: #34d399; font-size: 13px;">📋 ${escapeHtml(judul)}</h3>` : ''}<ul style="margin: 6px 0; padding-left: 16px;">${butir.map(b => `<li style="font-size: 11px; color: #94a3b8;">${escapeHtml(b)}</li>`).join('')}</ul></div>`;
+      return `<div class="block materi-blok" style="border-left: 3px solid ${c}; padding: 12px; background: ${c}0d; border-radius: 10px;">${judul ? `<h3 style="color: ${c}; font-size: 13px;">📋 ${escapeHtml(judul)}</h3>` : ''}<ul style="margin: 6px 0; padding-left: 16px;">${butir.map(b => `<li style="font-size: 11px; color: #94a3b8;">${escapeHtml(b)}</li>`).join('')}</ul></div>`;
     case 'tabel':
-      return `<div class="block materi-blok" style="border-left: 3px solid #a78bfa; padding: 12px; background: #a78bfa0d; border-radius: 10px;">${judul ? `<h3 style="color: #a78bfa; font-size: 13px;">📊 ${escapeHtml(judul)}</h3>` : ''}${baris.length > 0 ? `<table style="width:100%;border-collapse:collapse;font-size:11px;"><tbody>${baris.map((r, ri) => `<tr>${r.map(c => `<td style="padding:6px 8px;border:1px solid #334155;${ri === 0 ? 'font-weight:700;background:#1e293b;' : 'color:#94a3b8;'}">${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>` : ''}</div>`;
+      return `<div class="block materi-blok" style="border-left: 3px solid ${c}; padding: 12px; background: ${c}0d; border-radius: 10px;">${judul ? `<h3 style="color: ${c}; font-size: 13px;">📊 ${escapeHtml(judul)}</h3>` : ''}${baris.length > 0 ? `<table style="width:100%;border-collapse:collapse;font-size:11px;"><tbody>${baris.map((r, ri) => `<tr>${r.map(cell => `<td style="padding:6px 8px;border:1px solid #334155;${ri === 0 ? `font-weight:700;background:${c}18;` : 'color:#94a3b8;'}">${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table>` : ''}</div>`;
     case 'kutipan':
-      return `<div class="block materi-blok" style="border-left: 4px solid #34d399; padding: 16px; background: #34d3990d; border-radius: 10px; font-style: italic;">${isi ? `<p style="font-size: 13px; color: #f1f5f9;">"${escapeHtml(isi)}"</p>` : ''}${karakter ? `<p style="font-size: 11px; color: #34d399; margin-top: 6px;">— ${escapeHtml(karakter)}</p>` : ''}</div>`;
+      return `<div class="block materi-blok" style="border-left: 4px solid ${c}; padding: 16px; background: ${c}0d; border-radius: 10px; font-style: italic;">${isi ? `<p style="font-size: 13px; color: #f1f5f9;">"${escapeHtml(isi)}"</p>` : ''}${karakter ? `<p style="font-size: 11px; color: ${c}; margin-top: 6px;">— ${escapeHtml(karakter)}</p>` : ''}</div>`;
     case 'highlight':
-      return `<div class="block materi-blok" style="border-left: 4px solid ${warna || '#fbbf24'}; padding: 12px; background: ${warna || '#fbbf24'}0d; border-radius: 10px;">${icon ? `<span style="font-size: 16px;">${icon}</span>` : ''}${judul ? `<h3 style="color: ${warna || '#fbbf24'}; font-size: 13px;">${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
+      return `<div class="block materi-blok" style="border-left: 4px solid ${c}; padding: 12px; background: ${c}0d; border-radius: 10px;">${icon ? `<span style="font-size: 16px;">${icon}</span>` : ''}${judul ? `<h3 style="color: ${c}; font-size: 13px;">${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
     case 'compare':
       return renderCompare({ title: judul, kiri, kanan, accentColor: warna || 'c' });
     case 'infobox': {
+      // S2J.5: infobox NOT in safe subtipes — color comes from infoboxStyle semantic meaning
       const ic = infoboxStyle === 'warning' ? '#fbbf24' : infoboxStyle === 'tip' ? '#34d399' : '#3ecfcf';
       return `<div class="block materi-blok" style="border-left: 4px solid ${ic}; padding: 12px; background: ${ic}0d; border-radius: 10px;">${judul ? `<h3 style="color: ${ic}; font-size: 13px;">ℹ️ ${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
     }
     case 'checklist':
-      return `<div class="block materi-blok" style="border-left: 3px solid #34d399; padding: 12px; background: #34d3990d; border-radius: 10px;">${judul ? `<h3 style="color: #34d399; font-size: 13px;">✅ ${escapeHtml(judul)}</h3>` : ''}${butir.map(b => `<div style="font-size: 11px; color: #94a3b8;"><input type="checkbox" disabled /> ${escapeHtml(b)}</div>`).join('')}</div>`;
+      return `<div class="block materi-blok" style="border-left: 3px solid ${c}; padding: 12px; background: ${c}0d; border-radius: 10px;">${judul ? `<h3 style="color: ${c}; font-size: 13px;">✅ ${escapeHtml(judul)}</h3>` : ''}${butir.map(b => `<div style="font-size: 11px; color: #94a3b8;"><input type="checkbox" disabled style="accent-color:${c};" /> ${escapeHtml(b)}</div>`).join('')}</div>`;
     case 'statistik':
-      return `<div class="block materi-blok" style="border-left: 3px solid #3ecfcf; padding: 12px; background: #3ecfcf0d; border-radius: 10px;">${judul ? `<h3 style="color: #3ecfcf; font-size: 13px;">📈 ${escapeHtml(judul)}</h3>` : ''}<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px;">${items.map(it => `<div style="text-align: center; padding: 8px; background: ${it.warna || '#3ecfcf'}1a; border-radius: 8px;"><div style="font-size: 18px; font-weight: 900; color: ${it.warna || '#3ecfcf'};">${escapeHtml(it.angka || '0')}</div>${it.satuan ? `<div style="font-size: 8px; color: #64748b;">${escapeHtml(it.satuan)}</div>` : ''}<div style="font-size: 9px; color: #94a3b8;">${escapeHtml(it.label || '')}</div></div>`).join('')}</div></div>`;
+      // S2J.5: statistik NOT in safe subtipes — each item has its own warna
+      return `<div class="block materi-blok" style="border-left: 3px solid #3ecfcf; padding: 12px; background: #3ecfcf0d; border-radius: 10px;">${judul ? `<h3 style="color: #3ecfcf; font-size: 13px;">📈 ${escapeHtml(judul)}</h3>` : ''}<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px;">${items.map(it => { const sc = resolveColor(it.warna, '#3ecfcf'); return `<div style="text-align: center; padding: 8px; background: ${sc}1a; border-radius: 8px;"><div style="font-size: 18px; font-weight: 900; color: ${sc};">${escapeHtml(it.angka || '0')}</div>${it.satuan ? `<div style="font-size: 8px; color: #64748b;">${escapeHtml(it.satuan)}</div>` : ''}<div style="font-size: 9px; color: #94a3b8;">${escapeHtml(it.label || '')}</div></div>`; }).join('')}</div></div>`;
     case 'studi':
+      // S2J.5: studi NOT in safe subtipes — multi-color semantic (red situasi, yellow pertanyaan, green pesan)
       return `<div class="block materi-blok" style="border-left: 4px solid #fbbf24; padding: 12px; background: #fbbf240d; border-radius: 10px;">${judul ? `<h3 style="color: #fbbf24; font-size: 13px;">📑 ${escapeHtml(judul)}</h3>` : ''}${situasi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(situasi)}</p>` : ''}${pertanyaan ? `<p style="font-size: 11px; color: #fbbf24; margin-top: 6px;">❓ ${escapeHtml(pertanyaan)}</p>` : ''}</div>`;
     case 'timeline':
       return renderTimeline({ title: judul, steps: langkah.map(s => ({ icon: s.icon, label: s.judul, description: s.isi, color: warna || 'c' })), accentColor: warna || 'c' });
