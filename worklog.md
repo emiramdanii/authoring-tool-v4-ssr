@@ -464,3 +464,27 @@ Work Log:
 Stage Summary:
 - Sprint 2F verification report updated and pushed
 - All 10 PASS criteria verified at code level
+---
+Task ID: 2G
+Agent: Main
+Task: Sprint 2G — Import JSON Roda
+
+Work Log:
+- Audited RodaGameBlock type (questions[].q, opts[].{text, correct}, feedbackCorrect, feedbackWrong, diskusiHint)
+- Audited RodaGameRenderer (reads opts[].correct boolean, feedbackCorrect/Wrong with fallback, diskusiHint)
+- Audited guided editor (maxItems: 6 questions, maxItems: 4 opts, no displayMode:tab)
+- Created roda-import.ts with dual format validator + mapper + parser + sample JSON
+  - Format A (native): opts: [{ text, correct }]
+  - Format B (AI-friendly): opts: ["A", "B"], ans: 0
+  - Mapper auto-converts Format B → Format A (ans index → correct boolean)
+  - Validator: 0 correct = error, >1 correct = warning
+- Created RodaImportPanel.tsx (collapsible import UI with validate/apply)
+- Integrated RodaImportPanel in GuidedFormEditor.tsx (blockType === 'roda-game')
+- Did NOT touch RodaGameRenderer, scoring, export, guided-patch, guided-field-renderer
+- Updated CORE_VERIFICATION_REPORT.md with Sprint 2G entry
+- Build PASS, committed 3b62fe9, pushed to origin main
+
+Stage Summary:
+- Roda game now has JSON import with dual format support
+- 4 files changed, 678 insertions, 1 deletion
+- Key innovation: app tolerates AI output format (opts string[] + ans) and converts internally
