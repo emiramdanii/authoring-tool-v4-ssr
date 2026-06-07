@@ -64,6 +64,8 @@ Sprint 2J.2 — Style Control Gap Audit for Games: PASS (audit only) — sortir/
 Sprint 2J.3 — Add Accent Color Support for Sortir/Roda: PASS — accentColor added to schema, renderers read it, GuidedFormEditor exposes it, no variant, no wheelColors change
 Sprint 2J.5 — Perluas Warna MateriBlok: PASS — warna field expanded to 9 safe subtipes, accentColor dead field removed from guided editor, export preview alignment fix
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
+Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
+Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
 Core verification (target lama): 12 PASS, 1 PARTIAL, 3 MANUAL REQUIRED, 0 FAIL
 ```
 
@@ -3233,3 +3235,32 @@ Dengan options → hanya tampilkan 6 warna aksen
 | def-box 'Pink' value='p' | Inkonsisten (p=Ungu di sistem lain) | 'Ungu' (konsisten) |
 | Inline color options (4 block) | Duplikat array 6 warna | ACCENT_COLOR_OPTIONS (DRY) |
 | Bare color fields (13 field) | Menampilkan 8 token | ACCENT_COLOR_OPTIONS (6 warna) |
+
+## Round 52 — Sprint 2K: Block Style Preset Gallery Audit
+
+**PERUBAHAN RONDE 52 (Sprint 2K — Block Style Preset Gallery Audit):**
+
+1. Sprint 2K AUDIT: Menilai bagaimana membuat pilihan gaya siap pakai ("Gaya Cepat") per-block — bukan global (sudah ada ThemePreset), bukan page (terlalu ambigu)
+2. Keputusan utama: Preset level BLOCK — guru pilih block, buka Tampilan, pilih Gaya Cepat
+3. 7 preset awal: Ceria(y+B), Formal(c+A), Modern(p+C), Petualangan(g+B), Minimal(c+C), Hangat(o+A), Berani(r+B)
+4. Schema format: `{ id, label, description, icon, values: { accentColor?, variant?, layoutVariant?, borderColor?, animation? } }`
+5. Resolver memfilter field sesuai kemampuan renderer — tidak ada field palsu
+6. Temuan penting: 5 renderer (NcGrid, Diskusi, Tp, TujuanDisplay, Kuis) TIDAK membaca block.accentColor
+7. materi-blok menggunakan `warna` (bukan `accentColor`) — special case, TODO untuk sprint berikutnya
+8. DefBox hanya membaca `borderColor` — bukan `accentColor`
+9. File yang perlu disentuh: block-style-presets.ts (BARU), GuidedFormEditor.tsx, guided-patch.ts, BlockStylePresetGrid.tsx (BARU)
+10. File yang TIDAK disentuh: renderer, export, token system, ThemePreset, blocks.ts
+
+## Round 53 — Sprint 2K.1: Block Style Preset Data Layer
+
+**PERUBAHAN RONDE 53 (Sprint 2K.1 — Block Style Preset Data Layer):**
+
+1. Sprint 2K.1 IMPLEMENTASI: Data layer untuk Gaya Cepat per-block — fondasi data tanpa UI
+2. `block-style-presets.ts` BARU: Interface BlockStylePreset, 7 preset, capability map, resolver
+3. BLOCK_STYLE_CAPABILITIES: Map block type → style fields yang renderer benar-benar baca
+4. resolveBlockStylePreset(presetId, blockType): Filter preset values sesuai kemampuan block type
+5. getSupportedStyleFields(blockType): Daftar field style yang didukung block type
+6. blockTypeSupportsPresets(blockType): Cek apakah block type bisa pakai preset
+7. 44 unit test PASS — termasuk edge case: unknown preset, unknown block, dead fields
+8. Tidak ada UI berubah, tidak ada renderer/export berubah
+9. Build berhasil, test berhasil
