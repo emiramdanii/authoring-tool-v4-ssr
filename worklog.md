@@ -533,3 +533,26 @@ Stage Summary:
 - Senior decision: PresentMode = guru presentasi (not siswa), no change needed
 - Runtime now: scores reset on preview/play entry, mode sync prevents overlay leaks
 - Next per CORE_SCOPE order: Sprint 3 — Engine
+
+---
+Task ID: S3.1
+Agent: Main
+Task: Fix MateriBlok Style Field Mismatch — renderer reads accentColor first, fallback to warna
+
+Work Log:
+- Read MateriBlokRenderer.tsx (527 lines) — identified 10 occurrences of block.warna
+- Confirmed MateriBlokBlock type has both warna and accentColor fields (blocks.ts line 756, 769)
+- Applied Opsi A (renderer backward-compatible): changed all 9 sub-renderer colorKey from `block.warna || '<default>'` to `block.accentColor ?? block.warna ?? '<default>'`
+- Updated wrapper accent resolver: `block.accentColor ?? block.warna` via resolvedAccent variable
+- Updated CORE_VERIFICATION_REPORT.md with Sprint 3 and Sprint 3.1 entries
+- Build: PASS
+- Commit: fix: align materi-blok accent color rendering (0e00796)
+- Pull rebase: clean (up to date)
+- Push: success
+
+Stage Summary:
+- MateriBlokRenderer now reads accentColor with priority, fallback to legacy warna
+- All 9 sub-renderers + wrapper updated consistently
+- Backward compatible: data lama (warna only) still works, data baru (accentColor) works
+- When both exist, accentColor wins (correct priority)
+- No changes to: export, schema, guided editor, preset system, block-style-presets
