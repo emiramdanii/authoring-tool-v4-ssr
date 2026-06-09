@@ -510,3 +510,26 @@ Stage Summary:
 - Variant-only blocks (kuis, diskusi, nc-grid, tujuan-display) show only 3 unique presets instead of 7 with duplicates (P3)
 - 44 total unit tests PASS (38 new + 6 from previous session)
 - Build PASS, push successful
+---
+Task ID: Sprint-2.1-Runtime-Stabilization
+Agent: Main
+Task: Sprint 2.1 — Runtime Stabilization (BUG 1, BUG 2, BUG 6 kecil)
+
+Work Log:
+- Sprint 2 Audit: 7 audit points, found 6 bugs (2 P1, 2 P2, 2 P3)
+- BUG 1 FIX: PreviewMode.tsx — added replayAll() on mount to clear stale persisted scores
+- BUG 1 FIX: PlayOverlay.tsx — added replayAll() on mount, same fix
+- BUG 2 FIX: CanvaBuilder.tsx — added useEffect to sync interactive-store.mode with appMode
+  - edit → closePlay() (sets mode='design')
+  - preview/present → setMode('interactive')
+- BUG 6 FIX: interactive-store.ts — changed || to ?? for currentPageIndex
+- PARKED: Duplicate navigation in export → deferred to Sprint 4
+- PARKED: Answer tracking → deferred, needs data model design
+- Build ✅, pushed to origin/main
+
+Stage Summary:
+- Sprint 2 Audit result: PARTIAL (not blocker, but needs cleanup)
+- Sprint 2.1 fixes applied: 3 bugs fixed, 2 parked
+- Senior decision: PresentMode = guru presentasi (not siswa), no change needed
+- Runtime now: scores reset on preview/play entry, mode sync prevents overlay leaks
+- Next per CORE_SCOPE order: Sprint 3 — Engine
