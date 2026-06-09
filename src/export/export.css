@@ -308,6 +308,71 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   SPRINT 4.2 — Animation Parity Keyframes
+   Synced from globals.css — only keyframes actively used by renderer
+   blocks that render in export mode (kuis/game feedback, completion,
+   entrance animations, cover breathing).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── P0: Correct answer feedback (6+ game renderers) ─────────── */
+@keyframes popSuccess {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── P0: Roda game wheel glow ─────────────────────────────────── */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 8px var(--glow-color, rgba(249, 193, 46, 0.3)); }
+  50% { box-shadow: 0 0 20px var(--glow-color-strong, rgba(249, 193, 46, 0.6)); }
+}
+
+/* ── P0: Educational entrance — fade in (via edu.entrance helper) ── */
+@keyframes eduFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── P0: Educational entrance — slide up (via edu.entrance helper) ── */
+@keyframes eduSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── P1: Cover & tujuan display icon breathing ────────────────── */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ── P1: Game unsolved/loading state indicator ────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── P1: Step completion sparkle ──────────────────────────────── */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ── P1: Step completion trophy bounce ────────────────────────── */
+@keyframes trophyBounce {
+  0% { transform: translateY(0) scale(0.3); opacity: 0; }
+  40% { transform: translateY(-16px) scale(1.1); opacity: 1; }
+  60% { transform: translateY(4px) scale(0.95); }
+  80% { transform: translateY(-4px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* ── P1: Premium block stagger entrance ───────────────────────── */
+@keyframes blockStaggerIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Range Input Styling ─────────────────────────────────────── */
 input[type="range"] {
   -webkit-appearance: none;

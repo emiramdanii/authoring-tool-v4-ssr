@@ -65,8 +65,9 @@ Sprint 2J.3 — Add Accent Color Support for Sortir/Roda: PASS — accentColor a
 Sprint 2J.5 — Perluas Warna MateriBlok: PASS — warna field expanded to 9 safe subtipes, accentColor dead field removed from guided editor, export preview alignment fix
 Sprint 3 — Engine Audit: PASS — schema is single source of truth, renderer shared for all modes, legacy adapter is bridge only, field mismatch materi-blok found → Sprint 3.1
 Sprint 3.1 — Fix MateriBlok Style Field Mismatch: PASS — MateriBlokRenderer reads accentColor first, fallback to warna, backward compatible
-Sprint 4 — Export Audit: PARTIAL — pipeline renderer sehat, BUG 4 duplicate navigation P0, animasi keyframes P1
+Sprint 4 — Export Audit: PASS — pipeline renderer sehat, BUG 4 duplicate navigation diperbaiki (Sprint 4.1), animasi keyframes parity diperbaiki (Sprint 4.2)
 Sprint 4.1 — Fix Duplicate Export Navigation: PASS — PageFrame externalNavigation kini mencakup mode='export', ExportApp satu-satunya pemilik nav export
+Sprint 4.2 — Export Animation Parity: PASS — 9 keyframes P0/P1 ditambahkan ke export.css (popSuccess, pulseGlow, eduFadeIn, eduSlideUp, breathe, shimmer, sparkle, trophyBounce, blockStaggerIn)
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
