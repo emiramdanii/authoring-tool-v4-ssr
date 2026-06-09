@@ -356,19 +356,19 @@ export const PageFrame = React.memo(function PageFrame({
   const isSchemaCover = isSchemaDriven && page.templateType === 'cover';
   const isCoverPage = page.templateType === 'cover';
 
-  // ═══ Sprint 4 (Engine): Hide PageFrame navbars when external navigation exists ═══
+  // ═══ Sprint 4.1 (Export): Hide PageFrame navbars when external navigation exists ═══
   // In learn mode: LearningMediaShell provides TopNavbar + BottomNav
   // In preview mode: PreviewMode provides floating navigation bar
+  // In export mode: ExportApp provides ExportTopNavbar + ExportBottomNav
   // In canvas mode: PageFrame navbars are needed for editing context
-  // In export mode: PageFrame navbars are the primary navigation (no external nav)
   //
-  // When isSchemaDriven is true AND mode is 'learn'/'preview', the ScreenAdapter
-  // system provides page-level chrome (ScreenShell with progress bar, section label,
-  // page counter). PageFrame's navbars would be duplicate and should be hidden.
+  // When isSchemaDriven is true AND mode is 'learn'/'preview'/'export', an external
+  // navigation shell provides page-level chrome. PageFrame's navbars would be
+  // duplicate and should be hidden.
   //
   // For legacy (non-schema) pages, keep navbars in all modes since there's no
-  // ScreenAdapter chrome to replace them.
-  const externalNavigation = isSchemaDriven && (mode === 'learn' || mode === 'preview');
+  // external navigation chrome to replace them.
+  const externalNavigation = isSchemaDriven && (mode === 'learn' || mode === 'preview' || mode === 'export');
   const showTopNav = !isSchemaCover && !isCoverPage && showNavbar && !externalNavigation;
   const showBottomNav = showNavbar && !isCoverPage && !externalNavigation;
 

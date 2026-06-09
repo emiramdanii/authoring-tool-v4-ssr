@@ -65,6 +65,8 @@ Sprint 2J.3 — Add Accent Color Support for Sortir/Roda: PASS — accentColor a
 Sprint 2J.5 — Perluas Warna MateriBlok: PASS — warna field expanded to 9 safe subtipes, accentColor dead field removed from guided editor, export preview alignment fix
 Sprint 3 — Engine Audit: PASS — schema is single source of truth, renderer shared for all modes, legacy adapter is bridge only, field mismatch materi-blok found → Sprint 3.1
 Sprint 3.1 — Fix MateriBlok Style Field Mismatch: PASS — MateriBlokRenderer reads accentColor first, fallback to warna, backward compatible
+Sprint 4 — Export Audit: PARTIAL — pipeline renderer sehat, BUG 4 duplicate navigation P0, animasi keyframes P1
+Sprint 4.1 — Fix Duplicate Export Navigation: PASS — PageFrame externalNavigation kini mencakup mode='export', ExportApp satu-satunya pemilik nav export
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
@@ -3431,3 +3433,38 @@ Bukan detail teknis nama field
 | Guru ubah warna di Gaya Cepat | accentColor ditulis tapi renderer baca warna → tidak berubah | accentColor dibaca renderer → warna berubah |
 | Data lama (hanya warna) | Tetap jalan | Tetap jalan (fallback ke warna) |
 | accentColor + warna sama-sama ada | warna menang | accentColor menang (prioritas baru) |
+
+**PERUBAHAN SPRINT 4.1 (Fix Duplicate Export Navigation):**
+
+1. S4.1 FIX: PageFrame tidak lagi render navbar internal saat mode export — ExportApp adalah satu-satunya pemilik navigasi export
+2. ROOT CAUSE: `externalNavigation` di PageFrame hanya mencakup mode `'learn'` dan `'preview'`, tidak mencakup `'export'`. ExportApp sudah menyediakan `ExportTopNavbar` + `ExportBottomNav`, tapi PageFrame juga render nav internal, sehingga siswa melihat dua navigasi yang tumpang tindih
+3. `PageFrame.tsx` line 371: Diubah dari `isSchemaDriven && (mode === 'learn' || mode === 'preview')` ke `isSchemaDriven && (mode === 'learn' || mode === 'preview' || mode === 'export')`
+4. Comment diupdate: "In export mode: ExportApp provides ExportTopNavbar + ExportBottomNav" menggantikan komentar lama yang menyebut export sebagai primary navigation dari PageFrame
+5. showTopNav dan showBottomNav sekarang `false` saat `isSchemaDriven && mode === 'export'` sehingga PageFrame tidak render nav internal
+6. Content area offset sudah aman: schema-driven selalu `top: 0, bottom: 0` sehingga tidak ada double-offset
+7. Tidak mengubah: ExportApp, ExportTopNavbar, ExportBottomNav, renderer block, interactive-store, export pipeline, runtime modes lainnya
+8. Build: PASS
+
+**S4.1 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| `externalNavigation` | `isSchemaDriven && (learn \|\| preview)` | `isSchemaDriven && (learn \|\| preview \|\| export)` |
+| Export HTML navigasi | Ganda: ExportApp nav + PageFrame nav | Tunggal: ExportApp nav saja |
+| showTopNav saat export | `true` (nav internal muncul) | `false` (nav internal tersembunyi) |
+| showBottomNav saat export | `true` (nav internal muncul) | `false` (nav internal tersembunyi) |
+| Navigation lock | Bisa bocor antar sistem nav | Single source: ExportApp |
+| Canvas mode | Tidak berubah | Tidak berubah |
+| Preview mode | Tidak berubah | Tidak berubah |
+| Learn mode | Tidak berubah | Tidak berubah |
+
+**S4.1 prinsip external navigation:**
+
+```txt
+Canvas  → PageFrame nav (editing context)
+Preview → PreviewMode floating nav (external)
+Learn   → LearningMediaShell nav (external)
+Export  → ExportApp nav (external)
+
+externalNavigation = isSchemaDriven && (learn || preview || export)
+```
