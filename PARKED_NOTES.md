@@ -40,4 +40,18 @@ Kapan boleh dikerjakan:
 
 ## Catatan
 
-Belum ada catatan.
+### 1. Duplicate navigation di export
+
+Tanggal: 2026-06-09
+Area: Export HTML
+Temuan: ExportApp dan PageFrame sama-sama memiliki kontrol navigasi (prev/next) untuk schema-driven pages di mode export. Ini menyebabkan dua set tombol navigasi yang mungkin out-of-sync karena terhubung ke store yang berbeda (canva-store vs learning-media-store).
+Kenapa tidak dikerjakan sekarang: Masuk area Export, bukan runtime sprint ini. Perlu audit export tersendiri.
+Kapan boleh dikerjakan: Sprint 4 — Export HTML
+
+### 2. Answer tracking di interactive-store
+
+Tanggal: 2026-06-09
+Area: Runtime / Data Model
+Temuan: interactive-store hanya menyimpan score dan completed per block, tetapi tidak menyimpan jawaban siswa (option mana yang dipilih). Kembali ke halaman kuis → UI mungkin tidak menampilkan jawaban sebelumnya. Perlu desain answersByPage atau responsesByBlockId.
+Kenapa tidak dikerjakan sekarang: Ini bukan fix kecil. Perlu desain struktur state dan perubahan schema interactive-store yang cukup besar.
+Kapan boleh dikerjakan: Setelah Sprint 4 — Export HTML, sebagai runtime improvement terpisah

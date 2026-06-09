@@ -45,6 +45,12 @@ export default function PreviewMode() {
   const iScores = useInteractiveStore(s => s.scores);
   const replayAll = useInteractiveStore(s => s.replayAll);
 
+  // ── Reset stale scores on mount — start preview clean ──
+  // Without this, persisted scores from a previous session appear as "completed"
+  useEffect(() => {
+    replayAll();
+  }, [replayAll]);
+
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
   const [isFullscreen, setIsFullscreen] = useState(false);

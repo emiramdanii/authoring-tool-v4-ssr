@@ -171,6 +171,12 @@ function PlayCanvas() {
   const hasScore = totalMaxVal > 0;
   const tier = hasScore ? getScoreTier(totalPctVal) : null;
 
+  // ── Reset stale scores on mount — start play session clean ──
+  // Without this, persisted scores from a previous session appear as "completed"
+  useEffect(() => {
+    replayAll();
+  }, [replayAll]);
+
   // Sync fullscreen state with browser (handles Esc key and other native exits)
   useEffect(() => {
     const handleFullscreenChange = () => {

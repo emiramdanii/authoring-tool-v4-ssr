@@ -131,7 +131,7 @@ export const useInteractiveStore = create<InteractiveState>()(
   openPlay: () => {
     syncTotalPages(); // ← ensure totalPages is correct before navigating
     // Phase 9 fix: start from current page instead of always page 0
-    const startIdx = getCanvaStore().getState().currentPageIndex || 0;
+    const startIdx = getCanvaStore().getState().currentPageIndex ?? 0;
     set({ mode: 'interactive', interactivePageIdx: startIdx, scores: [] });
     // Sync canva store to the start page
     try { getCanvaStore().getState().goPage(startIdx); } catch { /* canva store may not be ready */ }

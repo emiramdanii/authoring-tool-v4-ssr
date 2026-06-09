@@ -92,6 +92,19 @@ export default function CanvaBuilder() {
     }
   }, [selectedBlockId, selectedElId, rightPanelOpen]);
 
+  // ── Sync interactive-store.mode with appMode ──
+  // When switching modes, the interactive-store's internal mode must track
+  // the appMode to prevent mode mixing (e.g., PlayOverlay appearing in edit mode).
+  // edit → design (no interactive play), preview/present → interactive (play enabled)
+  useEffect(() => {
+    const iMode = useInteractiveStore.getState().mode;
+    if (appMode === 'edit' && iMode !== 'design') {
+      useInteractiveStore.getState().closePlay();
+    } else if ((appMode === 'preview' || appMode === 'present') && iMode !== 'interactive') {
+      useInteractiveStore.getState().setMode('interactive');
+    }
+  }, [appMode]);
+
   useEffect(() => {
     const handler = () => setShowExportSuccess(true);
     window.addEventListener('silse-export-success', handler);
