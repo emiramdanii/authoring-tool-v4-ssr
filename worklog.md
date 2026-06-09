@@ -556,3 +556,27 @@ Stage Summary:
 - Backward compatible: data lama (warna only) still works, data baru (accentColor) works
 - When both exist, accentColor wins (correct priority)
 - No changes to: export, schema, guided editor, preset system, block-style-presets
+---
+Task ID: 4.1
+Agent: Main
+Task: Sprint 4.1 — Fix Duplicate Export Navigation
+
+Work Log:
+- Read PageFrame.tsx, identified externalNavigation logic at line 371
+- Confirmed ExportApp renders ExportTopNavbar + ExportBottomNav (grep ExportApp.tsx)
+- Changed `isSchemaDriven && (mode === 'learn' || mode === 'preview')` to include `mode === 'export'`
+- Updated comment block to reflect export mode has external navigation (ExportApp)
+- Verified all nav rendering paths go through showTopNav/showBottomNav which are derived from externalNavigation
+- Verified content area offset is safe: schema-driven always uses top:0, bottom:0
+- npm run build: PASS (Vite export + Next.js both compiled)
+- Updated CORE_VERIFICATION_REPORT.md: executive summary + detailed Sprint 4.1 section
+- Committed: fix: prevent duplicate export navigation
+- git pull --rebase origin main: clean (up to date)
+- git push origin main: success (0e00796..92d584d)
+
+Stage Summary:
+- Single-line fix: added `mode === 'export'` to externalNavigation condition
+- Export HTML no longer shows duplicate navigation
+- ExportApp is now the single source of truth for export navigation
+- No changes to ExportApp, renderer blocks, interactive-store, or other modes
+- Build PASS, push successful
