@@ -72,8 +72,8 @@ function readableTintBorder(tokens: TokenResolver, colorKey: string, opacity: nu
 // ── 1. TEKS — Card dengan paragraf ──────────────────────────────
 function RenderTeks({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
-  // S2J.5: Read block.warna for accent color (border, background tint)
-  const colorKey = block.warna || 'y';
+  // S3.1: accentColor takes priority over legacy warna
+  const colorKey = block.accentColor ?? block.warna ?? 'y';
   return (
     <div className="rounded-xl" style={{ background: readableTintBg(tokens, colorKey, 0.06), border: `1px solid ${readableTintBorder(tokens, colorKey, 0.12)}`, ...edu.componentPadding() }}>
       {block.judul && (
@@ -91,7 +91,8 @@ function RenderTeks({ block, tokens, isCompact }: { block: MateriBlokBlock; toke
 // ── 2. DEFINISI — Kotak highlight kuning ─────────────────────────
 function RenderDefinisi({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
-  const colorKey = block.warna || 'y';
+  // S3.1: accentColor takes priority over legacy warna
+  const colorKey = block.accentColor ?? block.warna ?? 'y';
   return (
     <div className="rounded-xl" style={{ background: readableTintBg(tokens, colorKey, 0.08), border: `1px solid ${readableTintBorder(tokens, colorKey, 0.25)}`, borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}` }}>
       <div style={{ ...edu.componentPadding() }}>
@@ -121,8 +122,8 @@ function RenderDefinisi({ block, tokens, isCompact }: { block: MateriBlokBlock; 
 function RenderPoin({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
   const butir = block.butir || [];
-  // S2J.5: Read block.warna for accent color (border, bullet, tint)
-  const colorKey = block.warna || 'c';
+  // S3.1: accentColor takes priority over legacy warna
+  const colorKey = block.accentColor ?? block.warna ?? 'c';
   return (
     <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
@@ -153,8 +154,8 @@ function RenderTabel({ block, tokens, isCompact }: { block: MateriBlokBlock; tok
   const baris = block.baris || [];
   if (baris.length === 0) return null;
   const hasHeader = baris.length > 1;
-  // S2J.5: Read block.warna for accent color (border, header bg)
-  const colorKey = block.warna || 'p';
+  // S3.1: accentColor takes priority over legacy warna
+  const colorKey = block.accentColor ?? block.warna ?? 'p';
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
@@ -189,8 +190,8 @@ function RenderTabel({ block, tokens, isCompact }: { block: MateriBlokBlock; tok
 // ── 5. KUTIPAN — Quote block besar ──────────────────────────────
 function RenderKutipan({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
-  // S2J.5: Read block.warna for accent color (border, quote mark, karakter color)
-  const colorKey = block.warna || 'g';
+  // S3.1: accentColor takes priority over legacy warna
+  const colorKey = block.accentColor ?? block.warna ?? 'g';
   return (
     <div className="rounded-xl" style={{ background: readableTintBg(tokens, colorKey, 0.06), border: `1px solid ${readableTintBorder(tokens, colorKey, 0.15)}`, borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(colorKey)}` }}>
       <div style={{ ...edu.componentPadding() }}>
@@ -212,8 +213,8 @@ function RenderKutipan({ block, tokens, isCompact }: { block: MateriBlokBlock; t
 function RenderGambar({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
   const url = block.isi || '';
-  // S2J.5: Read block.warna for accent color (border, caption bg)
-  const colorKey = block.warna || 'c';
+  // S3.1: accentColor takes priority over legacy warna
+  const colorKey = block.accentColor ?? block.warna ?? 'c';
   if (!url) return (
     <div className="rounded-xl flex items-center justify-center" style={{ background: readableTintBg(tokens, colorKey, 0.06), border: `1px dashed ${readableTintBorder(tokens, colorKey, 0.2)}`, height: isCompact ? '80px' : '160px' }}>
       <div className="text-center">
@@ -238,8 +239,8 @@ function RenderGambar({ block, tokens, isCompact }: { block: MateriBlokBlock; to
 function RenderTimeline({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
   const langkah = block.langkah || [];
-  // S2J.5: Read block.warna for accent color (border, dots, vertical line)
-  const colorKey = block.warna || 'c';
+  // S3.1: accentColor takes priority over legacy warna
+  const colorKey = block.accentColor ?? block.warna ?? 'c';
   return (
     <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
@@ -281,7 +282,8 @@ function RenderTimeline({ block, tokens, isCompact }: { block: MateriBlokBlock; 
 // ── 8. HIGHLIGHT — Card accent ──────────────────────────────────
 function RenderHighlight({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
-  const colorKey = block.warna || 'y';
+  // S3.1: accentColor takes priority over legacy warna
+  const colorKey = block.accentColor ?? block.warna ?? 'y';
   const resolvedColor = tokens.color(colorKey);
   return (
     <MicroInteraction tokens={tokens} accent={colorKey} effect="glow">
@@ -365,8 +367,8 @@ function RenderInfobox({ block, tokens, isCompact }: { block: MateriBlokBlock; t
 function RenderChecklist({ block, tokens, isCompact }: { block: MateriBlokBlock; tokens: TokenResolver; isCompact: boolean }) {
   const edu = tokens.edu('materi-blok', isCompact);
   const butir = block.butir || [];
-  // S2J.5: Read block.warna for accent color (border, checkbox, tint)
-  const colorKey = block.warna || 'g';
+  // S3.1: accentColor takes priority over legacy warna
+  const colorKey = block.accentColor ?? block.warna ?? 'g';
   return (
     <div className="rounded-xl" style={{ background: edu.cardBg(), border: `1px solid ${tokens.colorAlpha(colorKey, 0.15)}`, boxShadow: edu.shadow('card') }}>
       {block.judul && (
@@ -513,11 +515,10 @@ export const MateriBlokRenderer = React.memo(function MateriBlokRenderer({ block
     );
   }
 
-  // S2J.5: For safe subtipes, use block.warna as PremiumBlockWrapper accent
-  // so the frame/glow effect matches the chosen color. Unsafe subtipes keep
-  // their semantic default from TIPE_META.
+  // S3.1: accentColor takes priority over legacy warna for wrapper accent
+  const resolvedAccent = block.accentColor ?? block.warna;
   const SAFE_WARNA_TIPES = new Set(['teks', 'definisi', 'poin', 'kutipan', 'checklist', 'gambar', 'tabel', 'timeline', 'highlight']);
-  const wrapperAccent = (SAFE_WARNA_TIPES.has(tipe) && block.warna) ? block.warna : meta.color;
+  const wrapperAccent = (SAFE_WARNA_TIPES.has(tipe) && resolvedAccent) ? resolvedAccent : meta.color;
 
   return (
     <PremiumBlockWrapper tokens={tokens} accent={wrapperAccent} staggerIndex={0}>

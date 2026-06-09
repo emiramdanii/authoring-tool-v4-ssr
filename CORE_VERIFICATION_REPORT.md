@@ -63,6 +63,8 @@ Sprint 2J.1 — Activate Existing Style Controls: PASS — section Tampilan + va
 Sprint 2J.2 — Style Control Gap Audit for Games: PASS (audit only) — sortir/roda renderer hardcode accent='y', edu resolves quiz→'r', accentColor safe to add, variant not needed
 Sprint 2J.3 — Add Accent Color Support for Sortir/Roda: PASS — accentColor added to schema, renderers read it, GuidedFormEditor exposes it, no variant, no wheelColors change
 Sprint 2J.5 — Perluas Warna MateriBlok: PASS — warna field expanded to 9 safe subtipes, accentColor dead field removed from guided editor, export preview alignment fix
+Sprint 3 — Engine Audit: PASS — schema is single source of truth, renderer shared for all modes, legacy adapter is bridge only, field mismatch materi-blok found → Sprint 3.1
+Sprint 3.1 — Fix MateriBlok Style Field Mismatch: PASS — MateriBlokRenderer reads accentColor first, fallback to warna, backward compatible
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
@@ -3409,3 +3411,23 @@ Bukan detail teknis nama field
 | Kuis/diskusi preset count | 7 presets (4 identik) | 3 presets (deduplicated) |
 | BlockStylePresetGrid data source | Manual filter + getAllBlockStylePresets | getApplicableBlockStylePresets (deduplicated) |
 | Kuis variant dari canvas | Tersimpan ke schema (P0 fix di 2K.4) | Tetap benar |
+
+**PERUBAHAN SPRINT 3.1 (Fix MateriBlok Style Field Mismatch):**
+
+1. S3.1 FIX: MateriBlokRenderer sekarang membaca `block.accentColor` lebih dulu, fallback ke `block.warna` untuk data lama
+2. ROOT CAUSE: Editor/preset menulis `accentColor` ke materi-blok, tapi renderer hanya membaca `block.warna` — perubahan warna guru tidak terlihat
+3. `MateriBlokRenderer.tsx`: Semua 9 sub-renderer (teks, definisi, poin, tabel, kutipan, gambar, timeline, highlight, checklist) diubah dari `block.warna || '<default>'` ke `block.accentColor ?? block.warna ?? '<default>'`
+4. `MateriBlokRenderer.tsx`: Wrapper accent resolver diubah dari `block.warna` ke `block.accentColor ?? block.warna` via `resolvedAccent`
+5. Backward compatibility terjaga: data lama dengan `block.warna` tetap jalan, data baru dengan `block.accentColor` jalan, jika keduanya ada `accentColor` menang
+6. Tidak mengubah: export, schema type, guided editor, preset system, block-style-presets, sub-type field editor
+7. Build: PASS
+
+**S3.1 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| MateriBlokRenderer colorKey | `block.warna \|\| '<default>'` | `block.accentColor ?? block.warna ?? '<default>'` |
+| Wrapper accent | `block.warna` langsung | `block.accentColor ?? block.warna` via resolvedAccent |
+| Guru ubah warna di Gaya Cepat | accentColor ditulis tapi renderer baca warna → tidak berubah | accentColor dibaca renderer → warna berubah |
+| Data lama (hanya warna) | Tetap jalan | Tetap jalan (fallback ke warna) |
+| accentColor + warna sama-sama ada | warna menang | accentColor menang (prioritas baru) |
