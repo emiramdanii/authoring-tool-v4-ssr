@@ -737,3 +737,30 @@ Stage Summary:
 - P0 materi-section tabs parity: FIXED
 - P1 materi-blok accentColor fallback: FIXED
 - P1 def-box safe formatting: FIXED
+
+---
+Task ID: S6.3-C-verify
+Agent: Main
+Task: Sprint 6.3-C — Materi Guided Editing Readiness (verification + session recovery)
+
+Work Log:
+- Session recovered from previous context (MySQL chat ignored, files reverted to SQLite)
+- Reverted accidental MySQL changes to .env and prisma/schema.prisma (git checkout)
+- Performed full audit of all 4 focus areas:
+  1. def-box variant in guided editor → ALREADY DONE (variant field with A/B/C options at guided-patch.ts line 776)
+  2. rangkuman variant in guided editor → ALREADY DONE (variant + accentColor fields at guided-patch.ts lines 862-867)
+  3. rangkuman dead writes removal → ALREADY DONE (RangkumanTab.tsx lines 16-18 confirm Pengantar/Tips Belajar removed)
+  4. materi-blok tabel minimal editor → ALREADY DONE (baris field with table-text type at guided-patch.ts line 1205)
+  5. materi-blok timeline minimal editor → ALREADY DONE (langkah[] array with icon/judul/isi at guided-patch.ts lines 1207-1211)
+- Verified GuidedFieldDef type supports 'table-text' (guided-patch.ts line 534)
+- Verified GuidedTableTextField renderer exists (guided-field-renderer.tsx lines 149-163, 519-558)
+- Verified GuidedFormEditor renders table-text and timeline langkah[] correctly
+- Build: PASS (npm run build — no errors)
+- CORE_VERIFICATION_REPORT.md already has Sprint 6.3-C PASS entry (line 77)
+- Commit 96d0385 "fix: improve materi guided editing readiness" already pushed
+
+Stage Summary:
+- Sprint 6.3-C: VERIFIED PASS ✅ (all 5 fixes confirmed in code)
+- No new commits needed — all changes were from previous session
+- Accidental MySQL changes reverted successfully
+- Build clean, report updated, git status clean
