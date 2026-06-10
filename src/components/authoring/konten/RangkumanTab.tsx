@@ -10,8 +10,12 @@
 //
 // SHAPE BRIDGE:
 //   RangkumanBlock.concepts[] → RangkumanData.poin[] (structured → flat)
-//   RangkumanBlock.closingStatement → RangkumanData.tips + .closingStatement
-//   RangkumanBlock has no `intro` → updateIntro is a no-op
+//   RangkumanBlock.closingStatement → RangkumanData.closingStatement
+//
+// Sprint 6.3-C: Removed dead writes:
+//   - "Pengantar" (intro) — was a no-op (RangkumanBlock has no intro field)
+//   - "Tips Belajar" (tips) — was a duplicate write to closingStatement,
+//     confusing alongside the dedicated "Penutup" section
 // ═══════════════════════════════════════════════════════════════
 
 import { useRef, useCallback } from 'react';
@@ -25,11 +29,9 @@ export function RangkumanTab() {
     data: rangkuman,
     locations,
     updateTitle,
-    updateIntro,
     addPoin,
     removePoin,
     updatePoin,
-    updateTips,
     updateClosingStatement,
   } = useSchemaRangkuman();
 
@@ -63,7 +65,7 @@ export function RangkumanTab() {
         <span className="text-xs text-app-muted">{rangkuman.poin.length} poin rangkuman</span>
       </div>
 
-      {/* Title & Intro */}
+      {/* Title */}
       <div className="space-y-3 bg-app-surface border border-app-border rounded-xl p-4">
         <div>
           <FieldLabel>Judul Rangkuman</FieldLabel>
@@ -74,20 +76,6 @@ export function RangkumanTab() {
             value={rangkuman.title}
             onChange={(e) => updateTitle(e.target.value)}
           />
-        </div>
-        <div>
-          <FieldLabel>Pengantar</FieldLabel>
-          <textarea
-            className={TEXTAREA_CLS}
-            rows={2}
-            maxLength={MAX_BODY}
-            placeholder="Pengantar untuk rangkuman materi..."
-            value={rangkuman.intro}
-            onChange={(e) => updateIntro(e.target.value)}
-          />
-          <p className="text-[0.65rem] text-app-muted/60 mt-1">
-            Catatan: Pengantar tidak tersimpan di schema blok saat ini.
-          </p>
         </div>
       </div>
 
@@ -149,27 +137,6 @@ export function RangkumanTab() {
           <span className="material-symbols-outlined" style={ { fontSize: '14px' } }>add</span> Tambah Poin
         </button>
       )}
-
-      {/* Tips — Study Tips or Reminders */}
-      <div className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>menu_book</span>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-app-primary">Tips Belajar</h4>
-            <p className="text-xs text-app-muted">Tips atau pengingat untuk siswa</p>
-          </div>
-        </div>
-        <textarea
-          className={TEXTAREA_CLS}
-          rows={2}
-          maxLength={MAX_BODY}
-          placeholder="Tulis tips atau pengingat untuk siswa..."
-          value={rangkuman.tips}
-          onChange={(e) => updateTips(e.target.value)}
-        />
-      </div>
 
       {/* Closing Statement */}
       <div className="bg-app-surface border border-app-border rounded-xl p-4 space-y-3">

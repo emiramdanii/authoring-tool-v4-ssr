@@ -146,6 +146,22 @@ export function renderGuidedField(
         />
       );
 
+    // Sprint 6.3-C: table-text field type for string[][] data.
+    // Displays as pipe-delimited rows in a textarea:
+    //   Header 1 | Header 2 | Header 3
+    //   Data 1   | Data 2   | Data 3
+    // Each line = one row, | separates cells.
+    case 'table-text':
+      return (
+        <GuidedTableTextField
+          key={field.key}
+          fieldId={fieldId}
+          fieldDef={field}
+          value={value}
+          onChange={v => handleUpdate(v)}
+        />
+      );
+
     case 'icon':
       return (
         <GuidedIconField
@@ -489,6 +505,68 @@ function GuidedBooleanField({ fieldDef, value, onChange, fieldId }: {
           <div className={`absolute top-0.5 w-5 h-5 rounded-full shadow-sm transition-all duration-200 ${value ? 'left-5.5 bg-silse-on-primary' : 'left-0.5 bg-silse-surface-container-lowest'}`} />
         </button>
       </div>
+      <HelpText text={fieldDef.helpText} id={helpId} />
+    </div>
+  );
+}
+
+// ── Table Text Field (string[][] ↔ pipe-delimited text) ────────
+// Sprint 6.3-C: Minimal editor for string[][] table data.
+// Displays rows as pipe-delimited lines in a textarea.
+// Format: "cell1 | cell2 | cell3" per line.
+// Baris pertama = header row (treated as header by renderer if >1 row).
+
+function GuidedTableTextField({ fieldDef, value, onChange, fieldId }: {
+  fieldDef: GuidedFieldDef;
+  value: unknown;
+  onChange: (v: string[][]) => void;
+  fieldId: string;
+}) {
+  const helpId = fieldDef.helpText ? `${fieldId}-help` : undefined;
+
+  // Convert string[][] → pipe-delimited text for display
+  const displayText = React.useMemo(() => {
+    const rows = value as string[][] | undefined;
+    if (!Array.isArray(rows) || rows.length === 0) return '';
+    return rows
+      .map(row => {
+        if (!Array.isArray(row)) return String(row ?? '');
+        return row.map(cell => String(cell ?? '').trim()).join(' | ');
+      })
+      .join('\n');
+  }, [value]);
+
+  // Parse pipe-delimited text → string[][] for storage
+  const handleChange = React.useCallback((text: string) => {
+    if (!text.trim()) {
+      onChange([]);
+      return;
+    }
+    const rows = text
+      .split('\n')
+      .map(line => {
+        // Only split by | if it exists; otherwise whole line is one cell
+        if (line.includes('|')) {
+          return line.split('|').map(cell => cell.trim());
+        }
+        return [line.trim()];
+      })
+      .filter(row => row.some(cell => cell.length > 0));
+    onChange(rows);
+  }, [onChange]);
+
+  return (
+    <div>
+      <GuidedLabel fieldDef={fieldDef} fieldId={fieldId} icon={<span className="material-symbols-outlined text-silse-on-surface-variant" style={ { fontSize: '14px' } }>table</span>} />
+      <textarea
+        id={fieldId}
+        value={displayText}
+        onChange={e => handleChange(e.target.value)}
+        placeholder={fieldDef.placeholder || 'Header 1 | Header 2 | Header 3\nData 1 | Data 2 | Data 3'}
+        rows={5}
+        aria-describedby={helpId}
+        className="w-full px-4 py-3 rounded-xl border border-silse-outline-variant/40 bg-silse-surface-container-low text-silse-on-surface text-sm leading-relaxed font-mono focus:border-silse-secondary focus:ring-2 focus:ring-silse-secondary/20 focus:outline-none transition-all duration-200 resize-y"
+      />
       <HelpText text={fieldDef.helpText} id={helpId} />
     </div>
   );

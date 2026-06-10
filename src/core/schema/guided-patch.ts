@@ -531,7 +531,7 @@ export interface GuidedFieldDef {
   /** Display label (teacher-friendly) */
   label: string;
   /** Field type */
-  type: 'text' | 'textarea' | 'richtext' | 'color' | 'icon' | 'select' | 'number' | 'boolean' | 'array';
+  type: 'text' | 'textarea' | 'richtext' | 'color' | 'icon' | 'select' | 'number' | 'boolean' | 'array' | 'table-text';
   /** Help text for teachers */
   helpText?: string;
   /** Placeholder */
@@ -772,11 +772,17 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     icon: '📦',
     fields: [
       { key: 'content', label: 'Konten', type: 'richtext', required: true, helpText: 'Teks definisi atau penjelasan. Gunakan <strong> untuk cetak tebal.', placeholder: 'Tulis definisi atau penjelasan...' },
+      // Sprint 6.3-C: DefBoxRenderer reads block.variant (A=Klasik, B=Kreatif, C=Ringkas).
+      { key: 'variant', label: 'Model Tampilan', type: 'select', options: [
+        { label: 'Klasik', value: 'A' },
+        { label: 'Kreatif', value: 'B' },
+        { label: 'Ringkas', value: 'C' },
+      ], helpText: 'Pilih tampilan kotak definisi' },
       { key: 'borderColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['content'] },
-      { key: 'appearance', label: 'Tampilan', fieldKeys: ['borderColor'], collapsed: true },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['variant', 'borderColor'], collapsed: true },
     ],
   },
 
@@ -852,9 +858,17 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
         ],
       },
       { key: 'closingStatement', label: 'Pernyataan Penutup', type: 'textarea' },
+      // Sprint 6.3-C: RangkumanRenderer reads block.variant (A=Klasik, B=Kreatif, C=Ringkas) and block.accentColor.
+      { key: 'variant', label: 'Model Tampilan', type: 'select', options: [
+        { label: 'Klasik', value: 'A' },
+        { label: 'Kreatif', value: 'B' },
+        { label: 'Ringkas', value: 'C' },
+      ], helpText: 'Pilih tampilan rangkuman' },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen untuk header dan elemen rangkuman' },
     ],
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'concepts', 'closingStatement'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['variant', 'accentColor'], collapsed: true },
     ],
   },
 
@@ -1176,6 +1190,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { label: 'Highlight', value: 'highlight' },
           { label: 'Kutipan', value: 'kutipan' },
           { label: 'Gambar', value: 'gambar' },
+          // Sprint 6.3-C: tabel + timeline now have guided editors
+          { label: 'Tabel', value: 'tabel' },
+          { label: 'Timeline', value: 'timeline' },
         ],
       },
       { key: 'judul', label: 'Judul', type: 'text', helpText: 'Judul opsional untuk blok materi', placeholder: 'Judul materi...' },
@@ -1183,6 +1200,14 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       { key: 'karakter', label: 'Sumber Kutipan', type: 'text', showWhen: { field: 'tipe', values: ['kutipan'] }, helpText: 'Nama tokoh atau sumber kutipan', placeholder: '— Nama tokoh...' },
       { key: 'butir', label: 'Butir-butir', type: 'array', maxItems: 6, showWhen: { field: 'tipe', values: ['poin', 'checklist'] }, helpText: 'Setiap butir menjadi satu poin/checklist', fields: [
         { key: '', label: 'Butir', type: 'text', placeholder: 'Tulis poin...' },
+      ]},
+      // Sprint 6.3-C: tabel editor — baris is string[][], displayed as pipe-delimited rows
+      { key: 'baris', label: 'Baris Tabel', type: 'table-text', showWhen: { field: 'tipe', values: ['tabel'] }, helpText: 'Satu baris per baris. Pisahkan kolom dengan tanda |. Baris pertama = header.', placeholder: 'Header 1 | Header 2 | Header 3\nData 1 | Data 2 | Data 3' },
+      // Sprint 6.3-C: timeline editor — langkah is Array<{ icon?, judul, isi? }>
+      { key: 'langkah', label: 'Langkah-langkah', type: 'array', maxItems: 8, showWhen: { field: 'tipe', values: ['timeline'] }, helpText: 'Setiap langkah dalam timeline', fields: [
+        { key: 'icon', label: 'Ikon', type: 'icon', helpText: 'Ikon opsional (emoji)' },
+        { key: 'judul', label: 'Judul Langkah', type: 'text', required: true, placeholder: 'Langkah 1...' },
+        { key: 'isi', label: 'Deskripsi', type: 'textarea', placeholder: 'Deskripsi langkah...' },
       ]},
       // S2J.5: warna is the REAL field that MateriBlokRenderer reads.
       // accentColor removed — it was a dead field (renderer never read it).
@@ -1200,7 +1225,7 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
       // compat, but it's no longer exposed to teachers.
     ],
     sections: [
-      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'karakter', 'butir'] },
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'karakter', 'butir', 'baris', 'langkah'] },
       { key: 'style', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle'], collapsed: true },
     ],
   },
