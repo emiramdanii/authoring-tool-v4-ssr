@@ -637,3 +637,34 @@ Stage Summary:
 - No hard conflicts between sprints — core flow still works end-to-end
 - 6 items remain parked (P2/P3 architecture cleanup)
 - Recommended: Sprint 6.1 for 3 small fixes, then PASS
+
+---
+Task ID: S6.1-A
+Agent: Main
+Task: Sprint 6.1-A — Fix Add Page Cover Empty Render (QA Verification + Final Cleanup)
+
+Work Log:
+- Full code-level QA verification of cover page creation + rendering pipeline
+- Traced complete flow: LeftPanel → addTemplatePage → createPageFromPreset → createDefaultSchemaForTemplateType → createBlockFromRegistry → BLOCK_DEFINITIONS['cover'].createDefault()
+- Verified createDefault() produces: { icon: '📄', title: 'Judul Baru', subtitle: 'Subtitle', badges: [], meta: {...}, cta: {...}, accentColor: 'y', compression: {...}, semantic: {...} }
+- Verified CoverRenderer reads: block.title, block.subtitle, block.icon — MATCH
+- Verified SchemaScreenRenderer → resolveSceneLayout produces correct ResolvedBlock: x:0, y:0, w:scene.w, h:scene.h, zIndex:COVER_Z_INDEX(1)
+- Verified GoldenPageRenderer: isCoverPage=true → passes through children (no chrome blocking)
+- Verified PremiumBlockWrapper: no guard conditions, wraps children in div with styling only
+- Verified SafeModeBlockGate: no special gate for cover blocks
+- Verified right panel: GuidedFormEditor for 'cover' has fields: title (Judul), subtitle (Subjudul), icon (Ikon) — match CoverRenderer
+- Verified InlineTextEditor: plain text values (no HTML) render correctly via {value || placeholder}
+- Verified preview flow: CoverScreen adapter wraps SchemaScreenRenderer with showTopNav=false, showBottomNav=false
+- Verified scene registry: 'cover' → CoverRenderer (lazy-loaded, registered in RENDERER_MAP)
+- Verified isFullPageBlockType('cover') = true (not measurable → treated as full-page block)
+- Removed dev-only diagnostic warning from CoverRenderer (lines 445-456) — was Sprint 6.1-A debugging artifact
+- Build: PASS (both TypeScript check and Next.js build)
+- Commit: fix: render newly added cover page content
+
+Stage Summary:
+- Sprint 6.1-A: PASS — Cover page creation + rendering pipeline verified correct at code level
+- Field names match: title/subtitle/icon in createDefault(), CoverRenderer, and GuidedFormEditor
+- resolveSceneLayout produces full-scene positioning for cover blocks
+- No guard conditions block cover rendering in any pipeline stage
+- Diagnostic warning removed (dev-only, no longer needed)
+- Sprint 6.1-A fix (createDefault compression + semantic) confirmed correct and in place
