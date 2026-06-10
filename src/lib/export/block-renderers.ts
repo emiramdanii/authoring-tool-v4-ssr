@@ -15,6 +15,53 @@
 import type { SchemaBlock } from '@/core/schema/types';
 import { escapeHtml, resolveColor, type RenderBlockFn } from './utils';
 
+// ═══════════════════════════════════════════════════════════════════════
+// SAFE RICH TEXT — Sprint 6.3-B: Preserve safe HTML formatting in export
+// ═══════════════════════════════════════════════════════════════════════
+// In the canvas, DefBox and other blocks support <strong>, <em>, <br>, etc.
+// But the export pipeline used escapeHtml() which turned these into visible
+// &lt;strong&gt; text — destroying the teacher's formatting.
+//
+// safeRichText() preserves ONLY whitelisted safe tags and escapes
+// everything else — no XSS vector.
+// ═══════════════════════════════════════════════════════════════════════
+const SAFE_TAGS = new Set(['strong', 'b', 'em', 'i', 'u', 'br', 'p', 'ul', 'ol', 'li']);
+
+/**
+ * Preserve safe HTML formatting tags while escaping everything else.
+ * Whitelist: strong, b, em, i, u, br, p, ul, ol, li
+ * All other tags are escaped (e.g., <script> → &lt;script&gt;).
+ */
+function safeRichText(content: string): string {
+  if (!content) return '';
+  // Regex matches HTML tags (opening, closing, or self-closing)
+  return content.replace(/<\/(\w+)>|<(\w+)(\s[^>]*)?\/?>|<([^>]+)>/g, (match, closingTag, openTag, attrs, leftover) => {
+    // Closing tag: </strong>
+    if (closingTag) {
+      const tag = closingTag.toLowerCase();
+      if (SAFE_TAGS.has(tag)) return `</${tag}>`;
+      return escapeHtml(match);
+    }
+    // Opening/self-closing tag: <strong>, <br>, <br/>, <p class="x">
+    if (openTag) {
+      const tag = openTag.toLowerCase();
+      if (SAFE_TAGS.has(tag)) {
+        // For safe tags, allow them through but strip attributes (except <br>)
+        // to prevent event handlers like <strong onclick=...>
+        if (tag === 'br') return '<br>';
+        if (attrs && attrs.trim()) {
+          // Safe tag WITH attributes — strip attributes to prevent XSS
+          return `<${tag}>`;
+        }
+        return `<${tag}>`;
+      }
+      return escapeHtml(match);
+    }
+    // Leftover/malformed tag — escape it
+    return escapeHtml(match);
+  });
+}
+
 /**
  * Render a content block. Returns null if the block type is not handled here.
  */
@@ -147,10 +194,13 @@ function renderTp(b: Record<string, unknown>): string {
 function renderDefBox(b: Record<string, unknown>): string {
   const content = b.content as string || '';
   const borderColor = resolveColor(b.borderColor as string, '#fbbf24');
+  // Sprint 6.3-B: Use safeRichText instead of escapeHtml to preserve
+  // safe formatting (strong, em, br, etc.) without opening XSS vectors.
+  const renderedContent = safeRichText(content);
   return `
     <div class="block def-box" style="border-left: 4px solid ${borderColor};">
       <div class="def-icon" style="color:${borderColor};">📖</div>
-      <p>${escapeHtml(content)}</p>
+      <p>${renderedContent}</p>
     </div>`;
 }
 
@@ -246,10 +296,93 @@ function renderMateriSection(b: Record<string, unknown>, renderBlock: RenderBloc
   const subtitle = b.subtitle as string || '';
   const icon = b.icon as string || '📖';
   const accentColor = resolveColor(b.accentColor as string, '#a78bfa');
+  const variant = (b.variant as string) || 'A'; // Sprint 6.3-B: read variant
   const content = (b.content as SchemaBlock[]) || [];
+  const tabs = b.tabs as Array<{ id: string; label: string; icon?: string; content: SchemaBlock[] }> | undefined;
   const takeaways = (b.takeaways as string[]) || [];
   const selfCheck = b.selfCheck as string | undefined;
   const bsnpRequired = b.bsnpRequired as boolean;
+
+  // ── Sprint 6.3-B: Variant-aware wrapper styles ──
+  // Each variant gets a different CSS class + wrapper style so the export
+  // output doesn't silently fall back to Klasik when the teacher chose Majalah/Pill.
+  const variantClass = variant === 'B' ? 'materi-section-variant-majalah' : variant === 'C' ? 'materi-section-variant-pill' : '';
+  const variantStyle = variant === 'B'
+    ? 'border-left: 4px solid ' + accentColor + ';'
+    : variant === 'C'
+    ? 'border-left: 3px solid ' + accentColor + ';'
+    : 'border-left: 4px solid ' + accentColor + ';';
+
+  // ── Sprint 6.3-B: Tab content rendering ──
+  // When block.tabs is present, render ALL tab content (not just active tab).
+  // Each tab is rendered as a section with its label and content blocks.
+  const hasTabs = tabs && tabs.length > 0;
+  const tabContentHtml = hasTabs
+    ? (tabs as Array<{ id: string; label: string; icon?: string; content: SchemaBlock[] }>).map((tab, i) => `
+        <div class="materi-tab-section" style="margin-bottom: 12px;">
+          <div class="materi-tab-label" style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accentColor}; margin-bottom: 6px; padding: 4px 10px; background: ${accentColor}0d; border-radius: 6px; display: inline-block;">${tab.icon ? tab.icon + ' ' : ''}${escapeHtml(tab.label)}</div>
+          <div class="materi-tab-content">
+            ${(tab.content || []).map(cb => renderBlock(cb)).join('')}
+          </div>
+        </div>`).join('')
+    : '';
+
+  // ── Variant B "Majalah": 2-column layout (content left, takeaways sidebar) ──
+  if (variant === 'B') {
+    return `
+    <div class="block materi-section-block ${variantClass}" style="${variantStyle}">
+      <div class="materi-section-header">
+        <span class="materi-section-icon">${icon}</span>
+        <div>
+          <h2>${escapeHtml(title)}</h2>
+          ${subtitle ? `<p class="materi-subtitle">${escapeHtml(subtitle)}</p>` : ''}
+        </div>
+        ${bsnpRequired ? '<span class="bsnp-badge">WAJIB BSNP</span>' : ''}
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 200px; gap: 16px; padding: 12px;">
+        <div class="materi-content">
+          ${hasTabs ? tabContentHtml : content.map(cb => renderBlock(cb)).join('')}
+        </div>
+        ${takeaways.length > 0 ? `
+        <div class="takeaways" style="background: ${accentColor}08; border: 1px solid ${accentColor}20; border-radius: 10px; padding: 10px;">
+          <h3 style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: ${accentColor}; margin-bottom: 8px;">⭐ Poin Penting</h3>
+          ${takeaways.map(t => `<div class="takeaway-item" style="font-size: 11px; color: #94a3b8; padding: 4px 0;">✓ ${escapeHtml(t)}</div>`).join('')}
+        </div>` : '<div></div>'}
+      </div>
+      ${selfCheck ? `
+        <div class="self-check" style="background: ${accentColor}08; border-left: 3px solid ${accentColor}; border-radius: 8px; padding: 10px 12px; margin: 0 12px 12px;">
+          <h3 style="font-size: 10px; font-weight: 800; color: ${accentColor};">🧠 Cek Pemahaman:</h3>
+          <p style="font-size: 12px; color: #f1f5f9;">${escapeHtml(selfCheck)}</p>
+        </div>` : ''}
+    </div>`;
+  }
+
+  // ── Variant C "Pill": Compact style with pill takeaway badges ──
+  if (variant === 'C') {
+    return `
+    <div class="block materi-section-block ${variantClass}" style="${variantStyle}">
+      <div class="materi-section-header" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px;">
+        <span class="materi-section-icon" style="font-size: 14px;">${icon}</span>
+        <h2 style="font-size: 15px; font-weight: 700; color: #f1f5f9;">${escapeHtml(title)}</h2>
+        ${bsnpRequired ? '<span class="bsnp-badge" style="font-size: 9px;">WAJIB</span>' : ''}
+      </div>
+      <div class="materi-content" style="padding: 0 12px;">
+        ${hasTabs ? tabContentHtml : content.map(cb => renderBlock(cb)).join('')}
+      </div>
+      ${takeaways.length > 0 ? `
+      <div style="padding: 6px 12px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+          ${takeaways.map(t => `<span style="display: inline-block; font-size: 10px; padding: 2px 8px; background: ${accentColor}15; color: ${accentColor}; border: 1px solid ${accentColor}30; border-radius: 12px;">✓ ${escapeHtml(t)}</span>`).join('')}
+        </div>
+      </div>` : ''}
+      ${selfCheck ? `
+        <div class="self-check" style="background: ${accentColor}08; border-left: 2px solid ${accentColor}; border-radius: 6px; padding: 6px 10px; margin: 6px 12px 10px;">
+          <p style="font-size: 11px; color: #f1f5f9;">🧠 ${escapeHtml(selfCheck)}</p>
+        </div>` : ''}
+    </div>`;
+  }
+
+  // ── Variant A "Klasik" (default): Original full section style ──
   return `
     <div class="block materi-section-block" style="border-left: 4px solid ${accentColor};">
       <div class="materi-section-header">
@@ -261,7 +394,7 @@ function renderMateriSection(b: Record<string, unknown>, renderBlock: RenderBloc
         ${bsnpRequired ? '<span class="bsnp-badge">WAJIB BSNP</span>' : ''}
       </div>
       <div class="materi-content">
-        ${content.map(cb => renderBlock(cb)).join('')}
+        ${hasTabs ? tabContentHtml : content.map(cb => renderBlock(cb)).join('')}
       </div>
       ${takeaways.length > 0 ? `
         <div class="takeaways">
@@ -681,8 +814,10 @@ function renderMateriBlok(b: Record<string, unknown>): string {
     checklist: '#34d399', // g
   };
 
-  // Resolve accent color for safe subtipes using block.warna
-  const c = resolveColor(warna, DEFAULT_ACCENT[tipe] || '#3ecfcf');
+  // Sprint 6.3-B: accentColor takes priority over legacy warna, matching runtime MateriBlokRenderer
+  // Runtime uses: block.accentColor ?? block.warna ?? TIPE_META[tipe].color
+  const accentSource = (b.accentColor as string) || warna;
+  const c = resolveColor(accentSource, DEFAULT_ACCENT[tipe] || '#3ecfcf');
 
   switch (tipe) {
     case 'teks':

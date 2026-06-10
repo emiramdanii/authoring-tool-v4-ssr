@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-10 (Sprint 6.3-A — Module Readiness Audit: Materi)
+Tanggal: 2026-06-10 (Sprint 6.3-B — Materi Export Parity Fix)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -73,6 +73,7 @@ Sprint 6 — Final Core Regression Audit: PARTIAL → Sprint 6.1 fix
 Sprint 6.1-A — Fix Add Page Cover Empty Render: PASS
 Sprint 6.1 — Final Core Regression Fix: PASS — 3 regression diperbaiki: (1) P1 export safe area padding phantom 44+80px diperbaiki (externalNavigation gate di PageRenderer), (2) P2 buildBackgroundFromLegacy() raw hex preservation (color1: bgColor bukan 'bg'), (3) P2 dual auto-save timer dihapus (legacy startAutoSave() dari init.ts, useAutoSave() tetap)
 Sprint 6.3-A — Module Readiness Audit: Materi: AUDIT COMPLETE — 4 modul (materi-section, materi-blok, def-box, rangkuman) semua PASS render tapi PARTIAL editing + PARTIAL export. 17 bug ditemukan (2 P0, 3 P1, 6 P2, 6 P3). Pola utama: export renderer mengabaikan variant, guided editor tidak lengkap, warna vs accentColor dualism
+Sprint 6.3-B — Materi Export Parity Fix: PASS — 4 export parity fix: (1) P0 materi-section export mengabaikan variant → sekarang B/Majalah 2-column layout, C/Pill compact layout, A/Klasik default, (2) P0 materi-section export mengabaikan tabs → sekarang semua tab content dirender dengan label, (3) P1 materi-blok export membaca accentColor fallback → block.accentColor ?? block.warna sesuai runtime MateriBlokRenderer, (4) P1 def-box escapeHtml menghancurkan formatting aman → safeRichText helper preserve strong/em/br/p/ul/ol/li, escape lain
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
