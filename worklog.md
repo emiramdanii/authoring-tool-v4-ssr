@@ -533,3 +533,77 @@ Stage Summary:
 - Senior decision: PresentMode = guru presentasi (not siswa), no change needed
 - Runtime now: scores reset on preview/play entry, mode sync prevents overlay leaks
 - Next per CORE_SCOPE order: Sprint 3 — Engine
+
+---
+Task ID: S3.1
+Agent: Main
+Task: Fix MateriBlok Style Field Mismatch — renderer reads accentColor first, fallback to warna
+
+Work Log:
+- Read MateriBlokRenderer.tsx (527 lines) — identified 10 occurrences of block.warna
+- Confirmed MateriBlokBlock type has both warna and accentColor fields (blocks.ts line 756, 769)
+- Applied Opsi A (renderer backward-compatible): changed all 9 sub-renderer colorKey from `block.warna || '<default>'` to `block.accentColor ?? block.warna ?? '<default>'`
+- Updated wrapper accent resolver: `block.accentColor ?? block.warna` via resolvedAccent variable
+- Updated CORE_VERIFICATION_REPORT.md with Sprint 3 and Sprint 3.1 entries
+- Build: PASS
+- Commit: fix: align materi-blok accent color rendering (0e00796)
+- Pull rebase: clean (up to date)
+- Push: success
+
+Stage Summary:
+- MateriBlokRenderer now reads accentColor with priority, fallback to legacy warna
+- All 9 sub-renderers + wrapper updated consistently
+- Backward compatible: data lama (warna only) still works, data baru (accentColor) works
+- When both exist, accentColor wins (correct priority)
+- No changes to: export, schema, guided editor, preset system, block-style-presets
+---
+Task ID: 4.1
+Agent: Main
+Task: Sprint 4.1 — Fix Duplicate Export Navigation
+
+Work Log:
+- Read PageFrame.tsx, identified externalNavigation logic at line 371
+- Confirmed ExportApp renders ExportTopNavbar + ExportBottomNav (grep ExportApp.tsx)
+- Changed `isSchemaDriven && (mode === 'learn' || mode === 'preview')` to include `mode === 'export'`
+- Updated comment block to reflect export mode has external navigation (ExportApp)
+- Verified all nav rendering paths go through showTopNav/showBottomNav which are derived from externalNavigation
+- Verified content area offset is safe: schema-driven always uses top:0, bottom:0
+- npm run build: PASS (Vite export + Next.js both compiled)
+- Updated CORE_VERIFICATION_REPORT.md: executive summary + detailed Sprint 4.1 section
+- Committed: fix: prevent duplicate export navigation
+- git pull --rebase origin main: clean (up to date)
+- git push origin main: success (0e00796..92d584d)
+
+Stage Summary:
+- Single-line fix: added `mode === 'export'` to externalNavigation condition
+- Export HTML no longer shows duplicate navigation
+- ExportApp is now the single source of truth for export navigation
+- No changes to ExportApp, renderer blocks, interactive-store, or other modes
+- Build PASS, push successful
+
+---
+Task ID: S5
+Agent: Main
+Task: Sprint 5 — Data / Save / Persistence Audit
+
+Work Log:
+- Audited persistence flow: edit block → markDirty → autosave 2s debounce / 30s max-wait → localStorage first → DB if online → offline queue if offline
+- Audited data sources saved: page.schema, templateData, legacy elements, metadata — all captured in persistence slice
+- Audited data loss risks: inline edit forced blur on page switch/mode switch, beforeunload guard, crash recovery, emergency save, hash verification
+- Checked migration/migrateAllPages safety: loadFromDB and loadFromStorage now use migratedPages from migrateAllSchemas() (fixed in D-P0B.3)
+- Confirmed autosave exists: 2s debounce after last change, 30s max-wait ensures save even during continuous editing
+- Confirmed manual save exists: Ctrl+S / Cmd+S triggers explicit save
+- Checked localStorage/DB consistency: dual write — localStorage immediate, DB async with offline queue fallback
+- P2 parked: contractId belum punya kolom DB sendiri, block table redundan dengan schemaData — bukan data loss bug, cleanup arsitektur nanti
+- Senior verdict: PASS — AUDIT CLOSED
+- No coding done (audit only per directive)
+
+Stage Summary:
+- Sprint 5 Data/Save/Persistence: PASS — AUDIT CLOSED
+- No data loss bugs found
+- Save flow is multi-layered and robust: markDirty → autosave → localStorage → DB → offline queue
+- Inline edit protected on page/mode switch via forced blur
+- beforeunload guard, crash recovery, emergency save, hash verification all present
+- Migration safe (D-P0B.3 fix ensures migrated data is used)
+- P2 parked: contractId DB column + block table redundancy (architecture cleanup, not data loss)
+- CORE_VERIFICATION_REPORT.md already updated with Sprint 5 entry

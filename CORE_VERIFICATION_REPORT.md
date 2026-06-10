@@ -68,6 +68,7 @@ Sprint 3.1 — Fix MateriBlok Style Field Mismatch: PASS — MateriBlokRenderer 
 Sprint 4 — Export Audit: PASS — pipeline renderer sehat, BUG 4 duplicate navigation diperbaiki (Sprint 4.1), animasi keyframes parity diperbaiki (Sprint 4.2)
 Sprint 4.1 — Fix Duplicate Export Navigation: PASS — PageFrame externalNavigation kini mencakup mode='export', ExportApp satu-satunya pemilik nav export
 Sprint 4.2 — Export Animation Parity: PASS — 9 keyframes P0/P1 ditambahkan ke export.css (popSuccess, pulseGlow, eduFadeIn, eduSlideUp, breathe, shimmer, sparkle, trophyBounce, blockStaggerIn)
+Sprint 5 — Data/Save/Persistence Audit: PASS — auto-save 2s debounce + 30s max-wait, inline edit protected on page/mode switch, beforeunload guard, crash recovery, offline sync queue, localStorage+DB dual write, migration aman, no data loss bugs found, P2 contractId column + block table redundan diparkir
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
