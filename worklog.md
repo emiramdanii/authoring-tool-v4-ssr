@@ -607,3 +607,33 @@ Stage Summary:
 - Migration safe (D-P0B.3 fix ensures migrated data is used)
 - P2 parked: contractId DB column + block table redundancy (architecture cleanup, not data loss)
 - CORE_VERIFICATION_REPORT.md already updated with Sprint 5 entry
+
+---
+Task ID: S6
+Agent: Main
+Task: Sprint 6 — Final Core Regression Audit
+
+Work Log:
+- Launched 5 parallel audit agents: Workspace, Runtime, Engine, Export, Persistence
+- Each agent read 5-8 files across their area, checking Sprint 1-5 changes for conflicts
+- Workspace: PASS — isSchemaDriven aligned, externalNavigation konsisten, blur pipeline 3-layer aman
+- Runtime: PASS — replayAll() di 4 mode entry points, mode sync benar, score reporting konsisten
+- Engine: PARTIAL — buildBackgroundFromLegacy() buang hex bgColor, duplicate mapping, accentColor ambiguity
+- Export: PARTIAL — safe area padding phantom 44+80px di export mode, keyframe gap masih diparkir
+- Persistence: PASS — migration pipeline sehat, dual auto-save timer redundan
+- Launched 3 verification agents for critical findings:
+  1. buildBackgroundFromLegacy() hex loss → CONFIRMED: tokens.color() supports hex pass-through, migration drops it
+  2. Export safe area padding → CONFIRMED: PageRenderer computes showTopNav/showBottomNav without externalNavigation gate
+  3. Dual auto-save timer → CONFIRMED: init.ts 1s + use-auto-save.ts 2s both active simultaneously
+- Updated CORE_VERIFICATION_REPORT.md with Sprint 6 PARTIAL entry and detailed findings
+- No coding done (audit only per directive)
+
+Stage Summary:
+- Sprint 6 Final Core Regression Audit: PARTIAL
+- 3 regressions found, all fixable in < 20 lines total:
+  1. P1: Export safe area phantom padding (PageRenderer.tsx — 3 lines)
+  2. P2: buildBackgroundFromLegacy hex color loss (ensure-schema.ts — 1 line)
+  3. P2: Dual auto-save timer redundancy (init.ts — remove ~15 lines)
+- No hard conflicts between sprints — core flow still works end-to-end
+- 6 items remain parked (P2/P3 architecture cleanup)
+- Recommended: Sprint 6.1 for 3 small fixes, then PASS

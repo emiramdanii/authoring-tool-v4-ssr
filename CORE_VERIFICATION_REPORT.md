@@ -69,6 +69,7 @@ Sprint 4 — Export Audit: PASS — pipeline renderer sehat, BUG 4 duplicate nav
 Sprint 4.1 — Fix Duplicate Export Navigation: PASS — PageFrame externalNavigation kini mencakup mode='export', ExportApp satu-satunya pemilik nav export
 Sprint 4.2 — Export Animation Parity: PASS — 9 keyframes P0/P1 ditambahkan ke export.css (popSuccess, pulseGlow, eduFadeIn, eduSlideUp, breathe, shimmer, sparkle, trophyBounce, blockStaggerIn)
 Sprint 5 — Data/Save/Persistence Audit: PASS — auto-save 2s debounce + 30s max-wait, inline edit protected on page/mode switch, beforeunload guard, crash recovery, offline sync queue, localStorage+DB dual write, migration aman, no data loss bugs found, P2 contractId column + block table redundan diparkir
+Sprint 6 — Final Core Regression Audit: PARTIAL — 3 regression ditemukan: (1) P1 export safe area padding 44+80px phantom karena PageRenderer tidak memperhitungkan externalNavigation, (2) P2 buildBackgroundFromLegacy() membuang hex bgColor saat migrasi legacy page, (3) P2 dual auto-save timer (init.ts 1s + use-auto-save.ts 2s) menyebabkan redundant writes + status flicker
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
@@ -3469,4 +3470,83 @@ Learn   → LearningMediaShell nav (external)
 Export  → ExportApp nav (external)
 
 externalNavigation = isSchemaDriven && (learn || preview || export)
+```
+
+**SPRINT 6 — Final Core Regression Audit (PARTIAL)**
+
+1. Sprint 6 AUDIT: Cross-sprint regression audit untuk memastikan Sprint 1–5 tidak saling merusak
+2. Area diaudit: Workspace, Runtime, Engine, Export, Persistence
+3. File dibaca: src/components/canva/ (CanvaBuilder, PageFrame, stage, PreviewMode, PresentMode), src/core/renderer/ (SchemaScreenRenderer, MateriBlokRenderer, KuisRenderer, SortirGameRenderer, RodaGameRenderer), src/core/schema/ (ensure-schema, schema-factory, primary-edit-target, guided-patch, blocks), src/core/edu/education-motion.ts, src/export/ (ExportApp, export.css), src/store/canva/ (persistence-slice, background-slice, schema-crud-slice, page-slice, session-slice, interactive-store), src/hooks/ (use-auto-save, use-learning-editor, use-unsaved-guard), src/lib/db.ts, src/lib/offline-sync.ts
+4. Metodologi: 5 parallel audit agents + 3 verification agents untuk cross-check temuan kritis
+
+**Sprint 6 — Hasil Per Area:**
+
+| Area | Status | Detail |
+|------|--------|--------|
+| Workspace | ✅ PASS | isSchemaDriven aligned (D-P0B.2), externalNavigation konsisten (S4.1), blur pipeline 3-layer aman, dirty tracking dual-path konvergen |
+| Runtime | ✅ PASS | replayAll() di 4 mode entry points, mode sync useEffect benar, score reporting konsisten, replayGeneration watcher di semua renderer |
+| Engine | 🟡 PARTIAL | buildBackgroundFromLegacy() buang hex bgColor (P2), duplicate templateType→blockType mapping (P2), MateriBlok accentColor vs warna ambiguity (P2) |
+| Export | 🟡 PARTIAL | safe area padding phantom 44+80px di export mode (P1), keyframe parity gap P2/P3 masih diparkir |
+| Persistence | ✅ PASS | D-P0B.3 fix benar, blur-on-switch 3 layer, migration pipeline sehat, dual auto-save timer redundan (P2) |
+
+**Sprint 6 — Regression yang Ditemukan:**
+
+| # | Severity | Issue | File | Detail |
+|---|----------|-------|------|--------|
+| 1 | **P1** | Export safe area padding phantom | PageRenderer.tsx L266-274 | PageRenderer komputasi showTopNav/showBottomNav TANPA externalNavigation gate → safe area 44px top + 80px bottom untuk navbar yang tersembunyi di export/learn/preview mode |
+| 2 | **P2** | buildBackgroundFromLegacy() buang hex | ensure-schema.ts L526-533 | Case 3 (bgColor hex ≠ #ffffff) mengganti warna guru dengan token 'bg' → Renderer mendukung raw hex via tokens.color() pass-through, tapi migration tidak memanfaatkannya |
+| 3 | **P2** | Dual auto-save timer | init.ts + use-auto-save.ts | init.ts 1s debounce (localStorage only) + use-auto-save.ts 2s debounce (localStorage+DB) aktif bersamaan → redundant writes + _saveStatus flicker |
+
+**Sprint 6 — Risiko yang Masih Diparkir:**
+
+| # | Severity | Risiko | Status |
+|---|----------|--------|--------|
+| 1 | P2 | contractId belum punya kolom DB sendiri | Diparkir Sprint 5 |
+| 2 | P2 | Block table redundan dengan schemaData | Diparkir Sprint 5 |
+| 3 | P2 | GUIDED_EDITOR_REGISTRY coverage gap (hero, skenario, hasil, 6 game types) | Diparkir — advanced mode fallback |
+| 4 | P3 | Stage ensurePageSchema() not memoized — performance concern | Diparkir — bukan correctness bug |
+| 5 | P2 | export.css keyframe gap (springBounce, shakeWrong, dll) | Diparkir Sprint 4.2 |
+| 6 | P3 | Deprecated client-side export masih importable | Diparkir Sprint D1/D3 |
+
+**Sprint 6 — Rekomendasi:**
+
+| # | Rekomendasi | Prioritas | Sprint Target |
+|---|------------|-----------|---------------|
+| 1 | Fix export safe area: tambah externalNavigation gate di PageRenderer showTopNav/showBottomNav | P1 → fix sekarang | Sprint 6.1 |
+| 2 | Fix buildBackgroundFromLegacy Case 3: color1: bgColor (bukan 'bg') | P2 → fix sekarang | Sprint 6.1 |
+| 3 | Konsolidasi auto-save: hapus init.ts startAutoSave() | P2 → fix sekarang | Sprint 6.1 |
+| 4 | Unify TEMPLATE_BLOCK_MAP + PHASE_PRIMARY_BLOCK | P2 → parkir | Sprint cleanup |
+| 5 | Tambah v2→v3 migration: warna → accentColor | P2 → parkir | Sprint cleanup |
+
+**Sprint 6 — Fix Kecil yang Wajib (Sprint 6.1):**
+
+```txt
+BUG 6.1: Export safe area padding phantom
+  File: PageRenderer.tsx
+  Fix: Tambah externalNavigation gate di komputasi showTopNav/showBottomNav
+  Estimasi: 3 baris
+
+BUG 6.2: buildBackgroundFromLegacy hex loss
+  File: ensure-schema.ts
+  Fix: color1: bgColor (bukan 'bg') untuk Case 3 hex
+  Estimasi: 1 baris
+
+BUG 6.3: Dual auto-save timer
+  File: init.ts
+  Fix: Hapus startAutoSave() — useAutoSave sudah lebih lengkap
+  Estimasi: Hapus ~15 baris
+```
+
+**Sprint 6 — Kesimpulan:**
+
+```txt
+Sprint 6: PARTIAL
+
+3 regression ditemukan, semuanya fix kecil (< 20 baris total):
+1. P1 export safe area phantom padding → Sprint 6.1
+2. P2 legacy hex bgColor lost → Sprint 6.1
+3. P2 dual auto-save timer → Sprint 6.1
+
+Tidak ditemukan regression berat yang saling merusak antar sprint.
+Core flow utama masih menyatu: edit → save → preview → play → present → export → reload.
 ```
