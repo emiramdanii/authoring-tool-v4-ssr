@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-07 (Sprint 2G — Import JSON Roda)
+Tanggal: 2026-06-10 (Sprint 6.3-A — Module Readiness Audit: Materi)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -72,6 +72,7 @@ Sprint 5 — Data/Save/Persistence Audit: PASS — auto-save 2s debounce + 30s m
 Sprint 6 — Final Core Regression Audit: PARTIAL → Sprint 6.1 fix
 Sprint 6.1-A — Fix Add Page Cover Empty Render: PASS
 Sprint 6.1 — Final Core Regression Fix: PASS — 3 regression diperbaiki: (1) P1 export safe area padding phantom 44+80px diperbaiki (externalNavigation gate di PageRenderer), (2) P2 buildBackgroundFromLegacy() raw hex preservation (color1: bgColor bukan 'bg'), (3) P2 dual auto-save timer dihapus (legacy startAutoSave() dari init.ts, useAutoSave() tetap)
+Sprint 6.3-A — Module Readiness Audit: Materi: AUDIT COMPLETE — 4 modul (materi-section, materi-blok, def-box, rangkuman) semua PASS render tapi PARTIAL editing + PARTIAL export. 17 bug ditemukan (2 P0, 3 P1, 6 P2, 6 P3). Pola utama: export renderer mengabaikan variant, guided editor tidak lengkap, warna vs accentColor dualism
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
@@ -3624,3 +3625,205 @@ Sprint 6: PASS ✅
 Core flow utama stabil: edit → save → preview → play → present → export → reload
 Tidak ditemukan regression berat yang saling merusak antar sprint.
 ```
+
+## Sprint 6.3-A — Module Readiness Audit: Materi (AUDIT ONLY, no coding)
+
+**Tanggal:** 2026-06-10
+**Metodologi:** Code-level audit (renderer, guided editor, export renderer, property schema, block definitions)
+**Standar:** Modul siap = Render siap + Editing siap + Export siap (bukan sekadar "tidak error", tetapi "layak jadi media")
+
+### Tabel Readiness Per Modul
+
+| Modul | Render | Editing | Export | Keputusan |
+|-------|--------|---------|--------|-----------|
+| **materi-section** | PASS ✅ | PARTIAL ⚠️ | PARTIAL ⚠️ | NEEDS FIX |
+| **materi-blok** | PASS ✅ | PARTIAL ⚠️ | PARTIAL ⚠️ | NEEDS FIX |
+| **def-box** | PASS ✅ | PARTIAL ⚠️ | PARTIAL ⚠️ | NEEDS FIX |
+| **rangkuman** | PASS ✅ | PARTIAL ⚠️ | PARTIAL ⚠️ | NEEDS FIX |
+
+**Pola umum:** Semua modul PASS render, tapi PARTIAL di editing (guided editor gaps) dan PARTIAL di export (variant tidak dihormati, HTML formatting hilang).
+
+---
+
+### Modul 1: materi-section
+
+**Render readiness: PASS ✅**
+- 3 variant (Klasik/Majalah/Pill) semuanya berfungsi
+- Token-driven colors, spacing (edu.sectionPadding, edu.componentPadding)
+- Overflow handling + compression-aware (OverflowIndicator, clipped fade-out)
+- Nested child blocks via SchemaBlockRenderer (lazy-loaded)
+- Default fallback: accentColor || 'c', takeaways || [], selfCheck falsy check
+- Terdaftar di RENDERER_MAP, BLOCK_DEFINITIONS, lazy-loaded
+
+**Editing readiness: PARTIAL ⚠️**
+- Guided editor hanya 3 field: title, accentColor, variant
+- **Missing dari guided editor:** icon, subtitle, bsnpRequired, takeaways, selfCheck
+- Komentar kode: "content is an array of nested SchemaBlocks — too complex for simple guided form" → ditunda ke Phase 2
+- Property schema (panel kanan) menutupi gap: 7 field (variant, icon, title, subtitle, bsnpRequired, accentColor, takeaways, selfCheck)
+- Variant dan accentColor persisten ke schema ✅
+- Gaya Cepat berfungsi: BLOCK_STYLE_CAPABILITIES = ['accentColor', 'variant']
+- Inline text editing: title di-render sebagai plain `<h2>` — tidak ada InlineTextEditor
+
+**Export readiness: PARTIAL ⚠️**
+- Export renderer ada: `renderMateriSection()` di block-renderers.ts:244
+- 🪲 **P0 BUG: Export mengabaikan `block.variant`** — selalu render Klasik, walau schema variant='B'/'C'
+- 🪲 **P1 BUG: Export mengabaikan `block.tabs`** — langsung baca `b.content`, konten tab hilang
+- 🪲 **P2 BUG: Export icon placement beda** — span terpisah vs inline dengan title
+- Export HTML: escapeHtml() digunakan (aman), no animations (expected), no background card
+
+---
+
+### Modul 2: materi-blok
+
+**Render readiness: PASS ✅**
+- 13 sub-tipe renderer: teks, definisi, poin, tabel, kutipan, gambar, timeline, highlight, compare, infobox, checklist, statistik, studi
+- Semua ter-map di TIPE_RENDERERS + TIPE_META, unknown tipe → error fallback merah
+- Sprint 3.1 fix: `block.accentColor ?? block.warna ?? <default>` konsisten di semua sub-renderer
+- Token-driven via `tokens.edu('materi-blok', isCompact)`
+- Background-image aware: `readableTintBg()` / `readableTintBorder()`
+- addable: false (container internal, bukan addable dari AddBlockPanel) — correct
+
+**Editing readiness: PARTIAL ⚠️**
+- Guided editor ada: 8 field (tipe, judul, isi, karakter, butir, warna, icon, infoboxStyle)
+- 🪲 **HIGH BUG: 5 dari 13 tipe TIDAK punya field editor** — tabel, timeline, compare, statistik, studi
+  - Tipe dropdown hanya 8 opsi (bukan 13)
+  - Guru yang pilih "tabel" melihat editor kosong — harus pakai SchemaDrivenEditor
+- 🪲 **MEDIUM BUG: Gaya Cepat writes `warna`, tapi renderer reads `accentColor ?? warna`**
+  - Jika accentColor sudah di-set (dari auto-generation), perubahan warna via Gaya Cepat tidak berpengaruh visual
+  - Dual-field: warna + accentColor doing the same thing
+- showWhen coverage: 8 tipe punya conditional fields, 5 tipe tidak punya apa-apa
+- Inline text editing: tidak ada (materi-blok explicitly documents "isEditing not used")
+
+**Export readiness: PARTIAL ⚠️**
+- Export renderer ada: `renderMateriBlok()` di block-renderers.ts:652
+- 13 switch cases — semua tipe punya export renderer ✅
+- 🪲 **MEDIUM BUG: Export hanya baca `b.warna`, TIDAK baca `b.accentColor`**
+  - Jika block punya accentColor='c' tapi warna=undefined, preview menampilkan cyan tapi export menampilkan warna default tipe (mungkin kuning) → **color mismatch**
+- 🪲 **LOW BUG: studi export hilang `pesan` section** — hanya render situasi + pertanyaan
+- 🪲 **LOW BUG: RichText formatting hilang** — `escapeHtml()` kills `<strong>`, `<em>`, dll
+- 🪲 **LOW BUG: checklist export punya `<input type="checkbox">`** — interactive element di static HTML
+
+---
+
+### Modul 3: def-box
+
+**Render readiness: PASS ✅**
+- 3 variant (Klasik/Kreatif/Ringkas) semuanya berfungsi
+- Token-driven: `tokens.resolveAccent(block.borderColor)`, `tokens.color(colorKey)`, `tokens.accentBg()`
+- Overflow: wordBreak + overflowWrap + compression-aware + clipped fade-out gradient
+- InlineTextEditor: `allowHtml={true}` di semua variant — konten HTML dirender
+- Default fallback: `block.borderColor` via resolveAccent, `variant || 'A'`
+
+**Editing readiness: PARTIAL ⚠️**
+- Guided editor: 2 field — content (richtext), borderColor (color)
+- 🪲 **MEDIUM BUG: `variant` TIDAK ada di guided editor** — guru tidak bisa ganti Klasik/Kreatif/Ringkas dari panel Konten
+- 🪲 **MEDIUM BUG: `capabilities.variants` deklarasi `['A']` saja** — padahal renderer support A/B/C
+  - Registration gap antara capability dan renderer
+  - Gaya Cepat tidak bisa set variant (BLOCK_STYLE_CAPABILITIES hanya ['borderColor'])
+- Inline editing ✅ (content field, allowHtml=true)
+- borderColor persisten ✅
+
+**Export readiness: PARTIAL ⚠️**
+- Export renderer ada: `renderDefBox()` di block-renderers.ts:147 — sangat sederhana (8 baris)
+- 🪲 **HIGH BUG: `escapeHtml(content)` menghancurkan HTML formatting**
+  - Canvas: `allowHtml={true}` + `sanitizeHtml()` → bold/italic tampil
+  - Export: `escapeHtml()` → `<strong>` jadi `&lt;strong&gt;` → teks formatting hilang total
+- 🪲 **MEDIUM BUG: Export tidak support variant** — hanya 1 flat layout
+- 🪲 **LOW BUG: Export pakai emoji 📖 vs canvas pakai Material Symbol `menu_book`** — visual inconsistency
+- 🪲 **LOW BUG: Export hilangkan background fill, card border, rounded corners** — signifikan visual downgrade
+
+---
+
+### Modul 4: rangkuman
+
+**Render readiness: PASS ✅**
+- 3 variant (Klasik grid / Kreatif timeline / Ringkas accordion) semuanya berfungsi
+- Token-driven: `tokens.color(accentColor)`, per-concept `concept.color`, edu context
+- Overflow: wordBreak + overflowWrap + compression-aware (handlesCompression: true)
+- Step navigator untuk >2 concepts
+- Default fallback: `accentColor || 'c'`, `variant || 'A'`, `concepts || []`
+
+**Editing readiness: PARTIAL ⚠️**
+- Guided editor: title, concepts[] (icon/title/body/color), closingStatement
+- 🪲 **MEDIUM BUG: `accentColor` dan `variant` TIDAK ada di guided editor** — hanya via in-renderer VariantSelector atau panel kanan
+- 🪲 **MEDIUM BUG: Konten Tab "Pengantar" = dead write** — data tidak tersimpan di schema
+- 🪲 **MEDIUM BUG: Konten Tab "Tips Belajar" = dead write** — data tidak tersimpan di schema
+- 🪲 **LOW BUG: Konten Tab pakai flat `poin[]` string vs schema structured `concepts[]` objects** — data fidelity gap
+- Inline editing: title ✅, concept titles/bodies = tidak ada (read-only RichText)
+- Gaya Cepat ✅: BLOCK_STYLE_CAPABILITIES = ['accentColor', 'variant']
+
+**Export readiness: PARTIAL ⚠️**
+- Export renderer ada: `renderRangkuman()` di block-renderers.ts:351
+- 🪲 **MEDIUM BUG: Export mengabaikan `block.variant`** — selalu render Variant A grid
+  - Variant B (timeline) dan C (accordion) tidak diimplementasi di export
+- 🪲 **LOW BUG: `mode` prop diterima tapi tidak digunakan** di RangkumanRenderer
+- Export layout: CSS grid `repeat(auto-fit, minmax(180px, 1fr))` — fungsional tapi berbeda dari preview
+
+---
+
+### Bug Inventory — Sprint 6.3-A
+
+| # | Severity | Modul | Area | Deskripsi | File |
+|---|----------|-------|------|-----------|------|
+| 1 | **P0** | materi-section | Export | Export ignores `block.variant` — always renders Klasik | block-renderers.ts:244 |
+| 2 | **P1** | materi-section | Export | Export ignores `block.tabs` — shows wrong content for tabbed sections | block-renderers.ts:249 |
+| 3 | **P1** | materi-blok | Edit | 5 dari 13 tipe TIDAK punya guided editor fields (tabel, timeline, compare, statistik, studi) | guided-patch.ts:1171 |
+| 4 | **P1** | def-box | Export | `escapeHtml(content)` destroys HTML formatting that canvas renders via allowHtml | block-renderers.ts:153 |
+| 5 | **P2** | materi-section | Edit | Guided editor missing: icon, subtitle, bsnpRequired, takeaways, selfCheck | guided-patch.ts:750 |
+| 6 | **P2** | materi-blok | Export | Export only reads `b.warna`, not `b.accentColor` — color mismatch | block-renderers.ts:685 |
+| 7 | **P2** | materi-blok | Edit | Gaya Cepat writes `warna`, shadowed by existing `accentColor` | block-style-presets.ts |
+| 8 | **P2** | def-box | Edit | `variant` not in guided editor; `capabilities.variants` declares only `['A']` | guided-patch.ts:768, definitions.ts:219 |
+| 9 | **P2** | rangkuman | Edit | `accentColor` + `variant` not in guided editor | guided-patch.ts:834 |
+| 10 | **P2** | rangkuman | Edit | Konten Tab "Pengantar" + "Tips Belajar" = dead writes | RangkumanTab.tsx |
+| 11 | **P2** | rangkuman | Export | Export ignores `block.variant` — always renders Variant A | block-renderers.ts:351 |
+| 12 | **P2** | def-box | Export | Export no variant support — single flat layout | block-renderers.ts:147 |
+| 13 | **P2** | materi-blok | Export | studi export missing `pesan` section | block-renderers.ts:714 |
+| 14 | **P3** | materi-blok | Export | RichText formatting stripped by `escapeHtml()` | block-renderers.ts |
+| 15 | **P3** | rangkuman | Edit | Konten Tab `poin[]` vs schema `concepts[]` shape mismatch | RangkumanTab.tsx |
+| 16 | **P3** | rangkuman | Render | No empty-state UI when concepts=[] | RangkumanRenderer.tsx |
+| 17 | **P3** | def-box | Export | Emoji 📖 vs Material Symbol `menu_book` | block-renderers.ts:152 |
+
+---
+
+### Pola Umum (Cross-Module Findings)
+
+**1. Export renderer = second-class citizen**
+Semua 4 modul punya export renderer yang jauh lebih sederhana dari React renderer. Masalah paling umum:
+- Export mengabaikan `variant` (materi-section, def-box, rangkuman)
+- Export menggunakan `escapeHtml()` yang menghancurkan HTML formatting (def-box, materi-blok)
+- Export tidak punya card background/shadow/border-radius yang canvas punya
+
+**2. Guided editor = incomplete**
+Pola berulang: guided editor tidak mengekspos `variant` dan `accentColor` (def-box, rangkuman), atau mengekspos field yang tidak selaras dengan apa yang renderer baca (materi-blok warna vs accentColor dualism).
+
+**3. Dual-field problem (warna vs accentColor)**
+materi-blok punya 2 field yang fungsinya sama: `warna` (legacy, exposed di guided editor) dan `accentColor` (modern, di-read lebih dulu oleh renderer). Gaya Cepat writes `warna`, auto-generation writes `accentColor`. Keduanya bekerja tapi saling shadowing.
+
+---
+
+### Rekomendasi Sprint Fix Kecil
+
+**Sprint 6.3-B — Export Variant Parity (P0/P1)**
+Fix 3 export renderer yang mengabaikan variant:
+1. `renderMateriSection()`: tambah variant branching (B = 2-col grid, C = compact)
+2. `renderRangkuman()`: tambah variant B (timeline) dan C (accordion)
+3. `renderDefBox()`: tambah variant B/C support
+- Estimasi: ~60 baris total, file: block-renderers.ts saja
+
+**Sprint 6.3-C — Guided Editor Gaps (P1/P2)**
+1. materi-blok: tambah 5 tipe ke dropdown + fields (tabel→baris, timeline→langkah, compare→kiri/kanan, statistik→items, studi→situasi/pertanyaan/pesan)
+2. def-box: tambah `variant` ke guided editor, fix capabilities.variants=['A','B','C']
+3. rangkuman: tambah `accentColor` + `variant` ke guided editor
+4. Estimasi: ~80 baris, file: guided-patch.ts + definitions.ts
+
+**Sprint 6.3-D — Export Color + HTML Fix (P1/P2)**
+1. materi-blok export: baca `b.accentColor ?? b.warna` (bukan hanya `b.warna`)
+2. def-box export: ganti `escapeHtml(content)` → `renderHtmlContent(content)` yang preserve safe HTML tags
+3. materi-section export: baca `b.tabs` dan merge content
+4. Estimasi: ~15 baris, file: block-renderers.ts
+
+**Yang DIPARKIR**
+- Konten Tab dead writes (RangkumanTab intro/tips) — perlu arsitektur tab→schema bridge
+- RichText formatting di export (bold/italic preserve) — perlu `renderHtmlContent()` helper
+- materi-section guided editor enhancement (icon, subtitle, takeaways, selfCheck) — Phase 2 per komentar kode
+- Empty-state UI untuk rangkuman concepts=[] — UX polish
