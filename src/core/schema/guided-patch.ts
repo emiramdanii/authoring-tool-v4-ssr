@@ -765,6 +765,44 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     ],
   },
 
+  // Sprint 6.3-C: Minimal guided editor for materi-blok tabel & timeline subtypes.
+  // MateriBlokRenderer reads: baris (tabel), langkah (timeline), judul, accentColor/warna.
+  // Only tabel and timeline subtypes are supported in the guided editor for now.
+  // Other subtypes (teks, definisi, poin, etc.) fall through to SchemaDrivenEditor.
+  'materi-blok': {
+    blockType: 'materi-blok',
+    displayName: 'Blok Materi',
+    description: 'Konten materi: tabel atau timeline',
+    icon: '📋',
+    fields: [
+      { key: 'judul', label: 'Judul', type: 'text', helpText: 'Judul opsional di atas konten', placeholder: 'Judul blok...' },
+      // Tabel fields — shown only when tipe === 'tabel'
+      // MateriBlokRenderer.RenderTabel reads: block.baris (string[][]), block.judul, block.accentColor/warna
+      { key: 'baris', label: 'Baris Tabel', type: 'table-text',
+        showWhen: { field: 'tipe', values: ['tabel'] },
+        helpText: 'Baris pertama = header. Gunakan | untuk memisahkan kolom.',
+        placeholder: 'Header 1 | Header 2 | Header 3\nData 1 | Data 2 | Data 3' },
+      // Timeline fields — shown only when tipe === 'timeline'
+      // MateriBlokRenderer.RenderTimeline reads: block.langkah ({icon?, judul, isi?}), block.judul, block.accentColor/warna
+      { key: 'langkah', label: 'Langkah', type: 'array', maxItems: 6,
+        showWhen: { field: 'tipe', values: ['timeline'] },
+        helpText: 'Langkah-langkah timeline. Maksimal 6 langkah.',
+        fields: [
+          { key: 'judul', label: 'Label', type: 'text', required: true, placeholder: 'Langkah 1' },
+          { key: 'isi', label: 'Deskripsi', type: 'textarea', placeholder: 'Deskripsi langkah...' },
+          { key: 'icon', label: 'Ikon', type: 'icon' },
+        ],
+      },
+      // Accent color — common to both subtypes
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS,
+        helpText: 'Warna aksen untuk blok materi' },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['judul', 'baris', 'langkah'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
+    ],
+  },
+
   'def-box': {
     blockType: 'def-box',
     displayName: 'Kotak Definisi',

@@ -1,8 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 // PRISMA SCHEMA — MPI Authoring Tool v4
 // ═══════════════════════════════════════════════════════════════════════
-// MySQL-based persistence for projects, pages, blocks, and templates.
-// Supports MySQL/MariaDB with or without password.
+// SQLite-based persistence for projects, pages, blocks, and templates.
 // ═══════════════════════════════════════════════════════════════════════
 
 generator client {
@@ -10,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
