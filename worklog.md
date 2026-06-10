@@ -668,3 +668,24 @@ Stage Summary:
 - No guard conditions block cover rendering in any pipeline stage
 - Diagnostic warning removed (dev-only, no longer needed)
 - Sprint 6.1-A fix (createDefault compression + semantic) confirmed correct and in place
+
+---
+Task ID: S6.1
+Agent: Main
+Task: Sprint 6.1 — Final Core Regression Fix (3 bugs)
+
+Work Log:
+- Fix 1: PageRenderer.tsx — added externalNavigation gate to showTopNav/showBottomNav computation. When mode is export/learn/preview and page has schema, safe area returns 0px top/bottom instead of 44+80px phantom padding. Aligned with PageFrame.tsx line 371 logic.
+- Fix 2: ensure-schema.ts — changed buildBackgroundFromLegacy() Case 3 from color1:'bg' to color1:bgColor. Raw hex values like '#FF0000' are now preserved during legacy migration. TokenResolver.color() passes through unrecognized keys as literals; SchemaRenderer only overrides generic 'bg'/'bg2' tokens.
+- Fix 3: init.ts — removed legacy startAutoSave() function, saveTimer, AUTO_SAVE_DELAY, and cleanup code (~22 lines deleted). Modern useAutoSave() hook in CanvaAutoSaveSync.tsx handles all save logic (localStorage + authoring + DB + offline queue) with 2s debounce. Eliminates double-write race condition and _saveStatus flicker.
+- Updated CORE_VERIFICATION_REPORT.md: Sprint 6 status changed from PARTIAL to PASS, detailed Sprint 6.1 section added with before/after table.
+- Build: PASS
+- Commit: 4e87106 "fix: 3 core regression fixes (Sprint 6.1)"
+- Push: SUCCESS to origin/main
+
+Stage Summary:
+- Sprint 6.1-A: PASS (cover empty render — from previous session)
+- Sprint 6.1: PASS (3 core regression fixes)
+- Sprint 6 FINAL: PASS ✅
+- 3 files changed: PageRenderer.tsx (+3 lines), ensure-schema.ts (~1 line), init.ts (-22 lines)
+- No changes to: Cover, renderer blocks, ExportApp, export pipeline, schema besar, persistence besar, AI/SCORM/PWA/dashboard/template baru
