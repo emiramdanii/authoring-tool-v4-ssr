@@ -79,6 +79,12 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
       meta: { durasi: '', fase: 'VII', elemen: '' },
       cta: { label: 'Mulai →', action: 'next' },
       accentColor: 'y',
+      // Sprint 6.1-A: Add compression + semantic hints to match genCoverSchema().
+      // Without these, getBlockCapabilities() falls back to defaults instead of
+      // deriving from hints, causing capability mismatch between Add Page cover
+      // blocks and auto-generated cover blocks.
+      compression: { priority: 'high', strategy: 'none' },
+      semantic: { learningPhase: 'pendahuluan', importance: 1.0 },
     }),
   },
   'hero': {
@@ -101,6 +107,9 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
       meta: { durasi: '', fase: '', elemen: '' },
       cta: { label: 'Mulai →', action: 'next' },
       accentColor: 'c',
+      // Sprint 6.1-A: Add compression + semantic hints for consistency with cover.
+      compression: { priority: 'high', strategy: 'none' },
+      semantic: { learningPhase: 'intro', importance: 0.9 },
     }),
   },
   'petunjuk': {

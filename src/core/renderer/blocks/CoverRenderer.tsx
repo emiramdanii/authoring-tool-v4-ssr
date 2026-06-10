@@ -442,6 +442,19 @@ export const CoverRenderer = React.memo(function CoverRenderer({ block, tokens, 
 }) {
   const variant: 'A' | 'B' | 'C' = (block.variant as 'A' | 'B' | 'C') || 'A';
 
+  // Sprint 6.1-A: Diagnostic — detect if cover block has missing fields.
+  // When Add Page creates a cover block, title/subtitle/icon must be present.
+  // If they're missing, log a warning so we can trace the root cause.
+  if (process.env.NODE_ENV !== 'production') {
+    if (!block.title && !block.subtitle && !block.icon) {
+      console.warn(
+        `[CoverRenderer] Block "${block.id}" has NO title, subtitle, or icon. ` +
+        `This usually means the cover block was created with wrong field names. ` +
+        `block keys: ${Object.keys(block).join(', ')}`
+      );
+    }
+  }
+
   const titleEditor = useInlineEditor({
     blockId: block.id,
     fieldKey: 'title',

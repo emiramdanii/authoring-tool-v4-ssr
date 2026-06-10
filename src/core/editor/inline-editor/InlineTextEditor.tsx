@@ -143,8 +143,17 @@ export function InlineTextEditor({
     // Auto-detect: if value contains HTML tags OR allowHtml=true, use dangerouslySetInnerHTML
     const hasHtml = /<[a-z][\s\S]*>/i.test(value || '');
     if (allowHtml || hasHtml) {
+      // Sprint 6.1-A fix: Render HTML content instead of placeholder icon.
+      // Previously returned a material-symbols "label" icon, which was clearly a
+      // debug placeholder left in by mistake. Now properly renders HTML content
+      // using dangerouslySetInnerHTML for safe HTML display.
+      const sanitized = sanitizeHtml(value || placeholder);
       return (
-        <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>label</span>
+        <Tag
+          className={className}
+          style={style}
+          dangerouslySetInnerHTML={{ __html: sanitized }}
+        />
       );
     }
     return (
