@@ -24,47 +24,13 @@ import { logger } from '@/core/utils/logger';
 
 let _initialized = false;
 
-// ── Auto-save debounce state ──────────────────────────────────
-let saveTimer: ReturnType<typeof setTimeout> | null = null;
-const AUTO_SAVE_DELAY = 1000; // 1 second debounce
-
 // ── Projection sync debounce state ────────────────────────────
+// NOTE: Legacy auto-save timer (startAutoSave) removed in Sprint 6.1.
+// Modern useAutoSave hook in use-auto-save.ts now handles ALL save logic
+// (localStorage + DB + offline queue) with proper debounce.
 let projectionTimer: ReturnType<typeof setTimeout> | null = null;
 const PROJECTION_SYNC_DELAY = 300; // 300ms debounce — faster than save
 let _projectionSyncing = false; // Guard against sync loops
-
-/**
- * Start debounced auto-save to localStorage.
- * [G.4] Subscription tracked via SubscriptionManager.
- *
- * Subscribes to `pages` and `ratioId` changes only (NOT `_saveStatus`)
- * to prevent infinite loops. When a change is detected:
- *   1. Sets `_saveStatus` to `'saving'` immediately (UI feedback)
- *   2. Debounces for 1 second, then calls `saveToStorage()`
- *   3. Sets `_saveStatus` to `'saved'` after successful save
- */
-function startAutoSave() {
-  const unsub = useCanvaStore.subscribe(
-    (state) => ({ pages: state.pages, ratioId: state.ratioId }),
-    () => {
-      // Set saving status immediately for UI feedback
-      useCanvaStore.setState({ _saveStatus: 'saving' });
-
-      // Debounced save — coalesces rapid changes into one write
-      if (saveTimer) clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => {
-        useCanvaStore.getState().saveToStorage();
-        // saveToStorage() sets _saveStatus: 'saved' internally on
-        // both success and failure, so no need to set it here.
-        saveTimer = null;
-      }, AUTO_SAVE_DELAY);
-    },
-    { equalityFn: (a, b) => a.pages === b.pages && a.ratioId === b.ratioId }
-  );
-
-  // [G.4] Track subscription for cleanup
-  subscriptionManager.registerSubscription('auto-save-pages', unsub);
-}
 
 /**
  * Start reactive Schema → Projection sync.
@@ -134,7 +100,7 @@ function startProjectionSync() {
  *   2. EditBus → PatchHistory for undo/redo
  *   3. Canva store ref → interactive store (breaks circular dep)
  *   4. Canva store pages → interactive store totalPages sync
- *   5. Canva store pages/ratioId → debounced auto-save to localStorage
+ *   5. (REMOVED Sprint 6.1) Legacy auto-save timer — now handled by useAutoSave()
  *   6. Canva store pages → Schema→Projection sync (keeps Konten panel live)
  */
 export function initCanvaStoreSubscriptions() {
@@ -161,8 +127,13 @@ export function initCanvaStoreSubscriptions() {
   // [G.4] Track interactive canva sync
   startInteractiveCanvaSync();
 
-  // Auto-save: debounce pages/ratioId changes → localStorage
-  startAutoSave();
+  // NOTE (Sprint 6.1): Legacy startAutoSave() REMOVED.
+  // Modern useAutoSave() hook in CanvaAutoSaveSync.tsx handles all save:
+  //   - localStorage (canva + authoring)
+  //   - DB save (if projectId provided)
+  //   - Offline queue
+  //   - 2s debounce with 30s max-wait
+  // The legacy 1s timer was redundant and caused dual-write race conditions.
 
   // Schema → Projection sync: keeps Konten panel in sync with canvas edits
   startProjectionSync();
@@ -182,12 +153,6 @@ export function cleanupCanvaStoreSubscriptions() {
 
   // Clean up interactive store canva sync subscription
   stopInteractiveCanvaSync();
-
-  // Clear any pending save timer
-  if (saveTimer) {
-    clearTimeout(saveTimer);
-    saveTimer = null;
-  }
 
   // Clear any pending projection sync timer
   if (projectionTimer) {

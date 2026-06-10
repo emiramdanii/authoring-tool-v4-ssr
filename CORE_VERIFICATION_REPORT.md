@@ -69,7 +69,9 @@ Sprint 4 — Export Audit: PASS — pipeline renderer sehat, BUG 4 duplicate nav
 Sprint 4.1 — Fix Duplicate Export Navigation: PASS — PageFrame externalNavigation kini mencakup mode='export', ExportApp satu-satunya pemilik nav export
 Sprint 4.2 — Export Animation Parity: PASS — 9 keyframes P0/P1 ditambahkan ke export.css (popSuccess, pulseGlow, eduFadeIn, eduSlideUp, breathe, shimmer, sparkle, trophyBounce, blockStaggerIn)
 Sprint 5 — Data/Save/Persistence Audit: PASS — auto-save 2s debounce + 30s max-wait, inline edit protected on page/mode switch, beforeunload guard, crash recovery, offline sync queue, localStorage+DB dual write, migration aman, no data loss bugs found, P2 contractId column + block table redundan diparkir
-Sprint 6 — Final Core Regression Audit: PARTIAL — 3 regression ditemukan: (1) P1 export safe area padding 44+80px phantom karena PageRenderer tidak memperhitungkan externalNavigation, (2) P2 buildBackgroundFromLegacy() membuang hex bgColor saat migrasi legacy page, (3) P2 dual auto-save timer (init.ts 1s + use-auto-save.ts 2s) menyebabkan redundant writes + status flicker
+Sprint 6 — Final Core Regression Audit: PARTIAL → Sprint 6.1 fix
+Sprint 6.1-A — Fix Add Page Cover Empty Render: PASS
+Sprint 6.1 — Final Core Regression Fix: PASS — 3 regression diperbaiki: (1) P1 export safe area padding phantom 44+80px diperbaiki (externalNavigation gate di PageRenderer), (2) P2 buildBackgroundFromLegacy() raw hex preservation (color1: bgColor bukan 'bg'), (3) P2 dual auto-save timer dihapus (legacy startAutoSave() dari init.ts, useAutoSave() tetap)
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
@@ -3540,13 +3542,85 @@ BUG 6.3: Dual auto-save timer
 **Sprint 6 — Kesimpulan:**
 
 ```txt
-Sprint 6: PARTIAL
+Sprint 6: PARTIAL → Sprint 6.1 fix
 
 3 regression ditemukan, semuanya fix kecil (< 20 baris total):
-1. P1 export safe area phantom padding → Sprint 6.1
-2. P2 legacy hex bgColor lost → Sprint 6.1
-3. P2 dual auto-save timer → Sprint 6.1
+1. P1 export safe area phantom padding → FIXED Sprint 6.1
+2. P2 legacy hex bgColor lost → FIXED Sprint 6.1
+3. P2 dual auto-save timer → FIXED Sprint 6.1
 
 Tidak ditemukan regression berat yang saling merusak antar sprint.
 Core flow utama masih menyatu: edit → save → preview → play → present → export → reload.
+```
+
+## Sprint 6.1 — Final Core Regression Fix (3 bug)
+
+**Tanggal:** 2026-06-10
+
+### Sprint 6.1-A — Fix Add Page Cover Empty Render: PASS ✅
+
+Fix sebelumnya (dari sesi sebelumnya):
+- `createDefault()` untuk cover block diperbaiki: menambahkan `compression` + `semantic` fields yang hilang
+- `InlineTextEditor hasHtml=true` bug diperbaiki
+- Diagnostic warning dihapus dari CoverRenderer
+- Commit: `fix: render newly added cover page content`
+
+### Sprint 6.1 — 3 Core Regression Fix: PASS ✅
+
+**BUG 6.1 FIX: Export safe area phantom padding**
+
+- **File:** `src/components/canva/page-renderer/PageRenderer.tsx`
+- **Root cause:** `showTopNav` dan `showBottomNav` dihitung tanpa memerhitungkan `externalNavigation`. Dalam mode `export`/`learn`/`preview`, PageFrame menyembunyikan navbar-nya sendiri (karena shell eksternal menyediakan navigasi), tapi `computeSafeArea()` tetap mencadangkan 44px top + 80px bottom = 124px phantom padding.
+- **Fix:** Tambah `externalNavigation` gate di PageRenderer, selaras dengan logika yang sudah ada di PageFrame.tsx line 371. Ketika `externalNavigation` aktif, `showTopNav = showBottomNav = false` → `computeSafeArea()` return `{ top: 0, bottom: 0, left: 16, right: 16 }`.
+- **Baris diubah:** 3 baris (tambah `externalNavigation` variable + 2 kondisi `!externalNavigation`)
+- **Tidak mengubah:** PageFrame.tsx (sudah benar), SchemaRenderer.tsx (menerima safeArea dari PageRenderer), ExportApp, export pipeline
+
+**BUG 6.2 FIX: buildBackgroundFromLegacy hex color loss**
+
+- **File:** `src/core/schema/ensure-schema.ts`
+- **Root cause:** `buildBackgroundFromLegacy()` Case 3 (bgColor adalah hex selain #ffffff) selalu return `color1: 'bg'` — hex asli dibuang. Akibatnya, guru yang set background merah (#FF0000) di page lama, setelah migrasi schema background-nya kembali ke default 'bg' token.
+- **Fix:** Ubah `color1: 'bg'` → `color1: bgColor` (raw hex pass-through). `TokenResolver.color()` (types.ts line 207: `return colors[key] || key`) melewatkan key yang tidak dikenali sebagai value literal. `SchemaRenderer.tsx` line 522 hanya override `isGenericBgToken` (bg/bg2) — hex literal masuk ke `else` branch dan dirender sebagai warna asli.
+- **Baris diubah:** 1 baris inti (plus comment update)
+- **Tidak mengubah:** TokenResolver, SchemaRenderer, background-slice, renderer, export pipeline
+
+**BUG 6.3 FIX: Dual auto-save timer removal**
+
+- **File:** `src/store/canva/init.ts`
+- **Root cause:** Dua autosave berjalan paralel: (1) Legacy `startAutoSave()` di init.ts — subscribe ke `pages`/`ratioId`, debounce 1s, save ke localStorage only; (2) Modern `useAutoSave()` di CanvaAutoSaveSync.tsx — subscribe ke `pages`/`currentPageIndex`, debounce 2s, save ke localStorage + authoring + DB + offline queue. Hasil: double write ke localStorage, race condition di `_saveStatus`, I/O terbuang.
+- **Fix:** Hapus `startAutoSave()`, `saveTimer`, `AUTO_SAVE_DELAY`, cleanup timer di `cleanupCanvaStoreSubscriptions()`. `useAutoSave()` sudah menangani semua save logic (localStorage + DB + offline queue) dengan lebih lengkap.
+- **Baris dihapus:** ~22 baris (fungsi startAutoSave + state + cleanup)
+- **Tidak mengubah:** `use-auto-save.ts`, `CanvaAutoSaveSync.tsx`, `StoreInit.tsx`, persistence logic, DB save
+
+**Sprint 6.1 sebelum/sesudah:**
+
+| Area | Sebelum | Sesudah |
+|------|---------|---------|
+| Export safe area (non-cover, schema page) | 44+80px phantom padding | 0px (externalNavigation gate) |
+| Legacy page bgColor="#FF0000" migration | `color1: 'bg'` (hex hilang) | `color1: '#FF0000'` (hex preserved) |
+| Auto-save timer | 2 timer paralel (1s + 2s) | 1 timer (useAutoSave 2s) |
+| _saveStatus race condition | Ya (legacy sets 'saving' at 1s, modern at 2s) | Tidak (single source) |
+| localStorage double write | Ya (setiap perubahan 2x saveToStorage) | Tidak (1x saja) |
+
+**Sprint 6.1 files changed:**
+
+| File | Change |
+|------|--------|
+| `src/components/canva/page-renderer/PageRenderer.tsx` | +3 lines: externalNavigation gate |
+| `src/core/schema/ensure-schema.ts` | ~1 line: color1: bgColor |
+| `src/store/canva/init.ts` | -22 lines: remove legacy auto-save timer |
+
+**Sprint 6 FINAL status:**
+
+```txt
+Sprint 6: PASS ✅
+
+3 regression ditemukan dan diperbaiki:
+1. P1 export safe area phantom padding → FIXED (PageRenderer externalNavigation gate)
+2. P2 legacy hex bgColor lost → FIXED (buildBackgroundFromLegacy raw hex passthrough)
+3. P2 dual auto-save timer → FIXED (legacy startAutoSave() removed)
+
++ Sprint 6.1-A: Cover empty render → FIXED (createDefault alignment + InlineTextEditor hasHtml)
+
+Core flow utama stabil: edit → save → preview → play → present → export → reload
+Tidak ditemukan regression berat yang saling merusak antar sprint.
 ```

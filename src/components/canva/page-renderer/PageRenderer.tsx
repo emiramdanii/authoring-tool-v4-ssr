@@ -263,9 +263,13 @@ export const PageRenderer = React.memo(function PageRenderer({
     ? adaptedSchema.blocks.length === 1 && isFullPageBlockType(adaptedSchema.blocks[0]!.type)
     : page.templateType === 'cover';
   const isCoverTemplate = page.templateType === 'cover';
+  // Sprint 6.1: When mode is export/learn/preview, PageFrame hides its navbars
+  // (externalNavigation) because the export shell provides its own navigation.
+  // Without this gate, computeSafeArea reserves 44+80px for phantom navbar space.
+  const externalNavigation = !!adaptedSchema && (mode === 'learn' || mode === 'preview' || mode === 'export');
   const showNavbar = navConfig?.showNavbar !== false;
-  const showTopNav = showNavbar && !isCoverTemplate;
-  const showBottomNav = showNavbar && !isCoverTemplate;
+  const showTopNav = showNavbar && !isCoverTemplate && !externalNavigation;
+  const showBottomNav = showNavbar && !isCoverTemplate && !externalNavigation;
   const safeArea = React.useMemo(() => computeSafeArea({
     showTopNav,
     showBottomNav,

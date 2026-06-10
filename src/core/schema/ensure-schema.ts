@@ -523,13 +523,15 @@ function buildBackgroundFromLegacy(page: CanvaPage): NonNullable<ScreenSchema['b
   }
 
   // Case 3: bgColor is a hex color that differs from default
+  // Sprint 6.1: Preserve the raw hex value as color1. The renderer's
+  // TokenResolver.color() passes through unrecognized keys (line 207: return
+  // colors[key] || key), and the SchemaRenderer solid-bg branch only overrides
+  // with modeBg.bg when color1 is the generic 'bg'/'bg2' token. A raw hex like
+  // '#FF0000' will be rendered as-is, preserving the teacher's chosen color.
   if (bgColor && bgColor !== '#ffffff') {
     return {
       type: 'solid',
-      color1: 'bg',
-      // Store the hex for reference — the renderer uses token keys,
-      // but having the original hex helps if we add raw color support later.
-      // For now, the default 'bg' token is the safest fallback.
+      color1: bgColor,
     };
   }
 
