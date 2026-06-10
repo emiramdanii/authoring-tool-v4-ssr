@@ -712,3 +712,28 @@ Stage Summary:
 - Top bugs: P0 materi-section export ignores variant, P0 materi-blok 5 tipe no guided editor, P1 def-box escapeHtml destroys HTML
 - 3 sprint recommendations proposed: 6.3-B, 6.3-C, 6.3-D
 - Awaiting Senior decision on which sprint to execute
+---
+Task ID: 6.3-B
+Agent: Main
+Task: Sprint 6.3-B — Materi Export Parity Fix
+
+Work Log:
+- Read and analyzed all 4 runtime renderers (MateriSectionRenderer, MateriBlokRenderer, DefBoxRenderer, RangkumanRenderer) and the export block-renderers.ts
+- Read schema types (MateriSectionBlock, MateriContentTab, DefBoxBlock, MateriBlokBlock, BaseBlock)
+- Identified 4 export parity gaps between runtime and export
+- Fix 1: renderMateriSection now reads block.variant and renders B/Majalah (2-column) and C/Pill (compact) layouts differently
+- Fix 2: renderMateriSection now reads block.tabs and renders all tab content with labels/icons when present
+- Fix 3: renderMateriBlok now reads block.accentColor ?? block.warna (matching runtime MateriBlokRenderer)
+- Fix 4: renderDefBox now uses safeRichText() instead of escapeHtml() to preserve safe formatting
+- Added safeRichText() helper that whitelists: strong, b, em, i, u, br, p, ul, ol, li — strips attributes, escapes all other tags
+- Build: PASS
+- Updated CORE_VERIFICATION_REPORT.md with Sprint 6.3-B entry
+- Committed as c92c5d1, pushed to origin/main
+
+Stage Summary:
+- 4 export parity fixes implemented in src/lib/export/block-renderers.ts
+- No changes to runtime renderers, schema, guided editor, or persistence
+- P0 materi-section variant parity: FIXED
+- P0 materi-section tabs parity: FIXED
+- P1 materi-blok accentColor fallback: FIXED
+- P1 def-box safe formatting: FIXED
