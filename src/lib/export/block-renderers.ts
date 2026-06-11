@@ -833,7 +833,7 @@ function renderMateriBlok(b: Record<string, unknown>): string {
     case 'highlight':
       return `<div class="block materi-blok" style="border-left: 4px solid ${c}; padding: 12px; background: ${c}0d; border-radius: 10px;">${icon ? `<span style="font-size: 16px;">${icon}</span>` : ''}${judul ? `<h3 style="color: ${c}; font-size: 13px;">${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
     case 'compare':
-      return renderCompare({ title: judul, kiri, kanan, accentColor: warna || 'c' });
+      return renderCompare({ title: judul, kiri, kanan, accentColor: accentSource || 'c' });
     case 'infobox': {
       // S2J.5: infobox NOT in safe subtipes — color comes from infoboxStyle semantic meaning
       const ic = infoboxStyle === 'warning' ? '#fbbf24' : infoboxStyle === 'tip' ? '#34d399' : '#3ecfcf';
@@ -848,9 +848,9 @@ function renderMateriBlok(b: Record<string, unknown>): string {
       // S2J.5: studi NOT in safe subtipes — multi-color semantic (red situasi, yellow pertanyaan, green pesan)
       return `<div class="block materi-blok" style="border-left: 4px solid #fbbf24; padding: 12px; background: #fbbf240d; border-radius: 10px;">${judul ? `<h3 style="color: #fbbf24; font-size: 13px;">📑 ${escapeHtml(judul)}</h3>` : ''}${situasi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(situasi)}</p>` : ''}${pertanyaan ? `<p style="font-size: 11px; color: #fbbf24; margin-top: 6px;">❓ ${escapeHtml(pertanyaan)}</p>` : ''}</div>`;
     case 'timeline':
-      return renderTimeline({ title: judul, steps: langkah.map(s => ({ icon: s.icon, label: s.judul, description: s.isi, color: warna || 'c' })), accentColor: warna || 'c' });
+      return renderTimeline({ title: judul, steps: langkah.map(s => ({ icon: s.icon, label: s.judul, description: s.isi, color: accentSource || 'c' })), accentColor: accentSource || 'c' });
     case 'gambar':
-      return renderGambar({ title: judul, url: isi, caption: '', accentColor: warna || 'c' });
+      return renderGambar({ title: judul, url: isi, caption: '', accentColor: accentSource || 'c' });
     default:
       return `<div class="block materi-blok" style="border-left: 3px solid #3ecfcf; padding: 12px;">${judul ? `<h3>${escapeHtml(judul)}</h3>` : ''}${isi ? `<p style="font-size: 11px; color: #94a3b8;">${escapeHtml(isi)}</p>` : ''}</div>`;
   }
