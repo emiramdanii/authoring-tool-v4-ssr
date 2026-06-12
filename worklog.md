@@ -764,3 +764,37 @@ Stage Summary:
 - No new commits needed — all changes were from previous session
 - Accidental MySQL changes reverted successfully
 - Build clean, report updated, git status clean
+---
+Task ID: 6.4-C-Patch
+Agent: Main Agent
+Task: Sprint 6.4-C-Patch — Standalone Quiz Focus & Accessibility Patch
+
+Work Log:
+- Read quiz-renderers.ts, scripts.ts, styles.ts to understand current code
+- Patched quiz-renderers.ts: Added tabindex="-1" on kuis-step/tf-step, role="status" on q-feedback/tf-feedback/fb-feedback, role="progressbar" + ARIA attributes on quiz-progress-bar, role="region" + aria-live="polite" + tabindex="-1" on quiz-completion for kuis/TF/FB
+- Patched scripts.ts: Added focus management with requestAnimationFrame in showKuisStep/showTFStep (focus on active step), showKuisCompletion/showTFCompletion (focus on completion), replayKuis/replayTF (focus on first step via showKuisStep), replayFB (focus on first input), checkAllFillBlanks (focus on completion). Added ARIA progressbar updates (aria-valuenow, aria-valuetext) in showKuisStep/showTFStep
+- Patched styles.ts: Added focus indicators for .kuis-step:focus/.tf-step:focus (subtle) and :focus-visible (strong), .quiz-completion:focus/:focus-visible, light mode overrides
+- Build: PASS (next build successful)
+- Generated standalone HTML export at /home/z/my-project/download/quiz-qa-patch.html
+- Browser QA using agent-browser: All 11 mandatory tests PASS
+
+Stage Summary:
+- All 4 accessibility issues from 6.4-C-QA fixed:
+  1. Focus moves to new question container after Lanjut ✓
+  2. Focus moves to completion screen after Lihat Hasil ✓
+  3. Feedback has role="status" for screen reader announcements ✓
+  4. Progress bar has role="progressbar" with aria-valuenow/valuetext updated on step change ✓
+- Browser QA results (11/11 PASS):
+  - Klik Lanjut → focus on next question container ✓
+  - Lihat Hasil → focus on completion ✓
+  - Ulangi → focus on first question ✓
+  - Tab after transition → focus on active question options ✓
+  - Feedback → role="status" ✓
+  - Progress → ARIA 1→2→3 ✓
+  - Hidden step → display:none, not focusable ✓
+  - Mouse flow → same as before ✓
+  - Build → PASS ✓
+  - Browser console → no errors ✓
+  - Two quiz blocks → focus and ARIA isolated ✓
+- Files modified: quiz-renderers.ts, scripts.ts, styles.ts
+- Files generated: /home/z/my-project/download/quiz-qa-patch.html, /home/z/my-project/download/quiz-qa-patch-proof.png

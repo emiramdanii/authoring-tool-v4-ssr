@@ -33,11 +33,11 @@ function renderKuis(b: Record<string, unknown>): string {
         <h2>${escapeHtml(title)}</h2>
       </div>
       <div class="quiz-progress" id="kuis-progress-${kuisId}">
-        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="kuis-pfill-${kuisId}" style="width:0%"></div></div>
+        <div class="quiz-progress-bar" role="progressbar" aria-label="Kemajuan kuis" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="1" aria-valuetext="Soal 1 dari ${total}" id="kuis-pbar-${kuisId}"><div class="quiz-progress-fill" id="kuis-pfill-${kuisId}" style="width:0%"></div></div>
         <span class="quiz-progress-text" id="kuis-ptext-${kuisId}">Soal 1 dari ${total}</span>
       </div>
       ${questions.map((q, qi) => `
-        <div class="kuis-question kuis-step${qi === 0 ? ' step-active' : ''}" data-ans="${q.ans}" data-idx="${qi}" data-answered="false">
+        <div class="kuis-question kuis-step${qi === 0 ? ' step-active' : ''}" data-ans="${q.ans}" data-idx="${qi}" data-answered="false" tabindex="-1">
           <p class="q-text"><strong>${qi + 1}.</strong> ${escapeHtml(q.q)}</p>
           <div class="q-options">
             ${q.opts.map((opt, oi) => `
@@ -47,10 +47,10 @@ function renderKuis(b: Record<string, unknown>): string {
               </button>`).join('')}
           </div>
           ${q.ex ? `<div class="q-explanation" style="display:none;">${escapeHtml(q.ex)}</div>` : ''}
-          <div class="q-feedback" id="qfb-${kuisId}-${qi}"></div>
+          <div class="q-feedback" id="qfb-${kuisId}-${qi}" role="status"></div>
           <button class="q-next-btn" style="display:none;" onclick="nextKuisStep('${kuisId}',${qi})">Lanjut →</button>
         </div>`).join('')}
-      <div class="quiz-completion" id="kuis-done-${kuisId}" style="display:none;">
+      <div class="quiz-completion" id="kuis-done-${kuisId}" style="display:none;" role="region" aria-live="polite" tabindex="-1">
         <div class="quiz-completion-icon" id="kuis-done-icon-${kuisId}"></div>
         <h3 class="quiz-completion-title" id="kuis-done-title-${kuisId}"></h3>
         <p class="quiz-completion-score" id="kuis-done-score-${kuisId}"></p>
@@ -72,21 +72,21 @@ function renderTrueFalseGame(b: Record<string, unknown>): string {
         <h2>${escapeHtml(title)}</h2>
       </div>
       <div class="quiz-progress" id="tf-progress-${tfId}">
-        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="tf-pfill-${tfId}" style="width:0%"></div></div>
+        <div class="quiz-progress-bar" role="progressbar" aria-label="Kemajuan kuis" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="1" aria-valuetext="Soal 1 dari ${total}" id="tf-pbar-${tfId}"><div class="quiz-progress-fill" id="tf-pfill-${tfId}" style="width:0%"></div></div>
         <span class="quiz-progress-text" id="tf-ptext-${tfId}">Soal 1 dari ${total}</span>
       </div>
       ${questions.map((q, i) => `
-        <div class="tf-question tf-step${i === 0 ? ' step-active' : ''}" id="tf-q-${tfId}-${i}" data-answered="false" data-idx="${i}">
+        <div class="tf-question tf-step${i === 0 ? ' step-active' : ''}" id="tf-q-${tfId}-${i}" data-answered="false" data-idx="${i}" tabindex="-1">
           <p><strong>${i + 1}.</strong> ${escapeHtml(q.text)}</p>
           <div class="tf-buttons">
             <button class="tf-btn tf-true" data-correct="${q.correct}" data-idx="${i}" data-game="${tfId}" onclick="checkTrueFalse(this, true)">✅ Benar</button>
             <button class="tf-btn tf-false" data-correct="${q.correct}" data-idx="${i}" data-game="${tfId}" onclick="checkTrueFalse(this, false)">❌ Salah</button>
           </div>
           ${q.explanation ? `<div class="tf-explanation" style="display:none;">${escapeHtml(q.explanation)}</div>` : ''}
-          <div class="tf-feedback" id="tf-fb-${tfId}-${i}"></div>
+          <div class="tf-feedback" id="tf-fb-${tfId}-${i}" role="status"></div>
           <button class="q-next-btn tf-next-btn" style="display:none;" onclick="nextTFStep('${tfId}',${i})">Lanjut →</button>
         </div>`).join('')}
-      <div class="quiz-completion" id="tf-done-${tfId}" style="display:none;">
+      <div class="quiz-completion" id="tf-done-${tfId}" style="display:none;" role="region" aria-live="polite" tabindex="-1">
         <div class="quiz-completion-icon" id="tf-done-icon-${tfId}"></div>
         <h3 class="quiz-completion-title" id="tf-done-title-${tfId}"></h3>
         <p class="quiz-completion-score" id="tf-done-score-${tfId}"></p>
@@ -117,11 +117,11 @@ function renderFillBlankGame(b: Record<string, unknown>): string {
         return `
           <div class="fb-question" id="fb-q-${fbId}-${i}">
             <p><strong>${i + 1}.</strong> ${rendered}</p>
-            <div class="fb-feedback" id="fb-fb-${fbId}-${i}"></div>
+            <div class="fb-feedback" id="fb-fb-${fbId}-${i}" role="status"></div>
           </div>`;
       }).join('')}
       <button class="game-check-btn" onclick="checkAllFillBlanks('${fbId}')">✅ Periksa Jawaban</button>
-      <div class="quiz-completion" id="fb-done-${fbId}" style="display:none;">
+      <div class="quiz-completion" id="fb-done-${fbId}" style="display:none;" role="region" aria-live="polite" tabindex="-1">
         <div class="quiz-completion-icon" id="fb-done-icon-${fbId}"></div>
         <h3 class="quiz-completion-title" id="fb-done-title-${fbId}"></h3>
         <p class="quiz-completion-score" id="fb-done-score-${fbId}"></p>

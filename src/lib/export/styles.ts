@@ -381,6 +381,27 @@ export function getCss(ratioW: number, ratioH: number): string {
     /* ── Kuis ── */
     .kuis-step, .tf-step { display: none; }
     .kuis-step.step-active, .tf-step.step-active { display: block; }
+    /* Focus indicator for programmatically focused step containers and completion */
+    .kuis-step:focus, .tf-step:focus {
+      outline: 2px solid rgba(251,191,36,0.4);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+    .kuis-step:focus-visible, .tf-step:focus-visible {
+      outline: 2px solid #fbbf24;
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+    .quiz-completion:focus {
+      outline: 2px solid rgba(251,191,36,0.4);
+      outline-offset: 4px;
+      border-radius: 12px;
+    }
+    .quiz-completion:focus-visible {
+      outline: 2px solid #fbbf24;
+      outline-offset: 4px;
+      border-radius: 12px;
+    }
     .quiz-progress { margin-bottom: 12px; }
     .quiz-progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; margin-bottom: 6px; overflow: hidden; }
     .quiz-progress-fill { height: 100%; background: #3ecfcf; border-radius: 3px; transition: width 0.3s ease; }
@@ -797,7 +818,11 @@ export function getCss(ratioW: number, ratioH: number): string {
       .quiz-progress-text { color: #475569; }
       .q-next-btn { background: rgba(62,207,207,0.1); border-color: rgba(62,207,207,0.2); color: #0891b2; }
       .q-next-btn:hover { background: rgba(62,207,207,0.15); }
+      .kuis-step:focus, .tf-step:focus { outline-color: rgba(245,158,11,0.4); }
+      .kuis-step:focus-visible, .tf-step:focus-visible { outline-color: #f59e0b; }
       .quiz-completion { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.06); }
+      .quiz-completion:focus { outline-color: rgba(245,158,11,0.4); }
+      .quiz-completion:focus-visible { outline-color: #f59e0b; }
       .quiz-completion-score { color: #0891b2; }
       .quiz-completion-msg { color: #475569; }
       .quiz-replay-btn { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); color: #f59e0b; }

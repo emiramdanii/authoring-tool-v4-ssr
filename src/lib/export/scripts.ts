@@ -232,9 +232,11 @@ export function getJs(): string {
       var block = document.querySelector('.kuis-block[data-block-id="' + blockId + '"]');
       if (!block) return;
       var steps = block.querySelectorAll('.kuis-step');
+      var activeStep = null;
       steps.forEach(function(step, i) {
         if (i === idx) {
           step.classList.add('step-active');
+          activeStep = step;
         } else {
           step.classList.remove('step-active');
         }
@@ -243,8 +245,20 @@ export function getJs(): string {
       var total = quizState[blockId] ? quizState[blockId].totalSteps : steps.length;
       var pfill = document.getElementById('kuis-pfill-' + blockId);
       var ptext = document.getElementById('kuis-ptext-' + blockId);
+      var pbar = document.getElementById('kuis-pbar-' + blockId);
       if (pfill) pfill.style.width = Math.round(((idx + 1) / total) * 100) + '%';
       if (ptext) ptext.textContent = 'Soal ' + (idx + 1) + ' dari ' + total;
+      // Update ARIA progressbar semantics
+      if (pbar) {
+        pbar.setAttribute('aria-valuenow', String(idx + 1));
+        pbar.setAttribute('aria-valuetext', 'Soal ' + (idx + 1) + ' dari ' + total);
+      }
+      // Focus management: move focus to active step container
+      if (activeStep) {
+        requestAnimationFrame(function() {
+          activeStep.focus();
+        });
+      }
     }
 
     function showKuisCompletion(blockId) {
@@ -276,11 +290,20 @@ export function getJs(): string {
 
       if (pct >= 80) launchConfetti();
 
+      // Focus management: move focus to completion screen
+      if (done) {
+        requestAnimationFrame(function() {
+          done.focus();
+        });
+      }
+
       // SCORM
       if (window.__SCORM) {
         window.__SCORM.reportScore(st.correct, st.totalSteps);
       }
     }
+
+
 
     function replayKuis(blockId) {
       if (!quizState[blockId]) return;
@@ -317,7 +340,7 @@ export function getJs(): string {
         });
       });
 
-      // Show first step
+      // Show first step (which also moves focus)
       showKuisStep(blockId, 0);
     }
 
@@ -465,6 +488,13 @@ export function getJs(): string {
       var done = document.getElementById('fb-done-' + fbId);
       if (done) done.style.display = 'block';
 
+      // Focus management: move focus to completion screen
+      if (done) {
+        requestAnimationFrame(function() {
+          done.focus();
+        });
+      }
+
       // Hide check button
       var checkBtn = block.querySelector('.game-check-btn');
       if (checkBtn) checkBtn.style.display = 'none';
@@ -499,11 +529,20 @@ export function getJs(): string {
       if (checkBtn) checkBtn.style.display = '';
 
       // Reset inputs
-      block.querySelectorAll('.fb-input').forEach(function(input) {
+      var firstInput = null;
+      block.querySelectorAll('.fb-input').forEach(function(input, i) {
         input.value = '';
         input.classList.remove('correct', 'wrong');
+        if (i === 0) firstInput = input;
       });
       block.querySelectorAll('.fb-feedback').forEach(function(fb) { fb.innerHTML = ''; });
+
+      // Focus management: move focus to first input
+      if (firstInput) {
+        requestAnimationFrame(function() {
+          firstInput.focus();
+        });
+      }
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -602,9 +641,11 @@ export function getJs(): string {
       var block = document.querySelector('.true-false-block[data-game="' + gameId + '"]');
       if (!block) return;
       var steps = block.querySelectorAll('.tf-step');
+      var activeStep = null;
       steps.forEach(function(step, i) {
         if (i === idx) {
           step.classList.add('step-active');
+          activeStep = step;
         } else {
           step.classList.remove('step-active');
         }
@@ -613,8 +654,20 @@ export function getJs(): string {
       var total = tfState[gameId] ? tfState[gameId].totalSteps : steps.length;
       var pfill = document.getElementById('tf-pfill-' + gameId);
       var ptext = document.getElementById('tf-ptext-' + gameId);
+      var pbar = document.getElementById('tf-pbar-' + gameId);
       if (pfill) pfill.style.width = Math.round(((idx + 1) / total) * 100) + '%';
       if (ptext) ptext.textContent = 'Soal ' + (idx + 1) + ' dari ' + total;
+      // Update ARIA progressbar semantics
+      if (pbar) {
+        pbar.setAttribute('aria-valuenow', String(idx + 1));
+        pbar.setAttribute('aria-valuetext', 'Soal ' + (idx + 1) + ' dari ' + total);
+      }
+      // Focus management: move focus to active step container
+      if (activeStep) {
+        requestAnimationFrame(function() {
+          activeStep.focus();
+        });
+      }
     }
 
     function showTFCompletion(gameId) {
@@ -645,6 +698,13 @@ export function getJs(): string {
       if (msgEl) msgEl.textContent = pct >= 80 ? 'Kamu menguasai materi ini!' : pct >= 50 ? 'Coba lagi untuk hasil lebih baik!' : 'Jangan menyerah, coba lagi ya!';
 
       if (pct >= 80) launchConfetti();
+
+      // Focus management: move focus to completion screen
+      if (done) {
+        requestAnimationFrame(function() {
+          done.focus();
+        });
+      }
     }
 
     function replayTF(gameId) {
@@ -681,7 +741,7 @@ export function getJs(): string {
         });
       });
 
-      // Show first step
+      // Show first step (which also moves focus)
       showTFStep(gameId, 0);
     }
 
