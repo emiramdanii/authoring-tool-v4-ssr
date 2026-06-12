@@ -1,6 +1,6 @@
 # CORE VERIFICATION REPORT — SILSE
 
-Tanggal: 2026-06-12 (Sprint 6.4-B — Export Quiz Correctness Patch)
+Tanggal: 2026-06-12 (Sprint 6.4-C — Export Quiz Flow Parity)
 Metodologi: Automated browser test (Playwright) + Unit test (Vitest) + HTTP API test + Code review + Export HTML interactive test + Server stability test + Teacher Flow audit + Gutter measurement
 Tester: AI (otomatis) + Human (pending)
 
@@ -78,6 +78,7 @@ Sprint 6.3-C — Materi Guided Editing Readiness: PASS — 3 editing readiness f
 Sprint 6.3-C-Patch — MateriBlok Delegated Accent Export Fix: PASS — 3 delegated subtype (compare, timeline, gambar) di renderMateriBlok() sekarang memakai accentSource (b.accentColor ?? b.warna) bukan hanya warna. Sebelum patch, canvas baca accentColor tapi export hanya baca warna → canvas ≠ export saat accentColor diset. Patch: baris 836, 851, 853 diwarna → accentSource. Tidak mengubah: runtime renderer, schema, guided editor, export pipeline
 Sprint 6.4-A — Module Readiness Audit: Kuis: AUDIT COMPLETE — Kuis/TF/FB export NEEDS FIX. Bug ditemukan: (1) q.ex hilang di export, (2) global score state tanpa reset, (3) semua soal tampil sekaligus tanpa completion, (4) variant A/B/C diabaikan export, (5) completion screen tidak ada, (6) replay/reset tidak ada. TF/FB punya masalah serupa. Roadmap: 6.4-B correctness, 6.4-C flow parity, 6.4-D variant parity
 Sprint 6.4-B — Export Quiz Correctness Patch: PASS — 4 correctness fix di quiz export: (1) q.ex explanation ditampilkan setelah jawaban dipilih (hidden div → shown), (2) per-block state (quizState/tfState/fbState) menggantikan global counters, (3) data-answered guard mencegah double scoring di checkAnswer/checkTrueFalse/checkFillBlank, (4) resetPageQuizState() dipanggil saat navigasi leave page — score, feedback, classes, explanation semua dibersihkan. Tidak mengubah: runtime React, schema, guided editor, persistence
+Sprint 6.4-C — Export Quiz Flow Parity: PASS — Step-reveal flow untuk kuis/TF export: (1) satu soal per waktu (.kuis-step/.tf-step display:none, .step-active display:block), (2) progress bar + text "Soal 1 dari N", (3) feedback + explanation muncul setelah jawab, (4) tombol Lanjut muncul setelah jawab, (5) soal terakhir → tombol "Lihat Hasil", (6) completion screen: icon + judul + benar/total/persen + pesan + tombol Ulangi, (7) Ulangi reset semua state + kembali ke soal pertama, (8) FB: completion screen + replay setelah Periksa Jawaban, (9) progress fill bar animasi. Tidak mengubah: runtime React, schema, guided editor, persistence, SCORM
 Sprint 2J.7 — Polish Color Options in Guided Editor: PASS — ACCENT_COLOR_OPTIONS constant, bg/card removed from all 17 color fields, def-box label fixed to "Warna Aksen", Pink→Ungu consistency
 Sprint 2K — Block Style Preset Gallery Audit: PASS (audit only) — rekomendasi level BLOCK, 7 preset, schema format, file yang disentuh, risiko, 3 sprint rencana
 Sprint 2K.1 — Block Style Preset Data Layer: PASS — block-style-presets.ts, 7 preset, resolver memfilter field sesuai block type, 44 unit test PASS
