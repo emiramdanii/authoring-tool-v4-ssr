@@ -23,14 +23,15 @@ export function renderQuizBlock(
 function renderKuis(b: Record<string, unknown>): string {
   const title = b.title as string || 'Kuis';
   const questions = (b.questions as Array<{ q: string; opts: string[]; ans: number; ex: string }>) || [];
+  const kuisId = `kuis-${Math.random().toString(36).slice(2, 8)}`;
   return `
-    <div class="block kuis-block">
+    <div class="block kuis-block" data-block-id="${kuisId}">
       <div class="block-header">
         <span class="block-icon">❓</span>
         <h2>${escapeHtml(title)}</h2>
       </div>
       ${questions.map((q, qi) => `
-        <div class="kuis-question" data-ans="${q.ans}" data-idx="${qi}">
+        <div class="kuis-question" data-ans="${q.ans}" data-idx="${qi}" data-answered="false">
           <p class="q-text"><strong>${qi + 1}.</strong> ${escapeHtml(q.q)}</p>
           <div class="q-options">
             ${q.opts.map((opt, oi) => `
@@ -39,7 +40,8 @@ function renderKuis(b: Record<string, unknown>): string {
                 ${escapeHtml(opt)}
               </button>`).join('')}
           </div>
-          <div class="q-feedback" id="qfb-${qi}"></div>
+          ${q.ex ? `<div class="q-explanation" style="display:none;">${escapeHtml(q.ex)}</div>` : ''}
+          <div class="q-feedback" id="qfb-${kuisId}-${qi}"></div>
         </div>`).join('')}
     </div>`;
 }
@@ -55,12 +57,13 @@ function renderTrueFalseGame(b: Record<string, unknown>): string {
         <h2>${escapeHtml(title)}</h2>
       </div>
       ${questions.map((q, i) => `
-        <div class="tf-question" id="tf-q-${tfId}-${i}">
+        <div class="tf-question" id="tf-q-${tfId}-${i}" data-answered="false">
           <p><strong>${i + 1}.</strong> ${escapeHtml(q.text)}</p>
           <div class="tf-buttons">
             <button class="tf-btn tf-true" data-correct="${q.correct}" data-idx="${i}" data-game="${tfId}" onclick="checkTrueFalse(this, true)">✅ Benar</button>
             <button class="tf-btn tf-false" data-correct="${q.correct}" data-idx="${i}" data-game="${tfId}" onclick="checkTrueFalse(this, false)">❌ Salah</button>
           </div>
+          ${q.explanation ? `<div class="tf-explanation" style="display:none;">${escapeHtml(q.explanation)}</div>` : ''}
           <div class="tf-feedback" id="tf-fb-${tfId}-${i}"></div>
         </div>`).join('')}
     </div>`;
@@ -71,7 +74,7 @@ function renderFillBlankGame(b: Record<string, unknown>): string {
   const questions = (b.questions as Array<{ text: string; answer: string; hint?: string }>) || [];
   const fbId = `fb-${Math.random().toString(36).slice(2, 8)}`;
   return `
-    <div class="block fill-blank-game-block" data-game="${fbId}">
+    <div class="block fill-blank-game-block" data-game="${fbId}" data-checked="false">
       <div class="block-header">
         <span class="block-icon">✏️</span>
         <h2>${escapeHtml(title)}</h2>

@@ -411,6 +411,16 @@ export function getCss(ratioW: number, ratioH: number): string {
       font-weight: 600;
       min-height: 1em;
     }
+    .q-explanation, .tf-explanation {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(251,191,36,0.08);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: #fbbf24;
+      line-height: 1.5;
+    }
 
     /* ── Diskusi ── */
     .diskusi-card {
@@ -752,6 +762,7 @@ export function getCss(ratioW: number, ratioH: number): string {
       .q-opt.correct { background: rgba(52,211,153,0.1) !important; border-color: rgba(22,163,74,0.3) !important; color: #16a34a !important; }
       .q-opt.wrong { background: rgba(255,107,107,0.1) !important; border-color: rgba(220,38,38,0.3) !important; color: #dc2626 !important; }
       .q-letter { background: rgba(0,0,0,0.06); }
+      .q-explanation, .tf-explanation { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.15); color: #f59e0b; }
       .diskusi-petunjuk, .refleksi-petunjuk { color: #475569; }
       .penutup-item { background: rgba(0,0,0,0.02); }
       .penutup-item p { color: #475569; }

@@ -8,6 +8,11 @@ export function getJs(): string {
     let currentPage = 0;
     let totalPages = 0;
 
+    // ── Quiz state (per-block, isolated) ──
+    var quizState = {};   // keyed by blockId: { correct: 0, total: 0 }
+    var tfState = {};     // keyed by gameId:  { correct: 0, total: 0 }
+    var fbState = {};     // keyed by gameId:  { checked: false }
+
     // ── Init ──
     (function init() {
       const data = window.__EXPORT_DATA__;
@@ -41,6 +46,9 @@ export function getJs(): string {
       if (idx < 0 || idx >= totalPages || idx === currentPage) return;
       const pages = document.querySelectorAll('.page');
       const direction = idx > currentPage ? 1 : -1;
+
+      // Reset quiz state on the page being left
+      resetPageQuizState(pages[currentPage]);
 
       // Exit current
       pages[currentPage]?.classList.remove('active');
@@ -134,34 +142,48 @@ export function getJs(): string {
       }
     }
 
-    // ── Kuis answer check ──
-    var kuisCorrect = 0;
-    var kuisTotal = 0;
-
+    // ═══════════════════════════════════════════════════════════════════
+    // KUIS: Answer check (per-block state, anti-double-score, explanation)
+    // ═══════════════════════════════════════════════════════════════════
     function checkAnswer(btn, qi, oi, ans) {
-      const question = btn.closest('.kuis-question') || btn.closest('.roda-question');
+      var question = btn.closest('.kuis-question') || btn.closest('.roda-question');
       if (!question) return;
 
-      const allBtns = question.querySelectorAll('.q-opt');
+      // Guard: already answered — prevent double scoring
+      if (question.dataset.answered === 'true') return;
+      question.dataset.answered = 'true';
+
+      var block = btn.closest('.kuis-block');
+      var blockId = block ? block.dataset.blockId : '';
+      if (!quizState[blockId]) quizState[blockId] = { correct: 0, total: 0 };
+
+      var allBtns = question.querySelectorAll('.q-opt');
       // Disable all
       allBtns.forEach(function(b) { b.classList.add('disabled'); });
 
       // Mark correct/wrong
-      kuisTotal++;
+      quizState[blockId].total++;
       if (oi === ans) {
-        kuisCorrect++;
+        quizState[blockId].correct++;
         btn.classList.add('correct');
-        const fb = document.getElementById('qfb-' + qi);
+        var fb = question.querySelector('.q-feedback');
         if (fb) fb.innerHTML = '<span style="color:#34d399;">✓ Benar!</span>';
       } else {
         btn.classList.add('wrong');
-        allBtns[ans]?.classList.add('correct');
-        const fb = document.getElementById('qfb-' + qi);
+        if (allBtns[ans]) allBtns[ans].classList.add('correct');
+        var fb = question.querySelector('.q-feedback');
         if (fb) fb.innerHTML = '<span style="color:#ff6b6b;">✗ Salah. Jawaban benar: ' + String.fromCharCode(65 + ans) + '</span>';
       }
+
+      // Show explanation if present
+      var exEl = question.querySelector('.q-explanation');
+      if (exEl && exEl.textContent.trim()) {
+        exEl.style.display = 'block';
+      }
+
       // SCORM: Report score after each quiz answer
-      if (window.__SCORM && kuisTotal > 0) {
-        window.__SCORM.reportScore(kuisCorrect, kuisTotal);
+      if (window.__SCORM && quizState[blockId].total > 0) {
+        window.__SCORM.reportScore(quizState[blockId].correct, quizState[blockId].total);
       }
     }
 
@@ -264,7 +286,7 @@ export function getJs(): string {
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // GAME: Fill-in-the-Blank
+    // GAME: Fill-in-the-Blank (per-block state, anti-double-check, feedback)
     // ═══════════════════════════════════════════════════════════════════
     function checkFillBlank(input) {
       var userAns = input.value.trim().toLowerCase();
@@ -281,12 +303,28 @@ export function getJs(): string {
     }
 
     function checkAllFillBlanks(fbId) {
-      var inputs = document.querySelectorAll('.fb-input[data-game="' + fbId + '"]');
+      var block = document.querySelector('.fill-blank-game-block[data-game="' + fbId + '"]');
+      if (!block || block.dataset.checked === 'true') return;
+      block.dataset.checked = 'true';
+
+      var inputs = block.querySelectorAll('.fb-input');
       var correct = 0;
       inputs.forEach(function(input) {
         checkFillBlank(input);
         if (input.classList.contains('correct')) correct++;
+        // Show per-question feedback
+        var idx = input.dataset.idx;
+        var fb = document.getElementById('fb-fb-' + fbId + '-' + idx);
+        if (fb) {
+          if (input.classList.contains('correct')) {
+            fb.innerHTML = '<span style="color:#34d399;">✓ Benar!</span>';
+          } else {
+            fb.innerHTML = '<span style="color:#ff6b6b;">✗ Salah. Jawaban: ' + input.dataset.answer + '</span>';
+          }
+        }
       });
+
+      fbState[fbId] = { correct: correct, total: inputs.length, checked: true };
       if (correct === inputs.length && inputs.length > 0) launchConfetti();
     }
 
@@ -321,33 +359,51 @@ export function getJs(): string {
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // GAME: True/False
+    // GAME: True/False (per-block state, anti-double-score, explanation)
     // ═══════════════════════════════════════════════════════════════════
-    var tfCorrect = 0;
-    var tfTotal = 0;
-
     function checkTrueFalse(btn, userAnswer) {
       var correct = btn.dataset.correct === 'true';
       var idx = btn.dataset.idx;
       var game = btn.dataset.game;
       var qEl = document.getElementById('tf-q-' + game + '-' + idx);
       if (!qEl) return;
+
+      // Guard: already answered — prevent double scoring
+      if (qEl.dataset.answered === 'true') return;
+      qEl.dataset.answered = 'true';
+
+      if (!tfState[game]) tfState[game] = { correct: 0, total: 0 };
+
       var btns = qEl.querySelectorAll('.tf-btn');
       btns.forEach(function(b) { b.classList.add('disabled'); });
       if (userAnswer === correct) {
         btn.classList.add('correct-answer');
-        var fb = document.getElementById('tf-fb-' + game + '-' + idx);
+        var fb = qEl.querySelector('.tf-feedback');
         if (fb) fb.innerHTML = '<span style="color:#34d399;">✓ Benar!</span>';
-        tfCorrect++;
+        tfState[game].correct++;
       } else {
         btn.classList.add('wrong-answer');
-        btns.forEach(function(b) { if (b.dataset.correct === String(!userAnswer) || (correct && b.classList.contains('tf-true')) || (!correct && b.classList.contains('tf-false'))) b.classList.add('correct-answer'); });
-        var fb = document.getElementById('tf-fb-' + game + '-' + idx);
+        btns.forEach(function(b) {
+          if ((correct && b.classList.contains('tf-true')) || (!correct && b.classList.contains('tf-false'))) b.classList.add('correct-answer');
+        });
+        var fb = qEl.querySelector('.tf-feedback');
         if (fb) fb.innerHTML = '<span style="color:#ff6b6b;">✗ Salah. Jawaban: ' + (correct ? 'Benar' : 'Salah') + '</span>';
       }
-      tfTotal++;
-      if (tfTotal >= document.querySelectorAll('.tf-question').length) {
-        if (tfCorrect >= tfTotal * 0.8) launchConfetti();
+      tfState[game].total++;
+
+      // Show explanation if present
+      var exEl = qEl.querySelector('.tf-explanation');
+      if (exEl && exEl.textContent.trim()) {
+        exEl.style.display = 'block';
+      }
+
+      // Check if all questions in this game block are answered
+      var block = btn.closest('.true-false-block');
+      var allQuestions = block ? block.querySelectorAll('.tf-question') : [];
+      var allAnswered = true;
+      allQuestions.forEach(function(q) { if (q.dataset.answered !== 'true') allAnswered = false; });
+      if (allAnswered && allQuestions.length > 0) {
+        if (tfState[game].correct >= tfState[game].total * 0.8) launchConfetti();
       }
     }
 
@@ -510,18 +566,70 @@ export function getJs(): string {
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // GAME: True/False — Final score display
+    // GAME: True/False — Final score display (per-block)
     // ═══════════════════════════════════════════════════════════════════
     function checkTrueFalseScore(tfId) {
-      var questions = document.querySelectorAll('.tf-question[data-game="' + tfId + '"]');
-      var correct = 0;
-      var total = questions.length;
-      questions.forEach(function(q) {
-        if (q.querySelector('.correct-answer')) correct++;
-      });
+      if (!tfState[tfId]) return;
       var scoreEl = document.getElementById('tf-score-' + tfId);
-      if (scoreEl) scoreEl.textContent = correct + '/' + total + ' benar';
-      if (correct >= total * 0.8 && total > 0) launchConfetti();
+      if (scoreEl) scoreEl.textContent = tfState[tfId].correct + '/' + tfState[tfId].total + ' benar';
+      if (tfState[tfId].correct >= tfState[tfId].total * 0.8 && tfState[tfId].total > 0) launchConfetti();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // QUIZ RESET — Per-block state reset on page navigation
+    // ═══════════════════════════════════════════════════════════════════
+    function resetQuizBlock(block) {
+      var blockId = block.dataset.blockId;
+      quizState[blockId] = { correct: 0, total: 0 };
+      var questions = block.querySelectorAll('.kuis-question');
+      questions.forEach(function(q) {
+        q.dataset.answered = 'false';
+        var fb = q.querySelector('.q-feedback');
+        if (fb) fb.innerHTML = '';
+        var ex = q.querySelector('.q-explanation');
+        if (ex) ex.style.display = 'none';
+        var btns = q.querySelectorAll('.q-opt');
+        btns.forEach(function(b) {
+          b.classList.remove('disabled', 'correct', 'wrong');
+        });
+      });
+    }
+
+    function resetTFBlock(block) {
+      var gameId = block.dataset.game;
+      tfState[gameId] = { correct: 0, total: 0 };
+      var questions = block.querySelectorAll('.tf-question');
+      questions.forEach(function(q) {
+        q.dataset.answered = 'false';
+        var fb = q.querySelector('.tf-feedback');
+        if (fb) fb.innerHTML = '';
+        var ex = q.querySelector('.tf-explanation');
+        if (ex) ex.style.display = 'none';
+        var btns = q.querySelectorAll('.tf-btn');
+        btns.forEach(function(b) {
+          b.classList.remove('disabled', 'correct-answer', 'wrong-answer');
+        });
+      });
+    }
+
+    function resetFBBlock(block) {
+      var gameId = block.dataset.game;
+      fbState[gameId] = { checked: false };
+      block.dataset.checked = 'false';
+      var inputs = block.querySelectorAll('.fb-input');
+      inputs.forEach(function(input) {
+        input.value = '';
+        input.classList.remove('correct', 'wrong');
+      });
+      var feedbacks = block.querySelectorAll('.fb-feedback');
+      feedbacks.forEach(function(fb) { fb.innerHTML = ''; });
+    }
+
+    function resetPageQuizState(pageEl) {
+      if (!pageEl) return;
+      pageEl.querySelectorAll('.kuis-block').forEach(resetQuizBlock);
+      pageEl.querySelectorAll('.true-false-block').forEach(resetTFBlock);
+      pageEl.querySelectorAll('.fill-blank-game-block').forEach(resetFBBlock);
     }
   `;
 }
