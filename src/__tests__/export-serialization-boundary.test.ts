@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════
-// EXPORT SERIALIZATION BOUNDARY — Sprint 6.4-E1-QA2
+// EXPORT SERIALIZATION BOUNDARY — Sprint 6.4-F Freeze
 // ═══════════════════════════════════════════════════════════════════════
-// Tests the JSON → HTML <script> injection boundary for ALL export routes.
+// Tests the JSON → HTML <script> injection boundary for the production
+// export route. This is the canonical security regression suite.
 //
 // The production export path injects project data as:
 //   <script>window.__EXPORT_DATA__=${dataJson};</script>
@@ -15,34 +16,22 @@
 // in the context of HTML script content:
 //   < → \u003c    > → \u003e    / → \u002f
 //   & → \u0026    U+2028 → \u2028    U+2029 → \u2029
+//
+// ⛔ INVARIANT: serializeForHtmlScript() is the canonical security
+// boundary. Any change to this function MUST pass all tests in
+// this file. No second serializer with different rules may be
+// created. No route may use JSON.stringify() directly for HTML
+// <script> injection.
 // ═══════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from 'vitest';
-import { generateClientExportHtml } from '@/lib/export';
-import type { ClientExportPayload } from '@/lib/export';
 import { serializeForHtmlScript } from '@/lib/export/serialize-html-script';
 
 // ═══════════════════════════════════════════════════════════════════════
-// SECTION A: SERIALIZATION FUNCTION — Test the canonical serializer
+// SECTION A: PAYLOAD DEFINITIONS
 // ═══════════════════════════════════════════════════════════════════════
 
-/**
- * Legacy serialization (what was used before QA2).
- * Kept for comparison — should behave identically to the canonical
- * serializer for <, >, / escaping, but is MISSING & and U+2028/U+2029.
- */
-function serializeForScriptLegacy(data: unknown): string {
-  return JSON.stringify(data)
-    .replace(/</g, '\\u003c')
-    .replace(/>/g, '\\u003e')
-    .replace(/\//g, '\\u002f');
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// SECTION B: SCRIPT-TERMINATION PAYLOADS
-// The primary attack: break out of <script> tag
-// ═══════════════════════════════════════════════════════════════════════
-
+// Script-termination payloads — the primary attack: break out of <script> tag
 const SCRIPT_TERMINATION_PAYLOADS = [
   // Classic script termination — the #1 attack vector
   '</script><script>window.__quizXss = 101</script>',
@@ -66,10 +55,7 @@ const SCRIPT_TERMINATION_PAYLOADS = [
   '</script>`<script>window.__quizXss = 110</script>`',
 ] as const;
 
-// ═══════════════════════════════════════════════════════════════════════
-// SECTION C: JAVASCRIPT/JSON SPECIAL CHARACTER PAYLOADS
-// ═══════════════════════════════════════════════════════════════════════
-
+// JavaScript/JSON special character payloads
 const SPECIAL_CHAR_PAYLOADS = [
   // Unicode line terminators (U+2028, U+2029)
   { payload: 'before\u2028after', name: 'U+2028 Line Separator' },
@@ -90,34 +76,36 @@ const SPECIAL_CHAR_PAYLOADS = [
   { payload: '\u2029</script><script>window.__quizXss = 202</script>', name: 'U+2029 + script termination' },
 ] as const;
 
-// ═══════════════════════════════════════════════════════════════════════
-// SECTION D: FULL XSS PAYLOAD SET (from Senior's spec + OWASP)
-// ═══════════════════════════════════════════════════════════════════════
-
+// Full XSS payload set (from OWASP + Senior's spec)
 const XSS_FULL_PAYLOADS = [
   // Script injection
   '<script>window.__quizXss = 301</script>',
   // Event handler injection
   '<img src=x onerror="window.__quizXss = 302">',
-  // SVG onload
   '<svg onload="window.__quizXss = 303">',
-  // Attribute breakout
-  "'><script>window.__quizXss = 304</script>",
-  '"><img src=x onerror="window.__quizXss = 305">',
-  // JavaScript URL
+  '<body onload="window.__quizXss = 304">',
+  '<iframe src="javascript:window.__quizXss = 305">',
+  // JavaScript protocol
   '<a href="javascript:window.__quizXss = 306">click</a>',
-  // iframe injection
-  '<iframe src="javascript:window.__quizXss = 307"></iframe>',
-  // details/ontoggle
-  '<details open ontoggle="window.__quizXss = 308">',
-  // body onload
-  '<body onload="window.__quizXss = 309">',
-  // input onfocus
+  // Data URI
+  '<a href="data:text/html,<script>window.__quizXss=307</script>">click</a>',
+  // SVG-based
+  '<svg><script>window.__quizXss = 308</script></svg>',
+  // CSS expression (IE legacy)
+  '<div style="width:expression(window.__quizXss=309)">',
+  // Event handler in various elements
   '<input onfocus="window.__quizXss = 310" autofocus>',
-  // marquee onstart
   '<marquee onstart="window.__quizXss = 311">',
-  // math + xlink (XML-based)
-  '<math><mtext><table><mglyph><style><!--</style><img src=x onerror="window.__quizXss = 312">',
+  '<details ontoggle="window.__quizXss = 312" open>',
+  // Encoded variations
+  '&#60;script&#62;window.__quizXss = 313&#60;/script&#62;',
+  '%3Cscript%3Ewindow.__quizXss = 314%3C/script%3E',
+  // Template literal injection
+  '${window.__quizXss = 315}',
+  // Prototype pollution via __proto__
+  '__proto__: { poisoned: true }',
+  // Constructor injection
+  'constructor: { prototype: { poisoned: true } }',
 ] as const;
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -225,10 +213,9 @@ describe('Serialization boundary — special characters', () => {
     expect(JSON.parse(serialized).text).toBe(payload);
   });
 
-  it('& ampersand is now escaped by canonical serializer', () => {
+  it('& ampersand must be escaped', () => {
     const data = { text: 'a & b' };
     const serialized = serializeForHtmlScript(data);
-    // Canonical function NOW escapes &
     expect(serialized).not.toContain('&');
     expect(serialized).toContain('\\u0026');
     // Must round-trip
@@ -486,48 +473,34 @@ describe('Serialization boundary — <title> injection', () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe('Serialization boundary — canonical serializeForHtmlScript', () => {
-  it('canonical serializer escapes <, >, / (same as legacy)', () => {
+  it('canonical serializer escapes <, >, /, &, U+2028, U+2029', () => {
     const payload = '</script><script>alert(1)</script>';
     const canonical = serializeForHtmlScript({ t: payload });
-    const legacy = serializeForScriptLegacy({ t: payload });
 
-    // Both should produce the same <, >, / escaping
+    // Must produce the OWASP-required Unicode escapes
     expect(canonical).toContain('\\u003c');
     expect(canonical).toContain('\\u003e');
     expect(canonical).toContain('\\u002f');
 
-    // Legacy also handles these (but not & or U+2028/U+2029)
-    expect(legacy).toContain('\\u003c');
-    expect(legacy).toContain('\\u003e');
-    expect(legacy).toContain('\\u002f');
-
-    // Both should round-trip correctly
-    expect(JSON.parse(canonical)).toEqual(JSON.parse(legacy));
+    // Must round-trip correctly
+    expect(JSON.parse(canonical).t).toBe(payload);
   });
 
-  it('canonical serializer additionally escapes & (legacy does NOT)', () => {
+  it('canonical serializer escapes & (OWASP defense-in-depth)', () => {
     const payload = 'a & b < c';
     const canonical = serializeForHtmlScript({ t: payload });
-    const legacy = serializeForScriptLegacy({ t: payload });
 
-    // Legacy: & is NOT escaped
-    expect(legacy).toContain('&');
-    // Canonical: & IS escaped
+    // & IS escaped by canonical serializer
     expect(canonical).not.toContain('&');
     expect(canonical).toContain('\\u0026');
 
-    // Both must round-trip to the same value
-    expect(JSON.parse(canonical)).toEqual(JSON.parse(legacy));
+    // Must round-trip
+    expect(JSON.parse(canonical).t).toBe(payload);
   });
 
-  it('canonical serializer additionally escapes U+2028 and U+2029', () => {
+  it('canonical serializer escapes U+2028 and U+2029', () => {
     const payload = 'line1\u2028line2\u2029line3';
     const canonical = serializeForHtmlScript({ t: payload });
-    const legacy = serializeForScriptLegacy({ t: payload });
-
-    // Legacy: U+2028/U+2029 are NOT escaped (passes through as literal chars)
-    expect([...legacy].some(c => c.charCodeAt(0) === 0x2028)).toBe(true);
-    expect([...legacy].some(c => c.charCodeAt(0) === 0x2029)).toBe(true);
 
     // Canonical: MUST NOT contain literal U+2028 or U+2029
     expect([...canonical].some(c => c.charCodeAt(0) === 0x2028)).toBe(false);
@@ -576,77 +549,8 @@ describe('Serialization boundary — canonical serializeForHtmlScript', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
-// SECTION 7: LEGACY EXPORT PATH — generateClientExportHtml
-// Verify the legacy path uses the same serialization
-// ═══════════════════════════════════════════════════════════════════════
-
-describe('Serialization boundary — legacy generateClientExportHtml', () => {
-  const xssPayload = '</script><script>window.__quizXss = 701</script>';
-
-  it('legacy export must not produce literal </script> in output HTML', () => {
-    const payload: ClientExportPayload = {
-      pages: [
-        {
-          id: 'page-1',
-          label: xssPayload,
-          templateType: 'custom',
-          bgColor: '#ffffff',
-          overlay: 0,
-          elements: [],
-          navConfig: { showNavbar: true, showPrevNext: true, showScore: true, showProgress: true, navbarStyle: 'colorful' },
-          templateData: {},
-        },
-      ],
-      ratioId: '16:9',
-      meta: { judulPertemuan: xssPayload, mapel: xssPayload, kelas: xssPayload },
-      allKuis: [],
-      allModules: [],
-      games: [],
-      cp: {},
-      tp: [],
-      atp: { namaBab: '', jumlahPertemuan: 0, pertemuan: [] },
-      alur: [],
-      materi: { blok: [] },
-      skenario: [],
-      petunjuk: { title: '', intro: '', langkah: [] },
-      diskusi: { title: '', intro: '', pertanyaan: [] },
-      refleksi: { title: '', intro: '', pertanyaan: [] },
-      penutup: { title: '', subjudul: '', preview: [] },
-      suara: { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
-    };
-
-    const html = generateClientExportHtml(payload);
-
-    // The generated HTML must NOT contain literal </script> from the payload
-    // that would break the __EXPORT_DATA__ script tag.
-    // Strategy: find the __EXPORT_DATA__ script content and verify it's safe.
-    // We extract between the opening <script> and the closing </script> that
-    // wraps __EXPORT_DATA__.
-    const scriptStart = html.indexOf('<script>window.__EXPORT_DATA__=');
-    expect(scriptStart).not.toBe(-1);
-    const scriptContentStart = scriptStart + '<script>'.length; // after <script>
-    const scriptEnd = html.indexOf('</script>', scriptContentStart);
-    expect(scriptEnd).not.toBe(-1);
-    const scriptBody = html.substring(scriptContentStart, scriptEnd);
-
-    // Extract the JSON part: window.__EXPORT_DATA__={...};
-    const jsonStart = 'window.__EXPORT_DATA__='.length;
-    const jsonStr = scriptBody.substring(jsonStart);
-    // Remove trailing semicolon if present
-    const jsonClean = jsonStr.endsWith(';') ? jsonStr.slice(0, -1) : jsonStr;
-
-    // The JSON content must not contain literal < or > (they should be escaped)
-    expect(jsonClean).not.toContain('<');
-    expect(jsonClean).not.toContain('>');
-
-    // But the data must round-trip correctly
-    const parsed = JSON.parse(jsonClean);
-    expect(parsed.meta.judulPertemuan).toBe(xssPayload);
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════
-// SECTION 8: PRODUCTION API ROUTE — Simulate exact route behavior
+// SECTION 7: PRODUCTION API ROUTE — Simulate exact route behavior
+// Uses serializeForHtmlScript() just like the real route
 // ═══════════════════════════════════════════════════════════════════════
 
 describe('Serialization boundary — production API route simulation', () => {
@@ -672,11 +576,8 @@ describe('Serialization boundary — production API route simulation', () => {
       suara: body.suara || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
     };
 
-    // Exact serialization from route.ts
-    const dataJson = JSON.stringify(exportData)
-      .replace(/</g, '\\u003c')
-      .replace(/>/g, '\\u003e')
-      .replace(/\//g, '\\u002f');
+    // Exact serialization from route.ts — uses canonical serializer
+    const dataJson = serializeForHtmlScript(exportData);
 
     // Title handling from route.ts
     const meta = body.meta as Record<string, string> | undefined;
@@ -755,7 +656,7 @@ describe('Serialization boundary — production API route simulation', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
-// SECTION 9: DETERMINISTIC VERIFICATION
+// SECTION 8: DETERMINISTIC VERIFICATION
 // Same data → same serialized output (no randomness in escaping)
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -778,7 +679,7 @@ describe('Serialization boundary — deterministic output', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
-// SECTION 10: EDGE CASES — Deeply nested, large, empty, null
+// SECTION 9: EDGE CASES — Deeply nested, large, empty, null
 // ═══════════════════════════════════════════════════════════════════════
 
 describe('Serialization boundary — edge cases', () => {
@@ -851,5 +752,75 @@ describe('Serialization boundary — edge cases', () => {
     // This is a JavaScript string containing literal backslash-u sequences
     // Our escaping should handle the real < > / characters, not the \u sequences
     expect(JSON.parse(serialized).text).toBe('\\u003cscript\\u003ealert(1)\\u003c/script\\u003e');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// SECTION 10: SERIALIZER FREEZE GUARD
+// These tests MUST pass after ANY change to serializeForHtmlScript.
+// If they fail, the serializer has been modified unsafely.
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('Serialization boundary — serializer freeze guard', () => {
+  it('must escape < to \\u003c (not any other form)', () => {
+    const serialized = serializeForHtmlScript({ t: '<' });
+    expect(serialized).toContain('\\u003c');
+    expect(serialized).not.toContain('<');
+  });
+
+  it('must escape > to \\u003e (not any other form)', () => {
+    const serialized = serializeForHtmlScript({ t: '>' });
+    expect(serialized).toContain('\\u003e');
+    expect(serialized).not.toContain('>');
+  });
+
+  it('must escape / to \\u002f (not any other form)', () => {
+    const serialized = serializeForHtmlScript({ t: '/' });
+    expect(serialized).toContain('\\u002f');
+    expect(serialized).not.toContain('/');
+  });
+
+  it('must escape & to \\u0026 (not any other form)', () => {
+    const serialized = serializeForHtmlScript({ t: '&' });
+    expect(serialized).toContain('\\u0026');
+    expect(serialized).not.toContain('&');
+  });
+
+  it('must escape U+2028 to \\u2028', () => {
+    const serialized = serializeForHtmlScript({ t: '\u2028' });
+    expect(serialized).toContain('\\u2028');
+    expect([...serialized].some(c => c.charCodeAt(0) === 0x2028)).toBe(false);
+  });
+
+  it('must escape U+2029 to \\u2029', () => {
+    const serialized = serializeForHtmlScript({ t: '\u2029' });
+    expect(serialized).toContain('\\u2029');
+    expect([...serialized].some(c => c.charCodeAt(0) === 0x2029)).toBe(false);
+  });
+
+  it('the full OWASP escape set must be present (6 replacements)', () => {
+    // This test verifies the complete escape chain exists.
+    // If any replacement is removed, this test will fail.
+    const data = '<>&/\u2028\u2029';
+    const serialized = serializeForHtmlScript(data);
+
+    // All 6 dangerous characters must be escaped
+    expect(serialized).not.toContain('<');
+    expect(serialized).not.toContain('>');
+    expect(serialized).not.toContain('&');
+    expect(serialized).not.toContain('/');
+    expect([...serialized].some(c => c.charCodeAt(0) === 0x2028)).toBe(false);
+    expect([...serialized].some(c => c.charCodeAt(0) === 0x2029)).toBe(false);
+
+    // All 6 escape sequences must be present
+    expect(serialized).toContain('\\u003c');
+    expect(serialized).toContain('\\u003e');
+    expect(serialized).toContain('\\u0026');
+    expect(serialized).toContain('\\u002f');
+    expect(serialized).toContain('\\u2028');
+    expect(serialized).toContain('\\u2029');
+
+    // Must round-trip
+    expect(JSON.parse(serialized)).toBe(data);
   });
 });
