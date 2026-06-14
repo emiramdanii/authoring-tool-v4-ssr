@@ -47,6 +47,11 @@
 //
 //   5. Removing or weakening an existing replacement rule is FORBIDDEN.
 //
+//   6. All new routes that produce standalone HTML MUST use this
+//      function via the canonical import from @/lib/export or
+//      @/lib/export/serialize-html-script. No alternative import
+//      path or copy-paste of the logic is acceptable.
+//
 // Reference: https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
 // ═══════════════════════════════════════════════════════════════════════
 

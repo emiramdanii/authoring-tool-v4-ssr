@@ -21,6 +21,11 @@
 // <script> injection. No second serializer with different rules
 // may be created. Changes to this function MUST pass the security
 // regression suite in export-serialization-boundary.test.ts.
+//
+// ⛔ ROLE: This file is the public entry point for the serializer
+// only. Do NOT add export generators, HTML renderers, or payload
+// types here. New export routes must import serializeForHtmlScript
+// from this module or from ./serialize-html-script directly.
 // ═══════════════════════════════════════════════════════════════════════
 
 export { serializeForHtmlScript } from './serialize-html-script';
