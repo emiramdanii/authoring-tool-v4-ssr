@@ -3,15 +3,16 @@
 // ═══════════════════════════════════════════════════════════════════════
 // Sprint 6.4-F: Legacy client-side export pipeline REMOVED.
 //
-// Deleted in this sprint:
-//   - generateClientExportHtml() — only used by deprecated exportClientSide
-//   - generateExportFilename() — only used by deprecated exportClientSide
-//   - ClientExportPayload type — only used by legacy pipeline
-//   - Re-exports of legacy renderer utilities (escapeHtml, resolveColor,
-//     TOKEN_COLORS, renderBlockHtml, createExportRenderContext, etc.)
-//   - All legacy renderer files (html-templates, styles, scripts,
-//     quiz-renderers, block-renderers, game-renderers,
-//     navigation-renderers, utils)
+// REMOVED / DEPRECATED HISTORY — DO NOT RESTORE:
+//   - generateClientExportHtml() — REMOVED (no production callers)
+//   - generateExportFilename() — REMOVED (no production callers)
+//   - ClientExportPayload type — REMOVED (no production callers)
+//   - Re-exports of legacy renderer utilities — REMOVED
+//     (escapeHtml, resolveColor, TOKEN_COLORS, renderBlockHtml,
+//      createExportRenderContext, etc.)
+//   - All legacy renderer files — REMOVED
+//     (html-templates, styles, scripts, quiz-renderers,
+//      block-renderers, game-renderers, navigation-renderers, utils)
 //
 // The ONLY production export path is Vite SSR via /api/export.
 // The ONLY export from this module is the canonical security serializer.

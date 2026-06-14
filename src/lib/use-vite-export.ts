@@ -3,10 +3,12 @@
 // a standalone HTML file using the Vite-built template + data injection.
 //
 // Sprint 6.4-F: Legacy client-side export path REMOVED.
-//   - exportClientSide() — DELETED (no production callers)
-//   - previewClientSide() — DELETED (no production callers)
-//   - generateClientExportHtml() — DELETED (only used by above)
-//   - buildPayload() — DELETED (only used by above)
+//
+// REMOVED / DEPRECATED HISTORY — DO NOT RESTORE:
+//   - exportClientSide() — REMOVED (no production callers)
+//   - previewClientSide() — REMOVED (no production callers)
+//   - generateClientExportHtml() — REMOVED (only used by above)
+//   - buildPayload() — REMOVED (only used by above)
 //
 // The ONLY production export path is Vite SSR via POST /api/export.
 // If Path A fails, the user sees a clear error — NOT a degraded fallback.
