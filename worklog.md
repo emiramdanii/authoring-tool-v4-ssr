@@ -39,3 +39,26 @@ Stage Summary:
 - src/lib/export/ now contains only 2 files: index.ts (re-export) + serialize-html-script.ts (implementation)
 - Single production export pipeline confirmed
 - Serializer API frozen with documented invariants and regression guard tests
+
+---
+Task ID: 6.4-F-QA
+Agent: Main
+Task: Sprint 6.4-F-QA — Canonical Export Release Gate
+
+Work Log:
+- Grep verification: generateClientExportHtml, exportClientSide, previewClientSide only in comments (deletion notes), not in executable code
+- Grep verification: JSON.stringify on __EXPORT_DATA__ = NOT FOUND in any route
+- Added 6th freeze invariant to serialize-html-script.ts: all new routes producing standalone HTML must use canonical import
+- Documented index.ts role: public entry point for serializer only, no generators/renderers/payload types
+- Generated export HTML using exact route.ts code path (serializeForHtmlScript + Vite template)
+- Static analysis: all 11 security + round-trip checks PASS
+- Playwright browser verification: 5/5 tests PASS (React mount, __quizXss undefined, no dangerous DOM, pages rendered, data loaded)
+- Serialization suite: 75/75 tests PASS
+- Export build: PASS
+- Saved freeze baseline to download/FREEZE-BASELINE-6.4-F.md
+
+Stage Summary:
+- Commit: cb89796
+- All 7 release gate criteria met
+- Freeze baseline documented
+- Export pipeline is FROZEN — no changes without security test pass
