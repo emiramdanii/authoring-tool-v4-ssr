@@ -1,0 +1,834 @@
+     1→---
+     2→Task ID: QA-2B
+     3→Agent: Main
+     4→Task: Visual QA Sprint 2B — MateriBlok Guided Editor
+     5→
+     6→Work Log:
+     7→- Read guided-patch.ts — found DUPLICATE 'materi-blok' key in GUIDED_EDITOR_REGISTRY (lines 653 and 1153)
+     8→- Read GuidedFormEditor.tsx — verified showWhen filtering logic at lines 72-79
+     9→- Read guided-field-renderer.tsx — verified all field types render correctly
+    10→- Read MateriBlokRenderer.tsx — verified all renderer key reads match guided editor keys
+    11→- Read MateriBlokBlock type in blocks.ts — found accentColor not in type definition
+    12→- Simulated showWhen logic for all 6 Tahap 1 types: 13/13 PASS
+    13→- Verified key alignment between guided editor and renderer: all 6 types match perfectly
+    14→- Build PASS (no errors)
+    15→- Dev server started and browser automation attempted (partial — UI navigation difficult)
+    16→
+    17→Stage Summary:
+    18→- Visual QA Result: PARTIAL PASS
+    19→- All 6 user-specified test types (teks, definisi, poin, checklist, infobox, highlight) PASS
+    20→- P1 BUG: Duplicate 'materi-blok' key in GUIDED_EDITOR_REGISTRY — Entry 2 (line 1153) overwrites Entry 1 (line 653)
+    21→- P2 BUG: Entry 2 missing 'kutipan' and 'gambar' in isi showWhen — teacher can't edit isi for these types
+    22→- P3 NOTE: accentColor field is dead — not in MateriBlokBlock type and not read by MateriBlokRenderer
+    23→- Recommendation: Remove Entry 1 (lines 653-698), keep Entry 2, add kutipan/gambar to isi showWhen in Entry 2
+    24→---
+    25→Task ID: 1
+    26→Agent: Main Agent
+    27→Task: P0 — Fix Tambah Halaman menghasilkan konten kosong + P1 — Fix duplicate materi-blok registry
+    28→
+    29→Work Log:
+    30→- Investigated full call chain: FloatingPageMenu → addTemplatePage → createPageFromPreset → buildPresetWithCreate → ensurePageSchema → TemplateAdapter
+    31→- Identified root cause: buildPresetWithCreate() uses ensurePageSchema() which reads templateData={} → TemplateAdapter produces hollow blocks
+    32→- Found that createDefaultSchemaForTemplateType() in schema-factory.ts already produces populated blocks but was not used in the preset path
+    33→- Fixed P0: Replaced ensurePageSchema() call in buildPresetWithCreate() with createDefaultSchemaForTemplateType()
+    34→- Verified all 15 preset types produce meaningful default content via BLOCK_DEFINITIONS.createDefault()
+    35→- Fixed P1: Removed duplicate 'materi-blok' entry (Entry 1 at line 653, silently overwritten by Entry 2)
+    36→- Added kutipan and gambar to tipe options (8 types now, from 6)
+    37→- Added kutipan and gambar to isi showWhen (matches MateriBlokRenderer)
+    38→- Added karakter field with showWhen for kutipan type (matches block type + renderer)
+    39→- Updated CORE_VERIFICATION_REPORT.md with Ronde 28 changes
+    40→- Build: PASS for both fixes
+    41→- Commit: fix: create page presets from schema factory + remove duplicate materi-blok registry
+    42→- Push: failed (no GitHub credentials in environment) — user needs to push manually
+    43→
+    44→Stage Summary:
+    45→- P0 FIX: All "Tambah Halaman" presets now produce real content instead of empty pages
+    46→- P1 FIX: No more duplicate materi-blok registry entry, 8 tipe supported (was 6)
+    47→- Build PASS confirmed
+    48→- Local commit ready, push requires manual authentication
+    49→
+    50→---
+    51→Task ID: 2
+    52→Agent: Main Agent
+    53→Task: Flow QA for Tambah Halaman + fix sortir-game guided editor
+    54→
+    55→Work Log:
+    56→- Verified push to remote/main: commit 4fc96a5 confirmed at origin/main HEAD
+    57→- Performed code-level Flow QA for all 6 preset types (cover, materi, kuis, game, diskusi, refleksi)
+    58→- Verified schema factory output for each type: all produce populated blocks with non-empty content
+    59→- Verified BlockDefinitionRegistry createDefault(): all return meaningful defaults
+    60→- Verified renderer registration: all 6 block types in RENDERER_MAP
+    61→- Verified createPageFromPreset flow: correctly assigns schema to page.schema
+    62→- Verified page rendering chain: SchemaScreenRenderer → SchemaBlockRenderer → correct renderer component
+    63→- Found ISSUE: sortir-game NOT in GUIDED_EDITOR_REGISTRY → right panel falls through to raw SchemaDrivenEditor
+    64→- Fixed: Added sortir-game guided editor entry with title, kolom (label+color), pool (text+category) fields
+    65→- Build: PASS
+    66→- Commit: feat: add sortir-game guided editor to GUIDED_EDITOR_REGISTRY (7a1d524)
+    67→- Push: SUCCESS to origin/main
+    68→
+    69→Stage Summary:
+    70→- Flow QA results:
+    71→  - Cover: PASS
+    72→  - Materi: PASS (caveat: materi-section guided editor only has title, but nested blocks have their own editors)
+    73→  - Kuis: PASS
+    74→  - Game: PASS (after adding sortir-game guided editor)
+    75→  - Diskusi: PASS
+    76→  - Refleksi: PASS
+    77→- Known P2: materi-section guided editor only exposes title (takeaways/selfCheck not editable via guided form)
+    78→- Known P3: cover preset gets no project metadata when added via Tambah Halaman (expected behavior)
+    79→- Known P3: accentColor field in materi-blok not read by renderer
+    80→---
+    81→Task ID: D8-P3B
+    82→Agent: Main
+    83→Task: D8 P3B — Guided Editor Roda Pertanyaan
+    84→
+    85→Work Log:
+    86→- Read RodaGameBlock interface from blocks.ts: title, stepMode?, currentQuestionIndex?, questions[{q, diskusiHint?, opts[{text, correct}], feedbackCorrect?, feedbackWrong?}]
+    87→- Read RodaGameRenderer.tsx: confirmed renderer reads title, questions[].q, questions[].opts[].text, questions[].opts[].correct, questions[].feedbackCorrect, questions[].feedbackWrong, questions[].diskusiHint; does NOT read stepMode, currentQuestionIndex, variant, accentColor
+    88→- Added 'roda-game' entry to GUIDED_EDITOR_REGISTRY in guided-patch.ts with fields: title (text, required), questions[] (array, maxItems:6) containing q (textarea, required), opts[] (array, maxItems:4) containing text (text, required) + correct (boolean), feedbackCorrect (text), feedbackWrong (text), diskusiHint (text)
+    89→- Sections: "Isi Utama" (title, questions) — single section, no Tampilan/Lanjutan since renderer doesn't use visual fields
+    90→- Added 'roda-game' to TEACHER_ADDABLE_BLOCKS (9→10 items) and POPULAR_BLOCK_TYPES in AddBlockPanel.tsx
+    91→- Updated comment: "gambar (P3A) and roda-game (P3B) have guided editors"
+    92→- Updated CORE_VERIFICATION_REPORT.md with Ronde 31 section, updated curated block list (10 items), field exclusion table, sebelum/sesudah table
+    93→- Build: PASS
+    94→- Commit: a6a8636 "fix: add guided editor for roda game"
+    95→- git pull --rebase origin main: no conflicts
+    96→- Push: 677e2df..a6a8636 main → main
+    97→
+    98→Stage Summary:
+    99→- D8 P3B PUSHED to origin/main (commit a6a8636)
+   100→- TEACHER_ADDABLE_BLOCKS now has 10 items (added roda-game)
+   101→- Roda-game has GuidedFormEditor, will NOT fall to SchemaDrivenEditor
+   102→- stepMode/currentQuestionIndex/variant/accentColor intentionally excluded from guided form
+   103→- Renderer, export, runtime score NOT modified
+   104→---
+   105→Task ID: rekap
+   106→Agent: Main
+   107→Task: Buat rekap resmi Teacher Flow v1 — Stable Baseline
+   108→
+   109→Work Log:
+   110→- Analyzed all sprint status from Sprint 0 through D8 P3B
+   111→- Created comprehensive DOCX document with 7 sections: Apa yang Sudah Stabil, Flow Guru Sekarang, Fitur Layak Dipakai, Fitur Diparkir, Risiko Tersisa, Roadmap Sprint Berikutnya, Daftar Blok Curated
+   112→- Used DM-1 Deep Cyan palette (ed-tech context)
+   113→- Cover page: dark bg with cyan accent, title + subtitle + metadata
+   114→- Body: 7 tables, numbered lists, justified paragraphs
+   115→- Post-check: 9/9 PASS, 0 errors, 0 warnings
+   116→
+   117→Stage Summary:
+   118→- Generated: /home/z/my-project/download/Teacher-Flow-v1-Stable-Baseline.docx
+   119→- Document covers all 6 areas requested by user
+   120→- Post-check all green
+   121→---
+   122→Task ID: d8-p0-p2
+   123→Agent: main
+   124→Task: D8 P0–P2 — Simplify Add Content Flow for Teacher Mode
+   125→
+   126→Work Log:
+   127→- Read AddBlockPanel.tsx, AddBlockSection.tsx, IconRail.tsx, LeftPanel.tsx, RightPanel.tsx, teacher-terminology.ts
+   128→- Read block definitions registry (37+ block types, only materi-blok has addable:false)
+   129→- Verified guided editor coverage for all 8 curated types
+   130→- D8 P0: Added TEACHER_ADDABLE_BLOCKS constant (8 types), filtered allBlocks in sederhana mode
+   131→- D8 P1: Updated POPULAR_BLOCK_TYPES to align with curated list (removed materi-blok, cover, tp, penutup, gambar)
+   132→- D8 P2: Renamed "Tambah Konten" → "Tambah Isi" in AddBlockPanel, AddBlockSection, IconRail, LeftPanel, RightPanel, teacher-terminology
+   133→- Updated blockLabel from 'Konten' to 'Isi' in all teacher mode contexts
+   134→- Updated SIMPLIFIED_GROUPS: "Konten & Materi" → "Isi & Materi", "Konten lainnya" → "Isi lainnya"
+   135→- Removed unused teacherTerm import from IconRail.tsx
+   136→- Updated CORE_VERIFICATION_REPORT.md with Ronde 29 details
+   137→- Build: PASS
+   138→- Commit: 82f62da
+   139→- Push: origin/main (7a1d524 → 82f62da)
+   140→
+   141→Stage Summary:
+   142→- Teacher mode now shows only 8 curated blocks instead of 42
+   143→- All 8 curated blocks have guided editors (no raw schema editor fallback)
+   144→- "Tambah Konten" renamed to "Tambah Isi" across all UI surfaces
+   145→- Advanced mode unchanged (still shows all addable blocks)
+   146→- Commit: 82f62da, pushed to origin/main
+   147→---
+   148→Task ID: Sprint-X.1-v2
+   149→Agent: Main Agent
+   150→Task: Sprint X.1 — Primary Edit Target Resolver (re-created after git rebase loss)
+   151→
+   152→Work Log:
+   153→- Previous X.1 commits (d047ea0, 5a8cc46, 98aee76) were lost during git rebase/merge conflict resolution
+   154→- Re-created src/core/schema/primary-edit-target.ts — domain resolver for template-first editor
+   155→  - resolvePrimaryEditableTarget(page) — pure function, no side effects, no store access
+   156→  - 5-level resolution: pattern metadata → phase mapping → GuidedEditor → first block → null
+   157→  - PHASE_PRIMARY_BLOCK mapping for all 15 template types
+   158→  - Future-proof: ready for PagePatternRegistry without refactoring
+   159→- Re-created src/core/schema/__tests__/primary-edit-target.test.ts — 15 tests, all passing
+   160→- Modified src/store/canva/page-slice.ts:
+   161→  - addTemplatePage() calls resolvePrimaryEditableTarget → sets selectedBlockId/Type/Ids
+   162→  - duplicatePage() also auto-selects primary edit target on the cloned page
+   163→  - addPage() clears stale selectedBlockId/Type/Ids (bug fix from QA)
+   164→- Build PASS, tests 15/15 PASS
+   165→- Flow QA: 7/7 required types PASS, 1 cosmetic PARTIAL (sortir-game displayName)
+   166→- Commit: 4653b01 "fix: resolve primary edit target for new pages"
+   167→- Push: FAILED — no GitHub credentials in environment
+   168→
+   169→Stage Summary:
+   170→- Sprint X.1 code complete and committed locally
+   171→- After Tambah Halaman, panel kanan langsung "Edit Materi"/"Edit Kuis"/etc.
+   172→- Resolver is domain-layer, not UI-layer — consumed by store
+   173→- Pattern-first ready: Step 1 of resolver checks for pattern metadata
+   174→- No renderer/export/AddBlockPanel changes — minimal surface area
+   175→- Push requires manual authentication from user
+   176→---
+   177→Task ID: p0-bg
+   178→Agent: Main
+   179→Task: P0 — Background Source of Truth
+   180→
+   181→Work Log:
+   182→- Audited full dualism: schema pages have page.schema.background, legacy pages have page.bgColor/bgDataUrl/overlay
+   183→- Found SchemaScreenRenderer ONLY reads page.schema.background — never reads legacy fields
+   184→- Found BackgroundSection.tsx already dispatches correctly (schema → updateScreenBackground, legacy → setBgImage)
+   185→- Found schema-factory.ts already creates correct defaults (cover/hero → radial, others → solid)
+   186→- Found ensurePageSchema step 3b already normalizes undefined background
+   187→- Identified 3 remaining bugs: (1) setBgColor/setBgImage/setOverlay write to dead fields on schema pages, (2) getTemplateExtraProps writes dead bgColor: '#ffffff', (3) migrateAllPages drops legacy bg values
+   188→- Fixed setBgColor: redirect to updateScreenBackground for schema pages
+   189→- Fixed setBgImage: redirect to updateScreenBackground for schema pages
+   190→- Fixed setOverlay: redirect to updateScreenBackground for schema pages
+   191→- Fixed getTemplateExtraProps: return {} instead of { bgColor: '#ffffff' }
+   192→- Added buildBackgroundFromLegacy() in ensure-schema.ts: migrates bgDataUrl → imageUrl, bgColor → type/color1, overlay → overlay
+   193→- Updated CORE_VERIFICATION_REPORT.md with Ronde 33
+   194→- Build: PASS
+   195→- Commit: 0c3d8b0
+   196→- Push: SUCCESS to origin/main
+   197→
+   198→Stage Summary:
+   199→- P0 Background Source of Truth: FIXED
+   200→- Schema pages now use page.schema.background as single source of truth
+   201→- Legacy store actions redirect to schema-aware actions for schema pages
+   202→- Legacy bg fields preserved during migration (not deleted yet)
+   203→- No changes to renderer, export, guided editor, game logic
+   204→---
+   205→Task ID: d1-d3
+   206→Agent: Main
+   207→Task: D1/D3 — Disable Degraded Export Fallback
+   208→
+   209→Work Log:
+   210→- Audited export pipeline: exportWithFallback, client-export.ts, export/ folder
+   211→- Found exportWithFallback ALREADY FIXED — no silent fallback, shows clear error on Path A failure
+   212→- Found src/lib/client-export.ts has 0 imports — dead code
+   213→- Found src/lib/export/ still imported by use-vite-export.ts (exportClientSide for dev/debug) and test files
+   214→- Deleted src/lib/client-export.ts (162 lines of dead code)
+   215→- Marked src/lib/export/index.ts as DEPRECATED with detailed header comment
+   216→- Fixed use-export-actions.ts misleading comment ("auto-picks best method" → "Vite SSR only")
+   217→- Did NOT delete src/lib/export/ folder — still used for dev/debug and tests
+   218→- Did NOT change ExportApp, PageRenderer, SchemaRenderer, SCORM route, runtime, template system
+   219→- Build: PASS
+   220→- git pull --rebase: up to date (no conflicts)
+   221→- Commit: 9157e27
+   222→- Push: SUCCESS to origin/main
+   223→
+   224→Stage Summary:
+   225→- D1/D3 Export Fallback Safety: FINAL PASS
+   226→- No silent fallback to degraded vanilla JS export
+   227→- Dead client-export.ts removed
+   228→- Legacy export/ folder marked deprecated
+   229→- Prinsip "No hidden fallback, No silent downgrade" enforced
+   230→
+   231→---
+   232→Task ID: D-P0B-audit
+   233→Agent: Main
+   234→Task: D-P0B — Schema vs Elements Render Source Audit
+   235→
+   236→Work Log:
+   237→- Created backup patch for D-P0A commit (d69f817) at /home/z/my-project/download/d-p0a-unify-page-creation-flow.patch
+   238→- Push attempt failed — no GitHub credentials in environment
+   239→- Launched 5 parallel audit agents: Legacy Fields, Schema Readers, Legacy Readers, Migration Code, Dual Render
+   240→- Verified critical findings directly: CanvaPage types.ts, PageRenderer.tsx, stage/index.tsx, background-slice.ts, persistence-slice.ts, StatusBar.tsx, schema-migration.ts
+   241→- Found 4 active dualisms: 2 P0, 1 P1, 1 P2
+   242→- Found 1 bug: loadFromDB() discards migrateAllSchemas() return value
+   243→- Wrote comprehensive audit report in CORE_VERIFICATION_REPORT.md Ronde 36
+   244→
+   245→Stage Summary:
+   246→- D-P0A patch saved, push requires manual authentication
+   247→- D-P0B audit complete — 4 dualisms found:
+   248→  - D-P0B.1 (P0): schemaThemeId dual write/read — setSchemaThemeId only writes templateData, PageFrame/BackgroundSection only read templateData
+   249→  - D-P0B.2 (P0): Stage isSchemaDriven uses !!page?.schema, PageRenderer uses !!ensurePageSchema(page) — can disagree for legacy pages
+   250→  - D-P0B.3 (P1): loadFromDB() discards migrateAllSchemas() return value
+   251→  - D-P0B.4 (P2): StatusBar double-counts schema blocks + legacy elements
+   252→- Source of truth confirmed: page.schema for teacher flow
+   253→- Legacy elements[] allowed only for ElementsCanvaPage (pre-schema pages)
+   254→- No coding done — awaiting approval
+   255→
+   256→---
+   257→Task ID: D-P0B-coding
+   258→Agent: Main
+   259→Task: D-P0B — Schema vs Elements Render Source Mini Fix (coding)
+   260→
+   261→Work Log:
+   262→- D-P0B.1: Added `themeId?: string` to ScreenSchema type in schema.ts
+   263→- D-P0B.1: Updated `setSchemaThemeId()` in background-slice.ts to write to both `schema.themeId` AND `templateData.schemaThemeId`
+   264→- D-P0B.1: Updated `PageFrame.tsx:376` to read `page.schema?.themeId` first, fallback `templateData.schemaThemeId`
+   265→- D-P0B.1: Updated `BackgroundSection.tsx:33` to read `page.schema?.themeId` first, fallback `templateData.schemaThemeId`
+   266→- D-P0B.1: Updated `SchemaEngine.utils.ts:114` to include `themeId: schema.themeId` when building schema pages
+   267→- D-P0B.2: Added `import { ensurePageSchema }` to stage/index.tsx
+   268→- D-P0B.2: Changed `isSchemaDriven = !!page?.schema` to `!!ensurePageSchema(page)` in stage/index.tsx
+   269→- D-P0B.3: Fixed both `loadFromStorage()` and `loadFromDB()` to capture `migratedPages` from `migrateAllSchemas()` and use it
+   270→- D-P0B.4: Changed `totalElements = schemaBlocks + legacyElements` to `Math.max(schemaBlocks, legacyElements)` in StatusBar.tsx
+   271→- Build: PASS
+   272→- Commit: b7f8748 "fix: align schema render and migration sources (D-P0B)"
+   273→- Push: FAILED — no GitHub credentials
+   274→- Patch: /home/z/my-project/download/d-p0b-schema-elements-alignment.patch
+   275→
+   276→Stage Summary:
+   277→- D-P0B all 4 fixes implemented and committed locally
+   278→- 9 files changed, 92 insertions, 23 deletions
+   279→- Build PASS confirmed
+   280→- Push requires manual authentication
+   281→---
+   282→Task ID: D-P0C-git-sync
+   283→Agent: Main Agent
+   284→Task: Resolve git sync issue and cleanly apply D-P0C changes on top of origin/main
+   285→
+   286→Work Log:
+   287→- Analyzed divergence: local had 3 commits since 82f62da, remote had 22 commits since 82f62da
+   288→- Found that local commit d1f01e0 was based on stale history — could not rebase cleanly
+   289→- Strategy: reset local to origin/main, then manually re-apply D-P0C code changes on top of current remote
+   290→- Read all 8 affected files from remote version
+   291→- Applied all D-P0C changes manually (not via git am) to avoid conflicts:
+   292→  1. schema-apply.ts: skipHistory on 3 apply functions + 2 overflow wrappers
+   293→  2. schema-apply/write.ts: skipHistory on 3 apply functions (consistency)
+   294→  3. types.ts: skipHistory in UpdateSchemaBlockOptions
+   295→  4. schema-crud-slice.ts: guard _pushHistory() with skipHistory
+   296→  5. TransformHandles.tsx: push history before drag/resize, skipHistory during mousemove
+   297→  6. block-properties/index.tsx: use applyGuidedSchemaPatch with pageId
+   298→  7. regenerate.ts: push history 1x per regenerate action, skipHistory on apply
+   299→  8. use-auto-generate.ts: push history 1x per apply/generate, skipHistory on apply
+   300→- Build PASS on local
+   301→- Committed as f9668a4 (clean on top of a867a64 = origin/main)
+   302→- Push failed (no credentials) — patch backup created
+   303→- Verified patch applies cleanly on origin/main with build PASS
+   304→
+   305→Stage Summary:
+   306→- Commit f9668a4: fix: stabilize schema edit history and page scope
+   307→- Patch: /home/z/my-project/download/d-p0c-stabilize-schema-edit-history-and-page-scope.patch
+   308→- No conflicts — patch applies cleanly on origin/main
+   309→- No guided editor entries lost, no report rounds deleted
+   310→- Build PASS on both local and patched branch
+   311→---
+   312→Task ID: 4
+   313→Agent: Main Agent
+   314→Task: D-P0D Audit — Template Registry Source
+   315→
+   316→Work Log:
+   317→- Pushed D-P0C commit f9668a4 to origin/main (push successful a867a64..5a7fd82)
+   318→- Verified 5 D-P0C completion criteria: all PASS
+   319→- Launched 7 parallel audit agents for D-P0D scope
+   320→- Compiled comprehensive dualism findings across all template registries
+   321→- Identified 8 dualism issues, graded P0-P2
+   322→- Determined CourseTemplateRegistry as single source of truth
+   323→- Identified PagePresetRegistry as separate scope (single-page, not template)
+   324→
+   325→Stage Summary:
+   326→- D-P0C fully complete and pushed to remote
+   327→- D-P0D audit complete, report pending
+   328→- Key dualisms: 2 registries (CourseTemplate vs LessonTemplate), 3 duplicated apply flows, label drift, dead code
+   329→---
+   330→Task ID: 5
+   331→Agent: Main Agent
+   332→Task: D-P0D.1 — Shared Apply Template Flow
+   333→
+   334→Work Log:
+   335→- Created new shared helper: src/core/template/apply-template-to-store.ts
+   336→  - applyTemplateToStore(templateId, options) — single official apply flow
+   337→  - Configurable: persist strategy, primary target selection, workspace navigation
+   338→  - Returns ApplyTemplateResult { success, templateName, pageCount, dbPersisted, error? }
+   339→- Updated Dashboard._applyRegistryTemplate() to use helper (persist: 'localstorage')
+   340→- Updated TemplateWizard.handleCreate() to use helper (persist: 'db', createProjectFn)
+   341→- Updated TemplateMarketplace.handleApply() to use helper (persist: 'localstorage')
+   342→- Removed unused imports: createProjectFromTemplate, getTemplateThemeId from all 3 consumers
+   343→- Removed unused imports: useCanvaStore, useAuthoringStore, useDirtyStore from TemplateWizard & TemplateMarketplace
+   344→- TypeScript check: 0 errors
+   345→- Committed: 1277db5 fix: unify template apply flow (D-P0D.1)
+   346→- git pull --rebase: clean, no conflicts
+   347→- Pushed to origin/main: 5a7fd82..1277db5
+   348→
+   349→Stage Summary:
+   350→- D-P0D.1 complete and pushed
+   351→- All 3 template entry points now use same shared helper
+   352→- New behavior improvement: auto-select primary editable target (was missing before)
+   353→- Legacy Dashboard handleTemplateClick/applyTemplate NOT changed (D-P0D.2 scope)
+   354→---
+   355→Task ID: 6
+   356→Agent: Main Agent
+   357→Task: D-P0D.2 — Dashboard Click Path Unification
+   358→
+   359→Work Log:
+   360→- Replaced "Proyek Kosong" click: handleTemplateClick('blank') → handleApplyTemplate('template-kosong')
+   361→- Replaced sidebar "Proyek Baru" button: newProject() → handleApplyTemplate('template-kosong')
+   362→- Unified all template apply paths through _applyTemplate() → applyTemplateToStore()
+   363→- Removed dead code: SCHEMA_DRIVEN_PRESETS, applyTemplate(), handleTemplateClick(), templates[], colorMap, activeColorMap, iconColorMap, applyFullPreset/newProject imports
+   364→- Simplified "Langkah Selanjutnya" Desain Canva action: removed SCHEMA_DRIVEN_PRESETS branching, just navigate
+   365→- TypeScript check: 0 new errors
+   366→- Committed: b938d79 fix: unify dashboard template click paths (D-P0D.2)
+   367→- git pull --rebase: clean
+   368→- Pushed to origin/main: 1277db5..b938d79
+   369→
+   370→Stage Summary:
+   371→- D-P0D.2 complete and pushed
+   372→- ALL Dashboard click paths now go through shared applyTemplateToStore()
+   373→- No more newProject()/resetCanvas()/applyFullPreset() for template creation
+   374→- ~70 lines dead code removed
+   375→- template-kosong from CourseTemplateRegistry is now the official source for blank projects
+   376→
+   377→---
+   378→Task ID: 2c
+   379→Agent: Main
+   380→Task: Sprint 2C — Sortir/Roda Guided Editor Minimal
+   381→
+   382→Work Log:
+   383→- Audit sortir-game and roda-game data structures, registry entries, and current editor status
+   384→- Discovered both games already had GuidedFormEditor entries in registry from previous sprints
+   385→- Found critical bug: GuidedArrayField.addItem() doesn't generate `id` field for array items — sortir-game kolom/pool items created without id break renderer
+   386→- Found UX issue: pool[].category was text field requiring teacher to type technical IDs
+   387→- Added `autoId?: boolean` and `optionsFrom?: { field: string; labelKey: string; valueKey: string }` to GuidedFieldDef
+   388→- Updated GuidedArrayField.addItem() to auto-generate nanoid(6) id when autoId=true or existing items have id
+   389→- Added resolveSelectOptions() helper to resolve static + dynamic (optionsFrom) select options from block data
+   390→- Updated GuidedSelectField to accept resolvedOptions prop
+   391→- Updated GuidedArrayField to accept blockData prop for optionsFrom resolution in sub-field selects
+   392→- Updated sortir-game registry: kolom autoId:true, pool autoId:true, category changed from text to select with optionsFrom
+   393→- Build: PASS
+   394→- Commit: f680f1a "fix: improve guided editor for sorting game"
+   395→- Push: origin main (2c374cf..f680f1a)
+   396→
+   397→Stage Summary:
+   398→- 3 files changed: guided-patch.ts, guided-field-renderer.tsx, CORE_VERIFICATION_REPORT.md
+   399→- sortir-game: new items get valid id, category is dropdown from kolom labels
+   400→- roda-game: no changes needed, verified no regression
+   401→- Renderer, export, scoring, runtime untouched
+   402→
+   403→---
+   404→Task ID: 2E
+   405→Agent: main
+   406→Task: Sprint 2E — Import JSON Multi-Question untuk Kuis
+   407→
+   408→Work Log:
+   409→- Audited KuisBlock type, KuisRenderer, GuidedFormEditor, update functions, replaceAllQuestions
+   410→- Confirmed KuisRenderer already supports multi-question (current state, Lanjut button, progress, score)
+   411→- Identified GuidedFormEditor maxItems:1 as blocker
+   412→- Created kuis-import.ts with validator + mapper + parser + sample JSON
+   413→- Updated guided-patch.ts: maxItems 1→10, displayMode: 'tab', helpText update
+   414→- Updated guided-field-renderer.tsx: added displayMode 'tab' support (tab selector, active item only)
+   415→- Created KuisImportPanel.tsx: collapsible import UI with validate/apply
+   416→- Integrated KuisImportPanel in GuidedFormEditor.tsx (kuis only)
+   417→- Updated CORE_VERIFICATION_REPORT.md
+   418→- Build PASS, committed c4fa10d, pushed to origin main
+   419→
+   420→Stage Summary:
+   421→- Kuis now supports 1-10 questions per block (was 1)
+   422→- Editor uses tab mode: only 1 active question displayed
+   423→- JSON import: paste → validate → apply all questions to block
+   424→- KuisRenderer unchanged, scoring unchanged, export unchanged
+   425→- 6 files changed, 728 insertions, 117 deletions
+   426→
+   427→---
+   428→Task ID: 2F
+   429→Agent: main
+   430→Task: Sprint 2F — Import JSON Sortir
+   431→
+   432→Work Log:
+   433→- Audited SortirGameBlock type (pool[].id, pool[].category → kolom[].id FK)
+   434→- Audited guided editor (autoId, optionsFrom, maxItems 4/8)
+   435→- Audited SortirGameRenderer (item.category === kolomId validation)
+   436→- Created sortir-import.ts with validator + mapper + parser + sample JSON
+   437→- Validator checks FK integrity: pool[].category must match kolom[].label
+   438→- Mapper generates nanoid(6) for kolom.id and pool.id
+   439→- Mapper does label→id translation (case-insensitive)
+   440→- Created SortirImportPanel.tsx (collapsible import UI)
+   441→- Integrated SortirImportPanel in GuidedFormEditor.tsx (blockType === 'sortir-game')
+   442→- Did NOT touch SortirGameRenderer, scoring, export, guided-patch, guided-field-renderer
+   443→- Updated CORE_VERIFICATION_REPORT.md
+   444→- Build PASS, committed f046083, pushed to origin main
+   445→
+   446→Stage Summary:
+   447→- Sortir game now has JSON import with FK validation and label→id translation
+   448→- 4 files changed, 592 insertions, 1 deletion
+   449→- Pattern: AI/guru writes labels, app generates ids, mapper bridges the gap
+   450→---
+   451→Task ID: 2F-report
+   452→Agent: Main
+   453→Task: Sprint 2F — Update CORE_VERIFICATION_REPORT.md and push
+   454→
+   455→Work Log:
+   456→- Verified all Sprint 2F files exist and are committed (sortir-import.ts, SortirImportPanel.tsx, GuidedFormEditor.tsx integration)
+   457→- Ran build: PASS
+   458→- Added Sprint 2E and 2F entries to Ringkasan Eksekutif section
+   459→- Updated date header to 2026-06-07
+   460→- Committed: 1f04944 "docs: update verification report for sprint 2F"
+   461→- git pull --rebase: clean, no conflicts
+   462→- Pushed to origin/main: f046083..1f04944
+   463→
+   464→Stage Summary:
+   465→- Sprint 2F verification report updated and pushed
+   466→- All 10 PASS criteria verified at code level
+   467→---
+   468→Task ID: 2G
+   469→Agent: Main
+   470→Task: Sprint 2G — Import JSON Roda
+   471→
+   472→Work Log:
+   473→- Audited RodaGameBlock type (questions[].q, opts[].{text, correct}, feedbackCorrect, feedbackWrong, diskusiHint)
+   474→- Audited RodaGameRenderer (reads opts[].correct boolean, feedbackCorrect/Wrong with fallback, diskusiHint)
+   475→- Audited guided editor (maxItems: 6 questions, maxItems: 4 opts, no displayMode:tab)
+   476→- Created roda-import.ts with dual format validator + mapper + parser + sample JSON
+   477→  - Format A (native): opts: [{ text, correct }]
+   478→  - Format B (AI-friendly): opts: ["A", "B"], ans: 0
+   479→  - Mapper auto-converts Format B → Format A (ans index → correct boolean)
+   480→  - Validator: 0 correct = error, >1 correct = warning
+   481→- Created RodaImportPanel.tsx (collapsible import UI with validate/apply)
+   482→- Integrated RodaImportPanel in GuidedFormEditor.tsx (blockType === 'roda-game')
+   483→- Did NOT touch RodaGameRenderer, scoring, export, guided-patch, guided-field-renderer
+   484→- Updated CORE_VERIFICATION_REPORT.md with Sprint 2G entry
+   485→- Build PASS, committed 3b62fe9, pushed to origin main
+   486→
+   487→Stage Summary:
+   488→- Roda game now has JSON import with dual format support
+   489→- 4 files changed, 678 insertions, 1 deletion
+   490→- Key innovation: app tolerates AI output format (opts string[] + ans) and converts internally
+   491→---
+   492→Task ID: 2K.4
+   493→Agent: Main
+   494→Task: Sprint 2K.4 — Preset Refinement + Edge Case Fix
+   495→
+   496→Work Log:
+   497→- Discovered previous session's 2K.1/2K.2 commits were on remote (50b70fa) but local files were from before those changes
+   498→- Recreated block-style-presets.ts with 2K.1 + 2K.4 enhancements combined (def-box borderColor mapping, materi-blok warna mapping, getApplicableBlockStylePresets dedup helper)
+   499→- Created BlockStylePresetGrid.tsx with 2K.2 + 2K.4 features (uses getApplicableBlockStylePresets for dedup)
+   500→- Updated GuidedFormEditor.tsx to integrate BlockStylePresetGrid in appearance section
+   501→- Fixed KuisRenderer variant persistence (P0): added updateSchemaBlock call alongside setCurrentVariant
+   502→- Wrote 38 unit tests for block-style-presets (all PASS)
+   503→- Built successfully, pushed as commit 994d33d
+   504→- Resolved rebase conflicts with remote (kept our 2K.4 versions which are superset of 2K.1/2K.2)
+   505→
+   506→Stage Summary:
+   507→- KuisRenderer variant change now persists to schema (P0 fix)
+   508→- def-box joins Gaya Cepat via borderColor mapping (P1)
+   509→- materi-blok joins Gaya Cepat via warna mapping (P2)
+   510→- Variant-only blocks (kuis, diskusi, nc-grid, tujuan-display) show only 3 unique presets instead of 7 with duplicates (P3)
+   511→- 44 total unit tests PASS (38 new + 6 from previous session)
+   512→- Build PASS, push successful
+   513→---
+   514→Task ID: Sprint-2.1-Runtime-Stabilization
+   515→Agent: Main
+   516→Task: Sprint 2.1 — Runtime Stabilization (BUG 1, BUG 2, BUG 6 kecil)
+   517→
+   518→Work Log:
+   519→- Sprint 2 Audit: 7 audit points, found 6 bugs (2 P1, 2 P2, 2 P3)
+   520→- BUG 1 FIX: PreviewMode.tsx — added replayAll() on mount to clear stale persisted scores
+   521→- BUG 1 FIX: PlayOverlay.tsx — added replayAll() on mount, same fix
+   522→- BUG 2 FIX: CanvaBuilder.tsx — added useEffect to sync interactive-store.mode with appMode
+   523→  - edit → closePlay() (sets mode='design')
+   524→  - preview/present → setMode('interactive')
+   525→- BUG 6 FIX: interactive-store.ts — changed || to ?? for currentPageIndex
+   526→- PARKED: Duplicate navigation in export → deferred to Sprint 4
+   527→- PARKED: Answer tracking → deferred, needs data model design
+   528→- Build ✅, pushed to origin/main
+   529→
+   530→Stage Summary:
+   531→- Sprint 2 Audit result: PARTIAL (not blocker, but needs cleanup)
+   532→- Sprint 2.1 fixes applied: 3 bugs fixed, 2 parked
+   533→- Senior decision: PresentMode = guru presentasi (not siswa), no change needed
+   534→- Runtime now: scores reset on preview/play entry, mode sync prevents overlay leaks
+   535→- Next per CORE_SCOPE order: Sprint 3 — Engine
+   536→
+   537→---
+   538→Task ID: S3.1
+   539→Agent: Main
+   540→Task: Fix MateriBlok Style Field Mismatch — renderer reads accentColor first, fallback to warna
+   541→
+   542→Work Log:
+   543→- Read MateriBlokRenderer.tsx (527 lines) — identified 10 occurrences of block.warna
+   544→- Confirmed MateriBlokBlock type has both warna and accentColor fields (blocks.ts line 756, 769)
+   545→- Applied Opsi A (renderer backward-compatible): changed all 9 sub-renderer colorKey from `block.warna || '<default>'` to `block.accentColor ?? block.warna ?? '<default>'`
+   546→- Updated wrapper accent resolver: `block.accentColor ?? block.warna` via resolvedAccent variable
+   547→- Updated CORE_VERIFICATION_REPORT.md with Sprint 3 and Sprint 3.1 entries
+   548→- Build: PASS
+   549→- Commit: fix: align materi-blok accent color rendering (0e00796)
+   550→- Pull rebase: clean (up to date)
+   551→- Push: success
+   552→
+   553→Stage Summary:
+   554→- MateriBlokRenderer now reads accentColor with priority, fallback to legacy warna
+   555→- All 9 sub-renderers + wrapper updated consistently
+   556→- Backward compatible: data lama (warna only) still works, data baru (accentColor) works
+   557→- When both exist, accentColor wins (correct priority)
+   558→- No changes to: export, schema, guided editor, preset system, block-style-presets
+   559→---
+   560→Task ID: 4.1
+   561→Agent: Main
+   562→Task: Sprint 4.1 — Fix Duplicate Export Navigation
+   563→
+   564→Work Log:
+   565→- Read PageFrame.tsx, identified externalNavigation logic at line 371
+   566→- Confirmed ExportApp renders ExportTopNavbar + ExportBottomNav (grep ExportApp.tsx)
+   567→- Changed `isSchemaDriven && (mode === 'learn' || mode === 'preview')` to include `mode === 'export'`
+   568→- Updated comment block to reflect export mode has external navigation (ExportApp)
+   569→- Verified all nav rendering paths go through showTopNav/showBottomNav which are derived from externalNavigation
+   570→- Verified content area offset is safe: schema-driven always uses top:0, bottom:0
+   571→- npm run build: PASS (Vite export + Next.js both compiled)
+   572→- Updated CORE_VERIFICATION_REPORT.md: executive summary + detailed Sprint 4.1 section
+   573→- Committed: fix: prevent duplicate export navigation
+   574→- git pull --rebase origin main: clean (up to date)
+   575→- git push origin main: success (0e00796..92d584d)
+   576→
+   577→Stage Summary:
+   578→- Single-line fix: added `mode === 'export'` to externalNavigation condition
+   579→- Export HTML no longer shows duplicate navigation
+   580→- ExportApp is now the single source of truth for export navigation
+   581→- No changes to ExportApp, renderer blocks, interactive-store, or other modes
+   582→- Build PASS, push successful
+   583→
+   584→---
+   585→Task ID: S5
+   586→Agent: Main
+   587→Task: Sprint 5 — Data / Save / Persistence Audit
+   588→
+   589→Work Log:
+   590→- Audited persistence flow: edit block → markDirty → autosave 2s debounce / 30s max-wait → localStorage first → DB if online → offline queue if offline
+   591→- Audited data sources saved: page.schema, templateData, legacy elements, metadata — all captured in persistence slice
+   592→- Audited data loss risks: inline edit forced blur on page switch/mode switch, beforeunload guard, crash recovery, emergency save, hash verification
+   593→- Checked migration/migrateAllPages safety: loadFromDB and loadFromStorage now use migratedPages from migrateAllSchemas() (fixed in D-P0B.3)
+   594→- Confirmed autosave exists: 2s debounce after last change, 30s max-wait ensures save even during continuous editing
+   595→- Confirmed manual save exists: Ctrl+S / Cmd+S triggers explicit save
+   596→- Checked localStorage/DB consistency: dual write — localStorage immediate, DB async with offline queue fallback
+   597→- P2 parked: contractId belum punya kolom DB sendiri, block table redundan dengan schemaData — bukan data loss bug, cleanup arsitektur nanti
+   598→- Senior verdict: PASS — AUDIT CLOSED
+   599→- No coding done (audit only per directive)
+   600→
+   601→Stage Summary:
+   602→- Sprint 5 Data/Save/Persistence: PASS — AUDIT CLOSED
+   603→- No data loss bugs found
+   604→- Save flow is multi-layered and robust: markDirty → autosave → localStorage → DB → offline queue
+   605→- Inline edit protected on page/mode switch via forced blur
+   606→- beforeunload guard, crash recovery, emergency save, hash verification all present
+   607→- Migration safe (D-P0B.3 fix ensures migrated data is used)
+   608→- P2 parked: contractId DB column + block table redundancy (architecture cleanup, not data loss)
+   609→- CORE_VERIFICATION_REPORT.md already updated with Sprint 5 entry
+   610→
+   611→---
+   612→Task ID: S6
+   613→Agent: Main
+   614→Task: Sprint 6 — Final Core Regression Audit
+   615→
+   616→Work Log:
+   617→- Launched 5 parallel audit agents: Workspace, Runtime, Engine, Export, Persistence
+   618→- Each agent read 5-8 files across their area, checking Sprint 1-5 changes for conflicts
+   619→- Workspace: PASS — isSchemaDriven aligned, externalNavigation konsisten, blur pipeline 3-layer aman
+   620→- Runtime: PASS — replayAll() di 4 mode entry points, mode sync benar, score reporting konsisten
+   621→- Engine: PARTIAL — buildBackgroundFromLegacy() buang hex bgColor, duplicate mapping, accentColor ambiguity
+   622→- Export: PARTIAL — safe area padding phantom 44+80px di export mode, keyframe gap masih diparkir
+   623→- Persistence: PASS — migration pipeline sehat, dual auto-save timer redundan
+   624→- Launched 3 verification agents for critical findings:
+   625→  1. buildBackgroundFromLegacy() hex loss → CONFIRMED: tokens.color() supports hex pass-through, migration drops it
+   626→  2. Export safe area padding → CONFIRMED: PageRenderer computes showTopNav/showBottomNav without externalNavigation gate
+   627→  3. Dual auto-save timer → CONFIRMED: init.ts 1s + use-auto-save.ts 2s both active simultaneously
+   628→- Updated CORE_VERIFICATION_REPORT.md with Sprint 6 PARTIAL entry and detailed findings
+   629→- No coding done (audit only per directive)
+   630→
+   631→Stage Summary:
+   632→- Sprint 6 Final Core Regression Audit: PARTIAL
+   633→- 3 regressions found, all fixable in < 20 lines total:
+   634→  1. P1: Export safe area phantom padding (PageRenderer.tsx — 3 lines)
+   635→  2. P2: buildBackgroundFromLegacy hex color loss (ensure-schema.ts — 1 line)
+   636→  3. P2: Dual auto-save timer redundancy (init.ts — remove ~15 lines)
+   637→- No hard conflicts between sprints — core flow still works end-to-end
+   638→- 6 items remain parked (P2/P3 architecture cleanup)
+   639→- Recommended: Sprint 6.1 for 3 small fixes, then PASS
+   640→
+   641→---
+   642→Task ID: S6.1-A
+   643→Agent: Main
+   644→Task: Sprint 6.1-A — Fix Add Page Cover Empty Render (QA Verification + Final Cleanup)
+   645→
+   646→Work Log:
+   647→- Full code-level QA verification of cover page creation + rendering pipeline
+   648→- Traced complete flow: LeftPanel → addTemplatePage → createPageFromPreset → createDefaultSchemaForTemplateType → createBlockFromRegistry → BLOCK_DEFINITIONS['cover'].createDefault()
+   649→- Verified createDefault() produces: { icon: '📄', title: 'Judul Baru', subtitle: 'Subtitle', badges: [], meta: {...}, cta: {...}, accentColor: 'y', compression: {...}, semantic: {...} }
+   650→- Verified CoverRenderer reads: block.title, block.subtitle, block.icon — MATCH
+   651→- Verified SchemaScreenRenderer → resolveSceneLayout produces correct ResolvedBlock: x:0, y:0, w:scene.w, h:scene.h, zIndex:COVER_Z_INDEX(1)
+   652→- Verified GoldenPageRenderer: isCoverPage=true → passes through children (no chrome blocking)
+   653→- Verified PremiumBlockWrapper: no guard conditions, wraps children in div with styling only
+   654→- Verified SafeModeBlockGate: no special gate for cover blocks
+   655→- Verified right panel: GuidedFormEditor for 'cover' has fields: title (Judul), subtitle (Subjudul), icon (Ikon) — match CoverRenderer
+   656→- Verified InlineTextEditor: plain text values (no HTML) render correctly via {value || placeholder}
+   657→- Verified preview flow: CoverScreen adapter wraps SchemaScreenRenderer with showTopNav=false, showBottomNav=false
+   658→- Verified scene registry: 'cover' → CoverRenderer (lazy-loaded, registered in RENDERER_MAP)
+   659→- Verified isFullPageBlockType('cover') = true (not measurable → treated as full-page block)
+   660→- Removed dev-only diagnostic warning from CoverRenderer (lines 445-456) — was Sprint 6.1-A debugging artifact
+   661→- Build: PASS (both TypeScript check and Next.js build)
+   662→- Commit: fix: render newly added cover page content
+   663→
+   664→Stage Summary:
+   665→- Sprint 6.1-A: PASS — Cover page creation + rendering pipeline verified correct at code level
+   666→- Field names match: title/subtitle/icon in createDefault(), CoverRenderer, and GuidedFormEditor
+   667→- resolveSceneLayout produces full-scene positioning for cover blocks
+   668→- No guard conditions block cover rendering in any pipeline stage
+   669→- Diagnostic warning removed (dev-only, no longer needed)
+   670→- Sprint 6.1-A fix (createDefault compression + semantic) confirmed correct and in place
+   671→
+   672→---
+   673→Task ID: S6.1
+   674→Agent: Main
+   675→Task: Sprint 6.1 — Final Core Regression Fix (3 bugs)
+   676→
+   677→Work Log:
+   678→- Fix 1: PageRenderer.tsx — added externalNavigation gate to showTopNav/showBottomNav computation. When mode is export/learn/preview and page has schema, safe area returns 0px top/bottom instead of 44+80px phantom padding. Aligned with PageFrame.tsx line 371 logic.
+   679→- Fix 2: ensure-schema.ts — changed buildBackgroundFromLegacy() Case 3 from color1:'bg' to color1:bgColor. Raw hex values like '#FF0000' are now preserved during legacy migration. TokenResolver.color() passes through unrecognized keys as literals; SchemaRenderer only overrides generic 'bg'/'bg2' tokens.
+   680→- Fix 3: init.ts — removed legacy startAutoSave() function, saveTimer, AUTO_SAVE_DELAY, and cleanup code (~22 lines deleted). Modern useAutoSave() hook in CanvaAutoSaveSync.tsx handles all save logic (localStorage + authoring + DB + offline queue) with 2s debounce. Eliminates double-write race condition and _saveStatus flicker.
+   681→- Updated CORE_VERIFICATION_REPORT.md: Sprint 6 status changed from PARTIAL to PASS, detailed Sprint 6.1 section added with before/after table.
+   682→- Build: PASS
+   683→- Commit: 4e87106 "fix: 3 core regression fixes (Sprint 6.1)"
+   684→- Push: SUCCESS to origin/main
+   685→
+   686→Stage Summary:
+   687→- Sprint 6.1-A: PASS (cover empty render — from previous session)
+   688→- Sprint 6.1: PASS (3 core regression fixes)
+   689→- Sprint 6 FINAL: PASS ✅
+   690→- 3 files changed: PageRenderer.tsx (+3 lines), ensure-schema.ts (~1 line), init.ts (-22 lines)
+   691→- No changes to: Cover, renderer blocks, ExportApp, export pipeline, schema besar, persistence besar, AI/SCORM/PWA/dashboard/template baru
+   692→
+   693→---
+   694→Task ID: S6.3-A
+   695→Agent: Main
+   696→Task: Sprint 6.3-A — Module Readiness Audit: Materi (audit only, no coding)
+   697→
+   698→Work Log:
+   699→- Launched 4 parallel audit agents for materi-section, materi-blok, def-box, rangkuman
+   700→- Each agent examined: renderer code, guided editor registry, property schema, export renderer, block definitions, capabilities
+   701→- Verified critical findings directly: export renderers (block-renderers.ts), guided editor fields (guided-patch.ts)
+   702→- Compiled comprehensive readiness table with PASS/PARTIAL/FAIL per module per area
+   703→- Identified 17 bugs: 2 P0, 3 P1, 6 P2, 6 P3
+   704→- Found 3 cross-module patterns: (1) export renderer ignores variant, (2) guided editor incomplete, (3) warna vs accentColor dualism
+   705→- Proposed 3 sprint fix recommendations: 6.3-B (export variant parity), 6.3-C (guided editor gaps), 6.3-D (export color + HTML fix)
+   706→- Updated CORE_VERIFICATION_REPORT.md with full audit results
+   707→- No coding done (audit only per directive)
+   708→
+   709→Stage Summary:
+   710→- Sprint 6.3-A: AUDIT COMPLETE
+   711→- All 4 modul: PASS render, PARTIAL editing, PARTIAL export
+   712→- Top bugs: P0 materi-section export ignores variant, P0 materi-blok 5 tipe no guided editor, P1 def-box escapeHtml destroys HTML
+   713→- 3 sprint recommendations proposed: 6.3-B, 6.3-C, 6.3-D
+   714→- Awaiting Senior decision on which sprint to execute
+   715→---
+   716→Task ID: 6.3-B
+   717→Agent: Main
+   718→Task: Sprint 6.3-B — Materi Export Parity Fix
+   719→
+   720→Work Log:
+   721→- Read and analyzed all 4 runtime renderers (MateriSectionRenderer, MateriBlokRenderer, DefBoxRenderer, RangkumanRenderer) and the export block-renderers.ts
+   722→- Read schema types (MateriSectionBlock, MateriContentTab, DefBoxBlock, MateriBlokBlock, BaseBlock)
+   723→- Identified 4 export parity gaps between runtime and export
+   724→- Fix 1: renderMateriSection now reads block.variant and renders B/Majalah (2-column) and C/Pill (compact) layouts differently
+   725→- Fix 2: renderMateriSection now reads block.tabs and renders all tab content with labels/icons when present
+   726→- Fix 3: renderMateriBlok now reads block.accentColor ?? block.warna (matching runtime MateriBlokRenderer)
+   727→- Fix 4: renderDefBox now uses safeRichText() instead of escapeHtml() to preserve safe formatting
+   728→- Added safeRichText() helper that whitelists: strong, b, em, i, u, br, p, ul, ol, li — strips attributes, escapes all other tags
+   729→- Build: PASS
+   730→- Updated CORE_VERIFICATION_REPORT.md with Sprint 6.3-B entry
+   731→- Committed as c92c5d1, pushed to origin/main
+   732→
+   733→Stage Summary:
+   734→- 4 export parity fixes implemented in src/lib/export/block-renderers.ts
+   735→- No changes to runtime renderers, schema, guided editor, or persistence
+   736→- P0 materi-section variant parity: FIXED
+   737→- P0 materi-section tabs parity: FIXED
+   738→- P1 materi-blok accentColor fallback: FIXED
+   739→- P1 def-box safe formatting: FIXED
+   740→
+   741→---
+   742→Task ID: S6.3-C-verify
+   743→Agent: Main
+   744→Task: Sprint 6.3-C — Materi Guided Editing Readiness (verification + session recovery)
+   745→
+   746→Work Log:
+   747→- Session recovered from previous context (MySQL chat ignored, files reverted to SQLite)
+   748→- Reverted accidental MySQL changes to .env and prisma/schema.prisma (git checkout)
+   749→- Performed full audit of all 4 focus areas:
+   750→  1. def-box variant in guided editor → ALREADY DONE (variant field with A/B/C options at guided-patch.ts line 776)
+   751→  2. rangkuman variant in guided editor → ALREADY DONE (variant + accentColor fields at guided-patch.ts lines 862-867)
+   752→  3. rangkuman dead writes removal → ALREADY DONE (RangkumanTab.tsx lines 16-18 confirm Pengantar/Tips Belajar removed)
+   753→  4. materi-blok tabel minimal editor → ALREADY DONE (baris field with table-text type at guided-patch.ts line 1205)
+   754→  5. materi-blok timeline minimal editor → ALREADY DONE (langkah[] array with icon/judul/isi at guided-patch.ts lines 1207-1211)
+   755→- Verified GuidedFieldDef type supports 'table-text' (guided-patch.ts line 534)
+   756→- Verified GuidedTableTextField renderer exists (guided-field-renderer.tsx lines 149-163, 519-558)
+   757→- Verified GuidedFormEditor renders table-text and timeline langkah[] correctly
+   758→- Build: PASS (npm run build — no errors)
+   759→- CORE_VERIFICATION_REPORT.md already has Sprint 6.3-C PASS entry (line 77)
+   760→- Commit 96d0385 "fix: improve materi guided editing readiness" already pushed
+   761→
+   762→Stage Summary:
+   763→- Sprint 6.3-C: VERIFIED PASS ✅ (all 5 fixes confirmed in code)
+   764→- No new commits needed — all changes were from previous session
+   765→- Accidental MySQL changes reverted successfully
+   766→- Build clean, report updated, git status clean
+   767→---
+   768→Task ID: 6.4-C-Patch
+   769→Agent: Main Agent
+   770→Task: Sprint 6.4-C-Patch — Standalone Quiz Focus & Accessibility Patch
+   771→
+   772→Work Log:
+   773→- Read quiz-renderers.ts, scripts.ts, styles.ts to understand current code
+   774→- Patched quiz-renderers.ts: Added tabindex="-1" on kuis-step/tf-step, role="status" on q-feedback/tf-feedback/fb-feedback, role="progressbar" + ARIA attributes on quiz-progress-bar, role="region" + aria-live="polite" + tabindex="-1" on quiz-completion for kuis/TF/FB
+   775→- Patched scripts.ts: Added focus management with requestAnimationFrame in showKuisStep/showTFStep (focus on active step), showKuisCompletion/showTFCompletion (focus on completion), replayKuis/replayTF (focus on first step via showKuisStep), replayFB (focus on first input), checkAllFillBlanks (focus on completion). Added ARIA progressbar updates (aria-valuenow, aria-valuetext) in showKuisStep/showTFStep
+   776→- Patched styles.ts: Added focus indicators for .kuis-step:focus/.tf-step:focus (subtle) and :focus-visible (strong), .quiz-completion:focus/:focus-visible, light mode overrides
+   777→- Build: PASS (next build successful)
+   778→- Generated standalone HTML export at /home/z/my-project/download/quiz-qa-patch.html
+   779→- Browser QA using agent-browser: All 11 mandatory tests PASS
+   780→
+   781→Stage Summary:
+   782→- All 4 accessibility issues from 6.4-C-QA fixed:
+   783→  1. Focus moves to new question container after Lanjut ✓
+   784→  2. Focus moves to completion screen after Lihat Hasil ✓
+   785→  3. Feedback has role="status" for screen reader announcements ✓
+   786→  4. Progress bar has role="progressbar" with aria-valuenow/valuetext updated on step change ✓
+   787→- Browser QA results (11/11 PASS):
+   788→  - Klik Lanjut → focus on next question container ✓
+   789→  - Lihat Hasil → focus on completion ✓
+   790→  - Ulangi → focus on first question ✓
+   791→  - Tab after transition → focus on active question options ✓
+   792→  - Feedback → role="status" ✓
+   793→  - Progress → ARIA 1→2→3 ✓
+   794→  - Hidden step → display:none, not focusable ✓
+   795→  - Mouse flow → same as before ✓
+   796→  - Build → PASS ✓
+   797→  - Browser console → no errors ✓
+   798→  - Two quiz blocks → focus and ARIA isolated ✓
+   799→- Files modified: quiz-renderers.ts, scripts.ts, styles.ts
+   800→- Files generated: /home/z/my-project/download/quiz-qa-patch.html, /home/z/my-project/download/quiz-qa-patch-proof.png
+   801→
+   802→---
+   803→Task ID: 6.4-D
+   804→Agent: Main
+   805→Task: Sprint 6.4-D — Quiz Variant Parity
+   806→
+   807→Work Log:
+   808→- Audited KuisRenderer.tsx runtime: documented 3 variants (A/Klasik: 2-col grid, B/Kartu: 1-col elevated, C/Ringkas: pill flex-wrap)
+   809→- Read current quiz-renderers.ts, styles.ts, scripts.ts export files
+   810→- Verified b.variant is available in export data (already used by materi-section block)
+   811→- Modified quiz-renderers.ts: added normalizeKuisVariant() function, variant class on root div, data-variant attribute
+   812→- Added ~110 lines of variant CSS in styles.ts covering A/B/C differences: layout, border-radius, padding, font-size, text-align, q-letter visibility, progress bar, completion screen
+   813→- Added light mode overrides for variant B elevated card
+   814→- Verified all JS selectors use contract classes only (no variant dependency)
+   815→- Created generate-quiz-variant-qa.ts script producing 4 pages: A, B, C, fallback
+   816→- Build PASS, export generated (122.5 KB)
+   817→- Browser QA: all 15 test areas verified
+   818→  - Computed styles confirmed: A=grid/10px/center, B=flex-col/12px/left, C=flex-wrap/9999px/center
+   819→  - q-letter hidden in C via display:none
+   820→  - Answer/feedback/next/completion flow works on all variants
+   821→  - Replay resets state correctly
+   822→  - ARIA attributes intact (progressbar, status, region, tabindex)
+   823→  - 4 blocks with unique IDs, state isolation OK
+   824→  - Fallback (no variant) renders as A (2-column grid)
+   825→  - No console errors, no page errors
+   826→  - No overflow at 1280×720
+   827→
+   828→Stage Summary:
+   829→- quiz-renderers.ts: Added variant normalization + class on root
+   830→- styles.ts: Added variant A/B/C CSS rules + light mode
+   831→- scripts.ts: No changes needed (contract classes preserved)
+   832→- All 10 PASS criteria for 6.4-D verified
+   833→- QA screenshots saved to download/
+   834→

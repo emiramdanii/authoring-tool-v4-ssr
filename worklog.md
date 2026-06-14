@@ -831,3 +831,35 @@ Stage Summary:
 - scripts.ts: No changes needed (contract classes preserved)
 - All 10 PASS criteria for 6.4-D verified
 - QA screenshots saved to download/
+
+---
+Task ID: E1-Patch-2
+Agent: Main Agent
+Task: Sprint 6.4-E1-Patch-2 — Boolean Contract & Export Context Hardening
+
+Work Log:
+- Read all 4 source files: quiz-renderers.ts, scripts.ts, html-templates.ts, index.ts
+- Replaced asBoolean() with normalizeBoolean(): boolean | null — strict semantics where "false" → false (NOT true), "0" → false, invalid → null
+- Made TF questions with null correct answer non-scorable: data-scorable="false" in HTML, neutral feedback in checkTrueFalse()
+- Created ExportRenderContext interface replacing module-level usedBlockIds + _blockOrdinal
+- Implemented createExportRenderContext() — fresh context per export run
+- Threaded context through: generateClientExportHtml → renderPageHtml → renderBlockHtml → renderQuizBlock → stableBlockId
+- Updated scripts.ts checkTrueFalse() with non-scorable detection via data-scorable attribute
+- Kept resetBlockIdRegistry() as deprecated backward-compat for existing tests
+- Created quiz-boolean-context.test.ts with 40 tests:
+  - 11-value boolean matrix (true/false/"true"/"false"/1/0/"1"/"0"/null/"yes"/{})
+  - Boolean trap tests: "false" ≠ true, "0" ≠ true
+  - 9 export context tests: fresh contexts, independent state, deterministic IDs, no global reset needed
+  - 5 non-scorable TF rendering tests
+- All 358 quiz tests PASS (318 existing + 40 new)
+- Full suite: 1016 passed, 12 baseline failures (unchanged)
+- Build: PASS
+- Commit: f72b5d4, pushed to main
+
+Stage Summary:
+- normalizeBoolean contract: VERIFIED — 11-value matrix all correct
+- ExportRenderContext: VERIFIED — one export = one context, no global reset
+- Non-scorable TF: VERIFIED — invalid correct → data-scorable="false", neutral feedback
+- All existing quiz tests: 318/318 PASS (zero regression)
+- Full suite baseline: 12 failures (unchanged from before)
+- Build: PASS

@@ -1,0 +1,502 @@
+     1→     1→     1→// ═══════════════════════════════════════════════════════════════════════
+     2→     2→     2→// EXPORT SCRIPTS — All JavaScript for the exported standalone HTML
+     3→     3→     3→// Sprint 6.4-C: Step-reveal flow + completion screen + replay
+     4→     4→     4→// Sprint 6.4-E1-Patch: Close XSS — all feedback uses textContent, no innerHTML with user content
+     5→     5→     5→// ═══════════════════════════════════════════════════════════════════════
+     6→     6→     6→
+     7→     7→     7→export function getJs(): string {
+     8→     8→     8→  return `
+     9→     9→     9→    // ── State ──
+    10→    10→    10→    let currentPage = 0;
+    11→    11→    11→    let totalPages = 0;
+    12→    12→    12→
+    13→    13→    13→    // ── Quiz state (per-block, isolated) ──
+    14→    14→    14→    var quizState = {};   // keyed by blockId: { correct, total, currentStep, totalSteps, completed }
+    15→    15→    15→    var tfState = {};     // keyed by gameId:  { correct, total, currentStep, totalSteps, completed }
+    16→    16→    16→    var fbState = {};     // keyed by gameId:  { checked, completed }
+    17→    17→    17→
+    18→    18→    18→    // ── Safe feedback helper (Sprint 6.4-E1-Patch) ──
+    19→    19→    19→    // NEVER use innerHTML with user-controlled content.
+    20→    20→    20→    // This helper builds DOM nodes safely — textContent is immune to XSS.
+    21→    21→    21→    function setFeedback(el, icon, color, message, strongText) {
+    22→    22→    22→      if (!el) return;
+    23→    23→    23→      el.textContent = '';
+    24→    24→    24→      var span = document.createElement('span');
+    25→    25→    25→      span.style.color = color;
+    26→    26→    26→      span.textContent = icon + ' ' + message;
+    27→    27→    27→      if (strongText) {
+    28→    28→    28→        var strong = document.createElement('strong');
+    29→    29→    29→        strong.textContent = String(strongText);
+    30→    30→    30→        span.appendChild(strong);
+    31→    31→    31→      }
+    32→    32→    32→      el.appendChild(span);
+    33→    33→    33→    }
+    34→    34→    34→
+    35→    35→    35→    // ── Init ──
+    36→    36→    36→    (function init() {
+    37→    37→    37→      const data = window.__EXPORT_DATA__;
+    38→    38→    38→      if (!data || !data.pages) { document.getElementById('canvas').innerHTML = '<div class="empty-page"><p>Data export tidak ditemukan.</p></div>'; return; }
+    39→    39→    39→
+    40→    40→    40→      totalPages = data.pages.length;
+    41→    41→    41→      const ratioW = data.ratioW || 1280;
+    42→    42→    42→      const ratioH = data.ratioH || 720;
+    43→    43→    43→
+    44→    44→    44→      // Render all pages
+    45→    45→    45→      const canvas = document.getElementById('canvas');
+    46→    46→    46→      canvas.style.width = ratioW + 'px';
+    47→    47→    47→      canvas.style.height = ratioH + 'px';
+    48→    48→    48→      canvas.innerHTML = data.pagesHtml.map((html, i) => {
+    49→    49→    49→        const div = document.createElement('div');
+    50→    50→    50→        div.innerHTML = html;
+    51→    51→    51→        const page = div.firstElementChild;
+    52→    52→    52→        if (page) {
+    53→    53→    53→          page.classList.toggle('active', i === 0);
+    54→    54→    54→        }
+    55→    55→    55→        return div.innerHTML;
+    56→    56→    56→      }).join('');
+    57→    57→    57→
+    58→    58→    58→      // Initialize quiz step states
+    59→    59→    59→      document.querySelectorAll('.kuis-block').forEach(function(block) {
+    60→    60→    60→        var blockId = block.dataset.blockId;
+    61→    61→    61→        var total = parseInt(block.dataset.total) || 0;
+    62→    62→    62→        quizState[blockId] = { correct: 0, total: 0, currentStep: 0, totalSteps: total, completed: false };
+    63→    63→    63→        showKuisStep(blockId, 0);
+    64→    64→    64→      });
+    65→    65→    65→      document.querySelectorAll('.true-false-block').forEach(function(block) {
+    66→    66→    66→        var gameId = block.dataset.game;
+    67→    67→    67→        var total = parseInt(block.dataset.total) || 0;
+    68→    68→    68→        tfState[gameId] = { correct: 0, total: 0, currentStep: 0, totalSteps: total, completed: false };
+    69→    69→    69→        showTFStep(gameId, 0);
+    70→    70→    70→      });
+    71→    71→    71→      document.querySelectorAll('.fill-blank-game-block').forEach(function(block) {
+    72→    72→    72→        var gameId = block.dataset.game;
+    73→    73→    73→        fbState[gameId] = { checked: false, completed: false };
+    74→    74→    74→      });
+    75→    75→    75→
+    76→    76→    76→      updateCounter();
+    77→    77→    77→      scaleCanvas();
+    78→    78→    78→      window.addEventListener('resize', scaleCanvas);
+    79→    79→    79→    })();
+    80→    80→    80→
+    81→    81→    81→    // ── Navigation ──
+    82→    82→    82→    function goPage(idx) {
+    83→    83→    83→      if (idx < 0 || idx >= totalPages || idx === currentPage) return;
+    84→    84→    84→      const pages = document.querySelectorAll('.page');
+    85→    85→    85→      const direction = idx > currentPage ? 1 : -1;
+    86→    86→    86→
+    87→    87→    87→      // Reset quiz state on the page being left
+    88→    88→    88→      resetPageQuizState(pages[currentPage]);
+    89→    89→    89→
+    90→    90→    90→      // Exit current
+    91→    91→    91→      pages[currentPage]?.classList.remove('active');
+    92→    92→    92→      pages[currentPage]?.classList.add(direction > 0 ? 'exit-left' : 'exit-right');
+    93→    93→    93→
+    94→    94→    94→      // Enter new
+    95→    95→    95→      currentPage = idx;
+    96→    96→    96→      var liveEl = document.getElementById('a11y-live');
+    97→    97→    97→      if (liveEl) liveEl.textContent = 'Halaman ' + (idx+1) + ' dari ' + pages.length;
+    98→    98→    98→      pages[currentPage]?.classList.remove('exit-left', 'exit-right', 'enter-left', 'enter-right');
+    99→    99→    99→      pages[currentPage]?.classList.add(direction > 0 ? 'enter-right' : 'enter-left');
+   100→   100→   100→
+   101→   101→   101→      // Trigger animation
+   102→   102→   102→      requestAnimationFrame(() => {
+   103→   103→   103→        requestAnimationFrame(() => {
+   104→   104→   104→          pages[currentPage]?.classList.remove('enter-left', 'enter-right');
+   105→   105→   105→          pages[currentPage]?.classList.add('active');
+   106→   106→   106→          // Clean up old page after transition
+   107→   107→   107→          setTimeout(() => {
+   108→   108→   108→            pages.forEach((p, i) => {
+   109→   109→   109→              if (i !== currentPage) {
+   110→   110→   110→                p.classList.remove('exit-left', 'exit-right', 'active');
+   111→   111→   111→              }
+   112→   112→   112→            });
+   113→   113→   113→          }, 400);
+   114→   114→   114→        });
+   115→   115→   115→      });
+   116→   116→   116→
+   117→   117→   117→      updateCounter();
+   118→   118→   118→
+   119→   119→   119→      // Confetti on last page
+   120→   120→   120→      if (currentPage === totalPages - 1) {
+   121→   121→   121→        launchConfetti();
+   122→   122→   122→      }
+   123→   123→   123→
+   124→   124→   124→      // SCORM: Report completion when reaching last page
+   125→   125→   125→      if (currentPage === totalPages - 1 && window.__SCORM) {
+   126→   126→   126→        window.__SCORM.reportComplete();
+   127→   127→   127→      }
+   128→   128→   128→    }
+   129→   129→   129→
+   130→   130→   130→    function nextPage() { goPage(currentPage + 1); }
+   131→   131→   131→    function prevPage() { goPage(currentPage - 1); }
+   132→   132→   132→
+   133→   133→   133→    function updateCounter() {
+   134→   134→   134→      const counter = document.getElementById('page-counter');
+   135→   135→   135→      if (counter) counter.textContent = (currentPage + 1) + '/' + totalPages;
+   136→   136→   136→    }
+   137→   137→   137→
+   138→   138→   138→    // ── Scale canvas to fit viewport ──
+   139→   139→   139→    function scaleCanvas() {
+   140→   140→   140→      const container = document.getElementById('canvas-container');
+   141→   141→   141→      const canvas = document.getElementById('canvas');
+   142→   142→   142→      if (!container || !canvas) return;
+   143→   143→   143→
+   144→   144→   144→      const aW = (container.clientWidth || 800) - 40;
+   145→   145→   145→      const aH = (container.clientHeight || 500) - 40;
+   146→   146→   146→      const cW = parseInt(canvas.style.width) || 1280;
+   147→   147→   147→      const cH = parseInt(canvas.style.height) || 720;
+   148→   148→   148→      const scale = Math.min(aW / cW, aH / cH, 1);
+   149→   149→   149→
+   150→   150→   150→      canvas.style.transform = 'scale(' + scale + ')';
+   151→   151→   151→    }
+   152→   152→   152→
+   153→   153→   153→    // ── Keyboard shortcuts ──
+   154→   154→   154→    document.addEventListener('keydown', function(e) {
+   155→   155→   155→      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+   156→   156→   156→      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); }
+   157→   157→   157→      if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
+   158→   158→   158→      if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+   159→   159→   159→      if (e.key === 'Escape') { if (document.fullscreenElement) document.exitFullscreen(); }
+   160→   160→   160→    });
+   161→   161→   161→
+   162→   162→   162→    // ── Touch/swipe ──
+   163→   163→   163→    let touchStartX = 0;
+   164→   164→   164→    document.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+   165→   165→   165→    document.addEventListener('touchend', function(e) {
+   166→   166→   166→      const dx = e.changedTouches[0].screenX - touchStartX;
+   167→   167→   167→      if (Math.abs(dx) > 50) {
+   168→   168→   168→        if (dx < 0) nextPage();
+   169→   169→   169→        else prevPage();
+   170→   170→   170→      }
+   171→   171→   171→    }, { passive: true });
+   172→   172→   172→
+   173→   173→   173→    // ── Fullscreen ──
+   174→   174→   174→    function toggleFullscreen() {
+   175→   175→   175→      if (document.fullscreenElement) {
+   176→   176→   176→        document.exitFullscreen();
+   177→   177→   177→      } else {
+   178→   178→   178→        document.documentElement.requestFullscreen().catch(function() {});
+   179→   179→   179→      }
+   180→   180→   180→    }
+   181→   181→   181→
+   182→   182→   182→    // ═══════════════════════════════════════════════════════════════════
+   183→   183→   183→    // KUIS: Step-reveal answer check
+   184→   184→   184→    // ═══════════════════════════════════════════════════════════════════
+   185→   185→   185→    function checkAnswer(btn, qi, oi, ans) {
+   186→   186→   186→      var question = btn.closest('.kuis-question') || btn.closest('.roda-question');
+   187→   187→   187→      if (!question) return;
+   188→   188→   188→
+   189→   189→   189→      // Guard: already answered — prevent double scoring
+   190→   190→   190→      if (question.dataset.answered === 'true') return;
+   191→   191→   191→      question.dataset.answered = 'true';
+   192→   192→   192→
+   193→   193→   193→      var block = btn.closest('.kuis-block');
+   194→   194→   194→      var blockId = block ? block.dataset.blockId : '';
+   195→   195→   195→      if (!quizState[blockId]) return;
+   196→   196→   196→      var st = quizState[blockId];
+   197→   197→   197→
+   198→   198→   198→      var allBtns = question.querySelectorAll('.q-opt');
+   199→   199→   199→      // Disable all
+   200→   200→   200→      allBtns.forEach(function(b) { b.classList.add('disabled'); });
+   201→   201→   201→
+   202→   202→   202→      // Mark correct/wrong
+   203→   203→   203→      st.total++;
+   204→   204→   204→      if (oi === ans) {
+   205→   205→   205→        st.correct++;
+   206→   206→   206→        btn.classList.add('correct');
+   207→   207→   207→        var fb = question.querySelector('.q-feedback');
+   208→   208→   208→        setFeedback(fb, '✓', '#34d399', 'Benar!');
+   209→   209→   209→      } else {
+   210→   210→   210→        btn.classList.add('wrong');
+   211→   211→   211→        if (allBtns[ans]) allBtns[ans].classList.add('correct');
+   212→   212→   212→        var fb = question.querySelector('.q-feedback');
+   213→   213→   213→        setFeedback(fb, '✗', '#ff6b6b', 'Salah. Jawaban benar: ' + String.fromCharCode(65 + ans));
+   214→   214→   214→      }
+   215→   215→   215→
+   216→   216→   216→      // Show explanation if present
+   217→   217→   217→      var exEl = question.querySelector('.q-explanation');
+   218→   218→   218→      if (exEl && exEl.textContent.trim()) {
+   219→   219→   219→        exEl.style.display = 'block';
+   220→   220→   220→      }
+   221→   221→   221→
+   222→   222→   222→      // Show next button (or completion)
+   223→   223→   223→      var nextBtn = question.querySelector('.q-next-btn');
+   224→   224→   224→      if (st.currentStep >= st.totalSteps - 1) {
+   225→   225→   225→        // Last question — next button triggers completion
+   226→   226→   226→        if (nextBtn) {
+   227→   227→   227→          nextBtn.textContent = 'Lihat Hasil →';
+   228→   228→   228→          nextBtn.style.display = 'block';
+   229→   229→   229→          nextBtn.onclick = function() { showKuisCompletion(blockId); };
+   230→   230→   230→        }
+   231→   231→   231→      } else {
+   232→   232→   232→        if (nextBtn) nextBtn.style.display = 'block';
+   233→   233→   233→      }
+   234→   234→   234→
+   235→   235→   235→      // SCORM: Report score after each quiz answer
+   236→   236→   236→      if (window.__SCORM && st.total > 0) {
+   237→   237→   237→        window.__SCORM.reportScore(st.correct, st.total);
+   238→   238→   238→      }
+   239→   239→   239→    }
+   240→   240→   240→
+   241→   241→   241→    // ── Kuis step navigation ──
+   242→   242→   242→    function nextKuisStep(blockId, currentIdx) {
+   243→   243→   243→      if (!quizState[blockId]) return;
+   244→   244→   244→      var nextIdx = currentIdx + 1;
+   245→   245→   245→      quizState[blockId].currentStep = nextIdx;
+   246→   246→   246→      showKuisStep(blockId, nextIdx);
+   247→   247→   247→    }
+   248→   248→   248→
+   249→   249→   249→    function showKuisStep(blockId, idx) {
+   250→   250→   250→      var block = document.querySelector('.kuis-block[data-block-id="' + blockId + '"]');
+   251→   251→   251→      if (!block) return;
+   252→   252→   252→      var steps = block.querySelectorAll('.kuis-step');
+   253→   253→   253→      var activeStep = null;
+   254→   254→   254→      steps.forEach(function(step, i) {
+   255→   255→   255→        if (i === idx) {
+   256→   256→   256→          step.classList.add('step-active');
+   257→   257→   257→          activeStep = step;
+   258→   258→   258→        } else {
+   259→   259→   259→          step.classList.remove('step-active');
+   260→   260→   260→        }
+   261→   261→   261→      });
+   262→   262→   262→      // Update progress
+   263→   263→   263→      var total = quizState[blockId] ? quizState[blockId].totalSteps : steps.length;
+   264→   264→   264→      var pfill = document.getElementById('kuis-pfill-' + blockId);
+   265→   265→   265→      var ptext = document.getElementById('kuis-ptext-' + blockId);
+   266→   266→   266→      var pbar = document.getElementById('kuis-pbar-' + blockId);
+   267→   267→   267→      if (pfill) pfill.style.width = Math.round(((idx + 1) / total) * 100) + '%';
+   268→   268→   268→      if (ptext) ptext.textContent = 'Soal ' + (idx + 1) + ' dari ' + total;
+   269→   269→   269→      // Update ARIA progressbar semantics
+   270→   270→   270→      if (pbar) {
+   271→   271→   271→        pbar.setAttribute('aria-valuenow', String(idx + 1));
+   272→   272→   272→        pbar.setAttribute('aria-valuetext', 'Soal ' + (idx + 1) + ' dari ' + total);
+   273→   273→   273→      }
+   274→   274→   274→      // Focus management: move focus to active step container
+   275→   275→   275→      if (activeStep) {
+   276→   276→   276→        requestAnimationFrame(function() {
+   277→   277→   277→          activeStep.focus();
+   278→   278→   278→        });
+   279→   279→   279→      }
+   280→   280→   280→    }
+   281→   281→   281→
+   282→   282→   282→    function showKuisCompletion(blockId) {
+   283→   283→   283→      if (!quizState[blockId]) return;
+   284→   284→   284→      quizState[blockId].completed = true;
+   285→   285→   285→      var st = quizState[blockId];
+   286→   286→   286→      var block = document.querySelector('.kuis-block[data-block-id="' + blockId + '"]');
+   287→   287→   287→      if (!block) return;
+   288→   288→   288→
+   289→   289→   289→      // Hide all steps and progress
+   290→   290→   290→      block.querySelectorAll('.kuis-step').forEach(function(s) { s.classList.remove('step-active'); });
+   291→   291→   291→      var progress = document.getElementById('kuis-progress-' + blockId);
+   292→   292→   292→      if (progress) progress.style.display = 'none';
+   293→   293→   293→
+   294→   294→   294→      // Show completion
+   295→   295→   295→      var done = document.getElementById('kuis-done-' + blockId);
+   296→   296→   296→      if (done) done.style.display = 'block';
+   297→   297→   297→
+   298→   298→   298→      var pct = st.totalSteps > 0 ? Math.round((st.correct / st.totalSteps) * 100) : 0;
+   299→   299→   299→      var iconEl = document.getElementById('kuis-done-icon-' + blockId);
+   300→   300→   300→      var titleEl = document.getElementById('kuis-done-title-' + blockId);
+   301→   301→   301→      var scoreEl = document.getElementById('kuis-done-score-' + blockId);
+   302→   302→   302→      var msgEl = document.getElementById('kuis-done-msg-' + blockId);
+   303→   303→   303→
+   304→   304→   304→      if (iconEl) iconEl.textContent = pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '📚';
+   305→   305→   305→      if (titleEl) titleEl.textContent = pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Belajar!';
+   306→   306→   306→      if (scoreEl) scoreEl.textContent = st.correct + ' dari ' + st.totalSteps + ' benar (' + pct + '%)';
+   307→   307→   307→      if (msgEl) msgEl.textContent = pct >= 80 ? 'Kamu menguasai materi ini!' : pct >= 50 ? 'Coba lagi untuk hasil lebih baik!' : 'Jangan menyerah, coba lagi ya!';
+   308→   308→   308→
+   309→   309→   309→      if (pct >= 80) launchConfetti();
+   310→   310→   310→
+   311→   311→   311→      // Focus management: move focus to completion screen
+   312→   312→   312→      if (done) {
+   313→   313→   313→        requestAnimationFrame(function() {
+   314→   314→   314→          done.focus();
+   315→   315→   315→        });
+   316→   316→   316→      }
+   317→   317→   317→
+   318→   318→   318→      // SCORM
+   319→   319→   319→      if (window.__SCORM) {
+   320→   320→   320→        window.__SCORM.reportScore(st.correct, st.totalSteps);
+   321→   321→   321→      }
+   322→   322→   322→    }
+   323→   323→   323→
+   324→   324→   324→
+   325→   325→   325→
+   326→   326→   326→    function replayKuis(blockId) {
+   327→   327→   327→      if (!quizState[blockId]) return;
+   328→   328→   328→      quizState[blockId] = { correct: 0, total: 0, currentStep: 0, totalSteps: quizState[blockId].totalSteps, completed: false };
+   329→   329→   329→
+   330→   330→   330→      var block = document.querySelector('.kuis-block[data-block-id="' + blockId + '"]');
+   331→   331→   331→      if (!block) return;
+   332→   332→   332→
+   333→   333→   333→      // Hide completion
+   334→   334→   334→      var done = document.getElementById('kuis-done-' + blockId);
+   335→   335→   335→      if (done) done.style.display = 'none';
+   336→   336→   336→
+   337→   337→   337→      // Show progress
+   338→   338→   338→      var progress = document.getElementById('kuis-progress-' + blockId);
+   339→   339→   339→      if (progress) progress.style.display = '';
+   340→   340→   340→
+   341→   341→   341→      // Reset all questions
+   342→   342→   342→      block.querySelectorAll('.kuis-question').forEach(function(q) {
+   343→   343→   343→        q.dataset.answered = 'false';
+   344→   344→   344→        var fb = q.querySelector('.q-feedback');
+   345→   345→   345→        if (fb) fb.innerHTML = '';
+   346→   346→   346→        var ex = q.querySelector('.q-explanation');
+   347→   347→   347→        if (ex) ex.style.display = 'none';
+   348→   348→   348→        var nextBtn = q.querySelector('.q-next-btn');
+   349→   349→   349→        if (nextBtn) {
+   350→   350→   350→          nextBtn.style.display = 'none';
+   351→   351→   351→          nextBtn.textContent = 'Lanjut →';
+   352→   352→   352→          // Restore onclick
+   353→   353→   353→          var idx = parseInt(q.dataset.idx);
+   354→   354→   354→          nextBtn.onclick = function() { nextKuisStep(blockId, idx); };
+   355→   355→   355→        }
+   356→   356→   356→        q.querySelectorAll('.q-opt').forEach(function(b) {
+   357→   357→   357→          b.classList.remove('disabled', 'correct', 'wrong');
+   358→   358→   358→        });
+   359→   359→   359→      });
+   360→   360→   360→
+   361→   361→   361→      // Show first step (which also moves focus)
+   362→   362→   362→      showKuisStep(blockId, 0);
+   363→   363→   363→    }
+   364→   364→   364→
+   365→   365→   365→    // ── Ftab switcher ──
+   366→   366→   366→    function switchFtab(tabId, idx) {
+   367→   367→   367→      var btns = document.querySelectorAll('#' + tabId + ' .ftab-btn');
+   368→   368→   368→      btns.forEach(function(b, i) { b.classList.toggle('active', i === idx); });
+   369→   369→   369→
+   370→   370→   370→      var panels = document.querySelectorAll('[data-ftab="' + tabId + '"]');
+   371→   371→   371→      panels.forEach(function(p) { p.classList.toggle('active', parseInt(p.dataset.idx) === idx); });
+   372→   372→   372→    }
+   373→   373→   373→
+   374→   374→   374→    // ── Confetti ──
+   375→   375→   375→    function launchConfetti() {
+   376→   376→   376→      var colors = ['#fbbf24', '#3ecfcf', '#34d399', '#a78bfa', '#ff6b6b', '#fb923c'];
+   377→   377→   377→      for (var i = 0; i < 40; i++) {
+   378→   378→   378→        var piece = document.createElement('div');
+   379→   379→   379→        piece.className = 'confetti-piece';
+   380→   380→   380→        piece.style.cssText = 'left:' + (Math.random() * 100) + '%;top:-10px;width:' + (4 + Math.random() * 6) + 'px;height:' + (4 + Math.random() * 6) + 'px;background:' + colors[Math.floor(Math.random() * colors.length)] + ';border-radius:' + (Math.random() > 0.5 ? '50%' : '2px') + ';animation-duration:' + (1.5 + Math.random() * 2) + 's;animation-delay:' + (Math.random() * 0.5) + 's;';
+   381→   381→   381→        document.body.appendChild(piece);
+   382→   382→   382→        setTimeout(function(p) { p.remove(); }.bind(null, piece), 3500);
+   383→   383→   383→      }
+   384→   384→   384→    }
+   385→   385→   385→
+   386→   386→   386→    // ═══════════════════════════════════════════════════════════════════
+   387→   387→   387→    // GAME: Memory Game
+   388→   388→   388→    // ═══════════════════════════════════════════════════════════════════
+   389→   389→   389→    var memFlipped = [];
+   390→   390→   390→    var memMatched = 0;
+   391→   391→   391→
+   392→   392→   392→    function flipMemoryCard(card) {
+   393→   393→   393→      if (card.classList.contains('flipped') || card.classList.contains('matched') || memFlipped.length >= 2) return;
+   394→   394→   394→      card.classList.add('flipped');
+   395→   395→   395→      memFlipped.push(card);
+   396→   396→   396→      if (memFlipped.length === 2) {
+   397→   397→   397→        var c1 = memFlipped[0], c2 = memFlipped[1];
+   398→   398→   398→        var samePair = c1.dataset.pair === c2.dataset.pair && c1.dataset.side !== c2.dataset.side;
+   399→   399→   399→        if (samePair) {
+   400→   400→   400→          c1.classList.add('matched');
+   401→   401→   401→          c2.classList.add('matched');
+   402→   402→   402→          memMatched++;
+   403→   403→   403→          var block = card.closest('.memory-game-block');
+   404→   404→   404→          var game = block ? block.dataset.game : '';
+   405→   405→   405→          var scoreEl = document.getElementById('mem-score-' + game);
+   406→   406→   406→          var totalPairs = block ? block.querySelectorAll('.memory-card').length / 2 : 0;
+   407→   407→   407→          if (scoreEl) scoreEl.textContent = '👀 ' + memMatched + '/' + totalPairs + ' pasangan';
+   408→   408→   408→          if (memMatched >= totalPairs && totalPairs > 0) { launchConfetti(); if (scoreEl) scoreEl.textContent = '🎉 Semua pasangan ditemukan!'; }
+   409→   409→   409→          memFlipped = [];
+   410→   410→   410→        } else {
+   411→   411→   411→          setTimeout(function() {
+   412→   412→   412→            c1.classList.add('wrong'); c2.classList.add('wrong');
+   413→   413→   413→            setTimeout(function() {
+   414→   414→   414→              c1.classList.remove('flipped', 'wrong');
+   415→   415→   415→              c2.classList.remove('flipped', 'wrong');
+   416→   416→   416→              memFlipped = [];
+   417→   417→   417→            }, 600);
+   418→   418→   418→          }, 500);
+   419→   419→   419→        }
+   420→   420→   420→      }
+   421→   421→   421→    }
+   422→   422→   422→
+   423→   423→   423→    // ═══════════════════════════════════════════════════════════════════
+   424→   424→   424→    // GAME: Matching Game
+   425→   425→   425→    // ═══════════════════════════════════════════════════════════════════
+   426→   426→   426→    var matchSelectedLeft = null;
+   427→   427→   427→    var matchCorrect = 0;
+   428→   428→   428→
+   429→   429→   429→    function selectMatchLeft(btn) {
+   430→   430→   430→      if (btn.classList.contains('matched-correct')) return;
+   431→   431→   431→      document.querySelectorAll('.match-left.selected').forEach(function(b) { b.classList.remove('selected'); });
+   432→   432→   432→      btn.classList.add('selected');
+   433→   433→   433→      matchSelectedLeft = btn;
+   434→   434→   434→    }
+   435→   435→   435→
+   436→   436→   436→    function selectMatchRight(btn) {
+   437→   437→   437→      if (!matchSelectedLeft || btn.classList.contains('matched-correct')) return;
+   438→   438→   438→      if (btn.classList.contains('matched-correct')) return;
+   439→   439→   439→      var leftIdx = matchSelectedLeft.dataset.idx;
+   440→   440→   440→      var rightIdx = btn.dataset.idx;
+   441→   441→   441→      if (leftIdx === rightIdx) {
+   442→   442→   442→        matchSelectedLeft.classList.remove('selected');
+   443→   443→   443→        matchSelectedLeft.classList.add('matched-correct');
+   444→   444→   444→        btn.classList.add('matched-correct');
+   445→   445→   445→        matchCorrect++;
+   446→   446→   446→        matchSelectedLeft = null;
+   447→   447→   447→        var block = btn.closest('.matching-game-block');
+   448→   448→   448→        var game = block ? block.dataset.game : '';
+   449→   449→   449→        var scoreEl = document.getElementById('match-score-' + game);
+   450→   450→   450→        var total = block ? block.querySelectorAll('.match-left').length : 0;
+   451→   451→   451→        if (scoreEl) scoreEl.textContent = '🔗 ' + matchCorrect + '/' + total + ' cocok';
+   452→   452→   452→        if (matchCorrect >= total && total > 0) { launchConfetti(); if (scoreEl) scoreEl.textContent = '🎉 Semua cocok!'; }
+   453→   453→   453→      } else {
+   454→   454→   454→        matchSelectedLeft.classList.remove('selected');
+   455→   455→   455→        matchSelectedLeft.classList.add('matched-wrong');
+   456→   456→   456→        btn.classList.add('matched-wrong');
+   457→   457→   457→        var ml = matchSelectedLeft, mr = btn;
+   458→   458→   458→        setTimeout(function() { ml.classList.remove('matched-wrong'); mr.classList.remove('matched-wrong'); }, 500);
+   459→   459→   459→        matchSelectedLeft = null;
+   460→   460→   460→      }
+   461→   461→   461→    }
+   462→   462→   462→
+   463→   463→   463→    // ═══════════════════════════════════════════════════════════════════
+   464→   464→   464→    // GAME: Fill-in-the-Blank (with completion screen + replay)
+   465→   465→   465→    // ═══════════════════════════════════════════════════════════════════
+   466→   466→   466→    function checkFillBlank(input) {
+   467→   467→   467→      var userAns = input.value.trim().toLowerCase();
+   468→   468→   468→      var correctAns = input.dataset.answer.toLowerCase();
+   469→   469→   469→      // Support multiple accepted answers separated by /
+   470→   470→   470→      var accepted = correctAns.split('/');
+   471→   471→   471→      if (accepted.some(function(a) { return a.trim() === userAns; })) {
+   472→   472→   472→        input.classList.add('correct');
+   473→   473→   473→        input.classList.remove('wrong');
+   474→   474→   474→      } else {
+   475→   475→   475→        input.classList.add('wrong');
+   476→   476→   476→        input.classList.remove('correct');
+   477→   477→   477→      }
+   478→   478→   478→    }
+   479→   479→   479→
+   480→   480→   480→    function checkAllFillBlanks(fbId) {
+   481→   481→   481→      var block = document.querySelector('.fill-blank-game-block[data-game="' + fbId + '"]');
+   482→   482→   482→      if (!block || block.dataset.checked === 'true') return;
+   483→   483→   483→      block.dataset.checked = 'true';
+   484→   484→   484→
+   485→   485→   485→      var inputs = block.querySelectorAll('.fb-input');
+   486→   486→   486→      var correct = 0;
+   487→   487→   487→      inputs.forEach(function(input) {
+   488→   488→   488→        checkFillBlank(input);
+   489→   489→   489→        if (input.classList.contains('correct')) correct++;
+   490→   490→   490→        // Show per-question feedback
+   491→   491→   491→        var idx = input.dataset.idx;
+   492→   492→   492→        var fb = document.getElementById('fb-fb-' + fbId + '-' + idx);
+   493→   493→   493→        if (fb) {
+   494→   494→   494→          if (input.classList.contains('correct')) {
+   495→   495→   495→            setFeedback(fb, '✓', '#34d399', 'Benar!');
+   496→   496→   496→          } else {
+   497→   497→   497→            // P0 FIX: input.dataset.answer is user-controlled content.
+   498→   498→   498→            // DOM auto-decodes HTML entities in data attributes,
+   499→   499→   499→            // so innerHTML would execute <img onerror> payloads.
+   500→   500→   500→            // textContent is immune to XSS.
+
+[showing lines 1-500 of 1031; use offset=501 with limit to continue reading]
