@@ -863,3 +863,29 @@ Stage Summary:
 - All existing quiz tests: 318/318 PASS (zero regression)
 - Full suite baseline: 12 failures (unchanged from before)
 - Build: PASS
+
+---
+Task ID: E1-QA
+Agent: Main Agent
+Task: Sprint 6.4-E1-QA — Quiz Browser Exploit & Malformed-Data Verification
+
+Work Log:
+- Traced complete export path from UI to file
+- Identified TWO export paths: Vite SSR (production, React JSX) and generateClientExportHtml (legacy, string templates)
+- Created quiz-e1-qa.test.ts with 209 comprehensive tests
+- XSS matrix: 11 fields × 7 payloads × 3 block types + P0 vector + runtime checks
+- Malformed data: 16 crash paths verified safe
+- Non-scorable scoring: denominator, NaN/Infinity safety, isScorable branch
+- Export context: deterministic IDs, fresh context, no pollution
+- Regression: step-reveal, feedback, progress, completion, replay, ARIA, variants
+- All 567 quiz tests PASS, full suite 1225 passed / 12 baseline failures
+- Build PASS, commit e2b434b, pushed to main
+
+Stage Summary:
+- Export path trace: Production = Vite SSR (React JSX auto-escaping), Legacy = generateClientExportHtml (escapeHtml)
+- Both paths secure through different mechanisms
+- No XSS payloads execute (tag-based or attribute breakout)
+- All malformed data renders safely
+- Non-scorable scoring contract verified
+- Export context deterministic and isolated
+- 209 QA tests ALL PASS
