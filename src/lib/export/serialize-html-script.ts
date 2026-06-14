@@ -1,6 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════
-// HTML-SAFE JSON SERIALIZER — Sprint 6.4-E1-QA2
+// HTML-SAFE JSON SERIALIZER — CANONICAL SECURITY BOUNDARY
 // ═══════════════════════════════════════════════════════════════════════
+// Sprint 6.4-E1-QA2: Created. Sprint 6.4-F: Frozen.
+//
 // Serializes JSON for safe embedding inside HTML <script> tags.
 //
 // OWASP XSS Prevention Cheat Sheet — Rule #3:
@@ -26,6 +28,24 @@
 //   1. Safety in older browsers
 //   2. OWASP compliance
 //   3. No silent breakage if the runtime changes
+//
+// ⛔ FREEZE INVARIANTS (Sprint 6.4-F):
+//
+//   1. No export route may use JSON.stringify() directly for HTML
+//      <script> injection. All routes MUST use this function.
+//
+//   2. No second serializer with different escaping rules may be
+//      created. This is the single canonical security boundary.
+//
+//   3. Any change to the 6 replacement rules below MUST pass the
+//      full security regression suite in:
+//        src/__tests__/export-serialization-boundary.test.ts
+//      specifically Section 10 (serializer freeze guard).
+//
+//   4. Adding a new replacement rule is permitted ONLY if it fixes
+//      a demonstrated vulnerability and the full suite still passes.
+//
+//   5. Removing or weakening an existing replacement rule is FORBIDDEN.
 //
 // Reference: https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
 // ═══════════════════════════════════════════════════════════════════════
