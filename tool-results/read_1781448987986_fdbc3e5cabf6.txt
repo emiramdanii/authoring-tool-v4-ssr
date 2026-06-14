@@ -1,0 +1,1044 @@
+     1→// ═══════════════════════════════════════════════════════════════════════
+     2→// EXPORT SCRIPTS — All JavaScript for the exported standalone HTML
+     3→// Sprint 6.4-C: Step-reveal flow + completion screen + replay
+     4→// Sprint 6.4-E1-Patch: Close XSS — all feedback uses textContent, no innerHTML with user content
+     5→// Sprint 6.4-E1-Patch-2: Non-scorable TF questions — invalid correct values give neutral feedback
+     6→// ═══════════════════════════════════════════════════════════════════════
+     7→
+     8→export function getJs(): string {
+     9→  return `
+    10→    // ── State ──
+    11→    let currentPage = 0;
+    12→    let totalPages = 0;
+    13→
+    14→    // ── Quiz state (per-block, isolated) ──
+    15→    var quizState = {};   // keyed by blockId: { correct, total, currentStep, totalSteps, completed }
+    16→    var tfState = {};     // keyed by gameId:  { correct, total, currentStep, totalSteps, completed }
+    17→    var fbState = {};     // keyed by gameId:  { checked, completed }
+    18→
+    19→    // ── Safe feedback helper (Sprint 6.4-E1-Patch) ──
+    20→    // NEVER use innerHTML with user-controlled content.
+    21→    // This helper builds DOM nodes safely — textContent is immune to XSS.
+    22→    function setFeedback(el, icon, color, message, strongText) {
+    23→      if (!el) return;
+    24→      el.textContent = '';
+    25→      var span = document.createElement('span');
+    26→      span.style.color = color;
+    27→      span.textContent = icon + ' ' + message;
+    28→      if (strongText) {
+    29→        var strong = document.createElement('strong');
+    30→        strong.textContent = String(strongText);
+    31→        span.appendChild(strong);
+    32→      }
+    33→      el.appendChild(span);
+    34→    }
+    35→
+    36→    // ── Init ──
+    37→    (function init() {
+    38→      const data = window.__EXPORT_DATA__;
+    39→      if (!data || !data.pages) { document.getElementById('canvas').innerHTML = '<div class="empty-page"><p>Data export tidak ditemukan.</p></div>'; return; }
+    40→
+    41→      totalPages = data.pages.length;
+    42→      const ratioW = data.ratioW || 1280;
+    43→      const ratioH = data.ratioH || 720;
+    44→
+    45→      // Render all pages
+    46→      const canvas = document.getElementById('canvas');
+    47→      canvas.style.width = ratioW + 'px';
+    48→      canvas.style.height = ratioH + 'px';
+    49→      canvas.innerHTML = data.pagesHtml.map((html, i) => {
+    50→        const div = document.createElement('div');
+    51→        div.innerHTML = html;
+    52→        const page = div.firstElementChild;
+    53→        if (page) {
+    54→          page.classList.toggle('active', i === 0);
+    55→        }
+    56→        return div.innerHTML;
+    57→      }).join('');
+    58→
+    59→      // Initialize quiz step states
+    60→      document.querySelectorAll('.kuis-block').forEach(function(block) {
+    61→        var blockId = block.dataset.blockId;
+    62→        var total = parseInt(block.dataset.total) || 0;
+    63→        quizState[blockId] = { correct: 0, total: 0, currentStep: 0, totalSteps: total, completed: false };
+    64→        showKuisStep(blockId, 0);
+    65→      });
+    66→      document.querySelectorAll('.true-false-block').forEach(function(block) {
+    67→        var gameId = block.dataset.game;
+    68→        var total = parseInt(block.dataset.total) || 0;
+    69→        tfState[gameId] = { correct: 0, total: 0, currentStep: 0, totalSteps: total, completed: false };
+    70→        showTFStep(gameId, 0);
+    71→      });
+    72→      document.querySelectorAll('.fill-blank-game-block').forEach(function(block) {
+    73→        var gameId = block.dataset.game;
+    74→        fbState[gameId] = { checked: false, completed: false };
+    75→      });
+    76→
+    77→      updateCounter();
+    78→      scaleCanvas();
+    79→      window.addEventListener('resize', scaleCanvas);
+    80→    })();
+    81→
+    82→    // ── Navigation ──
+    83→    function goPage(idx) {
+    84→      if (idx < 0 || idx >= totalPages || idx === currentPage) return;
+    85→      const pages = document.querySelectorAll('.page');
+    86→      const direction = idx > currentPage ? 1 : -1;
+    87→
+    88→      // Reset quiz state on the page being left
+    89→      resetPageQuizState(pages[currentPage]);
+    90→
+    91→      // Exit current
+    92→      pages[currentPage]?.classList.remove('active');
+    93→      pages[currentPage]?.classList.add(direction > 0 ? 'exit-left' : 'exit-right');
+    94→
+    95→      // Enter new
+    96→      currentPage = idx;
+    97→      var liveEl = document.getElementById('a11y-live');
+    98→      if (liveEl) liveEl.textContent = 'Halaman ' + (idx+1) + ' dari ' + pages.length;
+    99→      pages[currentPage]?.classList.remove('exit-left', 'exit-right', 'enter-left', 'enter-right');
+   100→      pages[currentPage]?.classList.add(direction > 0 ? 'enter-right' : 'enter-left');
+   101→
+   102→      // Trigger animation
+   103→      requestAnimationFrame(() => {
+   104→        requestAnimationFrame(() => {
+   105→          pages[currentPage]?.classList.remove('enter-left', 'enter-right');
+   106→          pages[currentPage]?.classList.add('active');
+   107→          // Clean up old page after transition
+   108→          setTimeout(() => {
+   109→            pages.forEach((p, i) => {
+   110→              if (i !== currentPage) {
+   111→                p.classList.remove('exit-left', 'exit-right', 'active');
+   112→              }
+   113→            });
+   114→          }, 400);
+   115→        });
+   116→      });
+   117→
+   118→      updateCounter();
+   119→
+   120→      // Confetti on last page
+   121→      if (currentPage === totalPages - 1) {
+   122→        launchConfetti();
+   123→      }
+   124→
+   125→      // SCORM: Report completion when reaching last page
+   126→      if (currentPage === totalPages - 1 && window.__SCORM) {
+   127→        window.__SCORM.reportComplete();
+   128→      }
+   129→    }
+   130→
+   131→    function nextPage() { goPage(currentPage + 1); }
+   132→    function prevPage() { goPage(currentPage - 1); }
+   133→
+   134→    function updateCounter() {
+   135→      const counter = document.getElementById('page-counter');
+   136→      if (counter) counter.textContent = (currentPage + 1) + '/' + totalPages;
+   137→    }
+   138→
+   139→    // ── Scale canvas to fit viewport ──
+   140→    function scaleCanvas() {
+   141→      const container = document.getElementById('canvas-container');
+   142→      const canvas = document.getElementById('canvas');
+   143→      if (!container || !canvas) return;
+   144→
+   145→      const aW = (container.clientWidth || 800) - 40;
+   146→      const aH = (container.clientHeight || 500) - 40;
+   147→      const cW = parseInt(canvas.style.width) || 1280;
+   148→      const cH = parseInt(canvas.style.height) || 720;
+   149→      const scale = Math.min(aW / cW, aH / cH, 1);
+   150→
+   151→      canvas.style.transform = 'scale(' + scale + ')';
+   152→    }
+   153→
+   154→    // ── Keyboard shortcuts ──
+   155→    document.addEventListener('keydown', function(e) {
+   156→      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+   157→      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); }
+   158→      if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
+   159→      if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+   160→      if (e.key === 'Escape') { if (document.fullscreenElement) document.exitFullscreen(); }
+   161→    });
+   162→
+   163→    // ── Touch/swipe ──
+   164→    let touchStartX = 0;
+   165→    document.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+   166→    document.addEventListener('touchend', function(e) {
+   167→      const dx = e.changedTouches[0].screenX - touchStartX;
+   168→      if (Math.abs(dx) > 50) {
+   169→        if (dx < 0) nextPage();
+   170→        else prevPage();
+   171→      }
+   172→    }, { passive: true });
+   173→
+   174→    // ── Fullscreen ──
+   175→    function toggleFullscreen() {
+   176→      if (document.fullscreenElement) {
+   177→        document.exitFullscreen();
+   178→      } else {
+   179→        document.documentElement.requestFullscreen().catch(function() {});
+   180→      }
+   181→    }
+   182→
+   183→    // ═══════════════════════════════════════════════════════════════════
+   184→    // KUIS: Step-reveal answer check
+   185→    // ═══════════════════════════════════════════════════════════════════
+   186→    function checkAnswer(btn, qi, oi, ans) {
+   187→      var question = btn.closest('.kuis-question') || btn.closest('.roda-question');
+   188→      if (!question) return;
+   189→
+   190→      // Guard: already answered — prevent double scoring
+   191→      if (question.dataset.answered === 'true') return;
+   192→      question.dataset.answered = 'true';
+   193→
+   194→      var block = btn.closest('.kuis-block');
+   195→      var blockId = block ? block.dataset.blockId : '';
+   196→      if (!quizState[blockId]) return;
+   197→      var st = quizState[blockId];
+   198→
+   199→      var allBtns = question.querySelectorAll('.q-opt');
+   200→      // Disable all
+   201→      allBtns.forEach(function(b) { b.classList.add('disabled'); });
+   202→
+   203→      // Mark correct/wrong
+   204→      st.total++;
+   205→      if (oi === ans) {
+   206→        st.correct++;
+   207→        btn.classList.add('correct');
+   208→        var fb = question.querySelector('.q-feedback');
+   209→        setFeedback(fb, '✓', '#34d399', 'Benar!');
+   210→      } else {
+   211→        btn.classList.add('wrong');
+   212→        if (allBtns[ans]) allBtns[ans].classList.add('correct');
+   213→        var fb = question.querySelector('.q-feedback');
+   214→        setFeedback(fb, '✗', '#ff6b6b', 'Salah. Jawaban benar: ' + String.fromCharCode(65 + ans));
+   215→      }
+   216→
+   217→      // Show explanation if present
+   218→      var exEl = question.querySelector('.q-explanation');
+   219→      if (exEl && exEl.textContent.trim()) {
+   220→        exEl.style.display = 'block';
+   221→      }
+   222→
+   223→      // Show next button (or completion)
+   224→      var nextBtn = question.querySelector('.q-next-btn');
+   225→      if (st.currentStep >= st.totalSteps - 1) {
+   226→        // Last question — next button triggers completion
+   227→        if (nextBtn) {
+   228→          nextBtn.textContent = 'Lihat Hasil →';
+   229→          nextBtn.style.display = 'block';
+   230→          nextBtn.onclick = function() { showKuisCompletion(blockId); };
+   231→        }
+   232→      } else {
+   233→        if (nextBtn) nextBtn.style.display = 'block';
+   234→      }
+   235→
+   236→      // SCORM: Report score after each quiz answer
+   237→      if (window.__SCORM && st.total > 0) {
+   238→        window.__SCORM.reportScore(st.correct, st.total);
+   239→      }
+   240→    }
+   241→
+   242→    // ── Kuis step navigation ──
+   243→    function nextKuisStep(blockId, currentIdx) {
+   244→      if (!quizState[blockId]) return;
+   245→      var nextIdx = currentIdx + 1;
+   246→      quizState[blockId].currentStep = nextIdx;
+   247→      showKuisStep(blockId, nextIdx);
+   248→    }
+   249→
+   250→    function showKuisStep(blockId, idx) {
+   251→      var block = document.querySelector('.kuis-block[data-block-id="' + blockId + '"]');
+   252→      if (!block) return;
+   253→      var steps = block.querySelectorAll('.kuis-step');
+   254→      var activeStep = null;
+   255→      steps.forEach(function(step, i) {
+   256→        if (i === idx) {
+   257→          step.classList.add('step-active');
+   258→          activeStep = step;
+   259→        } else {
+   260→          step.classList.remove('step-active');
+   261→        }
+   262→      });
+   263→      // Update progress
+   264→      var total = quizState[blockId] ? quizState[blockId].totalSteps : steps.length;
+   265→      var pfill = document.getElementById('kuis-pfill-' + blockId);
+   266→      var ptext = document.getElementById('kuis-ptext-' + blockId);
+   267→      var pbar = document.getElementById('kuis-pbar-' + blockId);
+   268→      if (pfill) pfill.style.width = Math.round(((idx + 1) / total) * 100) + '%';
+   269→      if (ptext) ptext.textContent = 'Soal ' + (idx + 1) + ' dari ' + total;
+   270→      // Update ARIA progressbar semantics
+   271→      if (pbar) {
+   272→        pbar.setAttribute('aria-valuenow', String(idx + 1));
+   273→        pbar.setAttribute('aria-valuetext', 'Soal ' + (idx + 1) + ' dari ' + total);
+   274→      }
+   275→      // Focus management: move focus to active step container
+   276→      if (activeStep) {
+   277→        requestAnimationFrame(function() {
+   278→          activeStep.focus();
+   279→        });
+   280→      }
+   281→    }
+   282→
+   283→    function showKuisCompletion(blockId) {
+   284→      if (!quizState[blockId]) return;
+   285→      quizState[blockId].completed = true;
+   286→      var st = quizState[blockId];
+   287→      var block = document.querySelector('.kuis-block[data-block-id="' + blockId + '"]');
+   288→      if (!block) return;
+   289→
+   290→      // Hide all steps and progress
+   291→      block.querySelectorAll('.kuis-step').forEach(function(s) { s.classList.remove('step-active'); });
+   292→      var progress = document.getElementById('kuis-progress-' + blockId);
+   293→      if (progress) progress.style.display = 'none';
+   294→
+   295→      // Show completion
+   296→      var done = document.getElementById('kuis-done-' + blockId);
+   297→      if (done) done.style.display = 'block';
+   298→
+   299→      var pct = st.totalSteps > 0 ? Math.round((st.correct / st.totalSteps) * 100) : 0;
+   300→      var iconEl = document.getElementById('kuis-done-icon-' + blockId);
+   301→      var titleEl = document.getElementById('kuis-done-title-' + blockId);
+   302→      var scoreEl = document.getElementById('kuis-done-score-' + blockId);
+   303→      var msgEl = document.getElementById('kuis-done-msg-' + blockId);
+   304→
+   305→      if (iconEl) iconEl.textContent = pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '📚';
+   306→      if (titleEl) titleEl.textContent = pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Belajar!';
+   307→      if (scoreEl) scoreEl.textContent = st.correct + ' dari ' + st.totalSteps + ' benar (' + pct + '%)';
+   308→      if (msgEl) msgEl.textContent = pct >= 80 ? 'Kamu menguasai materi ini!' : pct >= 50 ? 'Coba lagi untuk hasil lebih baik!' : 'Jangan menyerah, coba lagi ya!';
+   309→
+   310→      if (pct >= 80) launchConfetti();
+   311→
+   312→      // Focus management: move focus to completion screen
+   313→      if (done) {
+   314→        requestAnimationFrame(function() {
+   315→          done.focus();
+   316→        });
+   317→      }
+   318→
+   319→      // SCORM
+   320→      if (window.__SCORM) {
+   321→        window.__SCORM.reportScore(st.correct, st.totalSteps);
+   322→      }
+   323→    }
+   324→
+   325→
+   326→
+   327→    function replayKuis(blockId) {
+   328→      if (!quizState[blockId]) return;
+   329→      quizState[blockId] = { correct: 0, total: 0, currentStep: 0, totalSteps: quizState[blockId].totalSteps, completed: false };
+   330→
+   331→      var block = document.querySelector('.kuis-block[data-block-id="' + blockId + '"]');
+   332→      if (!block) return;
+   333→
+   334→      // Hide completion
+   335→      var done = document.getElementById('kuis-done-' + blockId);
+   336→      if (done) done.style.display = 'none';
+   337→
+   338→      // Show progress
+   339→      var progress = document.getElementById('kuis-progress-' + blockId);
+   340→      if (progress) progress.style.display = '';
+   341→
+   342→      // Reset all questions
+   343→      block.querySelectorAll('.kuis-question').forEach(function(q) {
+   344→        q.dataset.answered = 'false';
+   345→        var fb = q.querySelector('.q-feedback');
+   346→        if (fb) fb.innerHTML = '';
+   347→        var ex = q.querySelector('.q-explanation');
+   348→        if (ex) ex.style.display = 'none';
+   349→        var nextBtn = q.querySelector('.q-next-btn');
+   350→        if (nextBtn) {
+   351→          nextBtn.style.display = 'none';
+   352→          nextBtn.textContent = 'Lanjut →';
+   353→          // Restore onclick
+   354→          var idx = parseInt(q.dataset.idx);
+   355→          nextBtn.onclick = function() { nextKuisStep(blockId, idx); };
+   356→        }
+   357→        q.querySelectorAll('.q-opt').forEach(function(b) {
+   358→          b.classList.remove('disabled', 'correct', 'wrong');
+   359→        });
+   360→      });
+   361→
+   362→      // Show first step (which also moves focus)
+   363→      showKuisStep(blockId, 0);
+   364→    }
+   365→
+   366→    // ── Ftab switcher ──
+   367→    function switchFtab(tabId, idx) {
+   368→      var btns = document.querySelectorAll('#' + tabId + ' .ftab-btn');
+   369→      btns.forEach(function(b, i) { b.classList.toggle('active', i === idx); });
+   370→
+   371→      var panels = document.querySelectorAll('[data-ftab="' + tabId + '"]');
+   372→      panels.forEach(function(p) { p.classList.toggle('active', parseInt(p.dataset.idx) === idx); });
+   373→    }
+   374→
+   375→    // ── Confetti ──
+   376→    function launchConfetti() {
+   377→      var colors = ['#fbbf24', '#3ecfcf', '#34d399', '#a78bfa', '#ff6b6b', '#fb923c'];
+   378→      for (var i = 0; i < 40; i++) {
+   379→        var piece = document.createElement('div');
+   380→        piece.className = 'confetti-piece';
+   381→        piece.style.cssText = 'left:' + (Math.random() * 100) + '%;top:-10px;width:' + (4 + Math.random() * 6) + 'px;height:' + (4 + Math.random() * 6) + 'px;background:' + colors[Math.floor(Math.random() * colors.length)] + ';border-radius:' + (Math.random() > 0.5 ? '50%' : '2px') + ';animation-duration:' + (1.5 + Math.random() * 2) + 's;animation-delay:' + (Math.random() * 0.5) + 's;';
+   382→        document.body.appendChild(piece);
+   383→        setTimeout(function(p) { p.remove(); }.bind(null, piece), 3500);
+   384→      }
+   385→    }
+   386→
+   387→    // ═══════════════════════════════════════════════════════════════════
+   388→    // GAME: Memory Game
+   389→    // ═══════════════════════════════════════════════════════════════════
+   390→    var memFlipped = [];
+   391→    var memMatched = 0;
+   392→
+   393→    function flipMemoryCard(card) {
+   394→      if (card.classList.contains('flipped') || card.classList.contains('matched') || memFlipped.length >= 2) return;
+   395→      card.classList.add('flipped');
+   396→      memFlipped.push(card);
+   397→      if (memFlipped.length === 2) {
+   398→        var c1 = memFlipped[0], c2 = memFlipped[1];
+   399→        var samePair = c1.dataset.pair === c2.dataset.pair && c1.dataset.side !== c2.dataset.side;
+   400→        if (samePair) {
+   401→          c1.classList.add('matched');
+   402→          c2.classList.add('matched');
+   403→          memMatched++;
+   404→          var block = card.closest('.memory-game-block');
+   405→          var game = block ? block.dataset.game : '';
+   406→          var scoreEl = document.getElementById('mem-score-' + game);
+   407→          var totalPairs = block ? block.querySelectorAll('.memory-card').length / 2 : 0;
+   408→          if (scoreEl) scoreEl.textContent = '👀 ' + memMatched + '/' + totalPairs + ' pasangan';
+   409→          if (memMatched >= totalPairs && totalPairs > 0) { launchConfetti(); if (scoreEl) scoreEl.textContent = '🎉 Semua pasangan ditemukan!'; }
+   410→          memFlipped = [];
+   411→        } else {
+   412→          setTimeout(function() {
+   413→            c1.classList.add('wrong'); c2.classList.add('wrong');
+   414→            setTimeout(function() {
+   415→              c1.classList.remove('flipped', 'wrong');
+   416→              c2.classList.remove('flipped', 'wrong');
+   417→              memFlipped = [];
+   418→            }, 600);
+   419→          }, 500);
+   420→        }
+   421→      }
+   422→    }
+   423→
+   424→    // ═══════════════════════════════════════════════════════════════════
+   425→    // GAME: Matching Game
+   426→    // ═══════════════════════════════════════════════════════════════════
+   427→    var matchSelectedLeft = null;
+   428→    var matchCorrect = 0;
+   429→
+   430→    function selectMatchLeft(btn) {
+   431→      if (btn.classList.contains('matched-correct')) return;
+   432→      document.querySelectorAll('.match-left.selected').forEach(function(b) { b.classList.remove('selected'); });
+   433→      btn.classList.add('selected');
+   434→      matchSelectedLeft = btn;
+   435→    }
+   436→
+   437→    function selectMatchRight(btn) {
+   438→      if (!matchSelectedLeft || btn.classList.contains('matched-correct')) return;
+   439→      if (btn.classList.contains('matched-correct')) return;
+   440→      var leftIdx = matchSelectedLeft.dataset.idx;
+   441→      var rightIdx = btn.dataset.idx;
+   442→      if (leftIdx === rightIdx) {
+   443→        matchSelectedLeft.classList.remove('selected');
+   444→        matchSelectedLeft.classList.add('matched-correct');
+   445→        btn.classList.add('matched-correct');
+   446→        matchCorrect++;
+   447→        matchSelectedLeft = null;
+   448→        var block = btn.closest('.matching-game-block');
+   449→        var game = block ? block.dataset.game : '';
+   450→        var scoreEl = document.getElementById('match-score-' + game);
+   451→        var total = block ? block.querySelectorAll('.match-left').length : 0;
+   452→        if (scoreEl) scoreEl.textContent = '🔗 ' + matchCorrect + '/' + total + ' cocok';
+   453→        if (matchCorrect >= total && total > 0) { launchConfetti(); if (scoreEl) scoreEl.textContent = '🎉 Semua cocok!'; }
+   454→      } else {
+   455→        matchSelectedLeft.classList.remove('selected');
+   456→        matchSelectedLeft.classList.add('matched-wrong');
+   457→        btn.classList.add('matched-wrong');
+   458→        var ml = matchSelectedLeft, mr = btn;
+   459→        setTimeout(function() { ml.classList.remove('matched-wrong'); mr.classList.remove('matched-wrong'); }, 500);
+   460→        matchSelectedLeft = null;
+   461→      }
+   462→    }
+   463→
+   464→    // ═══════════════════════════════════════════════════════════════════
+   465→    // GAME: Fill-in-the-Blank (with completion screen + replay)
+   466→    // ═══════════════════════════════════════════════════════════════════
+   467→    function checkFillBlank(input) {
+   468→      var userAns = input.value.trim().toLowerCase();
+   469→      var correctAns = input.dataset.answer.toLowerCase();
+   470→      // Support multiple accepted answers separated by /
+   471→      var accepted = correctAns.split('/');
+   472→      if (accepted.some(function(a) { return a.trim() === userAns; })) {
+   473→        input.classList.add('correct');
+   474→        input.classList.remove('wrong');
+   475→      } else {
+   476→        input.classList.add('wrong');
+   477→        input.classList.remove('correct');
+   478→      }
+   479→    }
+   480→
+   481→    function checkAllFillBlanks(fbId) {
+   482→      var block = document.querySelector('.fill-blank-game-block[data-game="' + fbId + '"]');
+   483→      if (!block || block.dataset.checked === 'true') return;
+   484→      block.dataset.checked = 'true';
+   485→
+   486→      var inputs = block.querySelectorAll('.fb-input');
+   487→      var correct = 0;
+   488→      inputs.forEach(function(input) {
+   489→        checkFillBlank(input);
+   490→        if (input.classList.contains('correct')) correct++;
+   491→        // Show per-question feedback
+   492→        var idx = input.dataset.idx;
+   493→        var fb = document.getElementById('fb-fb-' + fbId + '-' + idx);
+   494→        if (fb) {
+   495→          if (input.classList.contains('correct')) {
+   496→            setFeedback(fb, '✓', '#34d399', 'Benar!');
+   497→          } else {
+   498→            // P0 FIX: input.dataset.answer is user-controlled content.
+   499→            // DOM auto-decodes HTML entities in data attributes,
+   500→            // so innerHTML would execute <img onerror> payloads.
+   501→            // textContent is immune to XSS.
+   502→            setFeedback(fb, '✗', '#ff6b6b', 'Salah. Jawaban: ', input.dataset.answer);
+   503→          }
+   504→        }
+   505→      });
+   506→
+   507→      var total = inputs.length;
+   508→      fbState[fbId] = { checked: true, completed: true, correct: correct, total: total };
+   509→
+   510→      // Show completion screen
+   511→      var done = document.getElementById('fb-done-' + fbId);
+   512→      if (done) done.style.display = 'block';
+   513→
+   514→      // Focus management: move focus to completion screen
+   515→      if (done) {
+   516→        requestAnimationFrame(function() {
+   517→          done.focus();
+   518→        });
+   519→      }
+   520→
+   521→      // Hide check button
+   522→      var checkBtn = block.querySelector('.game-check-btn');
+   523→      if (checkBtn) checkBtn.style.display = 'none';
+   524→
+   525→      var pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+   526→      var iconEl = document.getElementById('fb-done-icon-' + fbId);
+   527→      var titleEl = document.getElementById('fb-done-title-' + fbId);
+   528→      var scoreEl = document.getElementById('fb-done-score-' + fbId);
+   529→      var msgEl = document.getElementById('fb-done-msg-' + fbId);
+   530→
+   531→      if (iconEl) iconEl.textContent = pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '📚';
+   532→      if (titleEl) titleEl.textContent = pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Belajar!';
+   533→      if (scoreEl) scoreEl.textContent = correct + ' dari ' + total + ' benar (' + pct + '%)';
+   534→      if (msgEl) msgEl.textContent = pct >= 80 ? 'Kamu menguasai materi ini!' : pct >= 50 ? 'Coba lagi untuk hasil lebih baik!' : 'Jangan menyerah, coba lagi ya!';
+   535→
+   536→      if (pct >= 80) launchConfetti();
+   537→    }
+   538→
+   539→    function replayFB(fbId) {
+   540→      var block = document.querySelector('.fill-blank-game-block[data-game="' + fbId + '"]');
+   541→      if (!block) return;
+   542→
+   543→      fbState[fbId] = { checked: false, completed: false };
+   544→      block.dataset.checked = 'false';
+   545→
+   546→      // Hide completion
+   547→      var done = document.getElementById('fb-done-' + fbId);
+   548→      if (done) done.style.display = 'none';
+   549→
+   550→      // Show check button
+   551→      var checkBtn = block.querySelector('.game-check-btn');
+   552→      if (checkBtn) checkBtn.style.display = '';
+   553→
+   554→      // Reset inputs
+   555→      var firstInput = null;
+   556→      block.querySelectorAll('.fb-input').forEach(function(input, i) {
+   557→        input.value = '';
+   558→        input.classList.remove('correct', 'wrong');
+   559→        if (i === 0) firstInput = input;
+   560→      });
+   561→      block.querySelectorAll('.fb-feedback').forEach(function(fb) { fb.innerHTML = ''; });
+   562→
+   563→      // Focus management: move focus to first input
+   564→      if (firstInput) {
+   565→        requestAnimationFrame(function() {
+   566→          firstInput.focus();
+   567→        });
+   568→      }
+   569→    }
+   570→
+   571→    // ═══════════════════════════════════════════════════════════════════
+   572→    // GAME: Word Search
+   573→    // ═══════════════════════════════════════════════════════════════════
+   574→    var wsSelectedCells = [];
+   575→    var wsFoundWords = [];
+   576→
+   577→    function toggleWsCell(cell) {
+   578→      cell.classList.toggle('selected');
+   579→      if (cell.classList.contains('selected')) {
+   580→        wsSelectedCells.push(cell);
+   581→      } else {
+   582→        wsSelectedCells = wsSelectedCells.filter(function(c) { return c !== cell; });
+   583→      }
+   584→      // Check if selected cells form a word
+   585→      var game = cell.dataset.game;
+   586→      var wordEls = document.querySelectorAll('.ws-word[data-game="' + game + '"]');
+   587→      var selectedText = wsSelectedCells.map(function(c) { return c.textContent; }).join('');
+   588→      var selectedReverse = wsSelectedCells.map(function(c) { return c.textContent; }).reverse().join('');
+   589→      wordEls.forEach(function(we) {
+   590→        var word = we.dataset.word;
+   591→        if ((selectedText === word || selectedReverse === word) && wsFoundWords.indexOf(word) === -1) {
+   592→          wsFoundWords.push(word);
+   593→          we.classList.add('found');
+   594→          wsSelectedCells.forEach(function(c) { c.classList.remove('selected'); c.classList.add('found'); });
+   595→          wsSelectedCells = [];
+   596→          if (wsFoundWords.length === wordEls.length) launchConfetti();
+   597→        }
+   598→      });
+   599→    }
+   600→
+   601→    // ═══════════════════════════════════════════════════════════════════
+   602→    // GAME: True/False (step-reveal, anti-double-score, explanation)
+   603→    // Sprint 6.4-E1-Patch-2: Non-scorable support — invalid correct
+   604→    //   values are marked data-scorable="false" in the HTML. The check
+   605→    //   function detects this and gives neutral feedback without scoring.
+   606→    // ═══════════════════════════════════════════════════════════════════
+   607→    function checkTrueFalse(btn, userAnswer) {
+   608→      var idx = btn.dataset.idx;
+   609→      var game = btn.dataset.game;
+   610→      var qEl = document.getElementById('tf-q-' + game + '-' + idx);
+   611→      if (!qEl) return;
+   612→
+   613→      // Guard: already answered — prevent double scoring
+   614→      if (qEl.dataset.answered === 'true') return;
+   615→      qEl.dataset.answered = 'true';
+   616→
+   617→      if (!tfState[game]) return;
+   618→      var st = tfState[game];
+   619→
+   620→      var btns = qEl.querySelectorAll('.tf-btn');
+   621→      btns.forEach(function(b) { b.classList.add('disabled'); });
+   622→
+   623→      // Non-scorable question: no valid correct answer
+   624→      var isScorable = btn.dataset.scorable !== 'false';
+   625→      if (!isScorable) {
+   626→        var fb = qEl.querySelector('.tf-feedback');
+   627→        setFeedback(fb, '⚠', '#fbbf24', 'Soal ini tidak dapat dinilai (kunci jawaban tidak valid).');
+   628→        // Don't update st.correct or st.total — skip scoring entirely
+   629→      } else {
+   630→        var correct = btn.dataset.correct === 'true';
+   631→        if (userAnswer === correct) {
+   632→          btn.classList.add('correct-answer');
+   633→          var fb = qEl.querySelector('.tf-feedback');
+   634→          setFeedback(fb, '✓', '#34d399', 'Benar!');
+   635→          st.correct++;
+   636→        } else {
+   637→          btn.classList.add('wrong-answer');
+   638→          btns.forEach(function(b) {
+   639→            if ((correct && b.classList.contains('tf-true')) || (!correct && b.classList.contains('tf-false'))) b.classList.add('correct-answer');
+   640→          });
+   641→          var fb = qEl.querySelector('.tf-feedback');
+   642→          setFeedback(fb, '✗', '#ff6b6b', 'Salah. Jawaban: ' + (correct ? 'Benar' : 'Salah'));
+   643→        }
+   644→        st.total++;
+   645→      }
+   646→
+   647→      // Show explanation if present
+   648→      var exEl = qEl.querySelector('.tf-explanation');
+   649→      if (exEl && exEl.textContent.trim()) {
+   650→        exEl.style.display = 'block';
+   651→      }
+   652→
+   653→      // Show next button (or completion)
+   654→      var nextBtn = qEl.querySelector('.tf-next-btn');
+   655→      if (st.currentStep >= st.totalSteps - 1) {
+   656→        // Last question
+   657→        if (nextBtn) {
+   658→          nextBtn.textContent = 'Lihat Hasil →';
+   659→          nextBtn.style.display = 'block';
+   660→          nextBtn.onclick = function() { showTFCompletion(game); };
+   661→        }
+   662→      } else {
+   663→        if (nextBtn) nextBtn.style.display = 'block';
+   664→      }
+   665→    }
+   666→
+   667→    // ── TF step navigation ──
+   668→    function nextTFStep(gameId, currentIdx) {
+   669→      if (!tfState[gameId]) return;
+   670→      var nextIdx = currentIdx + 1;
+   671→      tfState[gameId].currentStep = nextIdx;
+   672→      showTFStep(gameId, nextIdx);
+   673→    }
+   674→
+   675→    function showTFStep(gameId, idx) {
+   676→      var block = document.querySelector('.true-false-block[data-game="' + gameId + '"]');
+   677→      if (!block) return;
+   678→      var steps = block.querySelectorAll('.tf-step');
+   679→      var activeStep = null;
+   680→      steps.forEach(function(step, i) {
+   681→        if (i === idx) {
+   682→          step.classList.add('step-active');
+   683→          activeStep = step;
+   684→        } else {
+   685→          step.classList.remove('step-active');
+   686→        }
+   687→      });
+   688→      // Update progress
+   689→      var total = tfState[gameId] ? tfState[gameId].totalSteps : steps.length;
+   690→      var pfill = document.getElementById('tf-pfill-' + gameId);
+   691→      var ptext = document.getElementById('tf-ptext-' + gameId);
+   692→      var pbar = document.getElementById('tf-pbar-' + gameId);
+   693→      if (pfill) pfill.style.width = Math.round(((idx + 1) / total) * 100) + '%';
+   694→      if (ptext) ptext.textContent = 'Soal ' + (idx + 1) + ' dari ' + total;
+   695→      // Update ARIA progressbar semantics
+   696→      if (pbar) {
+   697→        pbar.setAttribute('aria-valuenow', String(idx + 1));
+   698→        pbar.setAttribute('aria-valuetext', 'Soal ' + (idx + 1) + ' dari ' + total);
+   699→      }
+   700→      // Focus management: move focus to active step container
+   701→      if (activeStep) {
+   702→        requestAnimationFrame(function() {
+   703→          activeStep.focus();
+   704→        });
+   705→      }
+   706→    }
+   707→
+   708→    function showTFCompletion(gameId) {
+   709→      if (!tfState[gameId]) return;
+   710→      tfState[gameId].completed = true;
+   711→      var st = tfState[gameId];
+   712→      var block = document.querySelector('.true-false-block[data-game="' + gameId + '"]');
+   713→      if (!block) return;
+   714→
+   715→      // Hide all steps and progress
+   716→      block.querySelectorAll('.tf-step').forEach(function(s) { s.classList.remove('step-active'); });
+   717→      var progress = document.getElementById('tf-progress-' + gameId);
+   718→      if (progress) progress.style.display = 'none';
+   719→
+   720→      // Show completion
+   721→      var done = document.getElementById('tf-done-' + gameId);
+   722→      if (done) done.style.display = 'block';
+   723→
+   724→      var pct = st.totalSteps > 0 ? Math.round((st.correct / st.totalSteps) * 100) : 0;
+   725→      var iconEl = document.getElementById('tf-done-icon-' + gameId);
+   726→      var titleEl = document.getElementById('tf-done-title-' + gameId);
+   727→      var scoreEl = document.getElementById('tf-done-score-' + gameId);
+   728→      var msgEl = document.getElementById('tf-done-msg-' + gameId);
+   729→
+   730→      if (iconEl) iconEl.textContent = pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '📚';
+   731→      if (titleEl) titleEl.textContent = pct >= 80 ? 'Luar Biasa!' : pct >= 50 ? 'Bagus!' : 'Terus Belajar!';
+   732→      if (scoreEl) scoreEl.textContent = st.correct + ' dari ' + st.totalSteps + ' benar (' + pct + '%)';
+   733→      if (msgEl) msgEl.textContent = pct >= 80 ? 'Kamu menguasai materi ini!' : pct >= 50 ? 'Coba lagi untuk hasil lebih baik!' : 'Jangan menyerah, coba lagi ya!';
+   734→
+   735→      if (pct >= 80) launchConfetti();
+   736→
+   737→      // Focus management: move focus to completion screen
+   738→      if (done) {
+   739→        requestAnimationFrame(function() {
+   740→          done.focus();
+   741→        });
+   742→      }
+   743→    }
+   744→
+   745→    function replayTF(gameId) {
+   746→      if (!tfState[gameId]) return;
+   747→      tfState[gameId] = { correct: 0, total: 0, currentStep: 0, totalSteps: tfState[gameId].totalSteps, completed: false };
+   748→
+   749→      var block = document.querySelector('.true-false-block[data-game="' + gameId + '"]');
+   750→      if (!block) return;
+   751→
+   752→      // Hide completion
+   753→      var done = document.getElementById('tf-done-' + gameId);
+   754→      if (done) done.style.display = 'none';
+   755→
+   756→      // Show progress
+   757→      var progress = document.getElementById('tf-progress-' + gameId);
+   758→      if (progress) progress.style.display = '';
+   759→
+   760→      // Reset all questions
+   761→      block.querySelectorAll('.tf-question').forEach(function(q) {
+   762→        q.dataset.answered = 'false';
+   763→        var fb = q.querySelector('.tf-feedback');
+   764→        if (fb) fb.innerHTML = '';
+   765→        var ex = q.querySelector('.tf-explanation');
+   766→        if (ex) ex.style.display = 'none';
+   767→        var nextBtn = q.querySelector('.tf-next-btn');
+   768→        if (nextBtn) {
+   769→          nextBtn.style.display = 'none';
+   770→          nextBtn.textContent = 'Lanjut →';
+   771→          var idx = parseInt(q.dataset.idx);
+   772→          nextBtn.onclick = function() { nextTFStep(gameId, idx); };
+   773→        }
+   774→        q.querySelectorAll('.tf-btn').forEach(function(b) {
+   775→          b.classList.remove('disabled', 'correct-answer', 'wrong-answer');
+   776→        });
+   777→      });
+   778→
+   779→      // Show first step (which also moves focus)
+   780→      showTFStep(gameId, 0);
+   781→    }
+   782→
+   783→    // ═══════════════════════════════════════════════════════════════════
+   784→    // GAME: Drag & Drop
+   785→    // ═══════════════════════════════════════════════════════════════════
+   786→    var draggedItem = null;
+   787→
+   788→    function dragStart(e) {
+   789→      draggedItem = e.target;
+   790→      e.dataTransfer.effectAllowed = 'move';
+   791→      e.dataTransfer.setData('text/plain', e.target.id);
+   792→    }
+   793→
+   794→    function touchDragStart(e, el) {
+   795→      draggedItem = el;
+   796→    }
+   797→
+   798→    function dropItem(e, ddId) {
+   799→      e.preventDefault();
+   800→      e.currentTarget.classList.remove('dd-hover');
+   801→      if (!draggedItem) return;
+   802→      var targetItems = e.currentTarget.querySelector('.dd-target-items');
+   803→      if (targetItems) {
+   804→        targetItems.appendChild(draggedItem);
+   805→      }
+   806→      draggedItem = null;
+   807→    }
+   808→
+   809→    function checkDragDrop(ddId) {
+   810→      var targets = document.querySelectorAll('.dd-target[data-game="' + ddId + '"]');
+   811→      var correct = 0;
+   812→      var total = 0;
+   813→      targets.forEach(function(target) {
+   814→        var tid = target.dataset.tid;
+   815→        var items = target.querySelectorAll('.dd-item');
+   816→        items.forEach(function(item) {
+   817→          total++;
+   818→          if (item.dataset.target === tid) {
+   819→            item.classList.add('correct');
+   820→            correct++;
+   821→          } else {
+   822→            item.classList.add('wrong');
+   823→          }
+   824→        });
+   825→      });
+   826→      // Also check pool items (not yet placed)
+   827→      var poolItems = document.querySelectorAll('#dd-pool-' + ddId + ' .dd-item');
+   828→      poolItems.forEach(function(item) { total++; item.classList.add('wrong'); });
+   829→      if (correct === total && total > 0) launchConfetti();
+   830→    }
+   831→
+   832→    // ═══════════════════════════════════════════════════════════════════
+   833→    // GAME: Crossword
+   834→    // ═══════════════════════════════════════════════════════════════════
+   835→    function cwInput(input, cwId) {
+   836→      var val = input.value.toUpperCase();
+   837→      input.value = val;
+   838→      if (val.length === 1) {
+   839→        var r = parseInt(input.dataset.r);
+   840→        var c = parseInt(input.dataset.c);
+   841→        var next = document.querySelector('.cw-input[data-r="' + r + '"][data-c="' + (c + 1) + '"][data-game="' + cwId + '"]');
+   842→        if (next) next.focus();
+   843→      }
+   844→    }
+   845→
+   846→    function cwKeyDown(e, input, cwId) {
+   847→      var r = parseInt(input.dataset.r);
+   848→      var c = parseInt(input.dataset.c);
+   849→      if (e.key === 'Backspace' && !input.value) {
+   850→        var prev = document.querySelector('.cw-input[data-r="' + r + '"][data-c="' + (c - 1) + '"][data-game="' + cwId + '"]');
+   851→        if (prev) { prev.focus(); prev.value = ''; }
+   852→      } else if (e.key === 'ArrowRight') {
+   853→        var next = document.querySelector('.cw-input[data-r="' + r + '"][data-c="' + (c + 1) + '"][data-game="' + cwId + '"]');
+   854→        if (next) next.focus();
+   855→      } else if (e.key === 'ArrowLeft') {
+   856→        var prev = document.querySelector('.cw-input[data-r="' + r + '"][data-c="' + (c - 1) + '"][data-game="' + cwId + '"]');
+   857→        if (prev) prev.focus();
+   858→      } else if (e.key === 'ArrowDown') {
+   859→        var next = document.querySelector('.cw-input[data-r="' + (r + 1) + '"][data-c="' + c + '"][data-game="' + cwId + '"]');
+   860→        if (next) next.focus();
+   861→      } else if (e.key === 'ArrowUp') {
+   862→        var prev = document.querySelector('.cw-input[data-r="' + (r - 1) + '"][data-c="' + c + '"][data-game="' + cwId + '"]');
+   863→        if (prev) prev.focus();
+   864→      }
+   865→    }
+   866→
+   867→    function checkCrossword(cwId) {
+   868→      var inputs = document.querySelectorAll('.cw-input[data-game="' + cwId + '"]');
+   869→      var correct = 0;
+   870→      var total = 0;
+   871→      inputs.forEach(function(input) {
+   872→        total++;
+   873→        var cell = input.closest('.cw-cell');
+   874→        if (cell && input.value.toUpperCase() === cell.dataset.answer) {
+   875→          input.classList.add('correct');
+   876→          input.classList.remove('wrong');
+   877→          correct++;
+   878→        } else {
+   879→          input.classList.add('wrong');
+   880→          input.classList.remove('correct');
+   881→        }
+   882→      });
+   883→      if (correct === total && total > 0) launchConfetti();
+   884→    }
+   885→
+   886→    // ═══════════════════════════════════════════════════════════════════
+   887→    // GAME: Team Buzzer
+   888→    // ═══════════════════════════════════════════════════════════════════
+   889→    var tbScoreA = 0;
+   890→    var tbScoreB = 0;
+   891→
+   892→    function buzzTeam(tbId, team, qIdx, poin) {
+   893→      var qEl = document.getElementById('tb-q-' + tbId + '-' + qIdx);
+   894→      if (!qEl || qEl.classList.contains('answered')) return;
+   895→      qEl.classList.add('answered');
+   896→      if (team === 'a') {
+   897→        tbScoreA += poin;
+   898→        var sA = document.getElementById('tb-score-a-' + tbId);
+   899→        if (sA) sA.textContent = tbScoreA;
+   900→      } else {
+   901→        tbScoreB += poin;
+   902→        var sB = document.getElementById('tb-score-b-' + tbId);
+   903→        if (sB) sB.textContent = tbScoreB;
+   904→      }
+   905→    }
+   906→
+   907→    function skipQuestion(tbId, qIdx) {
+   908→      var qEl = document.getElementById('tb-q-' + tbId + '-' + qIdx);
+   909→      if (qEl) qEl.classList.add('answered');
+   910→    }
+   911→
+   912→    // ═══════════════════════════════════════════════════════════════════
+   913→    // GAME: Sortir (Drag-to-category)
+   914→    // ═══════════════════════════════════════════════════════════════════
+   915→    function checkSortir(sortirId) {
+   916→      var koloms = document.querySelectorAll('.sortir-kolom[data-game="' + sortirId + '"]');
+   917→      var correct = 0;
+   918→      var total = 0;
+   919→      koloms.forEach(function(kolom) {
+   920→        var kid = kolom.dataset.kid;
+   921→        var items = kolom.querySelectorAll('.sortir-item');
+   922→        items.forEach(function(item) {
+   923→          total++;
+   924→          if (item.dataset.category === kid) {
+   925→            item.classList.add('correct');
+   926→            correct++;
+   927→          } else {
+   928→            item.classList.add('wrong');
+   929→          }
+   930→        });
+   931→      });
+   932→      // Also check pool for unsorted items
+   933→      var poolItems = document.querySelectorAll('.sortir-pool[data-game="' + sortirId + '"] .sortir-item');
+   934→      poolItems.forEach(function(item) { total++; item.classList.add('wrong'); });
+   935→      if (correct === total && total > 0) launchConfetti();
+   936→      var scoreEl = document.getElementById('sortir-score-' + sortirId);
+   937→      if (scoreEl) scoreEl.textContent = correct + '/' + total + ' benar';
+   938→    }
+   939→
+   940→    // ═══════════════════════════════════════════════════════════════════
+   941→    // QUIZ RESET — Per-block state reset on page navigation
+   942→    // ═══════════════════════════════════════════════════════════════════
+   943→    function resetQuizBlock(block) {
+   944→      var blockId = block.dataset.blockId;
+   945→      var total = parseInt(block.dataset.total) || 0;
+   946→      quizState[blockId] = { correct: 0, total: 0, currentStep: 0, totalSteps: total, completed: false };
+   947→
+   948→      // Hide completion
+   949→      var done = document.getElementById('kuis-done-' + blockId);
+   950→      if (done) done.style.display = 'none';
+   951→
+   952→      // Show progress
+   953→      var progress = document.getElementById('kuis-progress-' + blockId);
+   954→      if (progress) progress.style.display = '';
+   955→
+   956→      // Reset all questions
+   957→      block.querySelectorAll('.kuis-question').forEach(function(q) {
+   958→        q.dataset.answered = 'false';
+   959→        var fb = q.querySelector('.q-feedback');
+   960→        if (fb) fb.innerHTML = '';
+   961→        var ex = q.querySelector('.q-explanation');
+   962→        if (ex) ex.style.display = 'none';
+   963→        var nextBtn = q.querySelector('.q-next-btn');
+   964→        if (nextBtn) {
+   965→          nextBtn.style.display = 'none';
+   966→          nextBtn.textContent = 'Lanjut →';
+   967→          var idx = parseInt(q.dataset.idx);
+   968→          nextBtn.onclick = function() { nextKuisStep(blockId, idx); };
+   969→        }
+   970→        q.querySelectorAll('.q-opt').forEach(function(b) {
+   971→          b.classList.remove('disabled', 'correct', 'wrong');
+   972→        });
+   973→      });
+   974→
+   975→      // Show first step
+   976→      showKuisStep(blockId, 0);
+   977→    }
+   978→
+   979→    function resetTFBlock(block) {
+   980→      var gameId = block.dataset.game;
+   981→      var total = parseInt(block.dataset.total) || 0;
+   982→      tfState[gameId] = { correct: 0, total: 0, currentStep: 0, totalSteps: total, completed: false };
+   983→
+   984→      // Hide completion
+   985→      var done = document.getElementById('tf-done-' + gameId);
+   986→      if (done) done.style.display = 'none';
+   987→
+   988→      // Show progress
+   989→      var progress = document.getElementById('tf-progress-' + gameId);
+   990→      if (progress) progress.style.display = '';
+   991→
+   992→      // Reset all questions
+   993→      block.querySelectorAll('.tf-question').forEach(function(q) {
+   994→        q.dataset.answered = 'false';
+   995→        var fb = q.querySelector('.tf-feedback');
+   996→        if (fb) fb.innerHTML = '';
+   997→        var ex = q.querySelector('.tf-explanation');
+   998→        if (ex) ex.style.display = 'none';
+   999→        var nextBtn = q.querySelector('.tf-next-btn');
+  1000→        if (nextBtn) {
+  1001→          nextBtn.style.display = 'none';
+  1002→          nextBtn.textContent = 'Lanjut →';
+  1003→          var idx = parseInt(q.dataset.idx);
+  1004→          nextBtn.onclick = function() { nextTFStep(gameId, idx); };
+  1005→        }
+  1006→        q.querySelectorAll('.tf-btn').forEach(function(b) {
+  1007→          b.classList.remove('disabled', 'correct-answer', 'wrong-answer');
+  1008→        });
+  1009→      });
+  1010→
+  1011→      // Show first step
+  1012→      showTFStep(gameId, 0);
+  1013→    }
+  1014→
+  1015→    function resetFBBlock(block) {
+  1016→      var gameId = block.dataset.game;
+  1017→      fbState[gameId] = { checked: false, completed: false };
+  1018→      block.dataset.checked = 'false';
+  1019→
+  1020→      // Hide completion
+  1021→      var done = document.getElementById('fb-done-' + gameId);
+  1022→      if (done) done.style.display = 'none';
+  1023→
+  1024→      // Show check button
+  1025→      var checkBtn = block.querySelector('.game-check-btn');
+  1026→      if (checkBtn) checkBtn.style.display = '';
+  1027→
+  1028→      // Reset inputs
+  1029→      block.querySelectorAll('.fb-input').forEach(function(input) {
+  1030→        input.value = '';
+  1031→        input.classList.remove('correct', 'wrong');
+  1032→      });
+  1033→      block.querySelectorAll('.fb-feedback').forEach(function(fb) { fb.innerHTML = ''; });
+  1034→    }
+  1035→
+  1036→    function resetPageQuizState(pageEl) {
+  1037→      if (!pageEl) return;
+  1038→      pageEl.querySelectorAll('.kuis-block').forEach(resetQuizBlock);
+  1039→      pageEl.querySelectorAll('.true-false-block').forEach(resetTFBlock);
+  1040→      pageEl.querySelectorAll('.fill-blank-game-block').forEach(resetFBBlock);
+  1041→    }
+  1042→  `;
+  1043→}
+  1044→
