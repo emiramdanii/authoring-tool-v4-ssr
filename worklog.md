@@ -798,3 +798,36 @@ Stage Summary:
   - Two quiz blocks → focus and ARIA isolated ✓
 - Files modified: quiz-renderers.ts, scripts.ts, styles.ts
 - Files generated: /home/z/my-project/download/quiz-qa-patch.html, /home/z/my-project/download/quiz-qa-patch-proof.png
+
+---
+Task ID: 6.4-D
+Agent: Main
+Task: Sprint 6.4-D — Quiz Variant Parity
+
+Work Log:
+- Audited KuisRenderer.tsx runtime: documented 3 variants (A/Klasik: 2-col grid, B/Kartu: 1-col elevated, C/Ringkas: pill flex-wrap)
+- Read current quiz-renderers.ts, styles.ts, scripts.ts export files
+- Verified b.variant is available in export data (already used by materi-section block)
+- Modified quiz-renderers.ts: added normalizeKuisVariant() function, variant class on root div, data-variant attribute
+- Added ~110 lines of variant CSS in styles.ts covering A/B/C differences: layout, border-radius, padding, font-size, text-align, q-letter visibility, progress bar, completion screen
+- Added light mode overrides for variant B elevated card
+- Verified all JS selectors use contract classes only (no variant dependency)
+- Created generate-quiz-variant-qa.ts script producing 4 pages: A, B, C, fallback
+- Build PASS, export generated (122.5 KB)
+- Browser QA: all 15 test areas verified
+  - Computed styles confirmed: A=grid/10px/center, B=flex-col/12px/left, C=flex-wrap/9999px/center
+  - q-letter hidden in C via display:none
+  - Answer/feedback/next/completion flow works on all variants
+  - Replay resets state correctly
+  - ARIA attributes intact (progressbar, status, region, tabindex)
+  - 4 blocks with unique IDs, state isolation OK
+  - Fallback (no variant) renders as A (2-column grid)
+  - No console errors, no page errors
+  - No overflow at 1280×720
+
+Stage Summary:
+- quiz-renderers.ts: Added variant normalization + class on root
+- styles.ts: Added variant A/B/C CSS rules + light mode
+- scripts.ts: No changes needed (contract classes preserved)
+- All 10 PASS criteria for 6.4-D verified
+- QA screenshots saved to download/

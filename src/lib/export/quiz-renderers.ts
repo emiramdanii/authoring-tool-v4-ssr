@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 // QUIZ RENDERERS — Kuis, True/False, Fill-Blank block HTML rendering
 // Sprint 6.4-C: Step-reveal flow + completion screen + replay
+// Sprint 6.4-D: Variant parity (A/Klasik, B/Kartu, C/Ringkas)
 // ═══════════════════════════════════════════════════════════════════════
 
 import { escapeHtml, resolveColor, type RenderBlockFn } from './utils';
@@ -21,13 +22,22 @@ export function renderQuizBlock(
   }
 }
 
+// Sprint 6.4-D: Normalize variant, fallback to A for empty/invalid values
+function normalizeKuisVariant(raw: string | undefined): 'A' | 'B' | 'C' {
+  const v = (raw || '').toUpperCase();
+  return v === 'B' || v === 'C' ? v : 'A';
+}
+
 function renderKuis(b: Record<string, unknown>): string {
   const title = b.title as string || 'Kuis';
   const questions = (b.questions as Array<{ q: string; opts: string[]; ans: number; ex: string }>) || [];
   const total = questions.length;
   const kuisId = `kuis-${Math.random().toString(36).slice(2, 8)}`;
+  // Sprint 6.4-D: Read variant from block data
+  const variant = normalizeKuisVariant(b.variant as string | undefined);
+  const variantClass = `quiz-variant-${variant.toLowerCase()}`;
   return `
-    <div class="block kuis-block" data-block-id="${kuisId}" data-total="${total}">
+    <div class="block kuis-block ${variantClass}" data-block-id="${kuisId}" data-total="${total}" data-variant="${variant}">
       <div class="block-header">
         <span class="block-icon">❓</span>
         <h2>${escapeHtml(title)}</h2>

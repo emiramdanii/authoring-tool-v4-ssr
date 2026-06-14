@@ -1,0 +1,252 @@
+/home/z/my-project/src/app/api/ai/refine/route.ts:52:    'nc-grid': `Konten ini adalah kartu grid (nc-grid). Field utama: "cards" (array of {icon, title, body, color}).
+/home/z/my-project/src/app/api/ai/refine/route.ts:53:Perbaiki isi setiap kartu. Bisa tambah kartu baru jika sesuai.`,
+/home/z/my-project/src/app/api/ai/refine/route.ts:79:Perbaiki pasangan kartu.`,
+/home/z/my-project/src/app/api/ai/route.ts:163:Buat ${jumlah} pasangan untuk game memory (kartu berpasangan).
+/home/z/my-project/src/app/api/ai/route.ts:257:Ringkas materi menjadi ${jumlah} konsep utama.
+/home/z/my-project/src/store/authoring/types.ts:16: * `mod.kartu`, etc. still return `unknown` from the index signature
+/home/z/my-project/src/core/renderer/GoldenPageRenderer.tsx:52:  summary: 'Ringkasan',
+/home/z/my-project/src/features/canvas/components/BlockPreview.tsx:98:      return <KuisPreview block={block} height={height} icon={icon} variant={variant} scale={scale} />;
+/home/z/my-project/src/features/canvas/components/BlockPreview.tsx:214:function KuisPreview({ block, height, icon, variant, scale }: { block: SchemaBlock; height: number; icon: string; variant: string; scale: number }) {
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:31:      title: 'Kartu Kilat: Hakikat Norma',
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:32:      instruksi: 'Ketuk kartu untuk melihat jawaban. Uji ingatanmu!',
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:33:      kartu: [
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:80:        { icon: '\uD83D\uDE4F', judul: '4 Jenis Norma', isi: 'Pelajari kartu detail setiap norma. Bagi tugas membaca antar anggota kelompok!' },
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:89:      kartu: [
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:101:        { icon: '\uD83D\uDE4F', judul: 'Norma Agama', warna: '#f9c82e', ringkasan: 'Norma dari Tuhan melalui kitab suci', isi: 'Norma agama berasal dari Tuhan Yang Maha Esa melalui kitab suci. Bersifat universal bagi pemeluknya, mengatur hubungan vertikal (dengan Tuhan) dan horizontal (sesama manusia). Sanksinya berupa dosa dan rasa bersalah batin.', contoh: ['Shalat lima waktu bagi Muslim', 'Berdoa sebelum makan', 'Tidak berbohong karena Tuhan Maha Mengetahui'], sanksi: 'Dosa di akhirat, rasa bersalah batin, sanksi sosial keagamaan' },
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:102:        { icon: '\u2764\uFE0F', judul: 'Norma Kesusilaan', warna: '#ff6b6b', ringkasan: 'Norma dari hati nurani manusia', isi: 'Norma kesusilaan berasal dari hati nurani manusia — nilai baik-buruk yang dirasakan naluriah. Bersifat universal, tidak tertulis, dan tidak bisa dipaksakan dari luar. Sanksinya berupa rasa bersalah dan malu dari dalam diri sendiri.', contoh: ['Mengembalikan dompet yang ditemukan', 'Jujur meski tidak ada yang tahu', 'Tidak menyontek karena hati nurani'], sanksi: 'Rasa bersalah, rasa malu, dikucilkan lingkungan' },
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:103:        { icon: '\uD83E\uDD1D', judul: 'Norma Kesopanan', warna: '#3ecfcf', ringkasan: 'Norma dari adat istiadat masyarakat', isi: 'Norma kesopanan berasal dari adat istiadat dan kebiasaan masyarakat secara turun-temurun. Berbeda-beda antar daerah, tidak tertulis, tapi sangat kuat pengaruhnya secara sosial. Sanksinya berupa teguran dan pengucilan sosial.', contoh: ['Mengucap salam saat bertemu', 'Membungkuk saat melewati orang lebih tua', 'Tidak memotong pembicaraan orang lain'], sanksi: 'Ditegur, dicela, dijauhi, dikucilkan' },
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:104:        { icon: '\u2696\uFE0F', judul: 'Norma Hukum', warna: '#a78bfa', ringkasan: 'Norma dari negara, tertulis dan tegas', isi: 'Norma hukum berasal dari negara/lembaga resmi berwenang. Bersifat tertulis, tegas, berlaku bagi seluruh warga negara tanpa pengecualian, dan ada aparat penegak hukum. Sanksinya berupa denda, penjara, atau pencabutan hak.', contoh: ['Larangan mencuri (KUHP)', 'Wajib menggunakan helm saat berkendara', 'Membayar pajak sesuai penghasilan'], sanksi: 'Denda, penjara, pencabutan hak oleh negara' },
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:170:      title: 'Kartu Kilat: Macam-Macam Norma',
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:171:      instruksi: 'Ketuk kartu untuk melihat jawaban. Uji ingatanmu!',
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:172:      kartu: [
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:216:      kartu: [
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:257:      title: 'Kartu Kilat: Penerapan Norma',
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:258:      instruksi: 'Ketuk kartu untuk melihat jawaban. Uji ingatanmu!',
+/home/z/my-project/src/store/authoring/presets/module-presets.ts:259:      kartu: [
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:71:            { icon: '📖', title: 'Baca & Pahami', body: 'Klik tab norma untuk membaca kartu detail. Tandai ✓ setelah selesai membaca setiap norma.' },
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:76:          tips: 'Klik kartu norma satu per satu, jangan skip! Setiap kartu berisi contoh pelanggaran dan sanksi yang relevan dengan kehidupanmu sehari-hari.',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:266:              deskripsi: 'Kartu detail + tabel accordion + diskusi berpasangan',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:290:              deskripsi: '📋 Tugas P1 dikumpulkan sekarang! + Kartu kilat + portofolio + penugasan P3',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:352:          intro: 'Bagi 4 kartu norma kepada anggota kelompok. Tiap orang/pasangan membaca 1 kartu secara mendalam, lalu jelaskan ke anggota lain. Setelah semua presentasi, diskusikan tabel perbandingan bersama!',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:357:              teks: 'Klik tiap kartu untuk melihat sumber, sifat, pelanggaran, dan sanksinya. Tandai ✓ setelah membaca!',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:367:              isi: 'Bagi 4 kartu norma kepada anggota kelompok. Tiap orang/pasangan membaca 1 kartu secara mendalam, lalu jelaskan ke anggota lain. Setelah semua presentasi, diskusikan tabel perbandingan bersama!',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:645:              teks: 'Setiap anggota menjelaskan kartu norma yang sudah dibacanya. Fokus pada: sumber, sanksi, dan 1 contoh pelanggaran paling menarik menurutmu.',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:655:              isi: 'Setiap anggota menjelaskan kartu norma yang sudah dibacanya. Fokus pada: sumber, sanksi, dan 1 contoh pelanggaran paling menarik menurutmu. Yang lain boleh bertanya!',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:711:          title: 'Kartu mana yang paling membingungkan?',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:712:          intro: 'Diskusikan bersama: ① Kartu apa yang sempat diperdebatkan kelompokmu? ② Mengapa satu perilaku bisa masuk beberapa norma sekaligus?',
+/home/z/my-project/src/presets/ppkn/macam-norma-schema.ts:717:              teks: 'Kartu apa yang sempat diperdebatkan kelompokmu? Mengapa satu perilaku bisa masuk beberapa norma sekaligus?',
+/home/z/my-project/src/presets/ppkn/hakikat-norma-schema.ts:151:              deskripsi: 'Pengertian Norma, definisi, analogi, kartu kilat ringkasan',
+/home/z/my-project/src/store/authoring/presets/alur-presets.ts:19:      { fase: 'Inti', durasi: '25 menit', judul: 'Eksplorasi 4 Norma', deskripsi: 'Kartu detail 4 jenis norma (agama, kesusilaan, kesopanan, hukum) + tabel accordion perbandingan + diskusi berpasangan.' },
+/home/z/my-project/src/store/authoring/presets/alur-presets.ts:23:      { fase: 'Penutup', durasi: '8 menit', judul: 'Refleksi & Penutup', deskripsi: 'Kartu kilat ringkasan + portofolio jawaban diskusi + komitmen diri + penugasan P3.' },
+/home/z/my-project/src/presets/ppkn/perilaku-patuh-schema.ts:68:            { icon: '🏠', title: '3 Lingkungan', body: 'Pelajari penerapan norma di keluarga, sekolah, dan masyarakat melalui kartu kilat.' },
+/home/z/my-project/src/presets/ppkn/perilaku-patuh-schema.ts:171:              deskripsi: 'Kartu keluarga + kartu sekolah + kartu masyarakat',
+/home/z/my-project/src/core/renderer/EduRenderingContext.tsx:85:  'norma-kartu': 'contoh',
+/home/z/my-project/src/lib/export/block-renderers.ts:308:  // output doesn't silently fall back to Klasik when the teacher chose Majalah/Pill.
+/home/z/my-project/src/lib/export/block-renderers.ts:385:  // ── Variant A "Klasik" (default): Original full section style ──
+/home/z/my-project/src/core/renderer/blocks/DiskusiRenderer.tsx:69://   - Variant A/B/C support (Klasik / Kartu / Ringkas)
+/home/z/my-project/src/core/renderer/blocks/DiskusiRenderer.tsx:81:    { key: 'A', label: 'Klasik' },
+/home/z/my-project/src/core/renderer/blocks/DiskusiRenderer.tsx:82:    { key: 'B', label: 'Kartu' },
+/home/z/my-project/src/core/renderer/blocks/DiskusiRenderer.tsx:83:    { key: 'C', label: 'Ringkas' },
+/home/z/my-project/src/core/renderer/blocks/DiskusiRenderer.tsx:235:  // ══ VARIANT A — KLASIK (Default, original layout) ═══════════════
+/home/z/my-project/src/core/renderer/blocks/DiskusiRenderer.tsx:387:  // ══ VARIANT B — KARTU (Card-style layout with more visual space) ═
+/home/z/my-project/src/core/renderer/blocks/DiskusiRenderer.tsx:547:  // ══ VARIANT C — RINGKAS (Ultra-compact layout) ══════════════════
+/home/z/my-project/src/core/renderer/blocks/DiskusiRenderer.tsx:550:      {/* No decorative sparkle for Ringkas variant */}
+/home/z/my-project/src/core/renderer/blocks/PenutupRenderer.tsx:154:              Ringkasan Pembelajaran
+/home/z/my-project/src/core/renderer/blocks/PenutupRenderer.tsx:241:          itemLabel="ringkasan lagi"
+/home/z/my-project/src/components/shared/preset-module-card/PreviewGames.tsx:12:  const kartu = arr<Record<string, unknown>>(mod.kartu);
+/home/z/my-project/src/components/shared/preset-module-card/PreviewGames.tsx:18:      {kartu.slice(0, max).map((k, i) => (
+/home/z/my-project/src/components/shared/preset-module-card/PreviewGames.tsx:21:            <div className="font-bold text-xs" style={{ color: T.text }}>{str(k.depan) || `Kartu ${i + 1}`}</div>
+/home/z/my-project/src/core/renderer/blocks/MemoryGameRenderer.tsx:163: gameType: 'Cocokkan Kartu',
+/home/z/my-project/src/core/renderer/blocks/MemoryGameRenderer.tsx:315: Tambahkan pasangan kartu untuk memulai game Cocokkan Kartu!
+/home/z/my-project/src/core/renderer/blocks/MemoryGameRenderer.tsx:388: <div id={a11y.instructionId} className="sr-only">Balik kartu untuk menemukan pasangan yang cocok</div>
+/home/z/my-project/src/core/renderer/blocks/MemoryGameRenderer.tsx:422: {...a11y.progressAria('Kemajuan Cocokkan Kartu', matched.size / 2, validPairsLen)}
+/home/z/my-project/src/core/renderer/blocks/MemoryGameRenderer.tsx:459: aria-label="Kartu memory"
+/home/z/my-project/src/core/renderer/blocks/MemoryGameRenderer.tsx:472: aria-label={isRevealed ? card.text : 'Kartu tersembunyi'}
+/home/z/my-project/src/components/shared/preset-module-card/helpers.ts:27:    video: 'pertanyaan', flashcard: 'kartu',
+/home/z/my-project/src/components/shared/preset-module-card/helpers.ts:28:    infografis: 'kartu', 'studi-kasus': 'pertanyaan', timeline: 'events',
+/home/z/my-project/src/components/shared/preset-module-card/helpers.ts:38:    petunjuk: 'langkah', diskusi: 'pertanyaan', review: 'kartu', refleksi: 'pertanyaan',
+/home/z/my-project/src/components/shared/preset-module-card/layout-variants.ts:9:  { id: 'B' as const, label: 'Compact', icon: '📋', desc: 'Tata letak ringkas' },
+/home/z/my-project/src/components/shared/preset-module-card/layout-variants.ts:10:  { id: 'C' as const, label: 'Visual', icon: '🎨', desc: 'Kartu besar visual' },
+/home/z/my-project/src/store/authoring/presets/activity-presets.ts:22:      { icon: '\uD83D\uDE4F', judul: '4 Jenis Norma', isi: 'Pelajari kartu detail setiap norma. Bagi tugas membaca antar anggota kelompok!' },
+/home/z/my-project/src/components/shared/preset-module-card/PreviewInfografis.tsx:13:  const kartu = arr<Record<string, unknown>>(mod.kartu);
+/home/z/my-project/src/components/shared/preset-module-card/PreviewInfografis.tsx:19:        {kartu.slice(0, maxItems).map((k, i) => (
+/home/z/my-project/src/components/shared/preset-module-card/PreviewInfografis.tsx:23:              <div className="text-xs font-semibold" style={{ color: T.text }}>{str(k.judul) || `Kartu ${i + 1}`}</div>
+/home/z/my-project/src/components/shared/preset-module-card/PreviewInfografis.tsx:28:        {kartu.length > maxItems && <div className="text-[10px]" style={{ color: T.muted }}>+{kartu.length - maxItems} lagi</div>}
+/home/z/my-project/src/components/shared/preset-module-card/PreviewInfografis.tsx:38:      {kartu.slice(0, maxItems).map((k, i) => (
+/home/z/my-project/src/components/shared/preset-module-card/PreviewInfografis.tsx:41:          <div className="font-semibold text-xs" style={{ color: str(k.color, T.c) }}>{str(k.judul) || `Kartu ${i + 1}`}</div>
+/home/z/my-project/src/components/shared/preset-module-card/PreviewInfografis.tsx:45:      {kartu.length > maxItems && (
+/home/z/my-project/src/components/shared/preset-module-card/PreviewInfografis.tsx:47:          +{kartu.length - maxItems} lagi
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:63:// KUIS RENDERER — Premium Quiz with Full Visual FX + Variant A/B/C
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:74://   - Variant A (Klasik) / B (Kartu) / C (Ringkas) support
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:88:    { key: 'A', label: 'Klasik' },
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:89:    { key: 'B', label: 'Kartu' },
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:90:    { key: 'C', label: 'Ringkas' },
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:123:// ── Variant B: Kartu — standalone card with larger text & single column ──
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:124:function KuisVariantKartu({
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:179:                key={`kuis-kartu-opt-${block.id || 'kuis'}-${current}-${i}`}
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:227:// ── Variant C: Ringkas — compact pills, minimal spacing ──────────
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:228:function KuisVariantRingkas({
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:304:                key={`kuis-ringkas-opt-${block.id || 'kuis'}-${current}-${i}`}
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:377:  // When compressed, we switch to the most compact variant (C "Ringkas")
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:611:      {/* ── Variant A: Klasik — the original 2-column grid layout ── */}
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:628:          {/* ── Options — 2-column grid (Klasik) ──────────────────── */}
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:686:      {/* ── Variant B: Kartu — single column larger card ─────────── */}
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:688:        <KuisVariantKartu
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:703:      {/* ── Variant C: Ringkas — compact pill buttons ────────────── */}
+/home/z/my-project/src/core/renderer/blocks/KuisRenderer.tsx:705:        <KuisVariantRingkas
+/home/z/my-project/src/components/shared/preset-module-card/PreviewReview.tsx:12:  const kartu = arr<Record<string, unknown>>(mod.kartu);
+/home/z/my-project/src/components/shared/preset-module-card/PreviewReview.tsx:13:  if (!kartu.length) return <div className="text-xs" style={{ color: T.muted }}>Belum ada konten review.</div>;
+/home/z/my-project/src/components/shared/preset-module-card/PreviewReview.tsx:20:        {kartu.slice(0, max).map((k, i) => (
+/home/z/my-project/src/components/shared/preset-module-card/PreviewReview.tsx:35:      {kartu.slice(0, max).map((k, i) => {
+/home/z/my-project/src/core/renderer/blocks/CoverRenderer.tsx:14://   A "Klasik" — Clean light surface, centered layout, soft accent icon
+/home/z/my-project/src/core/renderer/blocks/CoverRenderer.tsx:57:// VARIANT A "Klasik" — Clean light surface, centered layout, soft accent icon
+/home/z/my-project/src/core/index.ts:27:  NormaKartuBlock,
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:17://   A "Klasik" — Current card grid style (colored cards with icon, title, body)
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:20://   C "Ringkas" — Minimal pill badges: small horizontal pill with icon + title only.
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:36:    { key: 'A', label: 'Klasik' },
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:38:    { key: 'C', label: 'Ringkas' },
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:59:// ── Variant A "Klasik" — Original card grid ──────────────────────
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:130:        placeholder="Ketik deskripsi kartu..."
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:249:            placeholder="Ketik deskripsi kartu..."
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:269:// ── Variant C "Ringkas" — Minimal pill badges ────────────────────
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:311:      aria-label={card.title || 'Kartu'}
+/home/z/my-project/src/core/renderer/blocks/NcGridRenderer.tsx:382:            placeholder="Ketik deskripsi kartu..."
+/home/z/my-project/src/core/i18n/right-panel-context.ts:74:  'nc-grid': 'Atur judul dan isi setiap kartu.',
+/home/z/my-project/src/core/i18n/right-panel-context.ts:76:  'rangkuman': 'Atur konsep dan penjelasan ringkas.',
+/home/z/my-project/src/core/i18n/right-panel-context.ts:96:  'nc-grid': 'Kartu Info',
+/home/z/my-project/src/core/renderer/blocks/DefBoxRenderer.tsx:19://   A "Klasik" — Clean card with left accent stripe, subtle fill
+/home/z/my-project/src/core/renderer/blocks/DefBoxRenderer.tsx:21://   C "Ringkas" — Pill-style badge, minimal padding
+/home/z/my-project/src/core/renderer/blocks/DefBoxRenderer.tsx:38:    { key: 'A', label: 'Klasik' },
+/home/z/my-project/src/core/renderer/blocks/DefBoxRenderer.tsx:40:    { key: 'C', label: 'Ringkas' },
+/home/z/my-project/src/core/renderer/blocks/DefBoxRenderer.tsx:176:  // ── Variant A "Klasik" — Clean card with left accent stripe, subtle fill ──
+/home/z/my-project/src/core/renderer/blocks/DefBoxRenderer.tsx:402:  // ── Variant C "Ringkas" — Pill-style badge, minimal padding ──
+/home/z/my-project/src/core/i18n/teacher-terminology.ts:51:  'Norma Kartu': 'Kartu Norma',
+/home/z/my-project/src/core/i18n/teacher-terminology.ts:52:  'NK Card': 'Kartu Norma',
+/home/z/my-project/src/core/renderer/blocks/FlashcardRenderer.tsx:95:          Semua Kartu Dipelajari!
+/home/z/my-project/src/core/renderer/blocks/FlashcardRenderer.tsx:98:          Kamu telah mempelajari semua {cards.length} kartu kilat.
+/home/z/my-project/src/core/renderer/blocks/FlashcardRenderer.tsx:127:            <span className="material-symbols-outlined inline" style={ { fontSize: '14px' } }>refresh</span> Ulangi Kartu
+/home/z/my-project/src/core/renderer/blocks/FlashcardRenderer.tsx:148:        <PremiumBadge tokens={tokens} accent="y" variant="glass">🃏 Kartu Kilat</PremiumBadge>
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:15:// Renders InfografisBlock — each kartu has icon, judul, isi, warna.
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:26:function InfografisCardGrid({ kartu, kartuIndex, blockId, tokens, isCompact, edu, accentColor }: {
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:27:  kartu: InfografisBlock['kartu'][number];
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:28:  kartuIndex: number;
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:37:    fieldKey: `kartu.${kartuIndex}.judul`,
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:38:    value: kartu.judul ?? '',
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:43:    fieldKey: `kartu.${kartuIndex}.isi`,
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:44:    value: kartu.isi ?? '',
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:49:  const cardColor = tokens.color(kartu.warna || accentColor);
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:55:        background: tokens.colorAlpha(kartu.warna || accentColor, 0.06),
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:56:        border: `1px solid ${tokens.colorAlpha(kartu.warna || accentColor, 0.18)}`,
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:59:        ...edu.entrance(kartuIndex),
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:72:          background: tokens.colorAlpha(kartu.warna || accentColor, 0.12),
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:75:        <span style={{ fontSize: isCompact ? '16px' : '20px' }}>{kartu.icon}</span>
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:109:function InfografisCardList({ kartu, kartuIndex, blockId, tokens, isCompact, edu, accentColor }: {
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:110:  kartu: InfografisBlock['kartu'][number];
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:111:  kartuIndex: number;
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:120:    fieldKey: `kartu.${kartuIndex}.judul`,
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:121:    value: kartu.judul ?? '',
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:126:    fieldKey: `kartu.${kartuIndex}.isi`,
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:127:    value: kartu.isi ?? '',
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:132:  const cardColor = tokens.color(kartu.warna || accentColor);
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:138:        background: tokens.colorAlpha(kartu.warna || accentColor, 0.04),
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:139:        border: `1px solid ${tokens.colorAlpha(kartu.warna || accentColor, 0.15)}`,
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:143:        ...edu.entrance(kartuIndex),
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:152:            background: tokens.colorAlpha(kartu.warna || accentColor, 0.1),
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:155:          <span style={{ fontSize: isCompact ? '16px' : '20px' }}>{kartu.icon}</span>
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:190:function InfografisCardTimeline({ kartu, kartuIndex, blockId, tokens, isCompact, edu, accentColor, isLast }: {
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:191:  kartu: InfografisBlock['kartu'][number];
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:192:  kartuIndex: number;
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:202:    fieldKey: `kartu.${kartuIndex}.judul`,
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:203:    value: kartu.judul ?? '',
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:208:    fieldKey: `kartu.${kartuIndex}.isi`,
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:209:    value: kartu.isi ?? '',
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:214:  const cardColor = tokens.color(kartu.warna || accentColor);
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:217:    <div className="flex gap-3" style={{ ...edu.entrance(kartuIndex) }}>
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:223:            background: tokens.colorAlpha(kartu.warna || accentColor, 0.15),
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:227:          <span style={{ fontSize: '12px' }}>{kartu.icon}</span>
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:232:            style={{ background: tokens.colorAlpha(kartu.warna || accentColor, 0.15) }}
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:281:  const allKartu = block.kartu || [];
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:286:    totalItems: allKartu.length,
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:288:  const kartu = isCompressed ? allKartu.slice(0, visibleCount) : allKartu;
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:329:            {kartu.map((k: InfografisBlock['kartu'][number], i: number) => (
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:332:                kartu={k}
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:333:                kartuIndex={i}
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:346:            {kartu.map((k: InfografisBlock['kartu'][number], i: number) => (
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:349:                kartu={k}
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:350:                kartuIndex={i}
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:363:            {kartu.map((k: InfografisBlock['kartu'][number], i: number) => (
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:366:                kartu={k}
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:367:                kartuIndex={i}
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:373:                isLast={i === kartu.length - 1}
+/home/z/my-project/src/core/renderer/blocks/InfografisRenderer.tsx:384:            itemLabel="kartu lagi"
+/home/z/my-project/src/core/renderer/blocks/OverflowIndicator.tsx:16://   2. Tata Letak Ringkas (Compact Layout) — compresses the layout
+/home/z/my-project/src/core/renderer/blocks/OverflowIndicator.tsx:80:      label: 'Tata Letak Ringkas',
+/home/z/my-project/src/core/renderer/blocks/MateriSectionRenderer.tsx:35://   A "Klasik" — Full section with header, child blocks, takeaways, self-check
+/home/z/my-project/src/core/renderer/blocks/MateriSectionRenderer.tsx:57:    { key: 'A', label: 'Klasik' },
+/home/z/my-project/src/core/renderer/blocks/MateriSectionRenderer.tsx:176:// ── Variant A "Klasik" — Original full section style ─────────────
+/home/z/my-project/src/core/renderer/blocks/MateriSectionRenderer.tsx:177:function MateriVariantKlasik({
+/home/z/my-project/src/core/renderer/blocks/MateriSectionRenderer.tsx:541:       *  Collapsible mode: "Selengkapnya" / "Ringkas" toggle.
+/home/z/my-project/src/core/renderer/blocks/MateriSectionRenderer.tsx:556:              ? <><span className="material-symbols-outlined" style={ { fontSize: '16px' } }>expand_less</span> Ringkas</>
+/home/z/my-project/src/core/renderer/blocks/MateriSectionRenderer.tsx:1208:        {variant === 'A' && <MateriVariantKlasik {...sharedProps} />}
+/home/z/my-project/src/core/preset/PagePresetRegistry.ts:232:    tags: ['bsnp', 'rangkuman', 'ringkasan', 'kesimpulan'],
+/home/z/my-project/src/core/visual-dna/visual-dna.ts:154:// nc-grid: 2×2 grid kartu konsep dengan icon, judul, body, warna
+/home/z/my-project/src/core/visual-dna/visual-dna.ts:157:// nk-card: Kartu norma dengan icon, nama, sanksi, warna khas
+/home/z/my-project/src/core/visual-dna/visual-dna.ts:245:    allVisible: 'semua konten langsung terlihat (ringkasan/penutup)',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:70:    description: 'Judul besar di tengah, subtitle di bawah. Klasik dan elegan.',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:128:    label: 'Kartu Tujuan',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:129:    description: 'Setiap tujuan dalam kartu terpisah. Visual dan mudah dibaca.',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:188:    description: 'Kartu bolak-balik. Depan: pertanyaan/istilah. Belakang: jawaban/definisi.',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:201:  // ── Kuis Variants ─────────────────────────────────────────
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:219:    label: 'Kartu Pilihan',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:220:    description: 'Opsi jawaban sebagai kartu visual besar. Lebih interaktif dan engaging.',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:237:    description: 'Papan permainan klasik. Cocok untuk sortir, drag-drop.',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:342:    description: 'Rangkuman dengan kartu visual dan ikon. Lebih engaging.',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:356:    id: 'penutup-kartu',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:357:    label: 'Kartu Penutup',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:358:    description: 'Ringkasan + pesan akhir dalam kartu. Simpel dan sopan.',
+/home/z/my-project/src/core/template/health-check/page-variant-registry.ts:460:    penutup: { A: 'penutup-kartu', B: 'penutup-checklist' },
+/home/z/my-project/src/core/template/health-check/types.ts:77:  /** Ringkasan per page */
+/home/z/my-project/src/core/template/health-check/types.ts:165:  rangkuman: 2,   // 1 ringkasan + 1 visual
+/home/z/my-project/src/core/template/health-check/types.ts:166:  penutup: 2,     // 1 ringkasan + 1 pesan akhir
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:22://   A "Klasik" — Full card with header, hook question, connections, transition
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:23://   B "Kartu Hook" — Hook question as standalone hero card, connections as icon pills
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:38:    { key: 'A', label: 'Klasik' },
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:39:    { key: 'B', label: 'Kartu Hook' },
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:61:// ── Variant A "Klasik" — Original full-card style ───────────────
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:62:function MotivasiVariantKlasik({
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:300:// ── Variant B "Kartu Hook" — Hero hook card + icon pills ────────
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:301:function MotivasiVariantKartuHook({
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:636:        {variant === 'A' && <MotivasiVariantKlasik {...sharedProps} />}
+/home/z/my-project/src/core/renderer/blocks/MotivasiRenderer.tsx:637:        {variant === 'B' && <MotivasiVariantKartuHook {...sharedProps} />}
+/home/z/my-project/src/core/template/health-check/auto-repair.ts:454:            : block.type === 'nc-grid' ? 'Norma Kartu'
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:32:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:54:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:77:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:99:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:121:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:143:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:165:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:187:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:210:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:232:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:254:      { templateType: 'kuis', label: 'Latihan Soal', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:276:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:298:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:321:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:343:      { templateType: 'kuis', label: 'Quiz', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:364:      { templateType: 'kuis', label: 'Quiz', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:428:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:450:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:472:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/legacy/course-templates-legacy.ts:494:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/compiler/PageSplitCompiler.ts:162:  if (!kuisBlock) return [makeSchemaPage(unit.label, unit.type, unit.blocks, unit.sceneType, unit.sectionLabel, unit.sectionColor, unit.contractId, unit.variant)];
+/home/z/my-project/src/core/template/compiler/PageSplitCompiler.ts:164:  const k = kuisBlock as { questions: unknown[]; title?: string; variant?: string };
+/home/z/my-project/src/core/template/template-fragments.ts:45:    description: 'Kotak definisi + kartu contoh penerapan',
+/home/z/my-project/src/core/template/template-fragments.ts:56:    description: 'Kartu grid istilah dan definisi penting',
+/home/z/my-project/src/core/template/template-fragments.ts:78:    description: 'Set kartu untuk mengulang materi',
+/home/z/my-project/src/core/template/CourseTemplateRegistry.ts:111:  standar: { icon: '📖', label: 'Standar', description: 'Alur pembelajaran klasik', color: 'amber' },
+/home/z/my-project/src/core/template/CourseTemplateRegistry.ts:197:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/CourseTemplateRegistry.ts:220:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+/home/z/my-project/src/core/template/CourseTemplateRegistry.ts:244:      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+
+[Showing results with pagination = limit: 250]
