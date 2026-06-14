@@ -293,8 +293,7 @@ export interface DiskusiBlock extends BaseBlock {
 export interface KuisBlock extends BaseBlock {
   type: 'kuis';
   title: string;
-  /** Variant: A=Klasik, B=Kartu, C=Ringkas. Falls back to A when empty/invalid. */
-  variant?: 'A' | 'B' | 'C';
+  // variant inherited from BaseBlock: A=Klasik, B=Kartu, C=Ringkas. Falls back to A when empty/invalid.
   questions: Array<{
     q: string;
     opts: string[];

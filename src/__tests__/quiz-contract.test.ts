@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════
-// QUIZ CONTRACT TESTS — Sprint 6.4-D0
+// QUIZ CONTRACT TESTS — Sprint 6.4-D0 + D0-Patch
 // Verifies data contract, DOM contract, selector contract,
-// accessibility contract, and CSS contract for the Kuis block
-// across all variants (A/Klasik, B/Kartu, C/Ringkas)
+// accessibility contract, CSS contract, and deterministic ID
+// for the Kuis block across all variants (A/Klasik, B/Kartu, C/Ringkas)
 // ═══════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from 'vitest';
@@ -14,9 +14,12 @@ import type { KuisBlock } from '@/core/schema/types/blocks';
 const noopRender = (() => '') as unknown as import('@/lib/export/utils').RenderBlockFn;
 
 // ── Test data ──────────────────────────────────────────────────────────
+let _blockCounter = 0;
 function makeKuisBlock(overrides: Partial<KuisBlock> = {}): Record<string, unknown> {
+  _blockCounter++;
   return {
     type: 'kuis',
+    id: `testblock${_blockCounter}`,
     title: 'Kuis Kontrak',
     variant: 'A',
     questions: [
@@ -211,14 +214,14 @@ describe('C. Selector Contract', () => {
     expect(matches).toHaveLength(1);
   });
 
-  it('C5: unique block IDs via Math.random', () => {
+  it('C5: unique block IDs — different blocks get different IDs', () => {
     const html1 = renderQuizBlock('kuis', makeKuisBlock(), noopRender);
     const html2 = renderQuizBlock('kuis', makeKuisBlock(), noopRender);
-    const id1 = html1.match(/data-block-id="(kuis-[a-z0-9]+)"/)?.[1];
-    const id2 = html2.match(/data-block-id="(kuis-[a-z0-9]+)"/)?.[1];
+    const id1 = html1.match(/data-block-id="([^"]+)"/)?.[1];
+    const id2 = html2.match(/data-block-id="([^"]+)"/)?.[1];
     expect(id1).toBeTruthy();
     expect(id2).toBeTruthy();
-    // IDs should differ (extremely unlikely to collide)
+    // Different blocks must have different IDs
     expect(id1).not.toBe(id2);
   });
 
@@ -226,18 +229,20 @@ describe('C. Selector Contract', () => {
     const kuisHtml = renderQuizBlock('kuis', makeKuisBlock(), noopRender);
     const tfHtml = renderQuizBlock('true-false-game', {
       type: 'true-false-game',
+      id: 'tf-test-block',
       title: 'TF',
       questions: [{ text: 'T1', correct: true }],
     }, noopRender);
     const fbHtml = renderQuizBlock('fill-blank-game', {
       type: 'fill-blank-game',
+      id: 'fb-test-block',
       title: 'FB',
       questions: [{ text: '___', answer: 'X' }],
     }, noopRender);
 
-    const kuisId = kuisHtml.match(/data-block-id="(kuis-[a-z0-9]+)"/)?.[1];
-    const tfId = tfHtml.match(/data-game="(tf-[a-z0-9]+)"/)?.[1];
-    const fbId = fbHtml.match(/data-game="(fb-[a-z0-9]+)"/)?.[1];
+    const kuisId = kuisHtml.match(/data-block-id="([^"]+)"/)?.[1];
+    const tfId = tfHtml.match(/data-game="([^"]+)"/)?.[1];
+    const fbId = fbHtml.match(/data-game="([^"]+)"/)?.[1];
     expect(kuisId).toMatch(/^kuis-/);
     expect(tfId).toMatch(/^tf-/);
     expect(fbId).toMatch(/^fb-/);
@@ -425,17 +430,113 @@ describe('G. Variant Independence', () => {
   });
 
   it('G3: same DOM structure produced for all variants', () => {
-    const htmlA = renderQuizBlock('kuis', makeKuisBlock({ variant: 'A' }), noopRender);
-    const htmlB = renderQuizBlock('kuis', makeKuisBlock({ variant: 'B' }), noopRender);
-    const htmlC = renderQuizBlock('kuis', makeKuisBlock({ variant: 'C' }), noopRender);
+    const block = makeKuisBlock({ variant: 'A', id: 'same-block-id' });
+    const htmlA = renderQuizBlock('kuis', { ...block, variant: 'A' }, noopRender);
+    const htmlB = renderQuizBlock('kuis', { ...block, variant: 'B' }, noopRender);
+    const htmlC = renderQuizBlock('kuis', { ...block, variant: 'C' }, noopRender);
 
-    // Strip variant-specific class, data-variant, and random IDs
+    // Strip variant-specific class and data-variant only
+    // With stable IDs, same block → same ID, no need to normalize IDs
     const normalize = (h: string) =>
       h.replace(/quiz-variant-[abc]/g, '')
-       .replace(/data-variant="[ABC]"/g, '')
-       .replace(/kuis-[a-z0-9]{6}/g, 'kuis-XXXXXX');
+       .replace(/data-variant="[ABC]"/g, '');
 
     expect(normalize(htmlA)).toBe(normalize(htmlB));
     expect(normalize(htmlA)).toBe(normalize(htmlC));
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// H. DETERMINISTIC ID CONTRACT (Sprint 6.4-D0-Patch)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe('H. Deterministic ID Contract', () => {
+  it('H1: same block rendered twice produces same blockId', () => {
+    const block = { type: 'kuis', id: 'abc123', title: 'Kuis', questions: [{ q: 'Q1?', opts: ['A'], ans: 0, ex: '' }] };
+    const html1 = renderQuizBlock('kuis', block, noopRender);
+    const html2 = renderQuizBlock('kuis', block, noopRender);
+    const id1 = html1.match(/data-block-id="([^"]+)"/)?.[1];
+    const id2 = html2.match(/data-block-id="([^"]+)"/)?.[1];
+    expect(id1).toBe(id2);
+    expect(id1).toContain('kuis-abc123');
+  });
+
+  it('H2: different blocks produce different blockIds', () => {
+    const block1 = { type: 'kuis', id: 'block-aaa', title: 'Kuis A', questions: [{ q: 'Q?', opts: ['A'], ans: 0, ex: '' }] };
+    const block2 = { type: 'kuis', id: 'block-bbb', title: 'Kuis B', questions: [{ q: 'Q?', opts: ['A'], ans: 0, ex: '' }] };
+    const html1 = renderQuizBlock('kuis', block1, noopRender);
+    const html2 = renderQuizBlock('kuis', block2, noopRender);
+    const id1 = html1.match(/data-block-id="([^"]+)"/)?.[1];
+    const id2 = html2.match(/data-block-id="([^"]+)"/)?.[1];
+    expect(id1).not.toBe(id2);
+    expect(id1).toContain('block-aaa');
+    expect(id2).toContain('block-bbb');
+  });
+
+  it('H3: DOM ID is safe (starts with letter, no special chars)', () => {
+    const block = { type: 'kuis', id: 'safe_id-123', title: 'Kuis', questions: [{ q: 'Q?', opts: ['A'], ans: 0, ex: '' }] };
+    const html = renderQuizBlock('kuis', block, noopRender);
+    const domId = html.match(/data-block-id="([^"]+)"/)?.[1];
+    expect(domId).toBeTruthy();
+    // HTML id must start with a letter
+    expect(domId!).toMatch(/^[a-zA-Z]/);
+    // No spaces or dangerous chars
+    expect(domId!).not.toMatch(/[\s"'><]/);
+  });
+
+  it('H4: block.id starting with digit gets prefixed for DOM safety', () => {
+    const block = { type: 'kuis', id: '123abc', title: 'Kuis', questions: [{ q: 'Q?', opts: ['A'], ans: 0, ex: '' }] };
+    const html = renderQuizBlock('kuis', block, noopRender);
+    const domId = html.match(/data-block-id="([^"]+)"/)?.[1];
+    expect(domId).toBeTruthy();
+    // Should be prefixed with 'kuis-' so it starts with a letter
+    expect(domId!).toMatch(/^kuis-/);
+  });
+
+  it('H5: TF block uses stable ID from block.id', () => {
+    const block = { type: 'true-false-game', id: 'tf-block-1', title: 'TF', questions: [{ text: 'T1', correct: true }] };
+    const html1 = renderQuizBlock('true-false-game', block, noopRender);
+    const html2 = renderQuizBlock('true-false-game', block, noopRender);
+    const id1 = html1.match(/data-game="([^"]+)"/)?.[1];
+    const id2 = html2.match(/data-game="([^"]+)"/)?.[1];
+    expect(id1).toBe(id2);
+    expect(id1).toContain('tf-block-1');
+  });
+
+  it('H6: FB block uses stable ID from block.id', () => {
+    const block = { type: 'fill-blank-game', id: 'fb-block-1', title: 'FB', questions: [{ text: '___', answer: 'X' }] };
+    const html1 = renderQuizBlock('fill-blank-game', block, noopRender);
+    const html2 = renderQuizBlock('fill-blank-game', block, noopRender);
+    const id1 = html1.match(/data-game="([^"]+)"/)?.[1];
+    const id2 = html2.match(/data-game="([^"]+)"/)?.[1];
+    expect(id1).toBe(id2);
+    expect(id1).toContain('fb-block-1');
+  });
+
+  it('H7: fallback when block.id is missing', () => {
+    const block = { type: 'kuis', title: 'No ID', questions: [{ q: 'Q?', opts: ['A'], ans: 0, ex: '' }] };
+    const html = renderQuizBlock('kuis', block, noopRender);
+    const domId = html.match(/data-block-id="([^"]+)"/)?.[1];
+    expect(domId).toBeTruthy();
+    // Should still have a valid ID (fallback)
+    expect(domId!).toMatch(/^kuis-/);
+  });
+
+  it('H8: Math.random only in fallback of quiz-renderers', () => {
+    // Verify via module import that stableBlockId prefers block.id
+    // and Math.random is only in the fallback path
+    const blockWithId = { type: 'kuis', id: 'stable-id', title: 'Kuis', questions: [{ q: 'Q?', opts: ['A'], ans: 0, ex: '' }] };
+    const blockWithoutId = { type: 'kuis', title: 'No ID', questions: [{ q: 'Q?', opts: ['A'], ans: 0, ex: '' }] };
+    const htmlWithId = renderQuizBlock('kuis', blockWithId, noopRender);
+    const htmlWithoutId = renderQuizBlock('kuis', blockWithoutId, noopRender);
+    // With ID: deterministic
+    const domId1 = htmlWithId.match(/data-block-id="([^"]+)"/)?.[1];
+    const domId2 = htmlWithId.match(/data-block-id="([^"]+)"/)?.[1];
+    expect(domId1).toBe(domId2);
+    expect(domId1).toBe('kuis-stable-id');
+    // Without ID: fallback still produces valid ID
+    const fallbackId = htmlWithoutId.match(/data-block-id="([^"]+)"/)?.[1];
+    expect(fallbackId).toBeTruthy();
+    expect(fallbackId!).toMatch(/^kuis-/);
   });
 });

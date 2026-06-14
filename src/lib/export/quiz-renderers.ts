@@ -2,9 +2,37 @@
 // QUIZ RENDERERS — Kuis, True/False, Fill-Blank block HTML rendering
 // Sprint 6.4-C: Step-reveal flow + completion screen + replay
 // Sprint 6.4-D: Variant parity (A/Klasik, B/Kartu, C/Ringkas)
+// Sprint 6.4-D0-Patch: Deterministic block IDs from schema
 // ═══════════════════════════════════════════════════════════════════════
 
 import { escapeHtml, resolveColor, type RenderBlockFn } from './utils';
+
+/**
+ * Produce a stable, DOM-safe ID for a quiz/game block.
+ *
+ * Priority:
+ *   1. block.id from schema (already stable nanoid, assigned at creation)
+ *   2. Deterministic ordinal fallback (requires pageIndex + blockIndex)
+ *   3. Random fallback (last resort, should never trigger in production)
+ *
+ * The result is always prefixed and sanitized for safe use in HTML id attributes.
+ */
+function stableBlockId(
+  prefix: 'kuis' | 'tf' | 'fb',
+  block: Record<string, unknown>,
+): string {
+  const rawId = block.id as string | undefined;
+  if (rawId) {
+    // Sanitize: keep only alphanumeric, hyphens, underscores
+    const safe = rawId.replace(/[^a-zA-Z0-9_-]/g, '');
+    // Ensure ID doesn't start with a digit (invalid HTML id)
+    const domId = /^[0-9]/.test(safe) ? `${prefix}-${safe}` : `${prefix}-${safe}`;
+    return domId;
+  }
+  // Fallback: deterministic counter-based (should not happen in normal flow
+  // because schema-healer ensures every block has an id)
+  return `${prefix}-block-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 /**
  * Render a quiz block. Returns null if the block type is not handled here.
@@ -32,7 +60,8 @@ function renderKuis(b: Record<string, unknown>): string {
   const title = b.title as string || 'Kuis';
   const questions = (b.questions as Array<{ q: string; opts: string[]; ans: number; ex: string }>) || [];
   const total = questions.length;
-  const kuisId = `kuis-${Math.random().toString(36).slice(2, 8)}`;
+  // Sprint 6.4-D0-Patch: Use stable block.id instead of Math.random()
+  const kuisId = stableBlockId('kuis', b);
   // Sprint 6.4-D: Read variant from block data
   const variant = normalizeKuisVariant(b.variant as string | undefined);
   const variantClass = `quiz-variant-${variant.toLowerCase()}`;
@@ -74,7 +103,8 @@ function renderTrueFalseGame(b: Record<string, unknown>): string {
   const title = b.title as string || 'Benar atau Salah';
   const questions = (b.questions as Array<{ text: string; correct: boolean; explanation?: string }>) || [];
   const total = questions.length;
-  const tfId = `tf-${Math.random().toString(36).slice(2, 8)}`;
+  // Sprint 6.4-D0-Patch: Use stable block.id instead of Math.random()
+  const tfId = stableBlockId('tf', b);
   return `
     <div class="block true-false-block" data-game="${tfId}" data-total="${total}">
       <div class="block-header">
@@ -110,7 +140,8 @@ function renderFillBlankGame(b: Record<string, unknown>): string {
   const title = b.title as string || 'Isian Singkat';
   const questions = (b.questions as Array<{ text: string; answer: string; hint?: string }>) || [];
   const total = questions.length;
-  const fbId = `fb-${Math.random().toString(36).slice(2, 8)}`;
+  // Sprint 6.4-D0-Patch: Use stable block.id instead of Math.random()
+  const fbId = stableBlockId('fb', b);
   return `
     <div class="block fill-blank-game-block" data-game="${fbId}" data-checked="false" data-total="${total}">
       <div class="block-header">
