@@ -473,72 +473,73 @@ export function getCss(ratioW: number, ratioH: number): string {
     }
 
     /* ── Quiz Variants (Sprint 6.4-D) ── */
+    /* All variant selectors scoped to .kuis-block to prevent style leakage */
     /* Variant A — Klasik: 2-column grid, balanced layout */
-    .quiz-variant-a .q-options {
+    .kuis-block.quiz-variant-a .q-options {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
-    .quiz-variant-a .q-opt {
+    .kuis-block.quiz-variant-a .q-opt {
       padding: 10px 14px;
       font-size: 0.82rem;
       text-align: center;
       justify-content: center;
     }
-    .quiz-variant-a .q-text { font-size: 0.88rem; }
+    .kuis-block.quiz-variant-a .q-text { font-size: 0.88rem; }
 
     /* Variant B — Kartu: single column, elevated card, larger elements */
-    .quiz-variant-b .kuis-step.step-active {
+    .kuis-block.quiz-variant-b .kuis-step.step-active {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 14px;
       padding: 18px;
     }
-    .quiz-variant-b .q-options {
+    .kuis-block.quiz-variant-b .q-options {
       flex-direction: column;
       gap: 10px;
     }
-    .quiz-variant-b .q-opt {
+    .kuis-block.quiz-variant-b .q-opt {
       padding: 14px 16px;
       font-size: 0.88rem;
       border-radius: 12px;
       text-align: left;
     }
-    .quiz-variant-b .q-text {
+    .kuis-block.quiz-variant-b .q-text {
       font-size: 0.95rem;
       margin-bottom: 12px;
     }
-    .quiz-variant-b .q-letter {
+    .kuis-block.quiz-variant-b .q-letter {
       min-width: 26px;
       height: 26px;
       font-size: 0.75rem;
     }
-    .quiz-variant-b .q-feedback {
+    .kuis-block.quiz-variant-b .q-feedback {
       margin-top: 8px;
       padding: 10px 14px;
       font-size: 0.82rem;
     }
-    .quiz-variant-b .q-explanation {
+    .kuis-block.quiz-variant-b .q-explanation {
       padding: 12px 14px;
       font-size: 0.82rem;
     }
-    .quiz-variant-b .q-next-btn {
+    .kuis-block.quiz-variant-b .q-next-btn {
       padding: 10px 24px;
       font-size: 0.88rem;
     }
-    .quiz-variant-b .quiz-progress-bar { height: 8px; }
-    .quiz-variant-b .quiz-completion {
+    .kuis-block.quiz-variant-b .quiz-progress-bar { height: 8px; }
+    .kuis-block.quiz-variant-b .quiz-completion {
       padding: 28px 20px;
       border-radius: 14px;
     }
 
     /* Variant C — Ringkas: compact pills, minimal spacing */
-    .quiz-variant-c .q-options {
+    .kuis-block.quiz-variant-c .q-options {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
     }
-    .quiz-variant-c .q-opt {
+    .kuis-block.quiz-variant-c .q-opt {
       padding: 6px 14px;
       border-radius: 9999px;
       font-size: 0.72rem;
@@ -548,39 +549,39 @@ export function getCss(ratioW: number, ratioH: number): string {
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .quiz-variant-c .q-letter { display: none; }
-    .quiz-variant-c .q-text {
+    .kuis-block.quiz-variant-c .q-letter { display: none; }
+    .kuis-block.quiz-variant-c .q-text {
       font-size: 0.8rem;
       margin-bottom: 6px;
       line-height: 1.4;
     }
-    .quiz-variant-c .q-feedback {
+    .kuis-block.quiz-variant-c .q-feedback {
       padding: 4px 10px;
       font-size: 0.7rem;
     }
-    .quiz-variant-c .q-explanation {
+    .kuis-block.quiz-variant-c .q-explanation {
       padding: 6px 10px;
       font-size: 0.72rem;
     }
-    .quiz-variant-c .kuis-question { margin-bottom: 8px; }
-    .quiz-variant-c .q-next-btn {
+    .kuis-block.quiz-variant-c .kuis-question { margin-bottom: 8px; }
+    .kuis-block.quiz-variant-c .q-next-btn {
       padding: 6px 16px;
       font-size: 0.75rem;
     }
-    .quiz-variant-c .quiz-progress {
+    .kuis-block.quiz-variant-c .quiz-progress {
       margin-bottom: 6px;
     }
-    .quiz-variant-c .quiz-progress-bar { height: 4px; }
-    .quiz-variant-c .quiz-progress-text { font-size: 0.65rem; }
-    .quiz-variant-c .quiz-completion {
+    .kuis-block.quiz-variant-c .quiz-progress-bar { height: 4px; }
+    .kuis-block.quiz-variant-c .quiz-progress-text { font-size: 0.65rem; }
+    .kuis-block.quiz-variant-c .quiz-completion {
       padding: 18px 14px;
       border-radius: 10px;
     }
-    .quiz-variant-c .quiz-completion-icon { font-size: 2.2rem; margin-bottom: 6px; }
-    .quiz-variant-c .quiz-completion-title { font-size: 1rem; margin-bottom: 4px; }
-    .quiz-variant-c .quiz-completion-score { font-size: 0.82rem; margin-bottom: 3px; }
-    .quiz-variant-c .quiz-completion-msg { font-size: 0.75rem; margin-bottom: 10px; }
-    .quiz-variant-c .quiz-replay-btn {
+    .kuis-block.quiz-variant-c .quiz-completion-icon { font-size: 2.2rem; margin-bottom: 6px; }
+    .kuis-block.quiz-variant-c .quiz-completion-title { font-size: 1rem; margin-bottom: 4px; }
+    .kuis-block.quiz-variant-c .quiz-completion-score { font-size: 0.82rem; margin-bottom: 3px; }
+    .kuis-block.quiz-variant-c .quiz-completion-msg { font-size: 0.75rem; margin-bottom: 10px; }
+    .kuis-block.quiz-variant-c .quiz-replay-btn {
       padding: 8px 18px;
       font-size: 0.78rem;
     }
@@ -940,8 +941,8 @@ export function getCss(ratioW: number, ratioH: number): string {
       .quiz-completion-msg { color: #475569; }
       .quiz-replay-btn { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); color: #f59e0b; }
       .quiz-replay-btn:hover { background: rgba(245,158,11,0.12); }
-      /* Variant B light mode: elevated card */
-      .quiz-variant-b .kuis-step.step-active { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
+      /* Variant B light mode: elevated card (scoped to .kuis-block) */
+      .kuis-block.quiz-variant-b .kuis-step.step-active { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
       /* Variant C light mode: no extra treatment needed — pills inherit from .q-opt */
       .diskusi-petunjuk, .refleksi-petunjuk { color: #475569; }
       .penutup-item { background: rgba(0,0,0,0.02); }

@@ -323,7 +323,7 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     category: 'interactive',
     personality: 'assessment',
     description: 'Kuis pilihan ganda dengan feedback',
-    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
+    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A', 'B', 'C'], handlesCompression: true },
     defaultLayout: { position: 'flow' },
     usedInTemplates: ['kuis'],
     propertySchema: KUIS_PROPERTY_SCHEMA,
