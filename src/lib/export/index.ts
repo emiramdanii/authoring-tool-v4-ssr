@@ -25,7 +25,7 @@ import type { CanvaPage } from '@/components/canva/types';
 import { renderPageHtml } from './html-templates';
 import { getCss } from './styles';
 import { getJs } from './scripts';
-import { resetBlockIdRegistry } from './quiz-renderers';
+import { renderQuizBlock, createExportRenderContext, type ExportRenderContext, resetBlockIdRegistry } from './quiz-renderers';
 
 // ── Export Data shape (mirrors the API route payload) ────────────────
 export interface ClientExportPayload {
@@ -55,8 +55,10 @@ export interface ClientExportPayload {
 export function generateClientExportHtml(payload: ClientExportPayload): string {
   const { pages, ratioId, meta } = payload;
 
-  // Reset block ID registry for this export run — prevents ID collisions
-  resetBlockIdRegistry();
+  // Create a fresh render context for this export run.
+  // One export = one context = no global reset needed.
+  // This replaces the old resetBlockIdRegistry() pattern.
+  const ctx = createExportRenderContext();
 
   // Determine aspect ratio
   const ratioMap: Record<string, [number, number]> = {
@@ -73,7 +75,7 @@ export function generateClientExportHtml(payload: ClientExportPayload): string {
   const title = `${metaObj?.judulPertemuan || 'Media Pembelajaran Interaktif'} | ${metaObj?.mapel || ''} ${metaObj?.kelas || ''}`;
 
   // Render pages as HTML strings
-  const pagesHtml = pages.map((page, i) => renderPageHtml(page, i, pages.length));
+  const pagesHtml = pages.map((page, i) => renderPageHtml(page, i, pages.length, ctx));
 
   // Build export data for the JS runtime
   const exportData = {
@@ -139,3 +141,4 @@ export function generateExportFilename(meta: Record<string, unknown>): string {
 // Re-export utilities for convenience
 export { escapeHtml, resolveColor, TOKEN_COLORS } from './utils';
 export { renderBlockHtml } from './html-templates';
+export { createExportRenderContext, type ExportRenderContext } from './quiz-renderers';

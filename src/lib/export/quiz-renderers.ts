@@ -6,6 +6,8 @@
 // Sprint 6.4-E1-Patch: Security/resilience — defensive guards, XSS-safe,
 //   legacy answer normalization, deterministic ID fallback, duplicate ID
 //   disambiguation, empty/malformed state handling
+// Sprint 6.4-E1-Patch-2: Boolean contract (normalizeBoolean), export context
+//   (ExportRenderContext replaces module-level mutable state)
 // ═══════════════════════════════════════════════════════════════════════
 
 import { escapeHtml, resolveColor, type RenderBlockFn } from './utils';
@@ -77,35 +79,73 @@ function normalizeAnswerIndex(value: unknown, optionCount: number): number | nul
 }
 
 /**
- * Coerce a value to boolean for true-false questions.
- * Returns true for truthy values, false otherwise.
- * Handles: true, "true", 1, "1" → true; everything else → false.
+ * Normalize a value to boolean for true-false questions.
+ *
+ * IMPORTANT: Do NOT use Boolean() or !!value — "false" and "0" would
+ * become true, which is semantically wrong for TF questions.
+ *
+ * Contract:
+ *   true, "true", 1, "1"   → true
+ *   false, "false", 0, "0" → false
+ *   anything else          → null (non-scorable)
+ *
+ * When null is returned, the question should be treated as non-scorable
+ * (no correct answer can be determined), NOT silently coerced to false.
  */
-function asBoolean(value: unknown): boolean {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'string') {
-    const lower = value.toLowerCase().trim();
-    return lower === 'true' || lower === '1';
+function normalizeBoolean(value: unknown): boolean | null {
+  if (value === true || value === 1 || value === 'true' || value === '1') {
+    return true;
   }
-  if (typeof value === 'number') return value !== 0;
-  return false;
+  if (value === false || value === 0 || value === 'false' || value === '0') {
+    return false;
+  }
+  return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
 // ID GENERATION — Deterministic, collision-safe
 // ═══════════════════════════════════════════════════════════════════════
 
-/**
- * Registry for tracking used block IDs within a single export.
- * Prevents duplicate DOM IDs when two blocks share the same block.id.
- * Cleared at the start of each export pipeline call.
- */
-const usedBlockIds = new Set<string>();
+// ═══════════════════════════════════════════════════════════════════════
+// EXPORT RENDER CONTEXT — Per-export state (replaces module-level mutables)
+// ═══════════════════════════════════════════════════════════════════════
 
-/** Reset the ID registry and ordinal counter — call at the start of each export */
+/**
+ * Render context scoped to a single export run.
+ *
+ * One export = one context = no global reset needed.
+ * Each context carries its own ID registry and ordinal counter,
+ * so concurrent or sequential exports never interfere.
+ *
+ * Previously, usedBlockIds and _blockOrdinal were module-level state
+ * that required resetBlockIdRegistry() before each export — fragile.
+ * Now, the context is created fresh per export and threaded through
+ * the render chain, making all quiz renderers pure w.r.t. context.
+ */
+export interface ExportRenderContext {
+  usedBlockIds: Set<string>;
+  blockOrdinal: number;
+}
+
+/** Create a fresh render context for a new export run */
+export function createExportRenderContext(): ExportRenderContext {
+  return {
+    usedBlockIds: new Set(),
+    blockOrdinal: 0,
+  };
+}
+
+/**
+ * @deprecated Use createExportRenderContext() + thread context instead.
+ * This function is kept only for backward compatibility with tests
+ * that call renderQuizBlock without a context. It resets a shared
+ * module-level context used as fallback.
+ */
+const _legacyContext: ExportRenderContext = createExportRenderContext();
+
 export function resetBlockIdRegistry(): void {
-  usedBlockIds.clear();
-  _blockOrdinal = 0;
+  _legacyContext.usedBlockIds.clear();
+  _legacyContext.blockOrdinal = 0;
 }
 
 /**
@@ -113,16 +153,15 @@ export function resetBlockIdRegistry(): void {
  *
  * Priority:
  *   1. block.id from schema (sanitized, disambiguated on collision)
- *   2. Deterministic ordinal fallback (based on internal counter)
+ *   2. Deterministic ordinal fallback (based on context counter)
  *
  * The result is always prefixed and sanitized for safe use in HTML id attributes.
- * No Math.random() — fully deterministic for same input + same call order.
+ * No Math.random() — fully deterministic for same input + same context.
  */
-let _blockOrdinal = 0;
-
 function stableBlockId(
   prefix: 'kuis' | 'tf' | 'fb',
   block: Record<string, unknown>,
+  ctx: ExportRenderContext,
 ): string {
   const rawId = block.id;
 
@@ -135,23 +174,23 @@ function stableBlockId(
     const candidate = /^[0-9]/.test(safe) ? `${prefix}-${safe}` : `${prefix}-${safe}`;
 
     // Check for collision — disambiguate deterministically
-    if (!usedBlockIds.has(candidate)) {
-      usedBlockIds.add(candidate);
+    if (!ctx.usedBlockIds.has(candidate)) {
+      ctx.usedBlockIds.add(candidate);
       return candidate;
     }
     // Collision: append -2, -3, -4, ...
     let seq = 2;
-    while (usedBlockIds.has(`${candidate}-${seq}`)) seq++;
+    while (ctx.usedBlockIds.has(`${candidate}-${seq}`)) seq++;
     const disambiguated = `${candidate}-${seq}`;
-    usedBlockIds.add(disambiguated);
+    ctx.usedBlockIds.add(disambiguated);
     return disambiguated;
   }
 
   // Fallback: deterministic ordinal-based ID
-  // Same export call order → same ordinal → same ID
-  _blockOrdinal++;
-  const ordinalId = `${prefix}-p0-b${_blockOrdinal}`;
-  usedBlockIds.add(ordinalId);
+  // Same context → same ordinal → same ID
+  ctx.blockOrdinal++;
+  const ordinalId = `${prefix}-p0-b${ctx.blockOrdinal}`;
+  ctx.usedBlockIds.add(ordinalId);
   return ordinalId;
 }
 
@@ -161,16 +200,22 @@ function stableBlockId(
 
 /**
  * Render a quiz block. Returns null if the block type is not handled here.
+ *
+ * @param ctx Export render context — provides ID registry for the current export.
+ *   If omitted, falls back to the legacy module-level context (for backward
+ *   compatibility with existing tests). New callers should always pass ctx.
  */
 export function renderQuizBlock(
   type: string,
   b: Record<string, unknown>,
   _renderBlock: RenderBlockFn,
+  ctx?: ExportRenderContext,
 ): string | null {
+  const renderCtx = ctx || _legacyContext;
   switch (type) {
-    case 'kuis': return renderKuis(b);
-    case 'true-false-game': return renderTrueFalseGame(b);
-    case 'fill-blank-game': return renderFillBlankGame(b);
+    case 'kuis': return renderKuis(b, renderCtx);
+    case 'true-false-game': return renderTrueFalseGame(b, renderCtx);
+    case 'fill-blank-game': return renderFillBlankGame(b, renderCtx);
     default: return null;
   }
 }
@@ -185,10 +230,10 @@ function normalizeKuisVariant(raw: string | undefined): 'A' | 'B' | 'C' {
 // KUIS RENDERER
 // ═══════════════════════════════════════════════════════════════════════
 
-function renderKuis(b: Record<string, unknown>): string {
+function renderKuis(b: Record<string, unknown>, ctx: ExportRenderContext): string {
   const title = asText(b.title, 'Kuis');
   const rawQuestions = asArray<Record<string, unknown>>(b.questions);
-  const kuisId = stableBlockId('kuis', b);
+  const kuisId = stableBlockId('kuis', b, ctx);
   const variant = normalizeKuisVariant(b.variant as string | undefined);
   const variantClass = `quiz-variant-${variant.toLowerCase()}`;
 
@@ -269,17 +314,18 @@ function renderKuis(b: Record<string, unknown>): string {
 // TRUE/FALSE RENDERER
 // ═══════════════════════════════════════════════════════════════════════
 
-function renderTrueFalseGame(b: Record<string, unknown>): string {
+function renderTrueFalseGame(b: Record<string, unknown>, ctx: ExportRenderContext): string {
   const title = asText(b.title, 'Benar atau Salah');
   const rawQuestions = asArray<Record<string, unknown>>(b.questions);
-  const tfId = stableBlockId('tf', b);
+  const tfId = stableBlockId('tf', b, ctx);
 
   // Normalize questions — filter nulls, guard all fields
+  // Use normalizeBoolean: invalid correct values become null → non-scorable
   const questions = rawQuestions
     .filter(q => q != null && typeof q === 'object')
     .map(q => ({
       text: asText(q.text),
-      correct: asBoolean(q.correct),
+      correct: normalizeBoolean(q.correct),  // boolean | null
       explanation: asText(q.explanation),
     }));
 
@@ -309,17 +355,23 @@ function renderTrueFalseGame(b: Record<string, unknown>): string {
         <div class="quiz-progress-bar" role="progressbar" aria-label="Kemajuan kuis" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="1" aria-valuetext="Soal 1 dari ${total}" id="tf-pbar-${tfId}"><div class="quiz-progress-fill" id="tf-pfill-${tfId}" style="width:0%"></div></div>
         <span class="quiz-progress-text" id="tf-ptext-${tfId}">Soal 1 dari ${total}</span>
       </div>
-      ${questions.map((q, i) => `
-        <div class="tf-question tf-step${i === 0 ? ' step-active' : ''}" id="tf-q-${tfId}-${i}" data-answered="false" data-idx="${i}" tabindex="-1">
+      ${questions.map((q, i) => {
+        // If correct is null (invalid boolean), mark as non-scorable
+        const isScorable = q.correct !== null;
+        const correctAttr = isScorable ? String(q.correct) : '';
+        const nonScorableClass = isScorable ? '' : ' non-scorable';
+        return `
+        <div class="tf-question tf-step${i === 0 ? ' step-active' : ''}${nonScorableClass}" id="tf-q-${tfId}-${i}" data-answered="false" data-idx="${i}" data-scorable="${isScorable}" data-correct="${correctAttr}" tabindex="-1">
           <p><strong>${i + 1}.</strong> ${escapeHtml(q.text)}</p>
           <div class="tf-buttons">
-            <button class="tf-btn tf-true" data-correct="${q.correct}" data-idx="${i}" data-game="${tfId}" onclick="checkTrueFalse(this, true)">✅ Benar</button>
-            <button class="tf-btn tf-false" data-correct="${q.correct}" data-idx="${i}" data-game="${tfId}" onclick="checkTrueFalse(this, false)">❌ Salah</button>
+            <button class="tf-btn tf-true" data-correct="${correctAttr}" data-idx="${i}" data-game="${tfId}" data-scorable="${isScorable}" onclick="checkTrueFalse(this, true)">✅ Benar</button>
+            <button class="tf-btn tf-false" data-correct="${correctAttr}" data-idx="${i}" data-game="${tfId}" data-scorable="${isScorable}" onclick="checkTrueFalse(this, false)">❌ Salah</button>
           </div>
           ${q.explanation ? `<div class="tf-explanation" style="display:none;">${escapeHtml(q.explanation)}</div>` : ''}
           <div class="tf-feedback" id="tf-fb-${tfId}-${i}" role="status"></div>
           <button class="q-next-btn tf-next-btn" style="display:none;" onclick="nextTFStep('${tfId}',${i})">Lanjut →</button>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
       <div class="quiz-completion" id="tf-done-${tfId}" style="display:none;" role="region" aria-live="polite" tabindex="-1">
         <div class="quiz-completion-icon" id="tf-done-icon-${tfId}"></div>
         <h3 class="quiz-completion-title" id="tf-done-title-${tfId}"></h3>
@@ -334,10 +386,10 @@ function renderTrueFalseGame(b: Record<string, unknown>): string {
 // FILL-BLANK RENDERER
 // ═══════════════════════════════════════════════════════════════════════
 
-function renderFillBlankGame(b: Record<string, unknown>): string {
+function renderFillBlankGame(b: Record<string, unknown>, ctx: ExportRenderContext): string {
   const title = asText(b.title, 'Isian Singkat');
   const rawQuestions = asArray<Record<string, unknown>>(b.questions);
-  const fbId = stableBlockId('fb', b);
+  const fbId = stableBlockId('fb', b, ctx);
 
   // Normalize questions — filter nulls, guard all fields
   const questions = rawQuestions

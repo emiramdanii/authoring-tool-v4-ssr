@@ -2,6 +2,7 @@
 // EXPORT SCRIPTS — All JavaScript for the exported standalone HTML
 // Sprint 6.4-C: Step-reveal flow + completion screen + replay
 // Sprint 6.4-E1-Patch: Close XSS — all feedback uses textContent, no innerHTML with user content
+// Sprint 6.4-E1-Patch-2: Non-scorable TF questions — invalid correct values give neutral feedback
 // ═══════════════════════════════════════════════════════════════════════
 
 export function getJs(): string {
@@ -599,9 +600,11 @@ export function getJs(): string {
 
     // ═══════════════════════════════════════════════════════════════════
     // GAME: True/False (step-reveal, anti-double-score, explanation)
+    // Sprint 6.4-E1-Patch-2: Non-scorable support — invalid correct
+    //   values are marked data-scorable="false" in the HTML. The check
+    //   function detects this and gives neutral feedback without scoring.
     // ═══════════════════════════════════════════════════════════════════
     function checkTrueFalse(btn, userAnswer) {
-      var correct = btn.dataset.correct === 'true';
       var idx = btn.dataset.idx;
       var game = btn.dataset.game;
       var qEl = document.getElementById('tf-q-' + game + '-' + idx);
@@ -616,20 +619,30 @@ export function getJs(): string {
 
       var btns = qEl.querySelectorAll('.tf-btn');
       btns.forEach(function(b) { b.classList.add('disabled'); });
-      if (userAnswer === correct) {
-        btn.classList.add('correct-answer');
+
+      // Non-scorable question: no valid correct answer
+      var isScorable = btn.dataset.scorable !== 'false';
+      if (!isScorable) {
         var fb = qEl.querySelector('.tf-feedback');
-        setFeedback(fb, '✓', '#34d399', 'Benar!');
-        st.correct++;
+        setFeedback(fb, '⚠', '#fbbf24', 'Soal ini tidak dapat dinilai (kunci jawaban tidak valid).');
+        // Don't update st.correct or st.total — skip scoring entirely
       } else {
-        btn.classList.add('wrong-answer');
-        btns.forEach(function(b) {
-          if ((correct && b.classList.contains('tf-true')) || (!correct && b.classList.contains('tf-false'))) b.classList.add('correct-answer');
-        });
-        var fb = qEl.querySelector('.tf-feedback');
-        setFeedback(fb, '✗', '#ff6b6b', 'Salah. Jawaban: ' + (correct ? 'Benar' : 'Salah'));
+        var correct = btn.dataset.correct === 'true';
+        if (userAnswer === correct) {
+          btn.classList.add('correct-answer');
+          var fb = qEl.querySelector('.tf-feedback');
+          setFeedback(fb, '✓', '#34d399', 'Benar!');
+          st.correct++;
+        } else {
+          btn.classList.add('wrong-answer');
+          btns.forEach(function(b) {
+            if ((correct && b.classList.contains('tf-true')) || (!correct && b.classList.contains('tf-false'))) b.classList.add('correct-answer');
+          });
+          var fb = qEl.querySelector('.tf-feedback');
+          setFeedback(fb, '✗', '#ff6b6b', 'Salah. Jawaban: ' + (correct ? 'Benar' : 'Salah'));
+        }
+        st.total++;
       }
-      st.total++;
 
       // Show explanation if present
       var exEl = qEl.querySelector('.tf-explanation');

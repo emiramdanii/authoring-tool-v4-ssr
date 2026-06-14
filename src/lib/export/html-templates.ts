@@ -18,20 +18,20 @@ import type { SchemaBlock } from '@/core/schema/types';
 import { escapeHtml, resolveColor } from './utils';
 import { renderContentBlock, renderGenericBlock } from './block-renderers';
 import { renderNavigationBlock } from './navigation-renderers';
-import { renderQuizBlock } from './quiz-renderers';
+import { renderQuizBlock, type ExportRenderContext } from './quiz-renderers';
 import { renderGameBlock } from './game-renderers';
 
 // ── Block → simplified HTML renderer ──────────────────────────────
 // Composes all renderer modules into a single dispatch function.
 
-export function renderBlockHtml(block: SchemaBlock): string {
+export function renderBlockHtml(block: SchemaBlock, ctx?: ExportRenderContext): string {
   const b = block as unknown as Record<string, unknown>;
   const type = b.type as string;
 
   // Try each renderer module in order; fall back to generic
   return renderContentBlock(type, b, renderBlockHtml)
       ?? renderNavigationBlock(type, b, renderBlockHtml)
-      ?? renderQuizBlock(type, b, renderBlockHtml)
+      ?? renderQuizBlock(type, b, renderBlockHtml, ctx)
       ?? renderGameBlock(type, b, renderBlockHtml)
       ?? renderGenericBlock(b);
 }
@@ -178,7 +178,7 @@ function getExportSectionLabelStyle(
 
 // ── Page → HTML ───────────────────────────────────────────────────
 
-export function renderPageHtml(page: CanvaPage, pageIdx: number, _totalPages: number): string {
+export function renderPageHtml(page: CanvaPage, pageIdx: number, _totalPages: number, ctx?: ExportRenderContext): string {
   const schema = page.schema;
   const label = page.label || `Halaman ${pageIdx + 1}`;
 
@@ -207,7 +207,7 @@ export function renderPageHtml(page: CanvaPage, pageIdx: number, _totalPages: nu
   // Render blocks (Layer 4: content)
   let blocksHtml = '';
   if (schema?.blocks && schema.blocks.length > 0) {
-    blocksHtml = schema.blocks.map(block => renderBlockHtml(block)).join('\n');
+    blocksHtml = schema.blocks.map(block => renderBlockHtml(block, ctx)).join('\n');
   } else if (page.elements && page.elements.length > 0) {
     // Legacy element-based pages: render text elements
     const textElements = page.elements.filter(el => el.type === 'teks' && el.text);
