@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 // EXPORT SCRIPTS — All JavaScript for the exported standalone HTML
 // Sprint 6.4-C: Step-reveal flow + completion screen + replay
+// Sprint 6.4-E1-Patch: Close XSS — all feedback uses textContent, no innerHTML with user content
 // ═══════════════════════════════════════════════════════════════════════
 
 export function getJs(): string {
@@ -13,6 +14,23 @@ export function getJs(): string {
     var quizState = {};   // keyed by blockId: { correct, total, currentStep, totalSteps, completed }
     var tfState = {};     // keyed by gameId:  { correct, total, currentStep, totalSteps, completed }
     var fbState = {};     // keyed by gameId:  { checked, completed }
+
+    // ── Safe feedback helper (Sprint 6.4-E1-Patch) ──
+    // NEVER use innerHTML with user-controlled content.
+    // This helper builds DOM nodes safely — textContent is immune to XSS.
+    function setFeedback(el, icon, color, message, strongText) {
+      if (!el) return;
+      el.textContent = '';
+      var span = document.createElement('span');
+      span.style.color = color;
+      span.textContent = icon + ' ' + message;
+      if (strongText) {
+        var strong = document.createElement('strong');
+        strong.textContent = String(strongText);
+        span.appendChild(strong);
+      }
+      el.appendChild(span);
+    }
 
     // ── Init ──
     (function init() {
@@ -187,12 +205,12 @@ export function getJs(): string {
         st.correct++;
         btn.classList.add('correct');
         var fb = question.querySelector('.q-feedback');
-        if (fb) fb.innerHTML = '<span style="color:#34d399;">✓ Benar!</span>';
+        setFeedback(fb, '✓', '#34d399', 'Benar!');
       } else {
         btn.classList.add('wrong');
         if (allBtns[ans]) allBtns[ans].classList.add('correct');
         var fb = question.querySelector('.q-feedback');
-        if (fb) fb.innerHTML = '<span style="color:#ff6b6b;">✗ Salah. Jawaban benar: ' + String.fromCharCode(65 + ans) + '</span>';
+        setFeedback(fb, '✗', '#ff6b6b', 'Salah. Jawaban benar: ' + String.fromCharCode(65 + ans));
       }
 
       // Show explanation if present
@@ -474,9 +492,13 @@ export function getJs(): string {
         var fb = document.getElementById('fb-fb-' + fbId + '-' + idx);
         if (fb) {
           if (input.classList.contains('correct')) {
-            fb.innerHTML = '<span style="color:#34d399;">✓ Benar!</span>';
+            setFeedback(fb, '✓', '#34d399', 'Benar!');
           } else {
-            fb.innerHTML = '<span style="color:#ff6b6b;">✗ Salah. Jawaban: ' + input.dataset.answer + '</span>';
+            // P0 FIX: input.dataset.answer is user-controlled content.
+            // DOM auto-decodes HTML entities in data attributes,
+            // so innerHTML would execute <img onerror> payloads.
+            // textContent is immune to XSS.
+            setFeedback(fb, '✗', '#ff6b6b', 'Salah. Jawaban: ', input.dataset.answer);
           }
         }
       });
@@ -597,7 +619,7 @@ export function getJs(): string {
       if (userAnswer === correct) {
         btn.classList.add('correct-answer');
         var fb = qEl.querySelector('.tf-feedback');
-        if (fb) fb.innerHTML = '<span style="color:#34d399;">✓ Benar!</span>';
+        setFeedback(fb, '✓', '#34d399', 'Benar!');
         st.correct++;
       } else {
         btn.classList.add('wrong-answer');
@@ -605,7 +627,7 @@ export function getJs(): string {
           if ((correct && b.classList.contains('tf-true')) || (!correct && b.classList.contains('tf-false'))) b.classList.add('correct-answer');
         });
         var fb = qEl.querySelector('.tf-feedback');
-        if (fb) fb.innerHTML = '<span style="color:#ff6b6b;">✗ Salah. Jawaban: ' + (correct ? 'Benar' : 'Salah') + '</span>';
+        setFeedback(fb, '✗', '#ff6b6b', 'Salah. Jawaban: ' + (correct ? 'Benar' : 'Salah'));
       }
       st.total++;
 

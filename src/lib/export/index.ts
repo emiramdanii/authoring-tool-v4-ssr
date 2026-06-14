@@ -25,6 +25,7 @@ import type { CanvaPage } from '@/components/canva/types';
 import { renderPageHtml } from './html-templates';
 import { getCss } from './styles';
 import { getJs } from './scripts';
+import { resetBlockIdRegistry } from './quiz-renderers';
 
 // ── Export Data shape (mirrors the API route payload) ────────────────
 export interface ClientExportPayload {
@@ -53,6 +54,9 @@ export interface ClientExportPayload {
 
 export function generateClientExportHtml(payload: ClientExportPayload): string {
   const { pages, ratioId, meta } = payload;
+
+  // Reset block ID registry for this export run — prevents ID collisions
+  resetBlockIdRegistry();
 
   // Determine aspect ratio
   const ratioMap: Record<string, [number, number]> = {

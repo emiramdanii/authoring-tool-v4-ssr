@@ -60,7 +60,16 @@ export function resolveSemanticColor(
   return TOKEN_COLORS[key] || key;
 }
 
+/**
+ * Escape HTML special characters. Null-safe — coerces non-string input
+ * to string before escaping, so undefined/null never crash.
+ * Sprint 6.4-E1-Patch: Added null-safety guard.
+ */
 export function escapeHtml(str: string): string {
+  // Guard: coerce null/undefined/non-string to safe string
+  if (typeof str !== 'string') {
+    str = str == null ? '' : String(str);
+  }
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

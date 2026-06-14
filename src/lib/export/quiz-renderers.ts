@@ -3,36 +3,161 @@
 // Sprint 6.4-C: Step-reveal flow + completion screen + replay
 // Sprint 6.4-D: Variant parity (A/Klasik, B/Kartu, C/Ringkas)
 // Sprint 6.4-D0-Patch: Deterministic block IDs from schema
+// Sprint 6.4-E1-Patch: Security/resilience — defensive guards, XSS-safe,
+//   legacy answer normalization, deterministic ID fallback, duplicate ID
+//   disambiguation, empty/malformed state handling
 // ═══════════════════════════════════════════════════════════════════════
 
 import { escapeHtml, resolveColor, type RenderBlockFn } from './utils';
 
+// ═══════════════════════════════════════════════════════════════════════
+// DEFENSIVE HELPERS — Normalize data at the export boundary
+// ═══════════════════════════════════════════════════════════════════════
+
 /**
- * Produce a stable, DOM-safe ID for a quiz/game block.
+ * Coerce any value to a safe string for rendering.
+ * Returns the string if already a string, fallback for null/undefined,
+ * or String() coercion for other types (numbers, booleans).
+ */
+function asText(value: unknown, fallback = ''): string {
+  if (typeof value === 'string') return value;
+  if (value == null) return fallback;
+  return String(value);
+}
+
+/**
+ * Coerce any value to an array. Returns the array if already one,
+ * otherwise returns an empty array (never crashes on null/undefined).
+ */
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
+/**
+ * Normalize a quiz answer index from various legacy formats.
+ *
+ * Accepts:
+ *   - Numeric: 0, 1, 2, 3 (0-based index)
+ *   - Uppercase letter: "A"→0, "B"→1, "C"→2, "D"→3
+ *   - Lowercase letter: "a"→0, "b"→1, "c"→2, "d"→3
+ *   - Numeric string: "0"→0, "1"→1
+ *
+ * Returns null for invalid/unsafe values (negative, out of range,
+ * unrecognized letters, objects, etc.). A null result means the
+ * question is non-scorable — the renderer should mark it accordingly.
+ */
+function normalizeAnswerIndex(value: unknown, optionCount: number): number | null {
+  if (optionCount <= 0) return null;
+
+  // Numeric
+  if (typeof value === 'number' && Number.isInteger(value)) {
+    return value >= 0 && value < optionCount ? value : null;
+  }
+
+  // String
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+
+    // Numeric string: "0", "1"
+    if (/^-?\d+$/.test(trimmed)) {
+      const num = parseInt(trimmed, 10);
+      return num >= 0 && num < optionCount ? num : null;
+    }
+
+    // Legacy letter format: "A"→0, "B"→1, "C"→2, "D"→3
+    const upper = trimmed.toUpperCase();
+    if (/^[A-Z]$/.test(upper)) {
+      const idx = upper.charCodeAt(0) - 65; // A=0, B=1, C=2, D=3
+      return idx >= 0 && idx < optionCount ? idx : null;
+    }
+  }
+
+  // Invalid type (null, undefined, object, boolean, etc.)
+  return null;
+}
+
+/**
+ * Coerce a value to boolean for true-false questions.
+ * Returns true for truthy values, false otherwise.
+ * Handles: true, "true", 1, "1" → true; everything else → false.
+ */
+function asBoolean(value: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const lower = value.toLowerCase().trim();
+    return lower === 'true' || lower === '1';
+  }
+  if (typeof value === 'number') return value !== 0;
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ID GENERATION — Deterministic, collision-safe
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Registry for tracking used block IDs within a single export.
+ * Prevents duplicate DOM IDs when two blocks share the same block.id.
+ * Cleared at the start of each export pipeline call.
+ */
+const usedBlockIds = new Set<string>();
+
+/** Reset the ID registry and ordinal counter — call at the start of each export */
+export function resetBlockIdRegistry(): void {
+  usedBlockIds.clear();
+  _blockOrdinal = 0;
+}
+
+/**
+ * Produce a stable, DOM-safe, collision-free ID for a quiz/game block.
  *
  * Priority:
- *   1. block.id from schema (already stable nanoid, assigned at creation)
- *   2. Deterministic ordinal fallback (requires pageIndex + blockIndex)
- *   3. Random fallback (last resort, should never trigger in production)
+ *   1. block.id from schema (sanitized, disambiguated on collision)
+ *   2. Deterministic ordinal fallback (based on internal counter)
  *
  * The result is always prefixed and sanitized for safe use in HTML id attributes.
+ * No Math.random() — fully deterministic for same input + same call order.
  */
+let _blockOrdinal = 0;
+
 function stableBlockId(
   prefix: 'kuis' | 'tf' | 'fb',
   block: Record<string, unknown>,
 ): string {
-  const rawId = block.id as string | undefined;
-  if (rawId) {
+  const rawId = block.id;
+
+  // Coerce block.id to string (handles numbers, etc.)
+  if (rawId != null && rawId !== '') {
+    const rawStr = String(rawId);
     // Sanitize: keep only alphanumeric, hyphens, underscores
-    const safe = rawId.replace(/[^a-zA-Z0-9_-]/g, '');
+    const safe = rawStr.replace(/[^a-zA-Z0-9_-]/g, '');
     // Ensure ID doesn't start with a digit (invalid HTML id)
-    const domId = /^[0-9]/.test(safe) ? `${prefix}-${safe}` : `${prefix}-${safe}`;
-    return domId;
+    const candidate = /^[0-9]/.test(safe) ? `${prefix}-${safe}` : `${prefix}-${safe}`;
+
+    // Check for collision — disambiguate deterministically
+    if (!usedBlockIds.has(candidate)) {
+      usedBlockIds.add(candidate);
+      return candidate;
+    }
+    // Collision: append -2, -3, -4, ...
+    let seq = 2;
+    while (usedBlockIds.has(`${candidate}-${seq}`)) seq++;
+    const disambiguated = `${candidate}-${seq}`;
+    usedBlockIds.add(disambiguated);
+    return disambiguated;
   }
-  // Fallback: deterministic counter-based (should not happen in normal flow
-  // because schema-healer ensures every block has an id)
-  return `${prefix}-block-${Math.random().toString(36).slice(2, 8)}`;
+
+  // Fallback: deterministic ordinal-based ID
+  // Same export call order → same ordinal → same ID
+  _blockOrdinal++;
+  const ordinalId = `${prefix}-p0-b${_blockOrdinal}`;
+  usedBlockIds.add(ordinalId);
+  return ordinalId;
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// RENDER ENTRY POINT
+// ═══════════════════════════════════════════════════════════════════════
 
 /**
  * Render a quiz block. Returns null if the block type is not handled here.
@@ -56,15 +181,50 @@ function normalizeKuisVariant(raw: string | undefined): 'A' | 'B' | 'C' {
   return v === 'B' || v === 'C' ? v : 'A';
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// KUIS RENDERER
+// ═══════════════════════════════════════════════════════════════════════
+
 function renderKuis(b: Record<string, unknown>): string {
-  const title = b.title as string || 'Kuis';
-  const questions = (b.questions as Array<{ q: string; opts: string[]; ans: number; ex: string }>) || [];
-  const total = questions.length;
-  // Sprint 6.4-D0-Patch: Use stable block.id instead of Math.random()
+  const title = asText(b.title, 'Kuis');
+  const rawQuestions = asArray<Record<string, unknown>>(b.questions);
   const kuisId = stableBlockId('kuis', b);
-  // Sprint 6.4-D: Read variant from block data
   const variant = normalizeKuisVariant(b.variant as string | undefined);
   const variantClass = `quiz-variant-${variant.toLowerCase()}`;
+
+  // Normalize questions — filter nulls, guard all fields
+  const questions = rawQuestions
+    .filter(q => q != null && typeof q === 'object')
+    .map(q => {
+      const opts = asArray<unknown>(q.opts)
+        .map(o => asText(o))
+        .filter(o => o !== '');  // Remove empty options
+      const rawAns = q.ans;
+      const ansIndex = normalizeAnswerIndex(rawAns, opts.length);
+      return {
+        q: asText(q.q),
+        opts,
+        ans: ansIndex,
+        ex: asText(q.ex),
+      };
+    });
+
+  const total = questions.length;
+
+  // Empty state: no valid questions after normalization
+  if (total === 0) {
+    return `
+    <div class="block kuis-block ${variantClass}" data-block-id="${kuisId}" data-total="0" data-variant="${variant}">
+      <div class="block-header">
+        <span class="block-icon">❓</span>
+        <h2>${escapeHtml(title)}</h2>
+      </div>
+      <div class="quiz-empty-state" style="padding:24px;text-align:center;color:#6e90b5;">
+        <p>Belum ada soal.</p>
+      </div>
+    </div>`;
+  }
+
   return `
     <div class="block kuis-block ${variantClass}" data-block-id="${kuisId}" data-total="${total}" data-variant="${variant}">
       <div class="block-header">
@@ -75,12 +235,17 @@ function renderKuis(b: Record<string, unknown>): string {
         <div class="quiz-progress-bar" role="progressbar" aria-label="Kemajuan kuis" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="1" aria-valuetext="Soal 1 dari ${total}" id="kuis-pbar-${kuisId}"><div class="quiz-progress-fill" id="kuis-pfill-${kuisId}" style="width:0%"></div></div>
         <span class="quiz-progress-text" id="kuis-ptext-${kuisId}">Soal 1 dari ${total}</span>
       </div>
-      ${questions.map((q, qi) => `
-        <div class="kuis-question kuis-step${qi === 0 ? ' step-active' : ''}" data-ans="${q.ans}" data-idx="${qi}" data-answered="false" tabindex="-1">
+      ${questions.map((q, qi) => {
+        // If ans is null (invalid/legacy), mark question as non-scorable
+        const isScorable = q.ans !== null;
+        const ansAttr = isScorable ? q.ans : -1;
+        const nonScorableClass = isScorable ? '' : ' non-scorable';
+        return `
+        <div class="kuis-question kuis-step${qi === 0 ? ' step-active' : ''}${nonScorableClass}" data-ans="${ansAttr}" data-idx="${qi}" data-answered="false" tabindex="-1">
           <p class="q-text"><strong>${qi + 1}.</strong> ${escapeHtml(q.q)}</p>
           <div class="q-options">
             ${q.opts.map((opt, oi) => `
-              <button class="q-opt" data-qi="${qi}" data-oi="${oi}" onclick="checkAnswer(this,${qi},${oi},${q.ans})">
+              <button class="q-opt" data-qi="${qi}" data-oi="${oi}" onclick="checkAnswer(this,${qi},${oi},${ansAttr})">
                 <span class="q-letter">${String.fromCharCode(65 + oi)}</span>
                 ${escapeHtml(opt)}
               </button>`).join('')}
@@ -88,7 +253,8 @@ function renderKuis(b: Record<string, unknown>): string {
           ${q.ex ? `<div class="q-explanation" style="display:none;">${escapeHtml(q.ex)}</div>` : ''}
           <div class="q-feedback" id="qfb-${kuisId}-${qi}" role="status"></div>
           <button class="q-next-btn" style="display:none;" onclick="nextKuisStep('${kuisId}',${qi})">Lanjut →</button>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
       <div class="quiz-completion" id="kuis-done-${kuisId}" style="display:none;" role="region" aria-live="polite" tabindex="-1">
         <div class="quiz-completion-icon" id="kuis-done-icon-${kuisId}"></div>
         <h3 class="quiz-completion-title" id="kuis-done-title-${kuisId}"></h3>
@@ -99,12 +265,40 @@ function renderKuis(b: Record<string, unknown>): string {
     </div>`;
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// TRUE/FALSE RENDERER
+// ═══════════════════════════════════════════════════════════════════════
+
 function renderTrueFalseGame(b: Record<string, unknown>): string {
-  const title = b.title as string || 'Benar atau Salah';
-  const questions = (b.questions as Array<{ text: string; correct: boolean; explanation?: string }>) || [];
-  const total = questions.length;
-  // Sprint 6.4-D0-Patch: Use stable block.id instead of Math.random()
+  const title = asText(b.title, 'Benar atau Salah');
+  const rawQuestions = asArray<Record<string, unknown>>(b.questions);
   const tfId = stableBlockId('tf', b);
+
+  // Normalize questions — filter nulls, guard all fields
+  const questions = rawQuestions
+    .filter(q => q != null && typeof q === 'object')
+    .map(q => ({
+      text: asText(q.text),
+      correct: asBoolean(q.correct),
+      explanation: asText(q.explanation),
+    }));
+
+  const total = questions.length;
+
+  // Empty state
+  if (total === 0) {
+    return `
+    <div class="block true-false-block" data-game="${tfId}" data-total="0">
+      <div class="block-header">
+        <span class="block-icon">✅</span>
+        <h2>${escapeHtml(title)}</h2>
+      </div>
+      <div class="quiz-empty-state" style="padding:24px;text-align:center;color:#6e90b5;">
+        <p>Belum ada soal.</p>
+      </div>
+    </div>`;
+  }
+
   return `
     <div class="block true-false-block" data-game="${tfId}" data-total="${total}">
       <div class="block-header">
@@ -136,12 +330,40 @@ function renderTrueFalseGame(b: Record<string, unknown>): string {
     </div>`;
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// FILL-BLANK RENDERER
+// ═══════════════════════════════════════════════════════════════════════
+
 function renderFillBlankGame(b: Record<string, unknown>): string {
-  const title = b.title as string || 'Isian Singkat';
-  const questions = (b.questions as Array<{ text: string; answer: string; hint?: string }>) || [];
-  const total = questions.length;
-  // Sprint 6.4-D0-Patch: Use stable block.id instead of Math.random()
+  const title = asText(b.title, 'Isian Singkat');
+  const rawQuestions = asArray<Record<string, unknown>>(b.questions);
   const fbId = stableBlockId('fb', b);
+
+  // Normalize questions — filter nulls, guard all fields
+  const questions = rawQuestions
+    .filter(q => q != null && typeof q === 'object')
+    .map(q => ({
+      text: asText(q.text),
+      answer: asText(q.answer),
+      hint: asText(q.hint),
+    }));
+
+  const total = questions.length;
+
+  // Empty state
+  if (total === 0) {
+    return `
+    <div class="block fill-blank-game-block" data-game="${fbId}" data-checked="false" data-total="0">
+      <div class="block-header">
+        <span class="block-icon">✏️</span>
+        <h2>${escapeHtml(title)}</h2>
+      </div>
+      <div class="quiz-empty-state" style="padding:24px;text-align:center;color:#6e90b5;">
+        <p>Belum ada soal.</p>
+      </div>
+    </div>`;
+  }
+
   return `
     <div class="block fill-blank-game-block" data-game="${fbId}" data-checked="false" data-total="${total}">
       <div class="block-header">
@@ -150,11 +372,14 @@ function renderFillBlankGame(b: Record<string, unknown>): string {
       </div>
       ${questions.map((q, i) => {
         // Replace ___ with input field
-        const parts = q.text.split('___');
-        const inputHtml = `<input type="text" class="fb-input" data-idx="${i}" data-game="${fbId}" data-answer="${escapeHtml(q.answer)}" placeholder="${q.hint ? escapeHtml(q.hint) : '...'}" onkeydown="if(event.key==='Enter')checkFillBlank(this)">`;
+        const text = q.text || '___';
+        const parts = text.split('___');
+        const answer = q.answer || '';
+        const hint = q.hint || '...';
+        const inputHtml = `<input type="text" class="fb-input" data-idx="${i}" data-game="${fbId}" data-answer="${escapeHtml(answer)}" placeholder="${escapeHtml(hint)}" onkeydown="if(event.key==='Enter')checkFillBlank(this)">`;
         const rendered = parts.length > 1
           ? parts.map((p, pi) => pi < parts.length - 1 ? escapeHtml(p) + inputHtml : escapeHtml(p)).join('')
-          : escapeHtml(q.text);
+          : escapeHtml(text);
         return `
           <div class="fb-question" id="fb-q-${fbId}-${i}">
             <p><strong>${i + 1}.</strong> ${rendered}</p>

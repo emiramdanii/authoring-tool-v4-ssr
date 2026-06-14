@@ -5,13 +5,18 @@
 // for the Kuis block across all variants (A/Klasik, B/Kartu, C/Ringkas)
 // ═══════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from 'vitest';
-import { renderQuizBlock } from '@/lib/export/quiz-renderers';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { renderQuizBlock, resetBlockIdRegistry } from '@/lib/export/quiz-renderers';
 import { getCss } from '@/lib/export/styles';
 import { getJs } from '@/lib/export/scripts';
 import type { KuisBlock } from '@/core/schema/types/blocks';
 
 const noopRender = (() => '') as unknown as import('@/lib/export/utils').RenderBlockFn;
+
+// Reset ID registry between tests so block IDs don't accumulate
+beforeEach(() => {
+  resetBlockIdRegistry();
+});
 
 // ── Test data ──────────────────────────────────────────────────────────
 let _blockCounter = 0;
@@ -430,13 +435,18 @@ describe('G. Variant Independence', () => {
   });
 
   it('G3: same DOM structure produced for all variants', () => {
+    // Each variant render gets a fresh ID registry so the same block.id
+    // doesn't collide — we're testing DOM structure, not ID uniqueness.
+    resetBlockIdRegistry();
     const block = makeKuisBlock({ variant: 'A', id: 'same-block-id' });
     const htmlA = renderQuizBlock('kuis', { ...block, variant: 'A' }, noopRender);
+    resetBlockIdRegistry();
     const htmlB = renderQuizBlock('kuis', { ...block, variant: 'B' }, noopRender);
+    resetBlockIdRegistry();
     const htmlC = renderQuizBlock('kuis', { ...block, variant: 'C' }, noopRender);
 
     // Strip variant-specific class and data-variant only
-    // With stable IDs, same block → same ID, no need to normalize IDs
+    // With stable IDs and fresh registry per render, same block → same ID
     const normalize = (h: string) =>
       h.replace(/quiz-variant-[abc]/g, '')
        .replace(/data-variant="[ABC]"/g, '');
@@ -451,11 +461,15 @@ describe('G. Variant Independence', () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe('H. Deterministic ID Contract', () => {
-  it('H1: same block rendered twice produces same blockId', () => {
+  it('H1: same block across separate exports produces same blockId', () => {
     const block = { type: 'kuis', id: 'abc123', title: 'Kuis', questions: [{ q: 'Q1?', opts: ['A'], ans: 0, ex: '' }] };
+    // First export run
+    resetBlockIdRegistry();
     const html1 = renderQuizBlock('kuis', block, noopRender);
-    const html2 = renderQuizBlock('kuis', block, noopRender);
     const id1 = html1.match(/data-block-id="([^"]+)"/)?.[1];
+    // Second export run (fresh registry)
+    resetBlockIdRegistry();
+    const html2 = renderQuizBlock('kuis', block, noopRender);
     const id2 = html2.match(/data-block-id="([^"]+)"/)?.[1];
     expect(id1).toBe(id2);
     expect(id1).toContain('kuis-abc123');
@@ -495,7 +509,9 @@ describe('H. Deterministic ID Contract', () => {
 
   it('H5: TF block uses stable ID from block.id', () => {
     const block = { type: 'true-false-game', id: 'tf-block-1', title: 'TF', questions: [{ text: 'T1', correct: true }] };
+    resetBlockIdRegistry();
     const html1 = renderQuizBlock('true-false-game', block, noopRender);
+    resetBlockIdRegistry();
     const html2 = renderQuizBlock('true-false-game', block, noopRender);
     const id1 = html1.match(/data-game="([^"]+)"/)?.[1];
     const id2 = html2.match(/data-game="([^"]+)"/)?.[1];
@@ -505,7 +521,9 @@ describe('H. Deterministic ID Contract', () => {
 
   it('H6: FB block uses stable ID from block.id', () => {
     const block = { type: 'fill-blank-game', id: 'fb-block-1', title: 'FB', questions: [{ text: '___', answer: 'X' }] };
+    resetBlockIdRegistry();
     const html1 = renderQuizBlock('fill-blank-game', block, noopRender);
+    resetBlockIdRegistry();
     const html2 = renderQuizBlock('fill-blank-game', block, noopRender);
     const id1 = html1.match(/data-game="([^"]+)"/)?.[1];
     const id2 = html2.match(/data-game="([^"]+)"/)?.[1];
@@ -522,21 +540,26 @@ describe('H. Deterministic ID Contract', () => {
     expect(domId!).toMatch(/^kuis-/);
   });
 
-  it('H8: Math.random only in fallback of quiz-renderers', () => {
-    // Verify via module import that stableBlockId prefers block.id
-    // and Math.random is only in the fallback path
+  it('H8: missing block.id produces deterministic ordinal fallback', () => {
+    // Verify that missing block.id gets a deterministic ordinal-based ID
+    // (no Math.random — same call order → same ID)
     const blockWithId = { type: 'kuis', id: 'stable-id', title: 'Kuis', questions: [{ q: 'Q?', opts: ['A'], ans: 0, ex: '' }] };
     const blockWithoutId = { type: 'kuis', title: 'No ID', questions: [{ q: 'Q?', opts: ['A'], ans: 0, ex: '' }] };
+    // With ID: uses block.id directly
+    resetBlockIdRegistry();
     const htmlWithId = renderQuizBlock('kuis', blockWithId, noopRender);
-    const htmlWithoutId = renderQuizBlock('kuis', blockWithoutId, noopRender);
-    // With ID: deterministic
     const domId1 = htmlWithId.match(/data-block-id="([^"]+)"/)?.[1];
-    const domId2 = htmlWithId.match(/data-block-id="([^"]+)"/)?.[1];
-    expect(domId1).toBe(domId2);
     expect(domId1).toBe('kuis-stable-id');
-    // Without ID: fallback still produces valid ID
+    // Without ID: ordinal fallback (deterministic, no Math.random)
+    resetBlockIdRegistry();
+    const htmlWithoutId = renderQuizBlock('kuis', blockWithoutId, noopRender);
     const fallbackId = htmlWithoutId.match(/data-block-id="([^"]+)"/)?.[1];
     expect(fallbackId).toBeTruthy();
-    expect(fallbackId!).toMatch(/^kuis-/);
+    expect(fallbackId!).toMatch(/^kuis-p\d+-b\d+$/);
+    // Same block, same call order → same fallback ID
+    resetBlockIdRegistry();
+    const htmlWithoutId2 = renderQuizBlock('kuis', blockWithoutId, noopRender);
+    const fallbackId2 = htmlWithoutId2.match(/data-block-id="([^"]+)"/)?.[1];
+    expect(fallbackId).toBe(fallbackId2);
   });
 });

@@ -3,8 +3,8 @@
 // Tests renderQuizBlock for: kuis, true-false-game, fill-blank-game
 // ═══════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from 'vitest';
-import { renderQuizBlock } from '@/lib/export/quiz-renderers';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { renderQuizBlock, resetBlockIdRegistry } from '@/lib/export/quiz-renderers';
 
 // Noop render function matching the RenderBlockFn signature
 const noopRender = (() => '') as unknown as import('@/lib/export/utils').RenderBlockFn;
@@ -26,6 +26,9 @@ function safeRender(type: string, block: Record<string, unknown>) {
   }
 }
 
+// Reset ID registry before each test to ensure deterministic ordinal IDs
+beforeEach(() => resetBlockIdRegistry());
+
 // ═══════════════════════════════════════════════════════════════════════
 // 1. KUIS BLOCK TESTS
 // ═══════════════════════════════════════════════════════════════════════
@@ -42,41 +45,34 @@ describe('Kuis block resilience', () => {
   });
 
   // 1. block.id missing
-  it('1. block.id missing — should not crash', () => {
+  it('1. block.id missing — should not crash, produces deterministic ordinal ID', () => {
     const block = baseBlock();
     delete (block as Record<string, unknown>).id;
     const { result, error } = safeRender('kuis', block);
-    if (error) {
-      console.error('CRASH: block.id missing →', error.message);
-      // Record the crash but don't fail — we're auditing
-    }
-    expect(typeof error === 'object').toBe(true); // always true, we want to see if error is non-null
-    if (!error) {
-      expect(typeof result).toBe('string');
-      // Fallback ID should contain 'kuis-block-'
-      expect(result).toContain('kuis-block-');
-    }
+    expect(error).toBeNull();
+    expect(typeof result).toBe('string');
+    // Deterministic ordinal fallback like kuis-p0-b1
+    expect(result).toContain('kuis-p0-b1');
   });
 
   // 2. duplicate block.id
-  it('2. duplicate block.id — two blocks with same id produce same DOM id', () => {
+  it('2. duplicate block.id — second block gets disambiguated ID with -2 suffix', () => {
     const block1 = baseBlock({ id: 'dup-id' });
     const block2 = baseBlock({ id: 'dup-id' });
     const r1 = safeRender('kuis', block1);
     const r2 = safeRender('kuis', block2);
-    if (!r1.error && !r2.error) {
-      expect(r1.result).toContain('kuis-dup-id');
-      expect(r2.result).toContain('kuis-dup-id');
-      // Both contain the same DOM id — this IS a duplicate-id issue
-      const idExtract = (html: string) => {
-        const m = html.match(/data-block-id="([^"]+)"/);
-        return m ? m[1] : null;
-      };
-      const id1 = idExtract(r1.result!);
-      const id2 = idExtract(r2.result!);
-      expect(id1).toBe(id2); // Duplicate IDs confirmed
-      console.log('AUDIT: Duplicate block.id produces duplicate DOM id:', id1);
-    }
+    expect(r1.error).toBeNull();
+    expect(r2.error).toBeNull();
+    const idExtract = (html: string) => {
+      const m = html.match(/data-block-id="([^"]+)"/);
+      return m ? m[1] : null;
+    };
+    const id1 = idExtract(r1.result!);
+    const id2 = idExtract(r2.result!);
+    // First gets kuis-dup-id, second gets kuis-dup-id-2
+    expect(id1).toBe('kuis-dup-id');
+    expect(id2).toBe('kuis-dup-id-2');
+    expect(id1).not.toBe(id2);
   });
 
   // 3. questions empty array
@@ -102,14 +98,14 @@ describe('Kuis block resilience', () => {
   });
 
   // 5. question null/undefined in array
-  it('5. questions with null/undefined in array — resilience check', () => {
+  it('5. questions with null/undefined in array — null entries are filtered, no crash', () => {
     const block = baseBlock({ questions: [null, undefined] as unknown as unknown[] });
     const { result, error } = safeRender('kuis', block);
-    if (error) {
-      console.error('CRASH: null/undefined questions →', error.message);
-    }
-    // This is expected to crash because q.q, q.opts etc. can't be accessed on null
-    expect(error !== null).toBe(true); // Likely crashes
+    expect(error).toBeNull();
+    expect(typeof result).toBe('string');
+    // Null entries are filtered out, leaving 0 valid questions → empty state
+    expect(result).toContain('data-total="0"');
+    expect(result).toContain('Belum ada soal.');
   });
 
   // 6. options empty
@@ -148,13 +144,13 @@ describe('Kuis block resilience', () => {
   });
 
   // 9. answer out of range
-  it('9. answer out of range (ans: 99) — should not crash but produces invalid data-ans', () => {
+  it('9. answer out of range (ans: 99) — normalized to null, data-ans="-1", class non-scorable', () => {
     const block = baseBlock({ questions: [{ q: 'Range?', opts: ['A', 'B', 'C', 'D'], ans: 99, ex: '' }] });
     const { result, error } = safeRender('kuis', block);
     expect(error).toBeNull();
     expect(typeof result).toBe('string');
-    expect(result).toContain('data-ans="99"');
-    console.log('AUDIT: ans=99 rendered as data-ans="99" — out of range, no validation');
+    expect(result).toContain('data-ans="-1"');
+    expect(result).toContain('non-scorable');
   });
 
   it('9b. answer negative (ans: -1) — should not crash', () => {
@@ -246,13 +242,13 @@ describe('Kuis block resilience', () => {
 
   // ── Kuis-specific extra tests ──
 
-  it('K1. ans out of range with opts (ans: 5 with 3 opts) — should not crash', () => {
+  it('K1. ans out of range with opts (ans: 5 with 3 opts) — normalized to null, non-scorable', () => {
     const block = baseBlock({ questions: [{ q: 'Mismatch?', opts: ['A', 'B', 'C'], ans: 5, ex: '' }] });
     const { result, error } = safeRender('kuis', block);
     expect(error).toBeNull();
     expect(typeof result).toBe('string');
-    expect(result).toContain('data-ans="5"');
-    console.log('AUDIT: ans=5 with 3 opts rendered as data-ans="5" — no validation against opts length');
+    expect(result).toContain('data-ans="-1"');
+    expect(result).toContain('non-scorable');
   });
 
   it('K2. question with q field missing — resilience check', () => {
@@ -291,37 +287,34 @@ describe('True-False-Game block resilience', () => {
   });
 
   // 1. block.id missing
-  it('1. block.id missing — should not crash', () => {
+  it('1. block.id missing — should not crash, produces deterministic ordinal ID', () => {
     const block = baseBlock();
     delete (block as Record<string, unknown>).id;
     const { result, error } = safeRender('true-false-game', block);
-    if (error) {
-      console.error('CRASH: block.id missing →', error.message);
-    }
-    if (!error) {
-      expect(typeof result).toBe('string');
-      expect(result).toContain('tf-block-');
-    }
+    expect(error).toBeNull();
+    expect(typeof result).toBe('string');
+    // Deterministic ordinal fallback like tf-p0-b1
+    expect(result).toContain('tf-p0-b1');
   });
 
   // 2. duplicate block.id
-  it('2. duplicate block.id — produces duplicate DOM ids', () => {
+  it('2. duplicate block.id — second block gets disambiguated ID with -2 suffix', () => {
     const block1 = baseBlock({ id: 'tf-dup' });
     const block2 = baseBlock({ id: 'tf-dup' });
     const r1 = safeRender('true-false-game', block1);
     const r2 = safeRender('true-false-game', block2);
-    if (!r1.error && !r2.error) {
-      expect(r1.result).toContain('tf-tf-dup');
-      expect(r2.result).toContain('tf-tf-dup');
-      const idExtract = (html: string) => {
-        const m = html.match(/data-game="([^"]+)"/);
-        return m ? m[1] : null;
-      };
-      const id1 = idExtract(r1.result!);
-      const id2 = idExtract(r2.result!);
-      expect(id1).toBe(id2);
-      console.log('AUDIT: Duplicate TF block.id produces duplicate DOM id:', id1);
-    }
+    expect(r1.error).toBeNull();
+    expect(r2.error).toBeNull();
+    const idExtract = (html: string) => {
+      const m = html.match(/data-game="([^"]+)"/);
+      return m ? m[1] : null;
+    };
+    const id1 = idExtract(r1.result!);
+    const id2 = idExtract(r2.result!);
+    // First gets tf-tf-dup, second gets tf-tf-dup-2
+    expect(id1).toBe('tf-tf-dup');
+    expect(id2).toBe('tf-tf-dup-2');
+    expect(id1).not.toBe(id2);
   });
 
   // 3. questions empty array
@@ -345,13 +338,14 @@ describe('True-False-Game block resilience', () => {
   });
 
   // 5. question null/undefined in array
-  it('5. questions with null/undefined in array — resilience check', () => {
+  it('5. questions with null/undefined in array — null entries are filtered, no crash', () => {
     const block = baseBlock({ questions: [null, undefined] as unknown as unknown[] });
     const { result, error } = safeRender('true-false-game', block);
-    if (error) {
-      console.error('CRASH: null/undefined TF questions →', error.message);
-    }
-    expect(error !== null).toBe(true); // Likely crashes
+    expect(error).toBeNull();
+    expect(typeof result).toBe('string');
+    // Null entries are filtered out, leaving 0 valid questions → empty state
+    expect(result).toContain('data-total="0"');
+    expect(result).toContain('Belum ada soal.');
   });
 
   // 6. options empty — N/A for true-false (no opts field), but test with missing structure
@@ -377,13 +371,13 @@ describe('True-False-Game block resilience', () => {
   });
 
   // 9. answer out of range — N/A (boolean), but test with unexpected value
-  it('9. correct as unexpected number (0/1 instead of boolean) — resilience', () => {
+  it('9. correct as unexpected number (0/1) — coerced to boolean', () => {
     const block = baseBlock({ questions: [{ text: 'Numeric correct', correct: 1 as unknown as boolean }] });
     const { result, error } = safeRender('true-false-game', block);
     expect(error).toBeNull();
     expect(typeof result).toBe('string');
-    expect(result).toContain('data-correct="1"');
-    console.log('AUDIT: correct=1 (number) rendered as data-correct="1" — should be boolean');
+    // asBoolean(1) → true, so data-correct should be "true"
+    expect(result).toContain('data-correct="true"');
   });
 
   // 10. answer as string (legacy)
@@ -488,35 +482,34 @@ describe('Fill-Blank-Game block resilience', () => {
   });
 
   // 1. block.id missing
-  it('1. block.id missing — should not crash', () => {
+  it('1. block.id missing — should not crash, produces deterministic ordinal ID', () => {
     const block = baseBlock();
     delete (block as Record<string, unknown>).id;
     const { result, error } = safeRender('fill-blank-game', block);
-    if (error) {
-      console.error('CRASH: block.id missing →', error.message);
-    }
-    if (!error) {
-      expect(typeof result).toBe('string');
-      expect(result).toContain('fb-block-');
-    }
+    expect(error).toBeNull();
+    expect(typeof result).toBe('string');
+    // Deterministic ordinal fallback like fb-p0-b1
+    expect(result).toContain('fb-p0-b1');
   });
 
   // 2. duplicate block.id
-  it('2. duplicate block.id — produces duplicate DOM ids', () => {
+  it('2. duplicate block.id — second block gets disambiguated ID with -2 suffix', () => {
     const block1 = baseBlock({ id: 'fb-dup' });
     const block2 = baseBlock({ id: 'fb-dup' });
     const r1 = safeRender('fill-blank-game', block1);
     const r2 = safeRender('fill-blank-game', block2);
-    if (!r1.error && !r2.error) {
-      const idExtract = (html: string) => {
-        const m = html.match(/data-game="([^"]+)"/);
-        return m ? m[1] : null;
-      };
-      const id1 = idExtract(r1.result!);
-      const id2 = idExtract(r2.result!);
-      expect(id1).toBe(id2);
-      console.log('AUDIT: Duplicate FB block.id produces duplicate DOM id:', id1);
-    }
+    expect(r1.error).toBeNull();
+    expect(r2.error).toBeNull();
+    const idExtract = (html: string) => {
+      const m = html.match(/data-game="([^"]+)"/);
+      return m ? m[1] : null;
+    };
+    const id1 = idExtract(r1.result!);
+    const id2 = idExtract(r2.result!);
+    // First gets fb-fb-dup, second gets fb-fb-dup-2
+    expect(id1).toBe('fb-fb-dup');
+    expect(id2).toBe('fb-fb-dup-2');
+    expect(id1).not.toBe(id2);
   });
 
   // 3. questions empty array
@@ -540,13 +533,14 @@ describe('Fill-Blank-Game block resilience', () => {
   });
 
   // 5. question null/undefined in array
-  it('5. questions with null/undefined in array — resilience check', () => {
+  it('5. questions with null/undefined in array — null entries are filtered, no crash', () => {
     const block = baseBlock({ questions: [null, undefined] as unknown as unknown[] });
     const { result, error } = safeRender('fill-blank-game', block);
-    if (error) {
-      console.error('CRASH: null/undefined FB questions →', error.message);
-    }
-    expect(error !== null).toBe(true); // Likely crashes
+    expect(error).toBeNull();
+    expect(typeof result).toBe('string');
+    // Null entries are filtered out, leaving 0 valid questions → empty state
+    expect(result).toContain('data-total="0"');
+    expect(result).toContain('Belum ada soal.');
   });
 
   // 6. options empty — N/A for fill-blank
