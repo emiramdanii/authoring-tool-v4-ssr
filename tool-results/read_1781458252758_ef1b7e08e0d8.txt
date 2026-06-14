@@ -1,0 +1,1736 @@
+     1→// ═══════════════════════════════════════════════════════════════════
+     2→// GUIDED SCHEMA PATCH — Single authoritative write path to schema
+     3→// ═══════════════════════════════════════════════════════════════════
+     4→// PHASE 1 — Schema Editing Foundation
+     5→//
+     6→// DESIGN PRINCIPLE:
+     7→//   Schema (page.schema.blocks) is the SINGLE SOURCE OF TRUTH.
+     8→//   ALL content edits flow through this function:
+     9→//     - Konten tabs (Materi, Kuis, Diskusi, Refleksi, Rangkuman)
+    10→//     - Right panel guided form
+    11→//     - Right panel SchemaDrivenEditor
+    12→//     - AI regenerate
+    13→//
+    14→// MIGRATION PATH:
+    15→//   OLD: Konten Tab → useAuthoringStore (TULIS) → sync-projection → schema
+    16→//   NEW: Konten Tab → applyGuidedSchemaPatch → schema (TULIS)
+    17→//        Konten Tab ← deriveProjection ← schema (BACA)
+    18→//
+    19→// WHY NOT USE updateSchemaBlock() directly?
+    20→//   - updateSchemaBlock() is inside Zustand store — can't call from outside
+    21→//   - updateSchemaBlock() only works on currentPageIndex
+    22→//   - applyGuidedSchemaPatch() works on ANY page by pageId
+    23→//   - applyGuidedSchemaPatch() supports overflowPolicy
+    24→//   - applyGuidedSchemaPatch() is a standalone module, importable anywhere
+    25→//
+    26→// OVERFLOW POLICY:
+    27→//   When a patch makes content too long for one page:
+    28→//   - 'none': Just apply the patch, ignore overflow (default for now)
+    29→//   - 'warn': Apply the patch + log warning if overflow detected
+    30→//   - 'auto-split': Apply the patch + auto-split into separate pages
+    31→//   - 'reject': Don't apply if it would cause overflow
+    32→// ═══════════════════════════════════════════════════════════════════
+    33→
+    34→import type { SchemaBlock, ScreenSchema } from './types';
+    35→import type { CanvaPage } from '@/components/canva/types';
+    36→import { useCanvaStore } from '@/store/canva/store';
+    37→import { ensurePageSchema, generateBlockId } from './ensure-schema';
+    38→import { deepMergeBlock, mergeBlockInArray } from '@/core/editor/deep-merge';
+    39→import { commitSchemaUpdate, findBlockOwner, type BlockOwner } from '@/store/canva/schema-helpers';
+    40→import { assertDocumentPurity } from './session-state';
+    41→import { editBus } from '@/core/editor/edit-bus';
+    42→import { produceWithPatches } from 'immer';
+    43→import { computeScenePlan, type ScenePlan } from '@/core/layout/SceneOverflowEngine';
+    44→import { getSceneResolution, computeSafeArea, DEFAULT_SAFE_AREA } from '@/core/scene/SceneLayoutEngine';
+    45→import { isFullPageBlockType, isBlockTypeCompressionCapable } from './capability-registry';
+    46→import { useOverflowWarningStore } from '@/store/overflow-warning-store';
+    47→// Lazy import to avoid circular dependency:
+    48→//   guided-patch ← schema-apply ← store ← ... (would cause SSR crash)
+    49→//   guided-patch ← TemplateThemeContract ← ModernEducatorContract ← ... (similar)
+    50→// Instead, we resolve the contract at runtime via a helper that does lazy loading.
+    51→let _getContractOrGolden: typeof import('@/core/template/contract/TemplateThemeContract').getContractOrGolden | null = null;
+    52→function getContractLazy() {
+    53→  if (!_getContractOrGolden) {
+    54→    _getContractOrGolden = require('@/core/template/contract/TemplateThemeContract').getContractOrGolden;
+    55→  }
+    56→  return _getContractOrGolden!;
+    57→}
+    58→
+    59→// ── Types ──────────────────────────────────────────────────────
+    60→
+    61→export type OverflowPolicy = 'none' | 'warn' | 'auto-split' | 'reject';
+    62→
+    63→export interface GuidedPatchArgs {
+    64→  /** Target page ID — the page containing the block to patch */
+    65→  pageId: string;
+    66→  /** Target block ID — the specific block to update */
+    67→  blockId: string;
+    68→  /** Deep partial update to merge into the block */
+    69→  patch: Record<string, unknown>;
+    70→  /** What to do if the patch causes content overflow */
+    71→  overflowPolicy?: OverflowPolicy;
+    72→  /** Source of the edit — for edit bus tracking */
+    73→  source?: 'user' | 'ai' | 'sync' | 'guided-form' | 'konten-tab' | 'dokumen-tab';
+    74→}
+    75→
+    76→/** Rich overflow check result from SceneOverflowEngine */
+    77→export interface OverflowCheckResult {
+    78→  /** Whether overflow was detected */
+    79→  overflowDetected: boolean;
+    80→  /** The computed scene plan (null if schema has no blocks) */
+    81→  scenePlan: ScenePlan | null;
+    82→  /** Whether the page type allows splitting (from contract) */
+    83→  canSplit: boolean;
+    84→  /** Whether any overflowing blocks are compression-capable */
+    85→  canCompress: boolean;
+    86→  /** How many scenes would be needed */
+    87→  totalScenes: number;
+    88→  /** Human-readable summary */
+    89→  summary: string;
+    90→}
+    91→
+    92→export interface GuidedPatchResult {
+    93→  /** Whether the patch was applied successfully */
+    94→  success: boolean;
+    95→  /** Error message if patch failed */
+    96→  error?: string;
+    97→  /** Whether overflow was detected */
+    98→  overflowDetected?: boolean;
+    99→  /** Whether an auto-split was performed */
+   100→  autoSplitPerformed?: boolean;
+   101→  /** New page ID created by auto-split (if any) */
+   102→  newPageId?: string;
+   103→  /** The page ID that was updated */
+   104→  pageId: string;
+   105→  /** The block ID that was updated */
+   106→  blockId: string;
+   107→  /** Rich overflow details (when overflowDetected or overflowPolicy !== 'none') */
+   108→  overflowDetails?: OverflowCheckResult;
+   109→}
+   110→
+   111→// ── Main Function ──────────────────────────────────────────────
+   112→
+   113→/**
+   114→ * Apply a guided schema patch — the SINGLE write path to schema content.
+   115→ *
+   116→ * This function:
+   117→ *   1. Finds the target page and block by ID
+   118→ *   2. Deep-merges the patch into the block
+   119→ *   3. Pushes undo history
+   120→ *   4. Emits edit bus event
+   121→ *   5. Validates document purity (dev mode)
+   122→ *   6. Optionally handles overflow (auto-split)
+   123→ *
+   124→ * Usage from Konten tabs:
+   125→ *   applyGuidedSchemaPatch({
+   126→ *     pageId: currentPageId,
+   127→ *     blockId: 'norma-golden-5',
+   128→ *     patch: { questions: [newQuestion] },
+   129→ *     source: 'konten-tab',
+   130→ *   })
+   131→ *
+   132→ * Usage from Right Panel:
+   133→ *   applyGuidedSchemaPatch({
+   134→ *     pageId: currentPageId,
+   135→ *     blockId: selectedBlockId,
+   136→ *     patch: { title: 'New Title', subtitle: 'New Sub' },
+   137→ *     source: 'guided-form',
+   138→ *   })
+   139→ */
+   140→export function applyGuidedSchemaPatch(args: GuidedPatchArgs): GuidedPatchResult {
+   141→  // Phase 4: Konten tab edits default to 'warn' overflow policy.
+   142→  // This ensures teachers see overflow warnings when adding content
+   143→  // that exceeds page capacity, without blocking the edit.
+   144→  const resolvedOverflowPolicy = args.overflowPolicy
+   145→    ?? (args.source === 'konten-tab' || args.source === 'dokumen-tab' ? 'warn' : 'none');
+   146→  const { pageId, blockId, patch, overflowPolicy = resolvedOverflowPolicy, source = 'user' } = args;
+   147→
+   148→  const store = useCanvaStore.getState();
+   149→  const pages = [...store.pages];
+   150→  const pageIndex = pages.findIndex(p => p.id === pageId);
+   151→
+   152→  if (pageIndex < 0) {
+   153→    return { success: false, error: `Page "${pageId}" not found`, pageId, blockId };
+   154→  }
+   155→
+   156→  let page = pages[pageIndex]!;
+   157→  let schema = ensurePageSchema(page);
+   158→
+   159→  if (!schema) {
+   160→    return { success: false, error: `Page "${pageId}" has no schema`, pageId, blockId };
+   161→  }
+   162→
+   163→  // Ensure page has schema (migrate if needed)
+   164→  if (!page.schema && schema) {
+   165→    page = { ...page, schema };
+   166→    pages[pageIndex] = page;
+   167→  }
+   168→
+   169→  const blocks = schema.blocks;
+   170→  if (!Array.isArray(blocks)) {
+   171→    return { success: false, error: `Page "${pageId}" schema has no blocks array`, pageId, blockId };
+   172→  }
+   173→
+   174→  // Find the target block
+   175→  const owner = findBlockOwner(blocks, blockId);
+   176→  if (!owner) {
+   177→    return { success: false, error: `Block "${blockId}" not found in page "${pageId}"`, pageId, blockId };
+   178→  }
+   179→
+   180→  // Phase 4: Defer history push until after overflow check for 'reject' policy.
+   181→  // For other policies, push before mutation as usual.
+   182→  // If overflowPolicy === 'reject', we push history only after confirming the patch is accepted.
+   183→  const shouldDeferHistory = overflowPolicy === 'reject';
+   184→  if (!shouldDeferHistory) {
+   185→    store._pushHistory();
+   186→  }
+   187→
+   188→  // Apply the patch based on block ownership (top-level vs nested)
+   189→  let newBlocks: SchemaBlock[];
+   190→  let forwardPatches: import('immer').Patch[];
+   191→  let inversePatches: import('immer').Patch[];
+   192→  let blockType: string;
+   193→
+   194→  if (owner.kind === 'top-level') {
+   195→    blockType = blocks[owner.index]!.type;
+   196→
+   197→    // Deep merge the patch into the target block using the existing merge utility
+   198→    const mergeResult = mergeBlockInArray(blocks, owner.index, patch);
+   199→    newBlocks = mergeResult.blocks;
+   200→    forwardPatches = mergeResult.patches;
+   201→    inversePatches = mergeResult.inversePatches;
+   202→  } else {
+   203→    // Nested block (materi-section content, ftab tab, children)
+   204→    const result = produceWithPatches(blocks, draft => {
+   205→      let target: SchemaBlock | undefined;
+   206→      if (owner.kind === 'ftab-tab') {
+   207→        const ft = draft[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+   208→        target = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex];
+   209→      } else if (owner.kind === 'materi-section') {
+   210→        const ms = draft[owner.blockIndex] as { content?: SchemaBlock[] };
+   211→        target = ms.content?.[owner.childIndex];
+   212→      } else if (owner.kind === 'children') {
+   213→        target = draft[owner.blockIndex]!.children?.[owner.childIndex];
+   214→      }
+   215→      if (target) {
+   216→        Object.assign(target, deepMergeBlock(target, patch));
+   217→      }
+   218→    });
+   219→
+   220→    newBlocks = result[0] as SchemaBlock[];
+   221→    forwardPatches = result[1];
+   222→    inversePatches = result[2];
+   223→
+   224→    // Determine block type for nested block
+   225→    if (owner.kind === 'ftab-tab') {
+   226→      const ft = blocks[owner.blockIndex] as { tabs?: Array<{ content?: SchemaBlock[] }> };
+   227→      blockType = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex]?.type || 'unknown';
+   228→    } else if (owner.kind === 'materi-section') {
+   229→      const ms = blocks[owner.blockIndex] as { content?: SchemaBlock[] };
+   230→      blockType = ms.content?.[owner.childIndex]?.type || 'unknown';
+   231→    } else {
+   232→      blockType = blocks[owner.blockIndex]!.children?.[owner.childIndex]?.type || 'unknown';
+   233→    }
+   234→  }
+   235→
+   236→  // Commit the schema update
+   237→  const newSchema = commitSchemaUpdate(schema, newBlocks);
+   238→
+   239→  // Dev-mode purity guard
+   240→  assertDocumentPurity(newSchema, 'applyGuidedSchemaPatch');
+   241→
+   242→  // Write to store
+   243→  pages[pageIndex] = { ...page, schema: newSchema };
+   244→  useCanvaStore.setState({ pages });
+   245→
+   246→  // Phase 5: Mark dirty via useDirtyStore — any schema content edit means unsaved changes
+   247→  try {
+   248→    const { useDirtyStore } = require('@/store/dirty-store');
+   249→    useDirtyStore.getState().markDirty();
+   250→  } catch { /* SSR guard */ }
+   251→
+   252→  // Emit edit bus event for audit trail
+   253→  editBus.emit({
+   254→    type: 'patch',
+   255→    patch: {
+   256→      blockId,
+   257→      blockType,
+   258→      pageIndex,
+   259→      patch,
+   260→      timestamp: Date.now(),
+   261→      source,
+   262→      _immerPatches: { forward: forwardPatches, inverse: inversePatches, pageIndex },
+   263→    },
+   264→  });
+   265→
+   266→  // Handle overflow policy
+   267→  let overflowDetected = false;
+   268→  let autoSplitPerformed = false;
+   269→  let newPageId: string | undefined;
+   270→  let overflowDetails: OverflowCheckResult | undefined;
+   271→
+   272→  // Phase 4: For 'reject' policy, push history only after confirming the patch is accepted.
+   273→  // This avoids ghost undo entries when a patch is rejected.
+   274→  if (shouldDeferHistory) {
+   275→    // Preview overflow before committing history
+   276→    const previewCheck = checkOverflowRich(newSchema, page.templateType);
+   277→    if (previewCheck.overflowDetected && overflowPolicy === 'reject') {
+   278→      // Revert: restore original pages without pushing history
+   279→      useCanvaStore.setState({ pages: store.pages });
+   280→      return {
+   281→        success: false,
+   282→        error: 'Patch rejected: would cause content overflow',
+   283→        overflowDetected: true,
+   284→        pageId,
+   285→        blockId,
+   286→        overflowDetails: previewCheck,
+   287→      };
+   288→    }
+   289→    // Patch accepted — now push history (snapshot = state BEFORE our mutation)
+   290→    useCanvaStore.getState()._pushHistory();
+   291→  }
+   292→
+   293→  if (overflowPolicy !== 'none') {
+   294→    const check = checkOverflowRich(newSchema, page.templateType);
+   295→    overflowDetected = check.overflowDetected;
+   296→    overflowDetails = check;
+   297→
+   298→    if (overflowDetected) {
+   299→      // Phase 4: Emit overflow warning to the UI store so Konten tabs
+   300→      // and other components can show the OverflowWarningBanner.
+   301→      useOverflowWarningStore.getState().setWarning({
+   302→        pageId,
+   303→        blockId,
+   304→        source,
+   305→        details: check,
+   306→        timestamp: Date.now(),
+   307→      });
+   308→
+   309→      if (overflowPolicy === 'warn') {
+   310→        console.warn(
+   311→          `[guided-patch] Overflow detected on page "${pageId}" after patching block "${blockId}". ` +
+   312→          `${check.summary}`
+   313→        );
+   314→      } else if (overflowPolicy === 'reject') {
+   315→        // Phase 4: This branch should no longer be reached — reject is handled
+   316→        // above before history push. Keeping as safety net.
+   317→        useCanvaStore.setState({ pages: store.pages });
+   318→        return {
+   319→          success: false,
+   320→          error: 'Patch rejected: would cause content overflow',
+   321→          overflowDetected: true,
+   322→          pageId,
+   323→          blockId,
+   324→          overflowDetails: check,
+   325→        };
+   326→      } else if (overflowPolicy === 'auto-split') {
+   327→        // Phase 4: Auto-split using promoteSceneSplitToPage() directly.
+   328→        // This is ATOMIC — the split reads the current schema state (which already
+   329→        // has our patched content) and creates a new page in a single transaction.
+   330→        // No need to navigate first; promoteSceneSplitToPage() works by pageId.
+   331→        // Phase 4.2: Recursive auto-split — keeps splitting while the original
+   332→        // page still has overflow (up to 5 splits max to prevent infinite loops).
+   333→        //
+   334→        // BATCH UNDO: All splits in the loop are grouped under the single
+   335→        // _pushHistory() call above. Each split internally calls _pushHistory(),
+   336→        // so we set _skipHistory=true during the loop to prevent intermediate
+   337→        // snapshots. The single undo of the original patch will restore the
+   338→        // entire pre-split state.
+   339→        if (check.canSplit && check.scenePlan && !check.scenePlan.isSingleScene) {
+   340→          try {
+   341→            const { promoteSceneSplitToPage } = require('./schema-apply');
+   342→            const MAX_SPLITS = 5;
+   343→            let currentCheck = check;
+   344→            // Phase 4: Skip intermediate history pushes during auto-split loop
+   345→            // so that a single undo reverts the entire patch + all splits
+   346→            useCanvaStore.setState({ _skipHistory: true });
+   347→            for (let i = 0; i < MAX_SPLITS; i++) {
+   348→              const splitResult = promoteSceneSplitToPage(pageId, currentCheck.scenePlan!, 1);
+   349→              if (splitResult.success && splitResult.pageUpdated) {
+   350→                autoSplitPerformed = true;
+   351→                if (!newPageId) newPageId = splitResult.newPageId; // Keep first new page ID
+   352→              } else {
+   353→                break; // Can't split further
+   354→              }
+   355→              // Check if the original page still overflows after this split
+   356→              const { useCanvaStore } = require('@/store/canva/store');
+   357→              const updatedPages = useCanvaStore.getState().pages;
+   358→              const updatedPage = updatedPages.find((p: CanvaPage) => p.id === pageId);
+   359→              if (!updatedPage?.schema) break;
+   360→              const nextCheck = checkOverflowRich(updatedPage.schema, updatedPage.templateType);
+   361→              if (!nextCheck.overflowDetected) break;
+   362→              if (!nextCheck.canSplit || !nextCheck.scenePlan || nextCheck.scenePlan.isSingleScene) break;
+   363→              currentCheck = nextCheck;
+   364→            }
+   365→            // Phase 4: Restore history tracking after auto-split loop
+   366→            useCanvaStore.setState({ _skipHistory: false });
+   367→          } catch (err) {
+   368→            // Phase 4: Always restore history tracking, even on error
+   369→            useCanvaStore.setState({ _skipHistory: false });
+   370→            console.warn(
+   371→              `[guided-patch] Auto-split failed for page "${pageId}": ${err}. ` +
+   372→              `Content may overflow. Manual split recommended.`
+   373→            );
+   374→          }
+   375→        } else if (!check.canSplit) {
+   376→          console.warn(
+   377→            `[guided-patch] Overflow on page "${pageId}" but page type "${page.templateType}" ` +
+   378→            `does not allow splitting. Content may overflow. Consider shortening content.`
+   379→          );
+   380→        } else {
+   381→          console.warn(
+   382→            `[guided-patch] Overflow detected on page "${pageId}" but scene plan indicates ` +
+   383→            `single scene. Content may overflow.`
+   384→          );
+   385→        }
+   386→      }
+   387→    } else {
+   388→      // Phase 4: Auto-clear stale overflow status when content fits
+   389→      // This ensures pageOverflowStatus is always accurate without
+   390→      // requiring a manual scanAllPagesOverflow() call.
+   391→      const overflowStore = useOverflowWarningStore.getState();
+   392→      const currentStatus = overflowStore.pageOverflowStatus[pageId];
+   393→      if (currentStatus?.hasOverflow) {
+   394→        overflowStore.clearPageOverflowStatus(pageId);
+   395→      }
+   396→      // Also clear the banner if the warning was for this page
+   397→      const currentWarning = overflowStore.lastWarning;
+   398→      if (currentWarning?.pageId === pageId) {
+   399→        overflowStore.clearWarning();
+   400→      }
+   401→    }
+   402→  }
+   403→
+   404→  return {
+   405→    success: true,
+   406→    overflowDetected,
+   407→    autoSplitPerformed,
+   408→    newPageId,
+   409→    pageId,
+   410→    blockId,
+   411→    overflowDetails,
+   412→  };
+   413→}
+   414→
+   415→// ── Batch Patch ────────────────────────────────────────────────
+   416→
+   417→/**
+   418→ * Apply multiple patches atomically.
+   419→ * All patches succeed or none are applied.
+   420→ *
+   421→ * Useful for: bulk edits from AI regenerate, multi-field updates from Konten tab.
+   422→ */
+   423→export function applyGuidedSchemaPatchBatch(
+   424→  patches: GuidedPatchArgs[],
+   425→): GuidedPatchResult[] {
+   426→  const results: GuidedPatchResult[] = [];
+   427→
+   428→  // For now, apply sequentially. Transaction-based batch is a future enhancement.
+   429→  for (const patchArgs of patches) {
+   430→    const result = applyGuidedSchemaPatch(patchArgs);
+   431→    results.push(result);
+   432→
+   433→    // If any patch fails, stop applying further patches
+   434→    if (!result.success) {
+   435→      break;
+   436→    }
+   437→  }
+   438→
+   439→  return results;
+   440→}
+   441→
+   442→// ── Helper: Get Editable Schema Blocks ─────────────────────────
+   443→
+   444→/**
+   445→ * Get all editable blocks from a page's schema.
+   446→ * Filters out non-content blocks (layout-only, system blocks).
+   447→ *
+   448→ * This is what the Konten panel (Schema Navigator) will use
+   449→ * to display the list of editable content blocks.
+   450→ */
+   451→export function getEditableSchemaBlocks(page: CanvaPage): SchemaBlock[] {
+   452→  if (!page.schema?.blocks) return [];
+   453→
+   454→  return page.schema.blocks.filter(block => {
+   455→    // All blocks with type are editable by default
+   456→    // System/layout-only blocks would be filtered here
+   457→    // For now, all schema blocks are content blocks
+   458→    return !!block.type;
+   459→  });
+   460→}
+   461→
+   462→/**
+   463→ * Get editable blocks from a specific page by ID.
+   464→ */
+   465→export function getEditableSchemaBlocksByPageId(pageId: string): SchemaBlock[] {
+   466→  const store = useCanvaStore.getState();
+   467→  const page = store.pages.find(p => p.id === pageId);
+   468→  if (!page) return [];
+   469→  return getEditableSchemaBlocks(page);
+   470→}
+   471→
+   472→/**
+   473→ * Get a specific block from a page's schema by block ID.
+   474→ * Returns null if not found.
+   475→ */
+   476→export function getSchemaBlockById(pageId: string, blockId: string): SchemaBlock | null {
+   477→  const store = useCanvaStore.getState();
+   478→  const page = store.pages.find(p => p.id === pageId);
+   479→  if (!page?.schema?.blocks) return null;
+   480→
+   481→  const block = findBlockByIdInPage(page.schema.blocks, blockId);
+   482→  return block;
+   483→}
+   484→
+   485→/**
+   486→ * Find a block in a page's blocks array (including nested containers).
+   487→ */
+   488→function findBlockByIdInPage(blocks: SchemaBlock[], blockId: string): SchemaBlock | null {
+   489→  for (const block of blocks) {
+   490→    if (block.id === blockId) return block;
+   491→
+   492→    // Check nested containers
+   493→    const b = block as unknown as Record<string, unknown>;
+   494→
+   495→    // materi-section.content
+   496→    if (b.content && Array.isArray(b.content)) {
+   497→      const found = findBlockByIdInPage(b.content as SchemaBlock[], blockId);
+   498→      if (found) return found;
+   499→    }
+   500→
+   501→    // ftab.tabs[].content
+   502→    if (b.tabs && Array.isArray(b.tabs)) {
+   503→      for (const tab of b.tabs as Array<{ content?: SchemaBlock[] }>) {
+   504→        if (tab.content) {
+   505→          const found = findBlockByIdInPage(tab.content, blockId);
+   506→          if (found) return found;
+   507→        }
+   508→      }
+   509→    }
+   510→
+   511→    // children
+   512→    if (block.children) {
+   513→      const found = findBlockByIdInPage(block.children, blockId);
+   514→      if (found) return found;
+   515→    }
+   516→  }
+   517→
+   518→  return null;
+   519→}
+   520→
+   521→// ── Guided Editor Schema Registry ─────────────────────────────
+   522→
+   523→/**
+   524→ * Field definition for the guided editor.
+   525→ * Simpler than PropertyField — focused on CONTENT editing,
+   526→ * not layout/style editing.
+   527→ */
+   528→export interface GuidedFieldDef {
+   529→  /** Property key in the schema block */
+   530→  key: string;
+   531→  /** Display label (teacher-friendly) */
+   532→  label: string;
+   533→  /** Field type */
+   534→  type: 'text' | 'textarea' | 'richtext' | 'color' | 'icon' | 'select' | 'number' | 'boolean' | 'array' | 'table-text';
+   535→  /** Help text for teachers */
+   536→  helpText?: string;
+   537→  /** Placeholder */
+   538→  placeholder?: string;
+   539→  /** Is this field required? */
+   540→  required?: boolean;
+   541→  /** For array type: sub-field definitions */
+   542→  fields?: GuidedFieldDef[];
+   543→  /** For array type: max items */
+   544→  maxItems?: number;
+   545→  /** For select type: static options (use optionsFrom for dynamic options from block data) */
+   546→  options?: Array<{ label: string; value: string }>;
+   547→  /** For select type: dynamically populate options from another field in the block.
+   548→   *  Reads block[optionsFrom.field] as an array, maps each item to
+   549→   *  { label: item[optionsFrom.labelKey], value: item[optionsFrom.valueKey] }.
+   550→   *  Falls back to `options` if the source array is empty or missing. */
+   551→  optionsFrom?: { field: string; labelKey: string; valueKey: string };
+   552→  /** For number type: min/max */
+   553→  min?: number;
+   554→  max?: number;
+   555→  /** For array type: auto-generate an `id` field (nanoid) when adding new items.
+   556→   *  Used when the schema type requires an `id` field on array items
+   557→   *  (e.g. sortir-game kolom/pool) but the id should not be shown to teachers. */
+   558→  autoId?: boolean;
+   559→  /** For array type: how to display array items in the guided editor.
+   560→   *  - 'expanded' (default): all items rendered vertically in a scrollable container
+   561→   *  - 'tab': show a tab selector (1|2|3|...) and render only the active item.
+   562→   *    Ideal for quiz questions where displaying all items would make the panel too long. */
+   563→  displayMode?: 'expanded' | 'tab';
+   564→  /** Conditional visibility: show this field only when another field's value is in `values`.
+   565→   *  If undefined, the field is always shown (backward-compatible). */
+   566→  showWhen?: { field: string; values: string[] };
+   567→}
+   568→
+   569→/**
+   570→ * Guided editor schema for a block type.
+   571→ * Defines what CONTENT fields a teacher can edit.
+   572→ * Does NOT include layout/style/position — those stay in the right panel.
+   573→ */
+   574→export interface GuidedEditorSchema {
+   575→  /** Block type this schema belongs to */
+   576→  blockType: string;
+   577→  /** Display name */
+   578→  displayName: string;
+   579→  /** Description for teachers */
+   580→  description: string;
+   581→  /** Icon */
+   582→  icon: string;
+   583→  /** Ordered list of editable content fields */
+   584→  fields: GuidedFieldDef[];
+   585→  /** Sections for grouping fields into 3 zona: Isi Utama, Tampilan, Lanjutan */
+   586→  sections?: Array<{
+   587→    key: string;
+   588→    label: string;
+   589→    fieldKeys: string[];
+   590→    /** Whether this section starts collapsed. Default: false (open).
+   591→     *  Use true for "Tampilan" and "Lanjutan" zones. */
+   592→    collapsed?: boolean;
+   593→  }>;
+   594→}
+   595→
+   596→/**
+   597→ * Get the guided editor schema for a block type.
+   598→ * Returns null if no guided editor is defined for this block type.
+   599→ *
+   600→ * Currently returns definitions for the most common block types.
+   601→ * More block types will be added as Phase 2 progresses.
+   602→ */
+   603→export function getGuidedEditorSchema(blockType: string): GuidedEditorSchema | null {
+   604→  return GUIDED_EDITOR_REGISTRY[blockType] ?? null;
+   605→}
+   606→
+   607→/**
+   608→ * Check if a block type has a guided editor defined.
+   609→ */
+   610→export function hasGuidedEditor(blockType: string): boolean {
+   611→  return blockType in GUIDED_EDITOR_REGISTRY;
+   612→}
+   613→
+   614→// ── Guided Editor Registry ────────────────────────────────────
+   615→// Maps blockType → GuidedEditorSchema
+   616→// Add new block types here as Phase 2 progresses.
+   617→
+   618→// ── Reusable Accent Color Options (S2J.7) ────────────────────
+   619→// 6 accent colors only — NO bg/card tokens.
+   620→// Used by all color/warna/accentColor fields in guided editor.
+   621→// When a color field has options, GuidedColorField and InlineColorPicker
+   622→// show only those options instead of ALL 8 TOKEN_COLORS (which includes bg/card).
+   623→
+   624→const ACCENT_COLOR_OPTIONS: Array<{ label: string; value: string }> = [
+   625→  { label: 'Kuning', value: 'y' },
+   626→  { label: 'Cyan', value: 'c' },
+   627→  { label: 'Hijau', value: 'g' },
+   628→  { label: 'Ungu', value: 'p' },
+   629→  { label: 'Oranye', value: 'o' },
+   630→  { label: 'Merah', value: 'r' },
+   631→];
+   632→
+   633→const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
+   634→  'cover': {
+   635→    blockType: 'cover',
+   636→    displayName: 'Cover',
+   637→    description: 'Halaman sampul pembelajaran',
+   638→    icon: '🏛️',
+   639→    fields: [
+   640→      { key: 'title', label: 'Judul', type: 'text', required: true, helpText: 'Judul utama pembelajaran', placeholder: 'Contoh: Macam-Macam Norma' },
+   641→      { key: 'subtitle', label: 'Subjudul', type: 'text', helpText: 'Kelas dan semester', placeholder: 'PPKn Kelas VII — Semester 1' },
+   642→      { key: 'icon', label: 'Ikon', type: 'icon', helpText: 'Ikon utama di cover' },
+   643→    ],
+   644→    sections: [
+   645→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'subtitle', 'icon'] },
+   646→    ],
+   647→  },
+   648→
+   649→  'kuis': {
+   650→    blockType: 'kuis',
+   651→    displayName: 'Kuis / Evaluasi',
+   652→    description: 'Soal evaluasi pilihan ganda',
+   653→    icon: '📝',
+   654→    fields: [
+   655→      { key: 'title', label: 'Judul Kuis', type: 'text', required: true, placeholder: 'Kuis: Macam-Macam Norma' },
+   656→      {
+   657→        key: 'questions',
+   658→        label: 'Soal',
+   659→        type: 'array',
+   660→        maxItems: 10,
+   661→        displayMode: 'tab',
+   662→        helpText: 'Maksimal 10 soal per sesi kuis.',
+   663→        fields: [
+   664→          { key: 'q', label: 'Pertanyaan', type: 'textarea', required: true, placeholder: 'Tulis pertanyaan di sini...' },
+   665→          { key: 'opts', label: 'Pilihan Jawaban', type: 'array', maxItems: 4, fields: [
+   666→            { key: '', label: 'Pilihan', type: 'text', placeholder: 'Tulis pilihan jawaban...' },
+   667→          ]},
+   668→          { key: 'ans', label: 'Jawaban Benar', type: 'select', options: [
+   669→            { label: 'A', value: '0' },
+   670→            { label: 'B', value: '1' },
+   671→            { label: 'C', value: '2' },
+   672→            { label: 'D', value: '3' },
+   673→          ], helpText: 'Pilih jawaban yang benar' },
+   674→          { key: 'ex', label: 'Penjelasan', type: 'textarea', helpText: 'Penjelasan mengapa jawaban ini benar', placeholder: 'Jelaskan alasan jawaban benar...' },
+   675→        ],
+   676→      },
+   677→      // S2J.1: variant exposed — KuisRenderer reads block.variant (A=Klasik, B=Kartu, C=Ringkas).
+   678→      // accentColor NOT exposed — KuisRenderer hardcodes 'y'; KuisBlock type has no accentColor field.
+   679→      { key: 'variant', label: 'Model Tampilan', type: 'select', options: [
+   680→        { label: 'Klasik', value: 'A' },
+   681→        { label: 'Kartu', value: 'B' },
+   682→        { label: 'Ringkas', value: 'C' },
+   683→      ], helpText: 'Pilih tampilan soal kuis' },
+   684→    ],
+   685→    sections: [
+   686→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
+   687→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['variant'], collapsed: true },
+   688→    ],
+   689→  },
+   690→
+   691→  'diskusi': {
+   692→    blockType: 'diskusi',
+   693→    displayName: 'Diskusi',
+   694→    description: 'Pertanyaan diskusi kelompok',
+   695→    icon: '💬',
+   696→    fields: [
+   697→      { key: 'title', label: 'Judul Diskusi', type: 'text', required: true },
+   698→      { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Pengantar singkat untuk memulai diskusi' },
+   699→      {
+   700→        key: 'questions',
+   701→        label: 'Pertanyaan',
+   702→        type: 'array',
+   703→        maxItems: 3,
+   704→        helpText: 'STANDAR: Maksimal 2-3 pertanyaan per halaman',
+   705→        fields: [
+   706→          { key: 'label', label: 'Label', type: 'text', placeholder: 'Pertanyaan 1' },
+   707→          { key: 'icon', label: 'Ikon', type: 'icon' },
+   708→          { key: 'teks', label: 'Teks Pertanyaan', type: 'textarea', required: true },
+   709→          { key: 'petunjuk', label: 'Petunjuk', type: 'textarea', helpText: 'Petunjuk untuk membantu siswa menjawab' },
+   710→          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
+   711→        ],
+   712→      },
+   713→    ],
+   714→    sections: [
+   715→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'questions'] },
+   716→    ],
+   717→  },
+   718→
+   719→  'refleksi': {
+   720→    blockType: 'refleksi',
+   721→    displayName: 'Refleksi',
+   722→    description: 'Refleksi metakognitif dan penugasan pribadi',
+   723→    icon: '🪞',
+   724→    fields: [
+   725→      { key: 'title', label: 'Judul Refleksi', type: 'text', required: true },
+   726→      { key: 'intro', label: 'Pengantar', type: 'textarea' },
+   727→      {
+   728→        key: 'questions',
+   729→        label: 'Pertanyaan Refleksi',
+   730→        type: 'array',
+   731→        maxItems: 3,
+   732→        helpText: 'STANDAR: Maksimal 2-3 pertanyaan per halaman',
+   733→        fields: [
+   734→          { key: 'teks', label: 'Teks Pertanyaan', type: 'textarea', required: true },
+   735→          { key: 'petunjuk', label: 'Petunjuk', type: 'textarea' },
+   736→          { key: 'icon', label: 'Ikon', type: 'icon' },
+   737→        ],
+   738→      },
+   739→    ],
+   740→    sections: [
+   741→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'questions'] },
+   742→    ],
+   743→  },
+   744→
+   745→  'materi-section': {
+   746→    blockType: 'materi-section',
+   747→    displayName: 'Materi',
+   748→    description: 'Bagian materi pembelajaran',
+   749→    icon: '📖',
+   750→    fields: [
+   751→      { key: 'title', label: 'Judul Materi', type: 'text', required: true },
+   752→      // Note: content is an array of nested SchemaBlocks — too complex for simple guided form
+   753→      // The guided form for materi-section will be enhanced in Phase 2
+   754→      // S2J.1: accentColor + variant exposed — MateriSectionRenderer reads both.
+   755→      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen untuk header dan elemen materi' },
+   756→      { key: 'variant', label: 'Model Tampilan', type: 'select', options: [
+   757→        { label: 'Klasik', value: 'A' },
+   758→        { label: 'Majalah', value: 'B' },
+   759→        { label: 'Pill', value: 'C' },
+   760→      ], helpText: 'Pilih tampilan bagian materi' },
+   761→    ],
+   762→    sections: [
+   763→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title'] },
+   764→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor', 'variant'], collapsed: true },
+   765→    ],
+   766→  },
+   767→
+   768→  // Sprint 6.3-C: Minimal guided editor for materi-blok tabel & timeline subtypes.
+   769→  // MateriBlokRenderer reads: baris (tabel), langkah (timeline), judul, accentColor/warna.
+   770→  // Only tabel and timeline subtypes are supported in the guided editor for now.
+   771→  // Other subtypes (teks, definisi, poin, etc.) fall through to SchemaDrivenEditor.
+   772→  'materi-blok': {
+   773→    blockType: 'materi-blok',
+   774→    displayName: 'Blok Materi',
+   775→    description: 'Konten materi: tabel atau timeline',
+   776→    icon: '📋',
+   777→    fields: [
+   778→      { key: 'judul', label: 'Judul', type: 'text', helpText: 'Judul opsional di atas konten', placeholder: 'Judul blok...' },
+   779→      // Tabel fields — shown only when tipe === 'tabel'
+   780→      // MateriBlokRenderer.RenderTabel reads: block.baris (string[][]), block.judul, block.accentColor/warna
+   781→      { key: 'baris', label: 'Baris Tabel', type: 'table-text',
+   782→        showWhen: { field: 'tipe', values: ['tabel'] },
+   783→        helpText: 'Baris pertama = header. Gunakan | untuk memisahkan kolom.',
+   784→        placeholder: 'Header 1 | Header 2 | Header 3\nData 1 | Data 2 | Data 3' },
+   785→      // Timeline fields — shown only when tipe === 'timeline'
+   786→      // MateriBlokRenderer.RenderTimeline reads: block.langkah ({icon?, judul, isi?}), block.judul, block.accentColor/warna
+   787→      { key: 'langkah', label: 'Langkah', type: 'array', maxItems: 6,
+   788→        showWhen: { field: 'tipe', values: ['timeline'] },
+   789→        helpText: 'Langkah-langkah timeline. Maksimal 6 langkah.',
+   790→        fields: [
+   791→          { key: 'judul', label: 'Label', type: 'text', required: true, placeholder: 'Langkah 1' },
+   792→          { key: 'isi', label: 'Deskripsi', type: 'textarea', placeholder: 'Deskripsi langkah...' },
+   793→          { key: 'icon', label: 'Ikon', type: 'icon' },
+   794→        ],
+   795→      },
+   796→      // Accent color — common to both subtypes
+   797→      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS,
+   798→        helpText: 'Warna aksen untuk blok materi' },
+   799→    ],
+   800→    sections: [
+   801→      { key: 'content', label: 'Isi Utama', fieldKeys: ['judul', 'baris', 'langkah'] },
+   802→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
+   803→    ],
+   804→  },
+   805→
+   806→  'def-box': {
+   807→    blockType: 'def-box',
+   808→    displayName: 'Kotak Definisi',
+   809→    description: 'Kotak definisi, penjelasan, atau kutipan',
+   810→    icon: '📦',
+   811→    fields: [
+   812→      { key: 'content', label: 'Konten', type: 'richtext', required: true, helpText: 'Teks definisi atau penjelasan. Gunakan <strong> untuk cetak tebal.', placeholder: 'Tulis definisi atau penjelasan...' },
+   813→      // Sprint 6.3-C: DefBoxRenderer reads block.variant (A=Klasik, B=Kreatif, C=Ringkas).
+   814→      { key: 'variant', label: 'Model Tampilan', type: 'select', options: [
+   815→        { label: 'Klasik', value: 'A' },
+   816→        { label: 'Kreatif', value: 'B' },
+   817→        { label: 'Ringkas', value: 'C' },
+   818→      ], helpText: 'Pilih tampilan kotak definisi' },
+   819→      { key: 'borderColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS },
+   820→    ],
+   821→    sections: [
+   822→      { key: 'content', label: 'Isi Utama', fieldKeys: ['content'] },
+   823→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['variant', 'borderColor'], collapsed: true },
+   824→    ],
+   825→  },
+   826→
+   827→  'nc-grid': {
+   828→    blockType: 'nc-grid',
+   829→    displayName: 'Kartu Info',
+   830→    description: 'Grid kartu informasi',
+   831→    icon: '🃏',
+   832→    fields: [
+   833→      {
+   834→        key: 'cards',
+   835→        label: 'Kartu',
+   836→        type: 'array',
+   837→        maxItems: 4,
+   838→        helpText: 'STANDAR: Maksimal 4 kartu per halaman',
+   839→        fields: [
+   840→          { key: 'icon', label: 'Ikon', type: 'icon' },
+   841→          { key: 'title', label: 'Judul Kartu', type: 'text', required: true },
+   842→          { key: 'body', label: 'Isi Kartu', type: 'textarea', required: true },
+   843→          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
+   844→        ],
+   845→      },
+   846→    ],
+   847→    sections: [
+   848→      { key: 'content', label: 'Isi Utama', fieldKeys: ['cards'] },
+   849→    ],
+   850→  },
+   851→
+   852→  'tujuan-display': {
+   853→    blockType: 'tujuan-display',
+   854→    displayName: 'Tujuan Pembelajaran',
+   855→    description: 'Tujuan pembelajaran (TP)',
+   856→    icon: '🎯',
+   857→    fields: [
+   858→      { key: 'title', label: 'Judul', type: 'text' },
+   859→      {
+   860→        key: 'objectives',
+   861→        label: 'Tujuan',
+   862→        type: 'array',
+   863→        maxItems: 4,
+   864→        helpText: 'STANDAR: Maksimal 4 tujuan per halaman',
+   865→        fields: [
+   866→          { key: 'icon', label: 'Ikon', type: 'icon' },
+   867→          { key: 'text', label: 'Teks Tujuan', type: 'textarea', required: true },
+   868→          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
+   869→        ],
+   870→      },
+   871→      { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'text' },
+   872→    ],
+   873→    sections: [
+   874→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'objectives', 'profil'] },
+   875→    ],
+   876→  },
+   877→
+   878→  'rangkuman': {
+   879→    blockType: 'rangkuman',
+   880→    displayName: 'Rangkuman',
+   881→    description: 'Rangkuman materi',
+   882→    icon: '📋',
+   883→    fields: [
+   884→      { key: 'title', label: 'Judul', type: 'text' },
+   885→      {
+   886→        key: 'concepts',
+   887→        label: 'Konsep',
+   888→        type: 'array',
+   889→        maxItems: 4,
+   890→        helpText: 'STANDAR: Maksimal 4 konsep per halaman',
+   891→        fields: [
+   892→          { key: 'icon', label: 'Ikon', type: 'icon' },
+   893→          { key: 'title', label: 'Judul Konsep', type: 'text', required: true },
+   894→          { key: 'body', label: 'Penjelasan', type: 'textarea', required: true },
+   895→          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
+   896→        ],
+   897→      },
+   898→      { key: 'closingStatement', label: 'Pernyataan Penutup', type: 'textarea' },
+   899→      // Sprint 6.3-C: RangkumanRenderer reads block.variant (A=Klasik, B=Kreatif, C=Ringkas) and block.accentColor.
+   900→      { key: 'variant', label: 'Model Tampilan', type: 'select', options: [
+   901→        { label: 'Klasik', value: 'A' },
+   902→        { label: 'Kreatif', value: 'B' },
+   903→        { label: 'Ringkas', value: 'C' },
+   904→      ], helpText: 'Pilih tampilan rangkuman' },
+   905→      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen untuk header dan elemen rangkuman' },
+   906→    ],
+   907→    sections: [
+   908→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'concepts', 'closingStatement'] },
+   909→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['variant', 'accentColor'], collapsed: true },
+   910→    ],
+   911→  },
+   912→
+   913→  'motivasi': {
+   914→    blockType: 'motivasi',
+   915→    displayName: 'Motivasi / Apersepsi',
+   916→    description: 'Pertanyaan pemantik dan koneksi',
+   917→    icon: '💡',
+   918→    fields: [
+   919→      { key: 'title', label: 'Judul', type: 'text' },
+   920→      { key: 'hookQuestion', label: 'Pertanyaan Pemantik', type: 'textarea', required: true, helpText: 'Pertanyaan yang memotivasi dan menghubungkan dengan materi' },
+   921→    ],
+   922→  },
+   923→
+   924→  'petunjuk': {
+   925→    blockType: 'petunjuk',
+   926→    displayName: 'Petunjuk',
+   927→    description: 'Petunjuk penggunaan media pembelajaran',
+   928→    icon: '📌',
+   929→    fields: [
+   930→      { key: 'title', label: 'Judul', type: 'text' },
+   931→      {
+   932→        key: 'items',
+   933→        label: 'Langkah-langkah',
+   934→        type: 'array',
+   935→        maxItems: 4,
+   936→        fields: [
+   937→          { key: 'icon', label: 'Ikon', type: 'icon' },
+   938→          { key: 'title', label: 'Judul Langkah', type: 'text', required: true },
+   939→          { key: 'body', label: 'Deskripsi', type: 'textarea', required: true },
+   940→        ],
+   941→      },
+   942→      { key: 'tips', label: 'Tips', type: 'textarea' },
+   943→    ],
+   944→  },
+   945→
+   946→  'penutup': {
+   947→    blockType: 'penutup',
+   948→    displayName: 'Penutup',
+   949→    description: 'Halaman penutup pembelajaran',
+   950→    icon: '🏁',
+   951→    fields: [
+   952→      { key: 'title', label: 'Judul', type: 'text' },
+   953→      { key: 'subtitle', label: 'Subjudul', type: 'text' },
+   954→    ],
+   955→  },
+   956→
+   957→  'cp': {
+   958→    blockType: 'cp',
+   959→    displayName: 'Capaian Pembelajaran',
+   960→    description: 'Capaian pembelajaran dan profil pelajar Pancasila',
+   961→    icon: '📋',
+   962→    fields: [
+   963→      { key: 'elemen', label: 'Elemen', type: 'text', required: true, placeholder: 'Pancasila' },
+   964→      { key: 'subElemen', label: 'Sub-Elemen', type: 'text', placeholder: 'Pemahaman norma dan nilai' },
+   965→      { key: 'capaianFase', label: 'Capaian Fase', type: 'textarea', required: true, helpText: 'Narasi lengkap capaian pembelajaran', placeholder: 'Peserta didik mampu…' },
+   966→      { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'array', fields: [
+   967→        { key: '', label: 'Profil', type: 'text', placeholder: 'Bernalar Kritis' },
+   968→      ]},
+   969→    ],
+   970→  },
+   971→
+   972→  'tp': {
+   973→    blockType: 'tp',
+   974→    displayName: 'Tujuan Pembelajaran',
+   975→    description: 'Tujuan pembelajaran per pertemuan',
+   976→    icon: '🎯',
+   977→    fields: [
+   978→      { key: 'title', label: 'Judul', type: 'text' },
+   979→      { key: 'profil', label: 'Profil Pelajar Pancasila', type: 'text' },
+   980→      {
+   981→        key: 'items',
+   982→        label: 'Tujuan',
+   983→        type: 'array',
+   984→        maxItems: 4,
+   985→        helpText: 'STANDAR: Maksimal 4 tujuan per halaman',
+   986→        fields: [
+   987→          { key: 'verb', label: 'Kata Kerja', type: 'select', options: [
+   988→            { label: 'Menjelaskan', value: 'Menjelaskan' },
+   989→            { label: 'Menganalisis', value: 'Menganalisis' },
+   990→            { label: 'Mengidentifikasi', value: 'Mengidentifikasi' },
+   991→            { label: 'Membandingkan', value: 'Membandingkan' },
+   992→            { label: 'Mengevaluasi', value: 'Mengevaluasi' },
+   993→            { label: 'Menerapkan', value: 'Menerapkan' },
+   994→            { label: 'Menyimpulkan', value: 'Menyimpulkan' },
+   995→            { label: 'Mendemonstrasikan', value: 'Mendemonstrasikan' },
+   996→          ]},
+   997→          { key: 'desc', label: 'Deskripsi', type: 'textarea', required: true },
+   998→          { key: 'pertemuan', label: 'Pertemuan ke-', type: 'number', min: 1, max: 10 },
+   999→          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
+  1000→        ],
+  1001→      },
+  1002→    ],
+  1003→    sections: [
+  1004→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'profil', 'items'] },
+  1005→    ],
+  1006→  },
+  1007→
+  1008→  'alur': {
+  1009→    blockType: 'alur',
+  1010→    displayName: 'Alur Kegiatan',
+  1011→    description: 'Langkah-langkah kegiatan pembelajaran',
+  1012→    icon: '🗺️',
+  1013→    fields: [
+  1014→      { key: 'title', label: 'Judul', type: 'text' },
+  1015→      {
+  1016→        key: 'steps',
+  1017→        label: 'Langkah Kegiatan',
+  1018→        type: 'array',
+  1019→        maxItems: 6,
+  1020→        fields: [
+  1021→          { key: 'dot', label: 'Fase', type: 'select', options: [
+  1022→            { label: 'Pendahuluan', value: 'y' },
+  1023→            { label: 'Inti', value: 'c' },
+  1024→            { label: 'Penutup', value: 'r' },
+  1025→          ]},
+  1026→          { key: 'durasi', label: 'Durasi', type: 'text', placeholder: '10 menit' },
+  1027→          { key: 'judul', label: 'Nama Kegiatan', type: 'text', required: true, placeholder: 'Apersepsi' },
+  1028→          { key: 'deskripsi', label: 'Deskripsi', type: 'textarea', required: true, placeholder: 'Detail kegiatan…' },
+  1029→        ],
+  1030→      },
+  1031→    ],
+  1032→    sections: [
+  1033→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'steps'] },
+  1034→    ],
+  1035→  },
+  1036→
+  1037→  'atp': {
+  1038→    blockType: 'atp',
+  1039→    displayName: 'Alur Tujuan Pembelajaran',
+  1040→    description: 'Rencana pertemuan dan tujuan pembelajaran',
+  1041→    icon: '📅',
+  1042→    fields: [
+  1043→      { key: 'namaBab', label: 'Nama Bab / Unit', type: 'text', required: true, placeholder: 'Bab 3 — Patuh terhadap Norma' },
+  1044→      { key: 'jumlahPertemuan', label: 'Jumlah Pertemuan', type: 'number', min: 1, max: 10 },
+  1045→      {
+  1046→        key: 'pertemuan',
+  1047→        label: 'Pertemuan',
+  1048→        type: 'array',
+  1049→        maxItems: 10,
+  1050→        fields: [
+  1051→          { key: 'judul', label: 'Judul Pertemuan', type: 'text', required: true },
+  1052→          { key: 'durasi', label: 'Durasi', type: 'text', placeholder: '2×40 menit' },
+  1053→          { key: 'tp', label: 'TP yang Dicapai', type: 'text' },
+  1054→          { key: 'kegiatan', label: 'Kegiatan Pembelajaran', type: 'textarea' },
+  1055→          { key: 'penilaian', label: 'Penilaian', type: 'text' },
+  1056→        ],
+  1057→      },
+  1058→    ],
+  1059→    sections: [
+  1060→      { key: 'content', label: 'Isi Utama', fieldKeys: ['namaBab', 'jumlahPertemuan', 'pertemuan'] },
+  1061→    ],
+  1062→  },
+  1063→
+  1064→  // ── Phase 5-G: Presentation Module Schema Blocks ─────────────
+  1065→  // Previously these were AuthoringStore Module types written directly.
+  1066→  // Now they are schema blocks with guided editor support.
+  1067→
+  1068→  'tab-icons': {
+  1069→    blockType: 'tab-icons',
+  1070→    displayName: 'Tab Interaktif',
+  1071→    description: 'Tab interaktif dengan ikon — tampilkan konten per tab',
+  1072→    icon: '📑',
+  1073→    fields: [
+  1074→      { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Tujuan Pembelajaran' },
+  1075→      { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum tab', placeholder: 'Eksplorasi tujuan pembelajaran hari ini' },
+  1076→      { key: 'layoutVariant', label: 'Tata Letak', type: 'select', options: [
+  1077→        { label: 'Horizontal', value: 'horizontal' },
+  1078→        { label: 'Vertikal', value: 'vertical' },
+  1079→        { label: 'Pills', value: 'pills' },
+  1080→      ]},
+  1081→      { key: 'animation', label: 'Animasi', type: 'select', options: [
+  1082→        { label: 'Fade', value: 'fade' },
+  1083→        { label: 'Slide Up', value: 'slide-up' },
+  1084→        { label: 'Zoom', value: 'zoom' },
+  1085→        { label: 'Bounce', value: 'bounce' },
+  1086→      ]},
+  1087→      {
+  1088→        key: 'tabs',
+  1089→        label: 'Tab',
+  1090→        type: 'array',
+  1091→        maxItems: 6,
+  1092→        helpText: 'STANDAR: Maksimal 6 tab per halaman',
+  1093→        fields: [
+  1094→          { key: 'icon', label: 'Ikon', type: 'icon' },
+  1095→          { key: 'judul', label: 'Judul Tab', type: 'text', required: true, placeholder: 'Tujuan 1' },
+  1096→          { key: 'warna', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
+  1097→          { key: 'isi', label: 'Isi Tab', type: 'textarea', required: true, placeholder: 'Konten tab...' },
+  1098→        ],
+  1099→      },
+  1100→    ],
+  1101→    sections: [
+  1102→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'tabs'] },
+  1103→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layoutVariant', 'animation'], collapsed: true },
+  1104→    ],
+  1105→  },
+  1106→
+  1107→  'accordion': {
+  1108→    blockType: 'accordion',
+  1109→    displayName: 'Accordion',
+  1110→    description: 'Bagian yang bisa dikembangkan/dilipat — cocok untuk FAQ dan ringkasan',
+  1111→    icon: '🪗',
+  1112→    fields: [
+  1113→      { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Capaian Pembelajaran' },
+  1114→      { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum item accordion', placeholder: 'Klik setiap bagian untuk detail' },
+  1115→      {
+  1116→        key: 'items',
+  1117→        label: 'Item',
+  1118→        type: 'array',
+  1119→        maxItems: 8,
+  1120→        helpText: 'STANDAR: Maksimal 8 item per halaman',
+  1121→        fields: [
+  1122→          { key: 'icon', label: 'Ikon', type: 'icon' },
+  1123→          { key: 'judul', label: 'Judul', type: 'text', required: true, placeholder: 'Elemen' },
+  1124→          { key: 'isi', label: 'Isi', type: 'textarea', required: true, placeholder: 'Detail konten...' },
+  1125→        ],
+  1126→      },
+  1127→    ],
+  1128→    sections: [
+  1129→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'items'] },
+  1130→    ],
+  1131→  },
+  1132→
+  1133→  'timeline': {
+  1134→    blockType: 'timeline',
+  1135→    displayName: 'Timeline',
+  1136→    description: 'Alur kegiatan dengan langkah-langkah berurutan',
+  1137→    icon: '🗺️',
+  1138→    fields: [
+  1139→      { key: 'title', label: 'Judul', type: 'text', placeholder: 'Alur Kegiatan Pembelajaran' },
+  1140→      {
+  1141→        key: 'steps',
+  1142→        label: 'Langkah',
+  1143→        type: 'array',
+  1144→        maxItems: 8,
+  1145→        helpText: 'STANDAR: Maksimal 8 langkah per halaman',
+  1146→        fields: [
+  1147→          { key: 'icon', label: 'Ikon', type: 'icon' },
+  1148→          { key: 'label', label: 'Judul Langkah', type: 'text', required: true, placeholder: 'Apersepsi' },
+  1149→          { key: 'description', label: 'Deskripsi', type: 'textarea', required: true, placeholder: 'Detail langkah...' },
+  1150→          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
+  1151→        ],
+  1152→      },
+  1153→      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS },
+  1154→    ],
+  1155→    sections: [
+  1156→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'steps', 'accentColor'] },
+  1157→    ],
+  1158→  },
+  1159→
+  1160→  'infografis': {
+  1161→    blockType: 'infografis',
+  1162→    displayName: 'Infografis',
+  1163→    description: 'Kartu informasi visual — dimensi, profil, atau konsep',
+  1164→    icon: '📊',
+  1165→    fields: [
+  1166→      { key: 'title', label: 'Judul', type: 'text', required: true, placeholder: 'Profil Pelajar Pancasila' },
+  1167→      { key: 'intro', label: 'Pengantar', type: 'textarea', helpText: 'Teks pengantar sebelum kartu', placeholder: 'Dimensi yang dikembangkan...' },
+  1168→      { key: 'layoutVariant', label: 'Tata Letak', type: 'select', options: [
+  1169→        { label: 'Grid', value: 'grid' },
+  1170→        { label: 'List', value: 'list' },
+  1171→        { label: 'Timeline', value: 'timeline' },
+  1172→      ]},
+  1173→      {
+  1174→        key: 'kartu',
+  1175→        label: 'Kartu',
+  1176→        type: 'array',
+  1177→        maxItems: 8,
+  1178→        helpText: 'STANDAR: Maksimal 8 kartu per halaman',
+  1179→        fields: [
+  1180→          { key: 'icon', label: 'Ikon', type: 'icon' },
+  1181→          { key: 'judul', label: 'Judul Kartu', type: 'text', required: true, placeholder: 'Bernalar Kritis' },
+  1182→          { key: 'isi', label: 'Isi', type: 'textarea', required: true, placeholder: 'Deskripsi kartu...' },
+  1183→          { key: 'warna', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
+  1184→        ],
+  1185→      },
+  1186→      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS },
+  1187→    ],
+  1188→    sections: [
+  1189→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'kartu'] },
+  1190→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['layoutVariant', 'accentColor'], collapsed: true },
+  1191→    ],
+  1192→  },
+  1193→
+  1194→  // ── Sprint 2B: MateriBlok Guided Editor ────────────────────────
+  1195→  // The most important content block — teachers need this to edit
+  1196→  // materi content without falling through to raw SchemaDrivenEditor.
+  1197→  //
+  1198→  // P1 FIX: Merged duplicate entry. The old Entry 1 (displayName
+  1199→  // 'Konten Materi') was silently overwritten by this entry. Now
+  1200→  // this is the single source of truth, with kutipan and gambar
+  1201→  // added to options + showWhen per MateriBlokRenderer support.
+  1202→  //
+  1203→  // Supported tipe (from MateriBlokRenderer + MateriBlokTipe):
+  1204→  //   teks, definisi, poin, checklist, infobox, highlight,
+  1205→  //   kutipan, gambar, tabel, timeline, compare, statistik, studi
+  1206→  // Guided editor currently exposes 8 most-used types.
+  1207→  // Remaining 5 (tabel, timeline, compare, statistik, studi) can
+  1208→  // be added in future sprints when their guided fields are defined.
+  1209→
+  1210→  'materi-blok': {
+  1211→    blockType: 'materi-blok',
+  1212→    displayName: 'Materi',
+  1213→    description: 'Blok konten materi — pilih tipe dan isi konten sesuai kebutuhan',
+  1214→    icon: '📚',
+  1215→    fields: [
+  1216→      {
+  1217→        key: 'tipe',
+  1218→        label: 'Tipe Konten',
+  1219→        type: 'select',
+  1220→        required: true,
+  1221→        helpText: 'Pilih jenis konten yang ingin ditampilkan',
+  1222→        options: [
+  1223→          { label: 'Paragraf', value: 'teks' },
+  1224→          { label: 'Definisi', value: 'definisi' },
+  1225→          { label: 'Poin-poin', value: 'poin' },
+  1226→          { label: 'Checklist', value: 'checklist' },
+  1227→          { label: 'Info Box', value: 'infobox' },
+  1228→          { label: 'Highlight', value: 'highlight' },
+  1229→          { label: 'Kutipan', value: 'kutipan' },
+  1230→          { label: 'Gambar', value: 'gambar' },
+  1231→          // Sprint 6.3-C: tabel + timeline now have guided editors
+  1232→          { label: 'Tabel', value: 'tabel' },
+  1233→          { label: 'Timeline', value: 'timeline' },
+  1234→        ],
+  1235→      },
+  1236→      { key: 'judul', label: 'Judul', type: 'text', helpText: 'Judul opsional untuk blok materi', placeholder: 'Judul materi...' },
+  1237→      { key: 'isi', label: 'Isi Konten', type: 'textarea', showWhen: { field: 'tipe', values: ['teks', 'definisi', 'infobox', 'highlight', 'kutipan', 'gambar'] }, helpText: 'Teks utama konten (untuk gambar: URL gambar)', placeholder: 'Tulis konten di sini...' },
+  1238→      { key: 'karakter', label: 'Sumber Kutipan', type: 'text', showWhen: { field: 'tipe', values: ['kutipan'] }, helpText: 'Nama tokoh atau sumber kutipan', placeholder: '— Nama tokoh...' },
+  1239→      { key: 'butir', label: 'Butir-butir', type: 'array', maxItems: 6, showWhen: { field: 'tipe', values: ['poin', 'checklist'] }, helpText: 'Setiap butir menjadi satu poin/checklist', fields: [
+  1240→        { key: '', label: 'Butir', type: 'text', placeholder: 'Tulis poin...' },
+  1241→      ]},
+  1242→      // Sprint 6.3-C: tabel editor — baris is string[][], displayed as pipe-delimited rows
+  1243→      { key: 'baris', label: 'Baris Tabel', type: 'table-text', showWhen: { field: 'tipe', values: ['tabel'] }, helpText: 'Satu baris per baris. Pisahkan kolom dengan tanda |. Baris pertama = header.', placeholder: 'Header 1 | Header 2 | Header 3\nData 1 | Data 2 | Data 3' },
+  1244→      // Sprint 6.3-C: timeline editor — langkah is Array<{ icon?, judul, isi? }>
+  1245→      { key: 'langkah', label: 'Langkah-langkah', type: 'array', maxItems: 8, showWhen: { field: 'tipe', values: ['timeline'] }, helpText: 'Setiap langkah dalam timeline', fields: [
+  1246→        { key: 'icon', label: 'Ikon', type: 'icon', helpText: 'Ikon opsional (emoji)' },
+  1247→        { key: 'judul', label: 'Judul Langkah', type: 'text', required: true, placeholder: 'Langkah 1...' },
+  1248→        { key: 'isi', label: 'Deskripsi', type: 'textarea', placeholder: 'Deskripsi langkah...' },
+  1249→      ]},
+  1250→      // S2J.5: warna is the REAL field that MateriBlokRenderer reads.
+  1251→      // accentColor removed — it was a dead field (renderer never read it).
+  1252→      { key: 'warna', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, showWhen: { field: 'tipe', values: ['teks', 'definisi', 'poin', 'kutipan', 'checklist', 'gambar', 'tabel', 'timeline', 'highlight'] }, helpText: 'Warna aksen untuk elemen dekoratif blok' },
+  1253→      { key: 'icon', label: 'Ikon', type: 'icon', showWhen: { field: 'tipe', values: ['highlight'] }, helpText: 'Ikon untuk blok highlight' },
+  1254→      { key: 'infoboxStyle', label: 'Gaya Info Box', type: 'select', showWhen: { field: 'tipe', values: ['infobox'] }, options: [
+  1255→        { label: 'Info', value: 'info' },
+  1256→        { label: 'Tips', value: 'tips' },
+  1257→        { label: 'Peringatan', value: 'warning' },
+  1258→        { label: 'Berhasil', value: 'success' },
+  1259→      ]},
+  1260→      // S2J.5: accentColor field REMOVED from guided editor.
+  1261→      // It was dead — MateriBlokRenderer reads block.warna, not block.accentColor.
+  1262→      // The accentColor field still exists on MateriBlokBlock type for backward
+  1263→      // compat, but it's no longer exposed to teachers.
+  1264→    ],
+  1265→    sections: [
+  1266→      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'karakter', 'butir', 'baris', 'langkah'] },
+  1267→      { key: 'style', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle'], collapsed: true },
+  1268→    ],
+  1269→  },
+  1270→
+  1271→  // ── Sprint 2C: Sortir Game Guided Editor ──────────────────────
+  1272→  // Teachers edit game title, kolom columns, and pool items.
+  1273→  // - kolom/pool use autoId so new items get a valid nanoid id.
+  1274→  // - pool[].category uses optionsFrom to show kolom labels as dropdown
+  1275→  //   instead of requiring teachers to type technical IDs.
+  1276→
+  1277→  'sortir-game': {
+  1278→    blockType: 'sortir-game',
+  1279→    displayName: 'Game Sortir',
+  1280→    description: 'Game mengelompokkan kartu ke kolom yang tepat',
+  1281→    icon: '🎮',
+  1282→    fields: [
+  1283→      { key: 'title', label: 'Judul Game', type: 'text', required: true, helpText: 'Judul game yang terlihat di bagian atas', placeholder: 'Game Sortir...' },
+  1284→      {
+  1285→        key: 'kolom',
+  1286→        label: 'Kolom Kategori',
+  1287→        type: 'array',
+  1288→        autoId: true,
+  1289→        maxItems: 4,
+  1290→        helpText: 'Kolom tujuan — siswa memindahkan kartu ke kolom yang benar',
+  1291→        fields: [
+  1292→          { key: 'label', label: 'Label Kolom', type: 'text', required: true, placeholder: 'Nama kategori...' },
+  1293→          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen kolom' },
+  1294→        ],
+  1295→      },
+  1296→      {
+  1297→        key: 'pool',
+  1298→        label: 'Kartu Sortir',
+  1299→        type: 'array',
+  1300→        autoId: true,
+  1301→        maxItems: 8,
+  1302→        helpText: 'Kartu yang harus dikelompokkan — setiap kartu milik satu kolom',
+  1303→        fields: [
+  1304→          { key: 'text', label: 'Teks Kartu', type: 'text', required: true, placeholder: 'Tulis teks kartu...' },
+  1305→          { key: 'category', label: 'Kolom Tujuan', type: 'select', optionsFrom: { field: 'kolom', labelKey: 'label', valueKey: 'id' }, helpText: 'Pilih kolom tempat kartu ini benar' },
+  1306→        ],
+  1307→      },
+  1308→      // S2J.3: accentColor exposed — SortirGameRenderer reads it for wrapper/progress/badge.
+  1309→      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen untuk bingkai, progress, dan badge game' },
+  1310→    ],
+  1311→    sections: [
+  1312→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'kolom', 'pool'] },
+  1313→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
+  1314→    ],
+  1315→  },
+  1316→
+  1317→  'gambar': {
+  1318→    blockType: 'gambar',
+  1319→    displayName: 'Gambar',
+  1320→    description: 'Sisipkan gambar ke halaman materi',
+  1321→    icon: '🖼️',
+  1322→    fields: [
+  1323→      { key: 'title', label: 'Judul Gambar', type: 'text', helpText: 'Judul opsional di atas gambar', placeholder: 'Contoh: Diagram Sistem Pernapasan' },
+  1324→      { key: 'url', label: 'URL Gambar', type: 'text', required: true, helpText: 'Tempel tautan gambar dari internet.', placeholder: 'https://contoh.com/gambar.jpg' },
+  1325→      { key: 'caption', label: 'Keterangan', type: 'textarea', helpText: 'Keterangan singkat di bawah gambar', placeholder: 'Sumber: Buku Paket Hal. 45' },
+  1326→      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, defaultValue: 'c' },
+  1327→    ],
+  1328→    sections: [
+  1329→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'url', 'caption'] },
+  1330→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
+  1331→    ],
+  1332→  },
+  1333→
+  1334→  // ── D8 P3B: Roda Game Guided Editor ────────────────────────────
+  1335→  // Only fields the renderer actually reads are exposed.
+  1336→  // S2J.3: accentColor now exposed — RodaGameRenderer reads it for wrapper/progress.
+  1337→  // stepMode, currentQuestionIndex, variant are NOT shown (renderer doesn't use them).
+  1338→  'roda-game': {
+  1339→    blockType: 'roda-game',
+  1340→    displayName: 'Roda Pertanyaan',
+  1341→    description: 'Game roda berputar dengan soal pilihan ganda',
+  1342→    icon: '🎡',
+  1343→    fields: [
+  1344→      { key: 'title', label: 'Judul Game', type: 'text', required: true, placeholder: 'Contoh: Roda Pengetahuan' },
+  1345→      {
+  1346→        key: 'questions',
+  1347→        label: 'Soal',
+  1348→        type: 'array',
+  1349→        maxItems: 6,
+  1350→        helpText: 'Maksimal 6 soal. Setiap soal menjadi satu segmen roda.',
+  1351→        fields: [
+  1352→          { key: 'q', label: 'Pertanyaan', type: 'textarea', required: true },
+  1353→          {
+  1354→            key: 'opts',
+  1355→            label: 'Pilihan Jawaban',
+  1356→            type: 'array',
+  1357→            maxItems: 4,
+  1358→            helpText: 'Tandai jawaban yang benar.',
+  1359→            fields: [
+  1360→              { key: 'text', label: 'Teks Jawaban', type: 'text', required: true },
+  1361→              { key: 'correct', label: 'Jawaban Benar', type: 'boolean' },
+  1362→            ],
+  1363→          },
+  1364→          { key: 'feedbackCorrect', label: 'Feedback Benar', type: 'text', placeholder: 'Benar!' },
+  1365→          { key: 'feedbackWrong', label: 'Feedback Salah', type: 'text', placeholder: 'Coba lagi.' },
+  1366→          { key: 'diskusiHint', label: 'Hint Diskusi', type: 'text' },
+  1367→        ],
+  1368→      },
+  1369→      // S2J.3: accentColor exposed — RodaGameRenderer reads it for wrapper/progress.
+  1370→      // Note: accentColor does NOT change wheel segment colors (those stay 6-color rainbow).
+  1371→      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, helpText: 'Warna aksen untuk bingkai dan progress game' },
+  1372→    ],
+  1373→    sections: [
+  1374→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
+  1375→      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
+  1376→    ],
+  1377→  },
+  1378→
+  1379→  // ── D8 P3D: True/False + Fill Blank Guided Editors ──────────────
+  1380→  // Simple question arrays — no autoId needed (index-based access),
+  1381→  // no optionsFrom needed (no cross-field references).
+  1382→
+  1383→  'true-false-game': {
+  1384→    blockType: 'true-false-game',
+  1385→    displayName: 'Benar / Salah',
+  1386→    description: 'Tentukan apakah pernyataan benar atau salah',
+  1387→    icon: '✅',
+  1388→    fields: [
+  1389→      { key: 'title', label: 'Judul Game', type: 'text', required: true, placeholder: 'Benar atau Salah?' },
+  1390→      {
+  1391→        key: 'questions',
+  1392→        label: 'Pernyataan',
+  1393→        type: 'array',
+  1394→        maxItems: 5,
+  1395→        helpText: 'STANDAR: Maksimal 5 pernyataan per halaman',
+  1396→        fields: [
+  1397→          { key: 'text', label: 'Pernyataan', type: 'textarea', required: true, placeholder: 'Tulis pernyataan...' },
+  1398→          { key: 'correct', label: 'Jawaban Benar', type: 'boolean', helpText: 'Aktifkan jika pernyataan ini benar' },
+  1399→          { key: 'explanation', label: 'Penjelasan', type: 'text', placeholder: 'Jelaskan mengapa benar/salah...' },
+  1400→        ],
+  1401→      },
+  1402→    ],
+  1403→    sections: [
+  1404→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
+  1405→    ],
+  1406→  },
+  1407→
+  1408→  'fill-blank-game': {
+  1409→    blockType: 'fill-blank-game',
+  1410→    displayName: 'Isian Singkat',
+  1411→    description: 'Isi jawaban pada teks rumpang',
+  1412→    icon: '✏️',
+  1413→    fields: [
+  1414→      { key: 'title', label: 'Judul Game', type: 'text', required: true, placeholder: 'Game Isian' },
+  1415→      {
+  1416→        key: 'questions',
+  1417→        label: 'Soal Isian',
+  1418→        type: 'array',
+  1419→        maxItems: 5,
+  1420→        helpText: 'STANDAR: Maksimal 5 soal per halaman',
+  1421→        fields: [
+  1422→          { key: 'text', label: 'Teks Soal', type: 'textarea', required: true, helpText: 'Gunakan ___ untuk menandai tempat jawaban', placeholder: 'Norma ___ bersumber dari Tuhan' },
+  1423→          { key: 'answer', label: 'Jawaban', type: 'text', required: true, helpText: 'Gunakan / untuk beberapa jawaban yang diterima', placeholder: 'agama' },
+  1424→          { key: 'hint', label: 'Petunjuk', type: 'text', placeholder: 'Petunjuk opsional untuk siswa...' },
+  1425→        ],
+  1426→      },
+  1427→    ],
+  1428→    sections: [
+  1429→      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'questions'] },
+  1430→    ],
+  1431→  },
+  1432→};
+  1433→
+  1434→// ── Overflow Detection ─────────────────────────────────────────
+  1435→
+  1436→/**
+  1437→ * Rich overflow detection using SceneOverflowEngine.
+  1438→ * Replaces the old word-count heuristic with real scene plan computation.
+  1439→ *
+  1440→ * Returns detailed overflow information including:
+  1441→ *   - Whether overflow is detected
+  1442→ *   - The computed scene plan
+  1443→ *   - Whether the page type allows splitting
+  1444→ *   - Whether compression is available
+  1445→ *   - Total scenes needed
+  1446→ *   - Human-readable summary
+  1447→ */
+  1448→export function checkOverflowRich(schema: ScreenSchema, templateType?: string): OverflowCheckResult {
+  1449→  if (!schema.blocks || schema.blocks.length === 0) {
+  1450→    return {
+  1451→      overflowDetected: false,
+  1452→      scenePlan: null,
+  1453→      canSplit: false,
+  1454→      canCompress: false,
+  1455→      totalScenes: 1,
+  1456→      summary: 'Tidak ada konten',
+  1457→    };
+  1458→  }
+  1459→
+  1460→  // ── Compute scene plan using real measurements ──
+  1461→  // Read the project's actual ratioId instead of hardcoding '16:9'
+  1462→  let ratioId = '16:9';
+  1463→  try {
+  1464→    const { useCanvaStore } = require('@/store/canva/store');
+  1465→    ratioId = useCanvaStore.getState().ratioId || '16:9';
+  1466→  } catch { /* fallback to 16:9 during SSR */ }
+  1467→  const sceneRes = getSceneResolution(ratioId);
+  1468→  const hasFullPageBlock = schema.blocks.length === 1 &&
+  1469→    isFullPageBlockType(schema.blocks[0].type);
+  1470→  const safeArea = hasFullPageBlock
+  1471→    ? DEFAULT_SAFE_AREA
+  1472→    : computeSafeArea({ showTopNav: false, showBottomNav: false, isCompact: true, pagePadding: 16 });
+  1473→
+  1474→  const scenePlan = computeScenePlan(schema, sceneRes, safeArea, { isCompact: true });
+  1475→
+  1476→  // ── Check contract canSplit ──
+  1477→  const contract = getContractLazy()(undefined);
+  1478→  const pageLayout = templateType
+  1479→    ? contract.pageLayouts[templateType]
+  1480→    : undefined;
+  1481→  const canSplit = pageLayout?.canSplit ?? true; // Default: allow split
+  1482→
+  1483→  // ── Check if any overflowing blocks are compression-capable ──
+  1484→  let canCompress = false;
+  1485→  if (!scenePlan.isSingleScene) {
+  1486→    for (const block of schema.blocks) {
+  1487→      if (isBlockTypeCompressionCapable(block.type)) {
+  1488→        canCompress = true;
+  1489→        break;
+  1490→      }
+  1491→    }
+  1492→  }
+  1493→
+  1494→  const overflowDetected = !scenePlan.isSingleScene;
+  1495→
+  1496→  // ── Human-readable summary ──
+  1497→  let summary: string;
+  1498→  if (!overflowDetected) {
+  1499→    summary = 'Konten muat dalam satu halaman';
+  1500→  } else {
+  1501→    const scenesNeeded = scenePlan.totalScenes;
+  1502→    const overflowBlocks = scenePlan.scenes
+  1503→      .slice(1) // Blocks in scene 1+ overflow
+  1504→      .reduce((acc, s) => acc + s.blockIds.length, 0);
+  1505→    summary = `Konten melebihi kapasitas — butuh ${scenesNeeded} halaman (${overflowBlocks} blok overflow)`;
+  1506→    if (!canSplit) {
+  1507→      summary += '. Tipe halaman ini tidak bisa di-split — persingkat konten.';
+  1508→    }
+  1509→    if (canCompress) {
+  1510→      summary += ' Kompresi tersedia.';
+  1511→    }
+  1512→  }
+  1513→
+  1514→  return {
+  1515→    overflowDetected,
+  1516→    scenePlan,
+  1517→    canSplit,
+  1518→    canCompress,
+  1519→    totalScenes: scenePlan.totalScenes,
+  1520→    summary,
+  1521→  };
+  1522→}
+  1523→
+  1524→/**
+  1525→ * Simple boolean overflow check (backward-compatible wrapper).
+  1526→ * Uses the rich check internally.
+  1527→ */
+  1528→export function checkOverflow(schema: ScreenSchema): boolean {
+  1529→  return checkOverflowRich(schema).overflowDetected;
+  1530→}
+  1531→
+  1532→// ── Pre-Flight Overflow Preview ────────────────────────────────
+  1533→
+  1534→/**
+  1535→ * Preview what would happen if a patch were applied — WITHOUT writing to the store.
+  1536→ *
+  1537→ * This is a "dry run" that:
+  1538→ *   1. Clones the current page's schema
+  1539→ *   2. Applies the patch to the clone
+  1540→ *   3. Runs checkOverflowRich() on the cloned schema
+  1541→ *   4. Returns the overflow result + the patched schema (for inspection)
+  1542→ *   5. NEVER mutates the real store
+  1543→ *
+  1544→ * Use cases:
+  1545→ *   - Konten tab: Show "This edit would cause overflow" BEFORE applying
+  1546→ *   - Guided form: Pre-validate a field change
+  1547→ *   - AI regenerate: Check if generated content fits before committing
+  1548→ *
+  1549→ * @param args - Same args as applyGuidedSchemaPatch
+  1550→ * @returns Overflow check result + patched schema preview
+  1551→ */
+  1552→export function previewPatchOverflow(args: GuidedPatchArgs): {
+  1553→  overflowCheck: OverflowCheckResult;
+  1554→  /** The schema as it would look after the patch (read-only preview) */
+  1555→  previewSchema: ScreenSchema | null;
+  1556→} {
+  1557→  const { pageId, blockId, patch } = args;
+  1558→  const store = useCanvaStore.getState();
+  1559→  const page = store.pages.find(p => p.id === pageId);
+  1560→
+  1561→  if (!page?.schema) {
+  1562→    return {
+  1563→      overflowCheck: {
+  1564→        overflowDetected: false,
+  1565→        scenePlan: null,
+  1566→        canSplit: false,
+  1567→        canCompress: false,
+  1568→        totalScenes: 1,
+  1569→        summary: 'Halaman tidak ditemukan atau tidak memiliki schema',
+  1570→      },
+  1571→      previewSchema: null,
+  1572→    };
+  1573→  }
+  1574→
+  1575→  // Clone the schema to avoid mutating the real store
+  1576→  const schemaClone: ScreenSchema = JSON.parse(JSON.stringify(page.schema));
+  1577→
+  1578→  // Find the target block in the clone
+  1579→  const owner = findBlockOwner(schemaClone.blocks, blockId);
+  1580→  if (!owner) {
+  1581→    return {
+  1582→      overflowCheck: {
+  1583→        overflowDetected: false,
+  1584→        scenePlan: null,
+  1585→        canSplit: false,
+  1586→        canCompress: false,
+  1587→        totalScenes: 1,
+  1588→        summary: `Block "${blockId}" tidak ditemukan`,
+  1589→      },
+  1590→      previewSchema: null,
+  1591→    };
+  1592→  }
+  1593→
+  1594→  // Apply the patch to the clone (same logic as applyGuidedSchemaPatch)
+  1595→  if (owner.kind === 'top-level') {
+  1596→    const merged = deepMergeBlock(schemaClone.blocks[owner.index]!, patch);
+  1597→    schemaClone.blocks[owner.index] = { ...schemaClone.blocks[owner.index], ...merged } as SchemaBlock;
+  1598→  } else {
+  1599→    // Nested block (materi-section content, ftab tab, children)
+  1600→    let target: Record<string, unknown> | undefined;
+  1601→    if (owner.kind === 'ftab-tab') {
+  1602→      const ft = schemaClone.blocks[owner.blockIndex] as unknown as { tabs?: Array<{ content?: SchemaBlock[] }> };
+  1603→      target = ft.tabs?.[owner.tabIndex]?.content?.[owner.childIndex] as Record<string, unknown> | undefined;
+  1604→    } else if (owner.kind === 'materi-section') {
+  1605→      const ms = schemaClone.blocks[owner.blockIndex] as unknown as { content?: SchemaBlock[] };
+  1606→      target = ms.content?.[owner.childIndex] as Record<string, unknown> | undefined;
+  1607→    } else if (owner.kind === 'children') {
+  1608→      target = schemaClone.blocks[owner.blockIndex]!.children?.[owner.childIndex] as Record<string, unknown> | undefined;
+  1609→    }
+  1610→    if (target) {
+  1611→      Object.assign(target, deepMergeBlock(target as SchemaBlock, patch));
+  1612→    }
+  1613→  }
+  1614→
+  1615→  // Run overflow check on the patched clone
+  1616→  const overflowCheck = checkOverflowRich(schemaClone, page.templateType);
+  1617→
+  1618→  return {
+  1619→    overflowCheck,
+  1620→    previewSchema: schemaClone,
+  1621→  };
+  1622→}
+  1623→
+  1624→// ── Convenience: Patch and get fresh projection ────────────────
+  1625→
+  1626→/**
+  1627→ * Apply a guided schema patch and then derive a fresh projection
+  1628→ * from the updated schema.
+  1629→ *
+  1630→ * This is the full cycle: write to schema → read projection back.
+  1631→ * Used by Konten tabs that need to update the schema AND refresh
+  1632→ * their local state from the new projection.
+  1633→ *
+  1634→ * @param args - Patch arguments
+  1635→ * @param projectionDeriver - Function to derive projection from updated page
+  1636→ * @returns Patch result + derived projection
+  1637→ */
+  1638→export function applyGuidedSchemaPatchWithProjection<T>(
+  1639→  args: GuidedPatchArgs,
+  1640→  projectionDeriver: (page: CanvaPage) => T,
+  1641→): GuidedPatchResult & { projection: T | null } {
+  1642→  const result = applyGuidedSchemaPatch(args);
+  1643→
+  1644→  if (!result.success) {
+  1645→    return { ...result, projection: null };
+  1646→  }
+  1647→
+  1648→  // Read the updated page from store
+  1649→  const store = useCanvaStore.getState();
+  1650→  const updatedPage = store.pages.find(p => p.id === result.pageId);
+  1651→
+  1652→  if (!updatedPage) {
+  1653→    return { ...result, projection: null };
+  1654→  }
+  1655→
+  1656→  const projection = projectionDeriver(updatedPage);
+  1657→  return { ...result, projection };
+  1658→}
+  1659→
+  1660→// ── Batch Overflow Scan ─────────────────────────────────────────
+  1661→
+  1662→/**
+  1663→ * Scan all pages for overflow and update the overflow warning store.
+  1664→ *
+  1665→ * This is the "post-generate overflow scan" — after auto-generate or
+  1666→ * bulk content changes, run this to detect any pages that overflow.
+  1667→ *
+  1668→ * Results are written to useOverflowWarningStore.pageOverflowStatus
+  1669→ * so the UI can show red dots on overflowing pages in the scene list,
+  1670→ * export warnings, etc.
+  1671→ *
+  1672→ * @param options.autoSplit - If true, automatically split overflowing pages
+  1673→ * @returns Summary of the scan
+  1674→ */
+  1675→export function scanAllPagesOverflow(options?: {
+  1676→  autoSplit?: boolean;
+  1677→}): {
+  1678→  totalPages: number;
+  1679→  overflowingPages: number;
+  1680→  autoSplitResults: Array<{ pageId: string; success: boolean; newPageId?: string }>;
+  1681→} {
+  1682→  const store = useCanvaStore.getState();
+  1683→  const pages = store.pages;
+  1684→  const now = Date.now();
+  1685→
+  1686→  const statuses: Record<string, import('@/store/overflow-warning-store').PageOverflowStatus> = {};
+  1687→  let overflowingPages = 0;
+  1688→  const autoSplitResults: Array<{ pageId: string; success: boolean; newPageId?: string }> = [];
+  1689→
+  1690→  for (const page of pages) {
+  1691→    if (!page.schema?.blocks || page.schema.blocks.length === 0) {
+  1692→      statuses[page.id] = {
+  1693→        hasOverflow: false,
+  1694→        details: null,
+  1695→        lastChecked: now,
+  1696→      };
+  1697→      continue;
+  1698→    }
+  1699→
+  1700→    const check = checkOverflowRich(page.schema, page.templateType);
+  1701→    statuses[page.id] = {
+  1702→      hasOverflow: check.overflowDetected,
+  1703→      details: check,
+  1704→      lastChecked: now,
+  1705→    };
+  1706→
+  1707→    if (check.overflowDetected) {
+  1708→      overflowingPages++;
+  1709→
+  1710→      // Auto-split if requested and possible
+  1711→      if (options?.autoSplit && check.canSplit && check.scenePlan && !check.scenePlan.isSingleScene) {
+  1712→        try {
+  1713→          const { promoteSceneSplitToPage } = require('./schema-apply');
+  1714→          const splitResult = promoteSceneSplitToPage(page.id, check.scenePlan, 1);
+  1715→          autoSplitResults.push({
+  1716→            pageId: page.id,
+  1717→            success: splitResult.success && splitResult.pageUpdated,
+  1718→            newPageId: splitResult.newPageId,
+  1719→          });
+  1720→        } catch {
+  1721→          autoSplitResults.push({ pageId: page.id, success: false });
+  1722→        }
+  1723→      }
+  1724→    }
+  1725→  }
+  1726→
+  1727→  // Write all statuses to the store in one batch
+  1728→  useOverflowWarningStore.getState().batchSetPageOverflowStatus(statuses);
+  1729→
+  1730→  return {
+  1731→    totalPages: pages.length,
+  1732→    overflowingPages,
+  1733→    autoSplitResults,
+  1734→  };
+  1735→}
+  1736→
