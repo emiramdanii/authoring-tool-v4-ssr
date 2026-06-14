@@ -1,0 +1,759 @@
+     1→     1→// ═══════════════════════════════════════════════════════════════════════
+     2→     2→// EXPORT APP — The main React component for exported HTML
+     3→     3→//
+     4→     4→// Sprint 5: Rewritten to match LearningMediaShell's student-facing
+     5→     5→// experience. Uses the same stores (learning-media-store,
+     6→     6→// interactive-store, PageRuntimeContract) for:
+     7→     7→//   - Navigation locks (kuis/game must be completed before next)
+     8→     8→//   - Score tracking (interactive-store → learning-media-store bridge)
+     9→     9→//   - Completion tracking (progress bar, page dots)
+    10→    10→//   - Completion modal (stars, score, progress, "Ulangi")
+    11→    11→//   - "Mulai" CTA on cover page
+    12→    12→//
+    13→    13→// Differences from LearningMediaShell:
+    14→    14→//   - No "Back to Edit" button (standalone export)
+    15→    15→//   - No Edit/Play toggle (always play mode)
+    16→    16→//   - No stopEditing/click-outside-to-save logic
+    17→    17→//   - No canva-store goPage sync (learning-media-store drives nav)
+    18→    18→//
+    19→    19→// Architecture mirrors LearningMediaShell:
+    20→    20→//   [TopNavbar 48px]  ← Title | Progress bar | Score 🏆
+    21→    21→//   [Content flex-1]  PageRenderer mode="export"
+    22→    22→//   [BottomNav 56px]  ← Prev | Dots | Next → (with navigation lock)
+    23→    23→//   [LockToast]       Shows when navigation is locked
+    24→    24→//   [CompletionModal] overlay on "Selesai"
+    25→    25→// ═══════════════════════════════════════════════════════════════════════
+    26→    26→
+    27→    27→'use client';
+    28→    28→
+    29→    29→import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+    30→    30→import { Inbox } from 'lucide-react';
+    31→    31→import { useCanvaStore } from '@/store/canva-store';
+    32→    32→import { useInteractiveStore, type ScoreEntry as InteractiveScoreEntry } from '@/store/interactive-store';
+    33→    33→import { useLearningMediaStore } from '@/store/learning-media-store';
+    34→    34→import { useAuthoringStore } from '@/store/authoring-store';
+    35→    35→import { RATIOS, type CanvaPage } from '@/components/canva/types';
+    36→    36→import { CanvasErrorBoundary } from '@/components/canva/CanvasErrorBoundary';
+    37→    37→import { PageRenderer } from '@/components/canva/page-renderer';
+    38→    38→import { PageTransition, type PageDirection } from '@/lib/transition';
+    39→    39→import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
+    40→    40→import { getPageContract, type PageCompletionStatus } from '@/core/edu/page-runtime-contract';
+    41→    41→import { fireConfettiCelebration } from '@/lib/confetti';
+    42→    42→import { Button } from '@/components/ui/button';
+    43→    43→import {
+    44→    44→  ChevronLeft,
+    45→    45→  ChevronRight,
+    46→    46→  Trophy,
+    47→    47→  X,
+    48→    48→  RotateCcw,
+    49→    49→  CheckCircle2,
+    50→    50→  Star,
+    51→    51→  Lock,
+    52→    52→  Play,
+    53→    53→} from 'lucide-react';
+    54→    54→
+    55→    55→// ── Phase metadata for screen types (same as LearningMediaShell) ──
+    56→    56→const PHASE_META: Record<string, { label: string; emoji: string; color: string }> = {
+    57→    57→  cover:      { label: 'Cover',         emoji: '🏠', color: '#6366f1' },
+    58→    58→  petunjuk:   { label: 'Petunjuk',      emoji: '📌', color: '#8b5cf6' },
+    59→    59→  tujuan:     { label: 'Tujuan',        emoji: '🎯', color: '#3b82f6' },
+    60→    60→  motivasi:   { label: 'Motivasi',      emoji: '💡', color: '#f59e0b' },
+    61→    61→  skenario:   { label: 'Skenario',      emoji: '🎭', color: '#10b981' },
+    62→    62→  materi:     { label: 'Materi',        emoji: '📖', color: '#06b6d4' },
+    63→    63→  diskusi:    { label: 'Diskusi',       emoji: '💬', color: '#ec4899' },
+    64→    64→  kuis:       { label: 'Kuis',          emoji: '📝', color: '#f43f5e' },
+    65→    65→  game:       { label: 'Game',          emoji: '🎮', color: '#22d3ee' },
+    66→    66→  refleksi:   { label: 'Refleksi',      emoji: '🪞', color: '#a78bfa' },
+    67→    67→  rangkuman:  { label: 'Rangkuman',     emoji: '📋', color: '#14b8a6' },
+    68→    68→  penutup:    { label: 'Penutup',       emoji: '🏁', color: '#64748b' },
+    69→    69→  custom:     { label: 'Halaman',       emoji: '📄', color: '#94a3b8' },
+    70→    70→};
+    71→    71→
+    72→    72→function getPhaseMeta(templateType: string) {
+    73→    73→  return PHASE_META[templateType] ?? PHASE_META.custom;
+    74→    74→}
+    75→    75→
+    76→    76→// ═══════════════════════════════════════════════════════════════
+    77→    77→// TOP NAVBAR — 48px fixed height (export version — no Back button)
+    78→    78→// ═══════════════════════════════════════════════════════════════
+    79→    79→
+    80→    80→function ExportTopNavbar({
+    81→    81→  title,
+    82→    82→  progress,
+    83→    83→  totalScore,
+    84→    84→  maxScore,
+    85→    85→  isDark,
+    86→    86→}: {
+    87→    87→  title: string;
+    88→    88→  progress: number;
+    89→    89→  totalScore: number;
+    90→    90→  maxScore: number;
+    91→    91→  isDark: boolean;
+    92→    92→}) {
+    93→    93→  return (
+    94→    94→    <div className={`h-12 flex items-center gap-3 px-4 shrink-0 z-10 ${
+    95→    95→      isDark
+    96→    96→        ? 'bg-[#0e1c2f]/95 backdrop-blur-md border-b border-white/10'
+    97→    97→        : 'bg-white border-b border-slate-200'
+    98→    98→    }`}>
+    99→    99→      {/* Title */}
+   100→   100→      <div className="flex-1 min-w-0">
+   101→   101→        <h1 className={`text-sm font-semibold truncate ${
+   102→   102→          isDark ? 'text-white' : 'text-slate-800'
+   103→   103→        }`}>{title}</h1>
+   104→   104→      </div>
+   105→   105→
+   106→   106→      {/* Progress bar */}
+   107→   107→      <div className="flex items-center gap-2">
+   108→   108→        <div className={`w-24 h-2 rounded-full overflow-hidden ${
+   109→   109→          isDark ? 'bg-white/10' : 'bg-slate-200'
+   110→   110→        }`}>
+   111→   111→          <div
+   112→   112→            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+   113→   113→            style={{ width: `${progress}%` }}
+   114→   114→          />
+   115→   115→        </div>
+   116→   116→        <span className={`text-[10px] font-medium min-w-[32px] text-right ${
+   117→   117→          isDark ? 'text-slate-400' : 'text-slate-500'
+   118→   118→        }`}>
+   119→   119→          {progress}%
+   120→   120→        </span>
+   121→   121→      </div>
+   122→   122→
+   123→   123→      {/* Score */}
+   124→   124→      {maxScore > 0 && (
+   125→   125→        <div className={`flex items-center gap-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+   126→   126→          <Trophy size={14} />
+   127→   127→          <span className="text-xs font-bold">{totalScore}/{maxScore}</span>
+   128→   128→        </div>
+   129→   129→      )}
+   130→   130→    </div>
+   131→   131→  );
+   132→   132→}
+   133→   133→
+   134→   134→// ═══════════════════════════════════════════════════════════════
+   135→   135→// BOTTOM NAVIGATION — 56px fixed height, contract-aware
+   136→   136→// (Same as LearningMediaShell but no "Back to Edit")
+   137→   137→// ═══════════════════════════════════════════════════════════════
+   138→   138→
+   139→   139→function ExportBottomNav({
+   140→   140→  currentScreen,
+   141→   141→  totalScreens,
+   142→   142→  pageStatuses,
+   143→   143→  templateType,
+   144→   144→  onNext,
+   145→   145→  onPrev,
+   146→   146→  onGoToScreen,
+   147→   147→  isNextLocked,
+   148→   148→  lockReason,
+   149→   149→  isDark,
+   150→   150→}: {
+   151→   151→  currentScreen: number;
+   152→   152→  totalScreens: number;
+   153→   153→  pageStatuses: PageCompletionStatus[];
+   154→   154→  templateType: string;
+   155→   155→  onNext: () => void;
+   156→   156→  onPrev: () => void;
+   157→   157→  onGoToScreen: (index: number) => void;
+   158→   158→  isNextLocked: boolean;
+   159→   159→  lockReason: string;
+   160→   160→  isDark: boolean;
+   161→   161→}) {
+   162→   162→  // Cover page gets a prominent "Mulai" button
+   163→   163→  const isCoverPage = currentScreen === 0 && templateType === 'cover';
+   164→   164→
+   165→   165→  // Completion indicator for each dot
+   166→   166→  const getDotClass = (index: number) => {
+   167→   167→    const isCurrent = index === currentScreen;
+   168→   168→    const status = pageStatuses[index];
+   169→   169→
+   170→   170→    if (isCurrent) {
+   171→   171→      return 'w-6 h-2.5 bg-blue-500';
+   172→   172→    }
+   173→   173→
+   174→   174→    switch (status) {
+   175→   175→      case 'completed':
+   176→   176→        return 'w-2.5 h-2.5 bg-emerald-400 hover:bg-emerald-500';
+   177→   177→      case 'locked':
+   178→   178→        return 'w-2.5 h-2.5 bg-amber-400 hover:bg-amber-500 ring-1 ring-amber-300';
+   179→   179→      case 'incomplete':
+   180→   180→      default:
+   181→   181→        return 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400';
+   182→   182→    }
+   183→   183→  };
+   184→   184→
+   185→   185→  return (
+   186→   186→    <div className={`h-14 flex items-center justify-between px-4 shrink-0 z-10 ${
+   187→   187→      isDark
+   188→   188→        ? 'bg-[#0e1c2f]/95 backdrop-blur-md border-t border-white/10'
+   189→   189→        : 'bg-white border-t border-slate-200'
+   190→   190→    }`}>
+   191→   191→      {/* Prev — hidden on cover page */}
+   192→   192→      {!isCoverPage ? (
+   193→   193→        <Button
+   194→   194→          variant="ghost"
+   195→   195→          size="sm"
+   196→   196→          onClick={onPrev}
+   197→   197→          disabled={currentScreen <= 0}
+   198→   198→          className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-30 active:scale-95 transition-transform"
+   199→   199→        >
+   200→   200→          <ChevronLeft size={18} />
+   201→   201→          <span className="hidden sm:inline">Sebelumnya</span>
+   202→   202→        </Button>
+   203→   203→      ) : (
+   204→   204→        <div className="w-24" />
+   205→   205→      )}
+   206→   206→
+   207→   207→      {/* Screen dots — with completion indicators */}
+   208→   208→      <div className="flex items-center gap-1.5 overflow-x-auto max-w-[60%] px-2">
+   209→   209→        {Array.from({ length: totalScreens }, (_, i) => {
+   210→   210→          const status = pageStatuses[i];
+   211→   211→          const statusIcon = status === 'completed' ? ' ✓' : status === 'locked' ? ' 🔒' : '';
+   212→   212→          return (
+   213→   213→            <button
+   214→   214→              key={i}
+   215→   215→              onClick={() => onGoToScreen(i)}
+   216→   216→              className={`
+   217→   217→                shrink-0 rounded-full transition-all duration-300
+   218→   218→                ${getDotClass(i)}
+   219→   219→              `}
+   220→   220→              aria-label={`Halaman ${i + 1}${statusIcon}`}
+   221→   221→              title={`Halaman ${i + 1}${statusIcon}`}
+   222→   222→            />
+   223→   223→          );
+   224→   224→        })}
+   225→   225→      </div>
+   226→   226→
+   227→   227→      {/* Mulai / Next / Selesai / Terkunci — context-aware */}
+   228→   228→      {isCoverPage ? (
+   229→   229→        /* ── MULAI button — prominent CTA on cover page ── */
+   230→   230→        <Button
+   231→   231→          size="sm"
+   232→   232→          onClick={onNext}
+   233→   233→          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/25 active:scale-95 transition-all"
+   234→   234→        >
+   235→   235→          <Play size={16} />
+   236→   236→          <span>Mulai</span>
+   237→   237→        </Button>
+   238→   238→      ) : currentScreen >= totalScreens - 1 ? (
+   239→   239→        /* ── SELESAI button — on last page ── */
+   240→   240→        <Button
+   241→   241→          size="sm"
+   242→   242→          onClick={onNext}
+   243→   243→          className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white"
+   244→   244→        >
+   245→   245→          <CheckCircle2 size={16} />
+   246→   246→          <span>Selesai</span>
+   247→   247→        </Button>
+   248→   248→      ) : isNextLocked ? (
+   249→   249→        /* ── TERKUNCI button — navigation locked by contract ── */
+   250→   250→        <Button
+   251→   251→          variant="ghost"
+   252→   252→          size="sm"
+   253→   253→          disabled
+   254→   254→          className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium opacity-50 cursor-not-allowed"
+   255→   255→          title={lockReason}
+   256→   256→        >
+   257→   257→          <Lock size={14} className="text-amber-500" />
+   258→   258→          <span className="hidden sm:inline text-amber-600">Terkunci</span>
+   259→   259→        </Button>
+   260→   260→      ) : (
+   261→   261→        /* ── SELANJUTNYA button — normal next navigation ── */
+   262→   262→        <Button
+   263→   263→          variant="ghost"
+   264→   264→          size="sm"
+   265→   265→          onClick={onNext}
+   266→   266→          className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium active:scale-95 transition-transform"
+   267→   267→        >
+   268→   268→          <span className="hidden sm:inline">Selanjutnya</span>
+   269→   269→          <ChevronRight size={18} />
+   270→   270→        </Button>
+   271→   271→      )}
+   272→   272→    </div>
+   273→   273→  );
+   274→   274→}
+   275→   275→
+   276→   276→// ═══════════════════════════════════════════════════════════════
+   277→   277→// NAVIGATION LOCK TOAST — Shown when trying to advance while locked
+   278→   278→// ═══════════════════════════════════════════════════════════════
+   279→   279→
+   280→   280→function LockToast({
+   281→   281→  reason,
+   282→   282→  onDismiss,
+   283→   283→}: {
+   284→   284→  reason: string;
+   285→   285→  onDismiss: () => void;
+   286→   286→}) {
+   287→   287→  // Auto-dismiss after 4 seconds
+   288→   288→  useEffect(() => {
+   289→   289→    const timer = setTimeout(onDismiss, 4000);
+   290→   290→    return () => clearTimeout(timer);
+   291→   291→  }, [onDismiss]);
+   292→   292→
+   293→   293→  return (
+   294→   294→    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
+   295→   295→      <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl shadow-lg max-w-sm">
+   296→   296→        <Lock size={16} className="text-amber-600 shrink-0" />
+   297→   297→        <p className="text-sm text-amber-800 flex-1">{reason}</p>
+   298→   298→        <button
+   299→   299→          onClick={onDismiss}
+   300→   300→          className="text-amber-400 hover:text-amber-600 transition-colors shrink-0"
+   301→   301→          aria-label="Tutup"
+   302→   302→        >
+   303→   303→          <X size={14} />
+   304→   304→        </button>
+   305→   305→      </div>
+   306→   306→    </div>
+   307→   307→  );
+   308→   308→}
+   309→   309→
+   310→   310→// ═══════════════════════════════════════════════════════════════
+   311→   311→// COMPLETION MODAL
+   312→   312→// ═══════════════════════════════════════════════════════════════
+   313→   313→
+   314→   314→function CompletionModal({
+   315→   315→  totalScore,
+   316→   316→  maxScore,
+   317→   317→  progress,
+   318→   318→  onRestart,
+   319→   319→  onClose,
+   320→   320→}: {
+   321→   321→  totalScore: number;
+   322→   322→  maxScore: number;
+   323→   323→  progress: number;
+   324→   324→  onRestart: () => void;
+   325→   325→  onClose: () => void;
+   326→   326→}) {
+   327→   327→  const scorePercent = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+   328→   328→  const starCount = scorePercent >= 80 ? 3 : scorePercent >= 50 ? 2 : scorePercent > 0 ? 1 : 0;
+   329→   329→
+   330→   330→  return (
+   331→   331→    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+   332→   332→      <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full mx-4 p-6 text-center relative">
+   333→   333→        {/* Close button */}
+   334→   334→        <button
+   335→   335→          onClick={onClose}
+   336→   336→          className="absolute top-3 right-3 p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+   337→   337→        >
+   338→   338→          <X size={18} />
+   339→   339→        </button>
+   340→   340→
+   341→   341→        {/* Stars */}
+   342→   342→        <div className="flex justify-center gap-2 mb-4">
+   343→   343→          {[1, 2, 3].map(n => (
+   344→   344→            <Star
+   345→   345→              key={n}
+   346→   346→              size={32}
+   347→   347→              className={n <= starCount ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}
+   348→   348→            />
+   349→   349→          ))}
+   350→   350→        </div>
+   351→   351→
+   352→   352→        <h2 className="text-xl font-bold text-slate-800 mb-2">
+   353→   353→          Pembelajaran Selesai!
+   354→   354→        </h2>
+   355→   355→        <p className="text-sm text-slate-500 mb-4">
+   356→   356→          Kamu telah menyelesaikan semua halaman pembelajaran.
+   357→   357→        </p>
+   358→   358→
+   359→   359→        {/* Score display */}
+   360→   360→        {maxScore > 0 && (
+   361→   361→          <div className="bg-amber-50 rounded-xl p-4 mb-4">
+   362→   362→            <div className="flex items-center justify-center gap-2 mb-1">
+   363→   363→              <Trophy size={20} className="text-amber-500" />
+   364→   364→              <span className="text-lg font-bold text-amber-700">
+   365→   365→                {totalScore} / {maxScore}
+   366→   366→              </span>
+   367→   367→            </div>
+   368→   368→            <p className="text-xs text-amber-600">Skor Kuis</p>
+   369→   369→          </div>
+   370→   370→        )}
+   371→   371→
+   372→   372→        {/* Progress */}
+   373→   373→        <div className="bg-emerald-50 rounded-xl p-3 mb-4">
+   374→   374→          <div className="text-sm font-medium text-emerald-700">
+   375→   375→            Progres: {progress}%
+   376→   376→          </div>
+   377→   377→          <div className="w-full h-2 bg-emerald-200 rounded-full mt-1 overflow-hidden">
+   378→   378→            <div
+   379→   379→              className="h-full bg-emerald-500 rounded-full transition-all"
+   380→   380→              style={{ width: `${progress}%` }}
+   381→   381→            />
+   382→   382→          </div>
+   383→   383→        </div>
+   384→   384→
+   385→   385→        {/* Actions */}
+   386→   386→        <div className="flex gap-3">
+   387→   387→          <Button
+   388→   388→            variant="outline"
+   389→   389→            onClick={onRestart}
+   390→   390→            className="flex-1 flex items-center justify-center gap-2"
+   391→   391→          >
+   392→   392→            <RotateCcw size={16} />
+   393→   393→            Ulangi
+   394→   394→          </Button>
+   395→   395→          <Button
+   396→   396→            onClick={onClose}
+   397→   397→            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+   398→   398→          >
+   399→   399→            Kembali
+   400→   400→          </Button>
+   401→   401→        </div>
+   402→   402→      </div>
+   403→   403→    </div>
+   404→   404→  );
+   405→   405→}
+   406→   406→
+   407→   407→// ═══════════════════════════════════════════════════════════════
+   408→   408→// PHASE BADGE — small indicator of current screen type
+   409→   409→// ═══════════════════════════════════════════════════════════════
+   410→   410→
+   411→   411→function PhaseBadge({ templateType }: { templateType: string }) {
+   412→   412→  const meta = getPhaseMeta(templateType);
+   413→   413→  return (
+   414→   414→    <div
+   415→   415→      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white"
+   416→   416→      style={{ backgroundColor: meta.color }}
+   417→   417→    >
+   418→   418→      <span>{meta.emoji}</span>
+   419→   419→      <span>{meta.label}</span>
+   420→   420→    </div>
+   421→   421→  );
+   422→   422→}
+   423→   423→
+   424→   424→// ═══════════════════════════════════════════════════════════════
+   425→   425→// EXPORT APP — Main component
+   426→   426→// ═══════════════════════════════════════════════════════════════
+   427→   427→
+   428→   428→export default function ExportApp() {
+   429→   429→  const pages = useCanvaStore((s) => s.pages);
+   430→   430→  const ratioId = useCanvaStore((s) => s.ratioId);
+   431→   431→  const ratio = useCanvaStore((s) => {
+   432→   432→    const r = RATIOS.find(r => r.id === s.ratioId);
+   433→   433→    return r || RATIOS[0];
+   434→   434→  });
+   435→   435→  const meta = useAuthoringStore((s) => s.meta);
+   436→   436→
+   437→   437→  // Expose interactive store for Live Preview postMessage bridge
+   438→   438→  useEffect(() => {
+   439→   439→    window.__INTERACTIVE_STORE__ = useInteractiveStore;
+   440→   440→    return () => {
+   441→   441→      delete window.__INTERACTIVE_STORE__;
+   442→   442→    };
+   443→   443→  }, []);
+   444→   444→
+   445→   445→  // ── Learning media store — drives navigation, locks, completion ──
+   446→   446→  const currentScreenIndex = useLearningMediaStore(s => s.currentScreenIndex);
+   447→   447→  const totalScreens = useLearningMediaStore(s => s.totalScreens);
+   448→   448→  const showCompletionModal = useLearningMediaStore(s => s.showCompletionModal);
+   449→   449→  const showLockToast = useLearningMediaStore(s => s.showLockToast);
+   450→   450→  const navigationLockReason = useLearningMediaStore(s => s.navigationLockReason);
+   451→   451→  const initSession = useLearningMediaStore(s => s.initSession);
+   452→   452→  const nextScreen = useLearningMediaStore(s => s.nextScreen);
+   453→   453→  const prevScreen = useLearningMediaStore(s => s.prevScreen);
+   454→   454→  const forceGoToScreen = useLearningMediaStore(s => s.forceGoToScreen);
+   455→   455→  const getTotalScore = useLearningMediaStore(s => s.getTotalScore);
+   456→   456→  const getProgress = useLearningMediaStore(s => s.getProgress);
+   457→   457→  const showCompletion = useLearningMediaStore(s => s.showCompletion);
+   458→   458→  const dismissCompletion = useLearningMediaStore(s => s.dismissCompletion);
+   459→   459→  const dismissLockToast = useLearningMediaStore(s => s.dismissLockToast);
+   460→   460→  const resetSession = useLearningMediaStore(s => s.resetSession);
+   461→   461→  const canGoNext = useLearningMediaStore(s => s.canGoNext);
+   462→   462→  const getAllPageStatuses = useLearningMediaStore(s => s.getAllPageStatuses);
+   463→   463→
+   464→   464→  // ── Initialize learning session on mount ──
+   465→   465→  // Reset interactive-store scores so each export session starts fresh,
+   466→   466→  // then initialize the learning session with template types for contracts.
+   467→   467→  useEffect(() => {
+   468→   468→    // Clear stale scores from previous sessions
+   469→   469→    useInteractiveStore.getState().replayAll();
+   470→   470→
+   471→   471→    const templateTypes = pages.map(p => p.templateType || 'custom');
+   472→   472→    initSession(pages.length, templateTypes);
+   473→   473→  }, [pages.length, initSession]);
+   474→   474→
+   475→   475→  // Re-sync contracts when template types change
+   476→   476→  useEffect(() => {
+   477→   477→    const templateTypes = pages.map(p => p.templateType || 'custom');
+   478→   478→    const currentTypes = useLearningMediaStore.getState().templateTypes;
+   479→   479→    if (templateTypes.length !== currentTypes.length ||
+   480→   480→        templateTypes.some((t, i) => t !== currentTypes[i])) {
+   481→   481→      initSession(pages.length, templateTypes);
+   482→   482→    }
+   483→   483→  }, [pages, initSession]);
+   484→   484→
+   485→   485→  // ═══ Score sync bridge: interactive store → learning media store ═══
+   486→   486→  // When interactive widgets report scores via the interactive store,
+   487→   487→  // we bridge them to the learning media store for navigation locks
+   488→   488→  // and completion tracking. Same pattern as LearningMediaShell.
+   489→   489→  const syncScores = useLearningMediaStore(s => s.syncScores);
+   490→   490→  const markPageAnswered = useLearningMediaStore(s => s.markPageAnswered);
+   491→   491→  const markPageGameCompleted = useLearningMediaStore(s => s.markPageGameCompleted);
+   492→   492→  const markPageReflected = useLearningMediaStore(s => s.markPageReflected);
+   493→   493→
+   494→   494→  useEffect(() => {
+   495→   495→    const unsubscribe = useInteractiveStore.subscribe((state) => {
+   496→   496→      const completedScores = state.scores.filter(s => s.completed);
+   497→   497→      const entries = completedScores.map((s: InteractiveScoreEntry) => ({
+   498→   498→        pageId: s.elementId,
+   499→   499→        screenIndex: s.pageIndex,
+   500→   500→        score: s.score,
+   501→   501→        maxScore: s.maxScore,
+   502→   502→        timestamp: Date.now(),
+   503→   503→      }));
+   504→   504→      if (entries.length > 0) {
+   505→   505→        syncScores(entries);
+   506→   506→
+   507→   507→        // Trigger completion actions based on page contract type
+   508→   508→        const learnStore = useLearningMediaStore.getState();
+   509→   509→        for (const s of completedScores) {
+   510→   510→          const screenIndex = s.pageIndex;
+   511→   511→          const contract = learnStore.getContract(screenIndex);
+   512→   512→          if (contract) {
+   513→   513→            if (contract.completionType === 'answer') {
+   514→   514→              markPageAnswered(screenIndex);
+   515→   515→            } else if (contract.completionType === 'game') {
+   516→   516→              markPageGameCompleted(screenIndex);
+   517→   517→            } else if (contract.completionType === 'reflection') {
+   518→   518→              markPageReflected(screenIndex);
+   519→   519→            }
+   520→   520→          }
+   521→   521→        }
+   522→   522→      }
+   523→   523→    });
+   524→   524→
+   525→   525→    // Initial sync on mount
+   526→   526→    const initialScores = useInteractiveStore.getState().scores.filter(s => s.completed);
+   527→   527→    const initialEntries = initialScores.map((s: InteractiveScoreEntry) => ({
+   528→   528→      pageId: s.elementId,
+   529→   529→      screenIndex: s.pageIndex,
+   530→   530→      score: s.score,
+   531→   531→      maxScore: s.maxScore,
+   532→   532→      timestamp: Date.now(),
+   533→   533→    }));
+   534→   534→    if (initialEntries.length > 0) {
+   535→   535→      syncScores(initialEntries);
+   536→   536→
+   537→   537→      const learnStore = useLearningMediaStore.getState();
+   538→   538→      for (const s of initialScores) {
+   539→   539→        const screenIndex = s.pageIndex;
+   540→   540→        const contract = learnStore.getContract(screenIndex);
+   541→   541→        if (contract) {
+   542→   542→          if (contract.completionType === 'answer') markPageAnswered(screenIndex);
+   543→   543→          else if (contract.completionType === 'game') markPageGameCompleted(screenIndex);
+   544→   544→          else if (contract.completionType === 'reflection') markPageReflected(screenIndex);
+   545→   545→        }
+   546→   546→      }
+   547→   547→    }
+   548→   548→
+   549→   549→    return () => unsubscribe();
+   550→   550→  }, [syncScores, markPageAnswered, markPageGameCompleted, markPageReflected]);
+   551→   551→
+   552→   552→  // ── ResizeObserver for responsive scaling ──
+   553→   553→  const canvasRef = useRef<HTMLDivElement>(null);
+   554→   554→  const [scale, setScale] = useState(0.5);
+   555→   555→  const [direction, setDirection] = useState<PageDirection>(0);
+   556→   556→  const prevIdxRef = useRef(currentScreenIndex);
+   557→   557→
+   558→   558→  useEffect(() => {
+   559→   559→    const el = canvasRef.current;
+   560→   560→    if (!el) return;
+   561→   561→    const observer = new ResizeObserver(() => {
+   562→   562→      setScale(computeSceneScale(
+   563→   563→        { w: ratio!.w, h: ratio!.h },
+   564→   564→        { w: el.clientWidth || 800, h: el.clientHeight || 500 },
+   565→   565→        20,
+   566→   566→      ));
+   567→   567→    });
+   568→   568→    observer.observe(el);
+   569→   569→    return () => observer.disconnect();
+   570→   570→  }, [ratio]);
+   571→   571→
+   572→   572→  // Track direction for page transition
+   573→   573→  useEffect(() => {
+   574→   574→    if (currentScreenIndex > prevIdxRef.current) setDirection(1);
+   575→   575→    else if (currentScreenIndex < prevIdxRef.current) setDirection(-1);
+   576→   576→    prevIdxRef.current = currentScreenIndex;
+   577→   577→  }, [currentScreenIndex]);
+   578→   578→
+   579→   579→  // ── Touch/swipe support ──
+   580→   580→  useEffect(() => {
+   581→   581→    let startX = 0;
+   582→   582→    let startedOnInteractive = false;
+   583→   583→    const onTouchStart = (e: TouchEvent) => {
+   584→   584→      const target = e.target as HTMLElement;
+   585→   585→      startedOnInteractive = !!target.closest('textarea, input, [data-game], [data-quiz], [data-interactive], [contenteditable="true"]');
+   586→   586→      startX = e.changedTouches[0]!.screenX;
+   587→   587→    };
+   588→   588→    const onTouchEnd = (e: TouchEvent) => {
+   589→   589→      if (startedOnInteractive) return;
+   590→   590→      const dx = e.changedTouches[0]!.screenX - startX;
+   591→   591→      if (Math.abs(dx) > 50) {
+   592→   592→        if (dx < 0) nextScreen();
+   593→   593→        else prevScreen();
+   594→   594→      }
+   595→   595→    };
+   596→   596→    window.addEventListener('touchstart', onTouchStart, { passive: true });
+   597→   597→    window.addEventListener('touchend', onTouchEnd, { passive: true });
+   598→   598→    return () => {
+   599→   599→      window.removeEventListener('touchstart', onTouchStart);
+   600→   600→      window.removeEventListener('touchend', onTouchEnd);
+   601→   601→    };
+   602→   602→  }, [nextScreen, prevScreen]);
+   603→   603→
+   604→   604→  // ── Keyboard navigation ──
+   605→   605→  useEffect(() => {
+   606→   606→    const handler = (e: KeyboardEvent) => {
+   607→   607→      const tag = (e.target as HTMLElement)?.tagName;
+   608→   608→      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+   609→   609→      if (e.key === 'ArrowRight') { e.preventDefault(); nextScreen(); }
+   610→   610→      if (e.key === 'ArrowLeft') { e.preventDefault(); prevScreen(); }
+   611→   611→      if (e.key === ' ' || e.key === 'Enter') {
+   612→   612→        e.preventDefault();
+   613→   613→        // On last page, space/enter triggers completion
+   614→   614→        if (currentScreenIndex >= totalScreens - 1) {
+   615→   615→          handleSelesai();
+   616→   616→        } else {
+   617→   617→          nextScreen();
+   618→   618→        }
+   619→   619→      }
+   620→   620→    };
+   621→   621→    window.addEventListener('keydown', handler);
+   622→   622→    return () => window.removeEventListener('keydown', handler);
+   623→   623→  }, [nextScreen, prevScreen, currentScreenIndex, totalScreens]);
+   624→   624→
+   625→   625→  // ── Computed state ──
+   626→   626→  const { earned: totalScore, possible: maxScore } = getTotalScore();
+   627→   627→  const progress = getProgress();
+   628→   628→  const { allowed: isNextAllowed, reason: nextLockReason } = canGoNext();
+   629→   629→  const pageStatuses = useMemo(() => getAllPageStatuses(), [currentScreenIndex, getAllPageStatuses]);
+   630→   630→
+   631→   631→  const page = pages[currentScreenIndex];
+   632→   632→  const templateType = page?.templateType || 'custom';
+   633→   633→  const phaseMeta = getPhaseMeta(templateType);
+   634→   634→  const pageTitle = page?.label || phaseMeta.label || `Halaman ${currentScreenIndex + 1}`;
+   635→   635→
+   636→   636→  // Detect dark content (same logic as LearningMediaShell)
+   637→   637→  const isDarkContent = (() => {
+   638→   638→    const schemaThemeId = page?.schema?.themeId || (page?.templateData as Record<string, unknown>)?.schemaThemeId as string | undefined;
+   639→   639→    const lightThemes = ['ios-light', 'ios-warm', 'minimal', 'ocean-light', 'warm-light'];
+   640→   640→    if (lightThemes.includes(schemaThemeId || '')) return false;
+   641→   641→    return true;
+   642→   642→  })();
+   643→   643→
+   644→   644→  // ── Handlers ──
+   645→   645→  const handleSelesai = useCallback(() => {
+   646→   646→    fireConfettiCelebration();
+   647→   647→    showCompletion();
+   648→   648→  }, [showCompletion]);
+   649→   649→
+   650→   650→  const handleRestart = useCallback(() => {
+   651→   651→    useInteractiveStore.getState().replayAll();
+   652→   652→    resetSession();
+   653→   653→    const templateTypes = pages.map(p => p.templateType || 'custom');
+   654→   654→    initSession(pages.length, templateTypes);
+   655→   655→  }, [resetSession, initSession, pages]);
+   656→   656→
+   657→   657→  // ── No pages state ──
+   658→   658→  if (pages.length === 0) {
+   659→   659→    return (
+   660→   660→      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+   661→   661→        <div className="text-center">
+   662→   662→          <Inbox size={36} className="text-white/60" />
+   663→   663→          <p className="text-white/60">Belum ada halaman untuk ditampilkan.</p>
+   664→   664→        </div>
+   665→   665→      </div>
+   666→   666→    );
+   667→   667→  }
+   668→   668→
+   669→   669→  if (!page) return null;
+   670→   670→
+   671→   671→  return (
+   672→   672→    <div className={`flex-1 flex flex-col h-screen overflow-hidden ${
+   673→   673→      isDarkContent ? 'bg-[#080f1a]' : 'bg-slate-100'
+   674→   674→    }`}>
+   675→   675→      {/* Top Navbar — title, progress, score */}
+   676→   676→      <ExportTopNavbar
+   677→   677→        title={pageTitle}
+   678→   678→        progress={progress}
+   679→   679→        totalScore={totalScore}
+   680→   680→        maxScore={maxScore}
+   681→   681→        isDark={isDarkContent}
+   682→   682→      />
+   683→   683→
+   684→   684→      {/* Phase badge row */}
+   685→   685→      <div className={`flex items-center gap-2 px-4 py-1.5 shrink-0 ${
+   686→   686→        isDarkContent
+   687→   687→          ? 'bg-[#0e1c2f]/80 border-b border-white/5'
+   688→   688→          : 'bg-white/80 border-b border-slate-100'
+   689→   689→      }`}>
+   690→   690→        <PhaseBadge templateType={templateType} />
+   691→   691→        <span className="text-[11px] text-slate-400">
+   692→   692→          Halaman {currentScreenIndex + 1} dari {totalScreens}
+   693→   693→        </span>
+   694→   694→      </div>
+   695→   695→
+   696→   696→      {/* Main content area — scaled page preview */}
+   697→   697→      <div
+   698→   698→        ref={canvasRef}
+   699→   699→        className="flex-1 min-h-0 flex items-center justify-center overflow-hidden"
+   700→   700→      >
+   701→   701→        <PageTransition
+   702→   702→          pageKey={`export-page-${currentScreenIndex}`}
+   703→   703→          direction={direction}
+   704→   704→          duration={0.3}
+   705→   705→          className="relative overflow-hidden shadow-lg shadow-black/20 ring-1 ring-slate-200/50 rounded-sm"
+   706→   706→          style={{
+   707→   707→            width: ratio!.w,
+   708→   708→            height: ratio!.h,
+   709→   709→            transform: `scale(${scale})`,
+   710→   710→            transformOrigin: 'center center',
+   711→   711→          }}
+   712→   712→        >
+   713→   713→          <CanvasErrorBoundary name="Export">
+   714→   714→            <PageRenderer
+   715→   715→              mode="export"
+   716→   716→              page={page}
+   717→   717→              currentPageIndex={currentScreenIndex}
+   718→   718→              totalPages={totalScreens}
+   719→   719→            />
+   720→   720→          </CanvasErrorBoundary>
+   721→   721→        </PageTransition>
+   722→   722→      </div>
+   723→   723→
+   724→   724→      {/* Bottom Navigation — contract-aware */}
+   725→   725→      <ExportBottomNav
+   726→   726→        currentScreen={currentScreenIndex}
+   727→   727→        totalScreens={totalScreens}
+   728→   728→        pageStatuses={pageStatuses}
+   729→   729→        templateType={templateType}
+   730→   730→        onPrev={prevScreen}
+   731→   731→        onNext={currentScreenIndex >= totalScreens - 1 ? handleSelesai : nextScreen}
+   732→   732→        onGoToScreen={forceGoToScreen}
+   733→   733→        isNextLocked={!isNextAllowed && currentScreenIndex < totalScreens - 1}
+   734→   734→        lockReason={nextLockReason}
+   735→   735→        isDark={isDarkContent}
+   736→   736→      />
+   737→   737→
+   738→   738→      {/* Navigation Lock Toast */}
+   739→   739→      {showLockToast && navigationLockReason && (
+   740→   740→        <LockToast
+   741→   741→          reason={navigationLockReason}
+   742→   742→          onDismiss={dismissLockToast}
+   743→   743→        />
+   744→   744→      )}
+   745→   745→
+   746→   746→      {/* Completion Modal */}
+   747→   747→      {showCompletionModal && (
+   748→   748→        <CompletionModal
+   749→   749→          totalScore={totalScore}
+   750→   750→          maxScore={maxScore}
+   751→   751→          progress={progress}
+   752→   752→          onRestart={handleRestart}
+   753→   753→          onClose={dismissCompletion}
+   754→   754→        />
+   755→   755→      )}
+   756→   756→    </div>
+   757→   757→  );
+   758→   758→}
+   759→   759→
