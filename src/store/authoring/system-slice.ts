@@ -58,7 +58,10 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         _lastSavedAt: Date.now(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      set({ dirty: false });
+      // Sprint 7.1: Do NOT set dirty:false here.
+      // Dirty state is managed by the revision-based state machine
+      // in useDirtyStore. Cleanness only emerges from saveSucceeded()
+      // after durable save completes with matching revision.
       return true;
     } catch {
       return false;

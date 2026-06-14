@@ -96,8 +96,13 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       rangkuman: rangkuman ? deepClone(rangkuman) : { ...DEFAULT_RANGKUMAN },
       penutup: penutup ? deepClone(penutup) : { ...DEFAULT_PENUTUP },
       suara: suara ? deepClone(suara) : { ...DEFAULT_SUARA },
-      dirty: false,
+      dirty: true,  // Sprint 7.1: Preset apply is an edit — must be saved
     });
+    // Sync to dirty store — this is new unsaved content
+    try {
+      const { useDirtyStore } = require('@/store/dirty-store');
+      useDirtyStore.getState().markDirty();
+    } catch {}
     if (presetKey === 'blank') {
       toast.success('\u2728 Proyek kosong dibuat');
     } else {
@@ -174,9 +179,14 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
       rangkuman: { ...DEFAULT_RANGKUMAN },
       penutup: { ...DEFAULT_PENUTUP },
       suara: { ...DEFAULT_SUARA },
-      dirty: false,
+      dirty: true,  // Sprint 7.1: New project is unsaved content
       activePanel: 'dashboard',
     });
+    // Sync to dirty store
+    try {
+      const { useDirtyStore } = require('@/store/dirty-store');
+      useDirtyStore.getState().markDirty();
+    } catch {}
     toast.success('\u2728 Proyek baru dibuat');
   },
 });

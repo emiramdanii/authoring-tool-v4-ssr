@@ -121,7 +121,10 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         _migrationVersion: STORAGE_MIGRATION_VERSION,
         _schemaHash: computePagesHash(cleanPages),
       }));
-      set({ _saveStatus: 'saved', _lastSavedAt: Date.now(), _pagesHashAtSave: computePagesHash(cleanPages) });
+      // Sprint 7.1: Do NOT set _saveStatus to 'saved' here.
+      // _saveStatus is now managed by the revision-based state machine.
+      // saveToStorage() is a LOCAL backup — durable save is the DB path.
+      set({ _lastSavedAt: Date.now(), _pagesHashAtSave: computePagesHash(cleanPages) });
     } catch (err) {
       // Storage full, unavailable, or stack overflow from corrupted data
       logger.warn('CanvaStore', 'Failed to save to localStorage: ' + String(err));
@@ -274,10 +277,11 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         }
 
         // ── Projection sync: Let reactive startProjectionSync() handle this ──
-        // Previously we derived projection manually here AND the reactive subscription
-        // also fires when pages change → double-write. Now we only set dirty:false
-        // and let the 300ms-debounced reactive sync handle the actual projection fields.
-        // This eliminates redundant work and potential race conditions on load.
+        // Sprint 7.1: Reset the revision-based dirty store on load.
+        // After loading, the loaded state is considered "clean" — editRevision
+        // and lastSavedRevision are both reset to 0.
+        const { useDirtyStore } = require('@/store/dirty-store');
+        useDirtyStore.getState().resetOnLoad();
         useAuthoringStore.setState({ dirty: false });
 
         // Migrate legacy leftTab names
@@ -413,7 +417,9 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         }
 
         // ── Projection sync: Let reactive startProjectionSync() handle this ──
-        // Same as loadFromStorage — only set dirty:false, let reactive sync handle projection
+        // Sprint 7.1: Reset the revision-based dirty store on load.
+        const { useDirtyStore } = require('@/store/dirty-store');
+        useDirtyStore.getState().resetOnLoad();
         useAuthoringStore.setState({ dirty: false });
 
         set({

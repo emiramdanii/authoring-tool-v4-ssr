@@ -131,15 +131,18 @@ export default function StatusBar() {
   const teacherMode = useCanvaStore(s => s.teacherMode);
 
   // ── Unified save indicator ────────────────────────────────────
-  const canvaStatus = useCanvaStore((s) => s._saveStatus as SaveStatus | undefined);
+  // Sprint 7.1: Read from revision-based state machine
+  const storeSaveStatus = useDirtyStore((s) => s.saveStatus);
   const canvaLastSaved = useCanvaStore((s) => s._lastSavedAt);
-  const authoringDirty = useDirtyStore((s) => s.dirty);  // Phase 5: migrated from useAuthoringStore
 
+  // Map new saveStatus to display SaveStatus
   const saveStatus: SaveStatus = (() => {
-    const cs = canvaStatus || 'unsaved';
-    if (cs === 'saved' && authoringDirty) return 'unsaved';
-    if (cs === 'error') return 'error';
-    return cs;
+    if (storeSaveStatus === 'idle') return 'unsaved';
+    if (storeSaveStatus === 'dirty') return 'unsaved';
+    if (storeSaveStatus === 'saving') return 'saving';
+    if (storeSaveStatus === 'saved') return 'saved';
+    if (storeSaveStatus === 'error') return 'error';
+    return 'unsaved';
   })();
 
   // Format last saved time as relative (e.g., "2 menit lalu")

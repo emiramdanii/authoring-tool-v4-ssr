@@ -76,19 +76,20 @@ export const UndoRedoToast: React.FC = React.memo(function UndoRedoToast() {
 type SaveStatus = 'unsaved' | 'saving' | 'saved' | 'error';
 
 export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator() {
-  const canvaStatus = useCanvaStore(s => s._saveStatus as SaveStatus | undefined);
-  const authoringDirty = useDirtyStore(s => s.dirty);  // Phase 5: migrated from useAuthoringStore
+  // Sprint 7.1: Read from revision-based state machine
+  const storeSaveStatus = useDirtyStore(s => s.saveStatus);
+  const lastError = useDirtyStore(s => s.lastError);
   const lastSavedAt = useCanvaStore(s => s._lastSavedAt);
   const teacherMode = useCanvaStore(s => s.teacherMode);
 
-  // Combine status: if authoring is dirty and canva is saved, still show unsaved
+  // Map new saveStatus to display SaveStatus
   const status: SaveStatus = (() => {
-    const cs = canvaStatus || 'unsaved';
-    // If canva is saved but authoring is still dirty, show unsaved
-    if (cs === 'saved' && authoringDirty) return 'unsaved';
-    // If canva is in error, that takes priority
-    if (cs === 'error') return 'error';
-    return cs;
+    if (storeSaveStatus === 'idle') return 'unsaved';
+    if (storeSaveStatus === 'dirty') return 'unsaved';
+    if (storeSaveStatus === 'saving') return 'saving';
+    if (storeSaveStatus === 'saved') return 'saved';
+    if (storeSaveStatus === 'error') return 'error';
+    return 'unsaved';
   })();
 
   const isSederhana = teacherMode;

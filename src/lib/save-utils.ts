@@ -1,5 +1,6 @@
 import type { CanvaPage } from '@/components/canva/types';
 import { useDirtyStore } from '@/store/dirty-store';
+import type { SaveStatus } from '@/store/dirty-store';
 import { useCanvaStore } from '@/store/canva-store';
 
 /**
@@ -42,46 +43,38 @@ export function canvaPagesToSavePages(pages: CanvaPage[]) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// UNIFIED DIRTY/SAVE HELPERS — Phase 5B
+// UNIFIED DIRTY/SAVE HELPERS — Sprint 7.1: Revision-based
 // ═══════════════════════════════════════════════════════════════════
-// The authoring store tracks `dirty` for project metadata
-// (meta, cp, tp, atp, alur, suara), while the canva store tracks
-// `_saveStatus` for page/schema content. Both need to be checked
-// to determine if the project has unsaved changes.
-//
-// These helpers eliminate the dual-read pattern across consumers.
+// Sprint 7.1: saveAllToStorage() no longer calls markClean().
+// Cleanness is now derived from revision tracking:
+//   dirty = (editRevision > lastSavedRevision)
+// markClean should ONLY be called through saveSucceeded() after
+// a durable save completes with a matching revision.
 // ═══════════════════════════════════════════════════════════════════
 
 /**
  * Check if ANY part of the project has unsaved changes.
- * Combines dirty-store and canva-store save status.
+ * Uses revision-based dirty tracking from dirty-store.
  */
 export function isAnyDirty(): boolean {
-  return (
-    useDirtyStore.getState().dirty ||
-    useCanvaStore.getState()._saveStatus === 'unsaved'
-  );
+  return useDirtyStore.getState().dirty;
 }
 
 /**
  * Save both stores to their respective storage backends.
- * Also clears the dirty flag.
+ * Sprint 7.1: NO LONGER clears dirty flag.
+ * Dirty state is now managed by the revision-based state machine.
  */
 export function saveAllToStorage(): void {
-  // Save to both storage backends then clear dirty flag
   useCanvaStore.getState().saveToStorage();
-  useDirtyStore.getState().markClean();
+  // Do NOT call markClean() here — that's the bug we're fixing.
+  // Cleanness only emerges from saveSucceeded() after durable save.
 }
 
 /**
  * Get a combined save status string for UI display.
+ * Now reads from the revision-based state machine.
  */
-export function getCombinedSaveStatus(): 'saved' | 'saving' | 'unsaved' | 'error' {
-  const canvaStatus = useCanvaStore.getState()._saveStatus;
-  const dirty = useDirtyStore.getState().dirty;
-
-  if (canvaStatus === 'saving') return 'saving';
-  if (canvaStatus === 'error') return 'error';
-  if (dirty || canvaStatus === 'unsaved') return 'unsaved';
-  return 'saved';
+export function getCombinedSaveStatus(): SaveStatus {
+  return useDirtyStore.getState().saveStatus;
 }

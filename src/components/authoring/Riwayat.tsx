@@ -162,6 +162,11 @@ export default function Riwayat() {
     try {
       const parsed = JSON.parse(entry.state);
       useAuthoringStore.setState({ ...parsed, dirty: false });
+      // Sprint 7.1: Reset revision-based dirty store on history restore
+      try {
+        const { useDirtyStore } = require('@/store/dirty-store');
+        useDirtyStore.getState().resetOnLoad();
+      } catch {}
       toast.success(`↩️ Versi "${displayName}" dipulihkan`);
     } catch {
       toast.error('❌ Gagal memulihkan versi — data rusak');

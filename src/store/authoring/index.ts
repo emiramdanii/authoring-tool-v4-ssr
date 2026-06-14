@@ -42,13 +42,14 @@ export const useAuthoringStore = create<AuthoringState>()(devtools((...a) => ({
 // ═══════════════════════════════════════════════════════════════════
 // DIRTY BRIDGE — Sync AuthoringStore.dirty → useDirtyStore
 // ═══════════════════════════════════════════════════════════════════
-// Phase 5: Any time AuthoringStore sets dirty=true (from any slice),
-// the change propagates to useDirtyStore so UI components can
-// subscribe to useDirtyStore instead of coupling to AuthoringStore.
+// Sprint 7.1: The bridge now only syncs dirty→true to useDirtyStore.
+// markClean() is NO LONGER synced from AuthoringStore because:
+//   - AuthoringStore.saveToStorage() no longer sets dirty:false
+//   - Cleanness is now managed by the revision-based state machine
+//   - Only saveSucceeded() with matching revision can clear dirty
 //
-// This bridge ensures backward compatibility — existing slice writes
-// like `set({ kuis: newKuis, dirty: true })` still work, while
-// new code should use useDirtyStore.getState().markDirty() directly.
+// Legacy markClean() calls from AuthoringStore (e.g., loadFromStorage)
+// still propagate but are harmless — resetOnLoad() handles load scenarios.
 // ═══════════════════════════════════════════════════════════════════
 
 if (typeof window !== 'undefined') {
@@ -59,10 +60,13 @@ if (typeof window !== 'undefined') {
     if (state.dirty !== prevDirty) {
       prevDirty = state.dirty;
       if (state.dirty) {
+        // Edit happened → increment revision
         useDirtyStore.getState().markDirty();
-      } else {
-        useDirtyStore.getState().markClean();
       }
+      // Sprint 7.1: Do NOT call markClean() from the bridge.
+      // Cleanness is managed by saveSucceeded() only.
+      // Legacy paths that set dirty:false (like loadFromStorage)
+      // should use resetOnLoad() instead.
     }
   });
 

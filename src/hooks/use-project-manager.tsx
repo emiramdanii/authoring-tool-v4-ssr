@@ -154,10 +154,16 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       });
 
       if (!res.ok) throw new Error('Failed to save project');
+      // Sprint 7.1: DB save succeeded. Let the state machine know.
+      // The auto-save hook's saveNow() will call saveSucceeded()
+      // which checks revision match before marking clean.
+      // We also update the legacy _saveStatus for backward compat.
       useCanvaStore.setState({ _saveStatus: 'saved' });
     } catch (error) {
       logger.error('ProjectProvider', error);
       useCanvaStore.setState({ _saveStatus: 'error' });
+      // Sprint 7.1: Don't touch dirty state on error — it stays dirty
+      // so the user can retry and beforeunload guard still works.
     } finally {
       setSaving(false);
     }
@@ -180,6 +186,11 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       // refleksi, motivasi, rangkuman, modules, meta) are already derived
       // from schema by CanvaStore.loadFromDB() above. Writing them here
       // would overwrite the schema-derived projection with stale DB data.
+      //
+      // Sprint 7.1: Reset dirty store on project load
+      const { useDirtyStore } = require('@/store/dirty-store');
+      useDirtyStore.getState().resetOnLoad();
+
       if (data.authoringData) {
         try {
           const authData = JSON.parse(data.authoringData);
