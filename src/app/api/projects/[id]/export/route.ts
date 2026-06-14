@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
+import { serializeForHtmlScript } from '@/lib/export/serialize-html-script';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -198,10 +199,7 @@ export async function GET(
       suara: (authoringData.suara as Record<string, unknown>) || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
     };
 
-    const dataJson = JSON.stringify(exportData)
-      .replace(/</g, '\\u003c')
-      .replace(/>/g, '\\u003e')
-      .replace(/\//g, '\\u002f');
+    const dataJson = serializeForHtmlScript(exportData);
 
     // Size guard
     if (dataJson.length > MAX_EXPORT_SIZE) {

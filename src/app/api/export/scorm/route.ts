@@ -13,6 +13,7 @@ import path from 'path';
 import { createReadStream } from 'fs';
 import { pipeline } from 'stream/promises';
 import { Readable } from 'stream';
+import { serializeForHtmlScript } from '@/lib/export/serialize-html-script';
 
 // Check if archiver is available for ZIP creation
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -115,8 +116,7 @@ export async function POST(request: NextRequest) {
       suara: suara || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
     };
 
-    const dataJson = JSON.stringify(exportData)
-      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/\//g, '\\u002f');
+    const dataJson = serializeForHtmlScript(exportData);
 
     if (dataJson.length > MAX_EXPORT_SIZE) {
       return NextResponse.json(

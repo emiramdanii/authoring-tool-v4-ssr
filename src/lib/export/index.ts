@@ -26,6 +26,7 @@ import { renderPageHtml } from './html-templates';
 import { getCss } from './styles';
 import { getJs } from './scripts';
 import { renderQuizBlock, createExportRenderContext, type ExportRenderContext, resetBlockIdRegistry } from './quiz-renderers';
+import { serializeForHtmlScript } from './serialize-html-script';
 
 // ── Export Data shape (mirrors the API route payload) ────────────────
 export interface ClientExportPayload {
@@ -93,10 +94,7 @@ export function generateClientExportHtml(payload: ClientExportPayload): string {
     totalPages: pages.length,
   };
 
-  const dataJson = JSON.stringify(exportData)
-    .replace(/</g, '\\u003c')
-    .replace(/>/g, '\\u003e')
-    .replace(/\//g, '\\u002f');
+  const dataJson = serializeForHtmlScript(exportData);
 
   return `<!DOCTYPE html>
 <html lang="id">

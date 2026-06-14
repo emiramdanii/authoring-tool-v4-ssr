@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { exportRequestSchema, zodErrorResponse } from '@/lib/api-validation';
+import { serializeForHtmlScript } from '@/lib/export/serialize-html-script';
 
 const TEMPLATE_PATH = path.resolve(process.cwd(), 'export-output', 'index.html');
 
@@ -76,8 +77,7 @@ export async function POST(request: NextRequest) {
       suara: body.suara || { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
     };
 
-    const dataJson = JSON.stringify(exportData)
-      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/\//g, '\\u002f');
+    const dataJson = serializeForHtmlScript(exportData);
 
     // Size guard: reject excessively large payloads (likely uncompressed images)
     if (dataJson.length > MAX_EXPORT_SIZE) {
