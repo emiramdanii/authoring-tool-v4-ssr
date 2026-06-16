@@ -145,3 +145,30 @@ Stage Summary:
 - Pushed to origin/main as commit b56380c
 - Key new files: src/lib/notify-mutation.ts
 - Key modified files: dirty-store.ts, save-utils.ts, use-auto-save.ts, use-project-manager.tsx, persistence-slice.ts, history-slice.ts, background-slice.ts, auto-generate.ts, recovery-slice.ts, StatusToast.tsx
+---
+Task ID: 1
+Agent: Main Agent
+Task: Sprint 7.2A-Patch-3 — Transactional project hydration
+
+Work Log:
+- Read current loadFromDB implementation in persistence-slice.ts — found resetOnLoad() and authoring setState called BEFORE parsing
+- Identified 3 P0 issues: (1) state mutation before parse validation, (2) null pages returns true, (3) authoring parse failure swallowed
+- Rewrote loadFromDB as 3-phase transaction: Phase 1 (validate) → Phase 2 (pure parse) → Phase 3 (hydrate & commit)
+- Removed resetOnLoad() from loadFromDB — Project Manager now calls it only after success
+- Added pages array validation — null/undefined/non-array throws, returns false
+- Added authoringData parse in Phase 2 — if parse fails, entire load aborted before any mutation
+- Changed require('@/store/dirty-store') to ESM import (no circular dependency exists)
+- Updated use-project-manager.tsx: removed authoring parsing from loadProject (now in loadFromDB), moved resetOnLoad(id) to after loadFromDB succeeds
+- Updated CanvaState type: loadFromDB returns boolean
+- Created 13 integration tests in hydration-transactional-sprint7.2a-patch3.test.ts that exercise real loadFromDB
+- All 74 tests pass (36 dirty-coverage + 25 persistence-boundary + 13 hydration-transactional)
+- No new TypeScript errors introduced (2 pre-existing errors in migrateAllSchemas return type)
+- Commit 9999631 pushed to origin/main
+
+Stage Summary:
+- Commit chain: b56380c → f163e9d → d580391 → 9999631
+- P0-1 FIXED: loadFromDB transactional — no store mutation on parse failure
+- P0-2 FIXED: pages:null/undefined fails closed, returns false
+- P0-3 FIXED: authoringData parse failure aborts entire load
+- 13 real integration tests covering malformed data, null pages, authoring contamination, hydration depth, cross-project preservation
+- Contract & Boundary ready for FREEZE pending Senior Review
