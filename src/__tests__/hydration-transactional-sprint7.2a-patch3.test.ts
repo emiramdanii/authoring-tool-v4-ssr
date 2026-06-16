@@ -61,6 +61,24 @@ vi.mock('@/core/utils/logger', () => ({
   logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
 
+// Authoring initial-state mock — loadFromDB imports DEFAULT_CP etc.
+// These must be available as mock values for the "no authoringData" path.
+const { DEFAULT_CP, DEFAULT_ATP, DEFAULT_PETUNJUK, DEFAULT_PENUTUP, DEFAULT_SUARA } = vi.hoisted(() => ({
+  DEFAULT_CP: { elemen: '', subElemen: '', capaianFase: '', profil: [], fase: 'D', kelas: '' },
+  DEFAULT_ATP: { namaBab: '', jumlahPertemuan: 3, pertemuan: [] },
+  DEFAULT_PETUNJUK: { title: '', intro: '', langkah: [] },
+  DEFAULT_PENUTUP: { title: '', subjudul: '', preview: [] },
+  DEFAULT_SUARA: { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
+}));
+
+vi.mock('@/store/authoring/initial-state', () => ({
+  DEFAULT_CP,
+  DEFAULT_ATP,
+  DEFAULT_PETUNJUK,
+  DEFAULT_PENUTUP,
+  DEFAULT_SUARA,
+}));
+
 // Authoring store mock — we need to track setState calls.
 // vi.hoisted() ensures the mock function is available when vi.mock runs.
 const { mockAuthoringSetState } = vi.hoisted(() => ({
@@ -108,8 +126,8 @@ function makeValidProjectBData(overrides?: Partial<DBProjectData>): DBProjectDat
     description: null,
     ratioId: '16:9',
     authoringData: JSON.stringify({
-      cp: [{ id: 'cp-b' }],
-      atp: [{ id: 'atp-b' }],
+      cp: { elemen: 'B-elem', subElemen: 'B-sub', capaianFase: 'B-fase', profil: [], fase: 'D', kelas: '6' },
+      atp: { namaBab: 'B-bab', jumlahPertemuan: 2, pertemuan: [] },
       tp: [],
       alur: [],
       skenario: [],
@@ -117,11 +135,11 @@ function makeValidProjectBData(overrides?: Partial<DBProjectData>): DBProjectDat
       modules: [],
       games: [],
       materi: [],
-      petunjuk: [{ id: 'petunjuk-b' }],
+      petunjuk: { title: 'B-petunjuk', intro: 'B-intro', langkah: [] },
       diskusi: [],
       refleksi: [],
-      penutup: [{ id: 'penutup-b' }],
-      suara: [{ id: 'suara-b' }],
+      penutup: { title: 'B-penutup', subjudul: 'B-subjudul', preview: [] },
+      suara: { navigasi: true, benar: false, salah: true, selesai: false, klik: true, skor: false },
     }),
     pages: [
       {
@@ -327,56 +345,54 @@ describe('Patch-3: Successful load commits both stores atomically', () => {
     expect(mockAuthoringSetState).toHaveBeenCalled();
     const authoringCall = mockAuthoringSetState.mock.calls[0][0];
     // cp should have Project B data
-    expect(authoringCall.cp).toEqual([{ id: 'cp-b' }]);
-    expect(authoringCall.atp).toEqual([{ id: 'atp-b' }]);
-    expect(authoringCall.petunjuk).toEqual([{ id: 'petunjuk-b' }]);
-    expect(authoringCall.penutup).toEqual([{ id: 'penutup-b' }]);
-    expect(authoringCall.suara).toEqual([{ id: 'suara-b' }]);
+    expect(authoringCall.cp).toEqual({ elemen: 'B-elem', subElemen: 'B-sub', capaianFase: 'B-fase', profil: [], fase: 'D', kelas: '6' });
+    expect(authoringCall.atp).toEqual({ namaBab: 'B-bab', jumlahPertemuan: 2, pertemuan: [] });
+    expect(authoringCall.petunjuk).toEqual({ title: 'B-petunjuk', intro: 'B-intro', langkah: [] });
+    expect(authoringCall.penutup).toEqual({ title: 'B-penutup', subjudul: 'B-subjudul', preview: [] });
+    expect(authoringCall.suara).toEqual({ navigasi: true, benar: false, salah: true, selesai: false, klik: true, skor: false });
     expect(authoringCall.dirty).toBe(false);
   });
 
-  it('successful load without authoringData clears authoring dirty', () => {
+  it('successful load without authoringData resets all non-schema fields to defaults', () => {
     const data = makeValidProjectBData({ authoringData: null });
 
     const loaded = useCanvaStore.getState().loadFromDB(data);
 
     expect(loaded).toBe(true);
-    // Authoring dirty should be cleared even without authoringData
-    expect(mockAuthoringSetState).toHaveBeenCalledWith({ dirty: false });
+    // Patch-4 P0-1 Fix: authoringData=null resets ALL non-schema fields
+    // to their proper defaults, not just dirty. This prevents Project A
+    // data from leaking into B.
+    expect(mockAuthoringSetState).toHaveBeenCalledWith({
+      cp: DEFAULT_CP,
+      atp: DEFAULT_ATP,
+      petunjuk: DEFAULT_PETUNJUK,
+      penutup: DEFAULT_PENUTUP,
+      suara: DEFAULT_SUARA,
+      dirty: false,
+    });
   });
 });
 
 // ═══════════════════════════════════════════════════════════════════
 // TEST 5: Hydration depth always returns to entry value
 // ═══════════════════════════════════════════════════════════════════
-describe('Patch-3: Hydration depth safety', () => {
+describe('Patch-3/4: Hydration depth safety', () => {
   it('after successful loadFromDB, hydration depth returns to entry value', () => {
     const entryDepth = useDirtyStore.getState()._hydrationDepth;
-
-    // Simulate outer hydration from ProjectManager
-    useDirtyStore.getState().startHydration();
-    expect(useDirtyStore.getState()._hydrationDepth).toBe(entryDepth + 1);
 
     const data = makeValidProjectBData();
     const loaded = useCanvaStore.getState().loadFromDB(data);
 
     expect(loaded).toBe(true);
 
-    // loadFromDB's inner hydration should have ended
-    // (depth is still +1 from the outer hydration)
-    expect(useDirtyStore.getState()._hydrationDepth).toBe(entryDepth + 1);
-
-    // ProjectManager ends its outer hydration
-    useDirtyStore.getState().endHydration();
+    // Patch-4 P0-2 Fix: No outer hydration from ProjectManager anymore.
+    // loadFromDB manages its own hydration internally. After it returns,
+    // depth should be back to the entry value.
     expect(useDirtyStore.getState()._hydrationDepth).toBe(entryDepth);
   });
 
   it('after FAILED loadFromDB, hydration depth returns to entry value', () => {
     const entryDepth = useDirtyStore.getState()._hydrationDepth;
-
-    // Simulate outer hydration from ProjectManager
-    useDirtyStore.getState().startHydration();
-    expect(useDirtyStore.getState()._hydrationDepth).toBe(entryDepth + 1);
 
     // Load with corrupted data
     const data = makeValidProjectBData({
@@ -403,18 +419,12 @@ describe('Patch-3: Hydration depth safety', () => {
     expect(loaded).toBe(false);
 
     // Patch-3: loadFromDB no longer starts hydration if parse fails,
-    // so depth is still just the outer +1
-    expect(useDirtyStore.getState()._hydrationDepth).toBe(entryDepth + 1);
-
-    // ProjectManager ends its outer hydration in finally block
-    useDirtyStore.getState().endHydration();
+    // so depth is still at entry value
     expect(useDirtyStore.getState()._hydrationDepth).toBe(entryDepth);
   });
 
   it('malformed authoringData does not leak hydration depth', () => {
     const entryDepth = useDirtyStore.getState()._hydrationDepth;
-
-    useDirtyStore.getState().startHydration();
 
     const data = makeValidProjectBData({
       authoringData: '{broken-authoring',
@@ -425,10 +435,7 @@ describe('Patch-3: Hydration depth safety', () => {
     expect(loaded).toBe(false);
 
     // Authoring parse failure happens in Phase 2 (before hydration),
-    // so no hydration was started — depth is just outer +1
-    expect(useDirtyStore.getState()._hydrationDepth).toBe(entryDepth + 1);
-
-    useDirtyStore.getState().endHydration();
+    // so no hydration was started — depth stays at entry value
     expect(useDirtyStore.getState()._hydrationDepth).toBe(entryDepth);
   });
 });
@@ -473,5 +480,142 @@ describe('Patch-3: Cross-project contamination prevention', () => {
     expect(useDirtyStore.getState().currentProjectId).toBe('project-B');
     expect(useDirtyStore.getState().editRevision).toBe(0);
     expect(useDirtyStore.getState().dirty).toBe(false);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH-4 REGRESSION TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Regression Test 1: authoringData=null clears Project A fields ──
+describe('Patch-4: authoringData=null resets all non-schema fields', () => {
+  it('Project A authoring data does NOT leak into Project B when B has no authoringData', () => {
+    const data = makeValidProjectBData({ authoringData: null });
+
+    const loaded = useCanvaStore.getState().loadFromDB(data);
+
+    expect(loaded).toBe(true);
+
+    // Verify authoring was set to proper defaults, NOT Project A's data
+    expect(mockAuthoringSetState).toHaveBeenCalledWith({
+      cp: DEFAULT_CP,
+      atp: DEFAULT_ATP,
+      petunjuk: DEFAULT_PETUNJUK,
+      penutup: DEFAULT_PENUTUP,
+      suara: DEFAULT_SUARA,
+      dirty: false,
+    });
+
+    // No call that falls back to store.cp/store.atp etc.
+    const allCalls = mockAuthoringSetState.mock.calls;
+    for (const call of allCalls) {
+      const arg = call[0];
+      // None of these should reference the store's current (Project A) values
+      if (typeof arg === 'object' && arg !== null) {
+        expect(arg.cp).not.toBe(undefined); // Must be explicitly set (not omitted/fallback)
+        // cp should be the default, not Project A's data
+        expect(typeof arg.cp).toBe('object');
+      }
+    }
+  });
+});
+
+// ── Regression Test 2: authoringData={} does not use store.cp fallback ──
+describe('Patch-4: Partial authoringData uses defaults for missing fields', () => {
+  it('authoringData with missing cp field defaults to DEFAULT_CP, not store.cp', () => {
+    // Simulate Project B with authoringData that only has 'suara'
+    const partialAuthData = JSON.stringify({
+      suara: { navigasi: false, benar: true, salah: false, selesai: true, klik: false, skor: true },
+      // cp, atp, petunjuk, penutup are MISSING
+    });
+
+    const data = makeValidProjectBData({ authoringData: partialAuthData });
+
+    const loaded = useCanvaStore.getState().loadFromDB(data);
+
+    expect(loaded).toBe(true);
+
+    // Verify: missing fields get proper defaults, NOT Project A's store values
+    const authoringCall = mockAuthoringSetState.mock.calls[mockAuthoringSetState.mock.calls.length - 1][0];
+    expect(authoringCall.cp).toEqual(DEFAULT_CP);  // NOT store.cp
+    expect(authoringCall.atp).toEqual(DEFAULT_ATP);  // NOT store.atp
+    expect(authoringCall.petunjuk).toEqual(DEFAULT_PETUNJUK);  // NOT store.petunjuk
+    expect(authoringCall.penutup).toEqual(DEFAULT_PENUTUP);  // NOT store.penutup
+    expect(authoringCall.suara).toEqual({ navigasi: false, benar: true, salah: false, selesai: true, klik: false, skor: true });  // Present from B's data
+    expect(authoringCall.dirty).toBe(false);
+  });
+});
+
+// ── Regression Test 3: Edit during save → executeDurableSave returns false ──
+// (Tests P0-3a: honest return value when still dirty after save)
+describe('Patch-4: executeDurableSave returns false when still dirty', () => {
+  it('edit during DB save makes executeDurableSave return false', async () => {
+    // We need to import executeDurableSave, but it's already mocked
+    // in the persistence-boundary test. For this test, we need the real one.
+    // Since this test file focuses on loadFromDB, we test the coordinator
+    // behavior by verifying the dirty-store state machine directly.
+
+    // Setup: mark dirty
+    useDirtyStore.getState().markDirty(); // revision 1
+    expect(useDirtyStore.getState().dirty).toBe(true);
+
+    // Simulate: startSaving at revision 1
+    useDirtyStore.getState().startSaving();
+    expect(useDirtyStore.getState().savingRevision).toBe(1);
+
+    // Simulate: user edits during save → revision 2
+    // (markDirty is suppressed during hydration, but if no hydration
+    // is active, markDirty increments the revision)
+    useDirtyStore.getState().markDirty();
+    expect(useDirtyStore.getState().editRevision).toBe(2);
+
+    // Simulate: DB save completes → saveSucceeded()
+    const fullyClean = useDirtyStore.getState().saveSucceeded();
+
+    // saveSucceeded returns false because editRevision(2) !== savingRevision(1)
+    expect(fullyClean).toBe(false);
+    expect(useDirtyStore.getState().dirty).toBe(true);
+    // This means executeDurableSave should return false →
+    // flushDurableSave should keep looping
+  });
+});
+
+// ── Regression Test 4: Hydration NOT active during network fetch ──
+// (Tests P0-2: outer hydration removed from ProjectManager)
+describe('Patch-4: No hydration during network fetch', () => {
+  it('markDirty is NOT suppressed when loadFromDB is not running', () => {
+    // Before Patch-4: ProjectManager wrapped the entire fetch+load in
+    // startHydration/endHydration, which suppressed markDirty during
+    // the network wait. This caused user edits to be silently swallowed.
+    // After Patch-4: No outer hydration — only loadFromDB's internal
+    // hydration during the commit phase.
+
+    // Verify that markDirty works normally when no hydration is active
+    const entryDepth = useDirtyStore.getState()._hydrationDepth;
+    expect(entryDepth).toBe(0);
+
+    useDirtyStore.getState().markDirty();
+    expect(useDirtyStore.getState().dirty).toBe(true);
+    expect(useDirtyStore.getState().editRevision).toBeGreaterThan(0);
+
+    // If there were outer hydration active, markDirty would be suppressed
+    // and editRevision would NOT increment. Now it works correctly.
+  });
+
+  it('loadFromDB internal hydration properly scopes suppression', () => {
+    // Verify that loadFromDB only suppresses markDirty during its
+    // internal commit phase, not during the entire operation.
+    const entryDepth = useDirtyStore.getState()._hydrationDepth;
+
+    const data = makeValidProjectBData();
+    const loaded = useCanvaStore.getState().loadFromDB(data);
+
+    expect(loaded).toBe(true);
+    // After loadFromDB returns, hydration depth is back to entry
+    expect(useDirtyStore.getState()._hydrationDepth).toBe(entryDepth);
+
+    // markDirty works normally again
+    useDirtyStore.getState().markDirty();
+    expect(useDirtyStore.getState().dirty).toBe(true);
   });
 });

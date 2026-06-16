@@ -273,7 +273,13 @@ export async function executeDurableSave(
       useCanvaStore.setState({ _saveStatus: 'unsaved' });
     }
 
-    return true;
+    // Patch-4 P0-3a Fix: Return the ACTUAL clean state.
+    // If saveSucceeded() returned false (edits happened during save),
+    // the project is still dirty. Callers (especially flushDurableSave)
+    // need to know the project isn't fully saved yet.
+    // Previously we always returned true, which meant flushDurableSave
+    // would report success even when the project was still dirty.
+    return fullyClean;
   } catch (error) {
     logger.error('DurableSave', error);
 
@@ -309,12 +315,21 @@ export async function executeDurableSave(
  * loading a different project.
  *
  * P0-4 Fix: This function WAITS for any in-flight save to complete,
- * then checks if another save is needed. If the in-flight save failed,
- * returns false (don't switch projects).
+ * then loops until the project is fully clean. If any save attempt
+ * fails, returns false. If the project keeps getting edited during
+ * saves, we keep retrying up to a maximum number of attempts.
+ *
+ * Patch-4 P0-3b Fix: Loop until actually clean (dirty === false).
+ * Previously, executeDurableSave returned true even when the project
+ * was still dirty (edits happened during save). flushDurableSave
+ * would then report success, allowing a project switch with unsaved
+ * data. Now we loop: save → check dirty → save again if needed.
  *
  * @param dbSaveFn - Pure persistence function (same as executeDurableSave)
  * @returns true if project is clean, false if save failed
  */
+const MAX_FLUSH_ATTEMPTS = 5;
+
 export async function flushDurableSave(dbSaveFn?: () => Promise<void>): Promise<boolean> {
   const dirtyState = useDirtyStore.getState();
 
@@ -335,19 +350,50 @@ export async function flushDurableSave(dbSaveFn?: () => Promise<void>): Promise<
     });
   }
 
-  const afterState = useDirtyStore.getState();
+  let afterState = useDirtyStore.getState();
 
   // If save failed, return false — don't switch projects
   if (afterState.saveStatus === 'error') {
     return false;
   }
 
-  // If still dirty after the in-flight save, do one more save
-  if (afterState.dirty) {
-    return executeDurableSave(dbSaveFn);
+  // Patch-4 P0-3b Fix: Loop until clean.
+  // Each iteration: if dirty → executeDurableSave → recheck.
+  // Break on: clean (success), error (fail), max attempts (fail),
+  // or project change (fail — should not switch projects).
+  const projectIdAtStart = afterState.currentProjectId;
+
+  for (let attempt = 0; attempt < MAX_FLUSH_ATTEMPTS; attempt++) {
+    afterState = useDirtyStore.getState();
+
+    // Project changed mid-flush — abort
+    if (afterState.currentProjectId !== projectIdAtStart) {
+      return false;
+    }
+
+    // Error state — abort
+    if (afterState.saveStatus === 'error') {
+      return false;
+    }
+
+    // Clean — done!
+    if (!afterState.dirty) {
+      return true;
+    }
+
+    // Still dirty — save again
+    const result = await executeDurableSave(dbSaveFn);
+    if (!result) {
+      // Save failed (DB error, stale token, etc.)
+      return false;
+    }
+    // result === true means saveSucceeded() returned true (fully clean)
+    // But check one more time in case a new edit happened
   }
 
-  return true; // Clean
+  // Max attempts reached — project is still dirty
+  logger.warn('DurableSave', `flushDurableSave: max attempts (${MAX_FLUSH_ATTEMPTS}) reached, project still dirty`);
+  return false;
 }
 
 /**

@@ -199,8 +199,10 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
   // Load project into stores
   // P0-4 Fix: Save-before-switch now BLOCKS the switch if save fails.
-  // P0-6 Fix: Hydration depth is managed properly — startHydration at
-  // the outermost level, endHydration in finally block.
+  // Patch-4 P0-2 Fix: NO outer hydration during fetch. loadFromDB()
+  // manages its own hydration only during the commit phase. Wrapping
+  // the entire fetch+load in hydration would suppress markDirty()
+  // during the network wait, silently swallowing user edits to Project A.
   const loadProject = useCallback(async (id: string) => {
     // ── Sprint 7.2A-5: Cancel autosave timers before switching ──
     // This prevents a timer from Project A firing and saving Project A data
@@ -219,35 +221,36 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // ── P0-6 Fix: Start hydration suppression at the outermost level ──
-    // This ensures markDirty() is suppressed during the entire load
-    // process, including CanvaStore.loadFromDB() which has its own
-    // hydration pair (nested hydration, depth counter handles this).
-    useDirtyStore.getState().startHydration();
-
     try {
       const res = await fetch(`/api/projects/${id}`);
       if (!res.ok) throw new Error('Failed to load project');
       const json = await res.json();
       const data = json.data as DBProjectData;
 
-      // Patch-3: loadFromDB is now fully transactional.
+      // ── Patch-4 P0-3c: Recheck dirty BEFORE committing Project B ──
+      // User may have edited Project A during the fetch. If Project A
+      // is dirty now, we must save it before switching — the earlier
+      // flush only covered edits up to that point.
+      if (currentProjectId && useDirtyStore.getState().dirty) {
+        const saved = await flushDurableSave(() => persistProjectToDB(currentProjectId));
+        if (!saved) {
+          toast.error('Perubahan terbaru belum tersimpan. Perpindahan dibatalkan.');
+          return;
+        }
+      }
+
+      // Patch-3: loadFromDB is fully transactional.
       //   - Parses & validates ALL data (canva + authoring) BEFORE mutation
-      //   - Commits both stores atomically inside a hydration block
+      //   - Commits both stores atomically inside its own hydration block
       //   - Returns false if ANY parsing fails — NO stores mutated
       //   - resetOnLoad() is NOT called inside loadFromDB anymore
-      // This prevents cross-project contamination when Project B's data
-      // is corrupted: if parsing fails, Project A's state stays intact.
+      // Patch-4 P0-2: No outer hydration — loadFromDB handles its own.
       const canvaLoaded = useCanvaStore.getState().loadFromDB(data);
       if (!canvaLoaded) {
         throw new Error('Project hydration failed — data may be corrupted');
       }
 
       // Patch-3: resetOnLoad() is called ONLY after loadFromDB succeeds.
-      // Previously it was called inside loadFromDB BEFORE parsing,
-      // which meant a parse failure would corrupt Project A's revision state.
-      // Now: parse failure → loadFromDB returns false → we throw →
-      // resetOnLoad is never called → Project A state is preserved.
       useDirtyStore.getState().resetOnLoad(id);
 
       setCurrentProjectId(id);
@@ -256,11 +259,6 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       logger.error('ProjectProvider', error);
       toast.error('Gagal memuat proyek');
-    } finally {
-      // ── P0-6 Fix: End hydration suppression ──
-      // This must run even if load fails, otherwise the app gets stuck
-      // in hydration mode where markDirty() is permanently suppressed.
-      useDirtyStore.getState().endHydration();
     }
   }, [currentProjectId]);
 

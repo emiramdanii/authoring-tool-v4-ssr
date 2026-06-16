@@ -16,6 +16,7 @@ import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { assertDocumentPurity, clearCompressedHeightCache } from '@/core/schema/session-state';
 import { clearMeasurementCache } from '@/core/layout/BlockMeasurer';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { DEFAULT_CP, DEFAULT_ATP, DEFAULT_PETUNJUK, DEFAULT_PENUTUP, DEFAULT_SUARA } from '@/store/authoring/initial-state';
 import { useDirtyStore } from '@/store/dirty-store';
 import { logger } from '@/core/utils/logger';
 
@@ -510,23 +511,36 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // Commit authoring store atomically with canva
         // This prevents the cross-project contamination bug where
         // canva shows Project B but authoring still has Project A.
+        //
+        // Patch-4 P0-1 Fix: NEVER use current store values as fallback.
+        // When loading Project B, every field must come from B's data or
+        // be reset to empty defaults. Falling back to store.cp etc. would
+        // silently carry Project A's data into Project B — cross-project
+        // contamination even when B's authoringData is null or partial.
         if (parsedAuthoring) {
-          const store = useAuthoringStore.getState();
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- parsedAuthoring is dynamic JSON from DB
           const auth = parsedAuthoring as any;
           useAuthoringStore.setState({
-            // Non-schema fields — these have no schema block representation
-            cp: auth.cp || store.cp,
-            atp: auth.atp || store.atp,
-            petunjuk: auth.petunjuk || store.petunjuk,
-            penutup: auth.penutup || store.penutup,
-            suara: auth.suara || store.suara,
+            // Non-schema fields — use B's data or empty default, NEVER store.cp (Project A)
+            cp: auth.cp && typeof auth.cp === 'object' && !Array.isArray(auth.cp) ? auth.cp : { ...DEFAULT_CP },
+            atp: auth.atp && typeof auth.atp === 'object' && !Array.isArray(auth.atp) ? auth.atp : { ...DEFAULT_ATP },
+            petunjuk: auth.petunjuk && typeof auth.petunjuk === 'object' && !Array.isArray(auth.petunjuk) ? auth.petunjuk : { ...DEFAULT_PETUNJUK },
+            penutup: auth.penutup && typeof auth.penutup === 'object' && !Array.isArray(auth.penutup) ? auth.penutup : { ...DEFAULT_PENUTUP },
+            suara: auth.suara && typeof auth.suara === 'object' && !Array.isArray(auth.suara) ? auth.suara : { ...DEFAULT_SUARA },
             dirty: false,
             // Schema-backed fields — already loaded via deriveProjectionFromPages()
           });
         } else {
-          // No authoring data — just clear dirty
-          useAuthoringStore.setState({ dirty: false });
+          // No authoring data at all — reset ALL non-schema fields to defaults.
+          // This prevents Project A's authoring data from leaking into Project B.
+          useAuthoringStore.setState({
+            cp: { ...DEFAULT_CP },
+            atp: { ...DEFAULT_ATP },
+            petunjuk: { ...DEFAULT_PETUNJUK },
+            penutup: { ...DEFAULT_PENUTUP },
+            suara: { ...DEFAULT_SUARA },
+            dirty: false,
+          });
         }
 
         return true;
