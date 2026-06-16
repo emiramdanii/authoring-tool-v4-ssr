@@ -178,6 +178,8 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
       };
     }
     set({ pages: newPages });
+    // Sprint 7.2A: Theme change is a persistent mutation — must notify dirty store
+    notifyMutation();
   },
 
   // ── Template Data actions ────────────────────────────────────

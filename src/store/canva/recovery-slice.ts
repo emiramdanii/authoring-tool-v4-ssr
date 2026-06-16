@@ -22,6 +22,7 @@ import {
 } from '@/core/recovery';
 import type { PageValidationResult } from '@/core/recovery';
 import { logger } from '@/core/utils/logger';
+import { notifyMutation } from '@/lib/save-utils';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -149,6 +150,8 @@ export const createRecoverySlice: StateCreator<CanvaState, [], [], RecoverySlice
         _activeTransactionId: null,
       });
 
+      // Sprint 7.2A: Rollback changes page data — must notify dirty store
+      notifyMutation();
       showToast('info', 'Transaksi dibatalkan', `Kembali ke: ${checkpoint.description}`);
     } catch (err) {
       logger.error('Recovery', 'Failed to rollback transaction: ' + String(err));

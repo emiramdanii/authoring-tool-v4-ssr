@@ -122,10 +122,18 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
     };
   }, [status]);
 
-  // Retry handler
-  const handleRetry = useCallback(() => {
-    useCanvaStore.getState().saveToStorage();
-    useAuthoringStore.getState().saveToStorage();
+  // Retry handler — Sprint 7.2A: Route through durable save coordinator
+  const handleRetry = useCallback(async () => {
+    // Clear error state before retrying
+    useDirtyStore.getState().clearError();
+    try {
+      const { useProjectManager } = await import('@/hooks/use-project-manager');
+      await useProjectManager().saveProject();
+    } catch {
+      // Fallback: if project manager is unavailable, save to localStorage only
+      useCanvaStore.getState().saveToStorage();
+      useAuthoringStore.getState().saveToStorage();
+    }
   }, []);
 
   // Don't render anything for saved when auto-hidden

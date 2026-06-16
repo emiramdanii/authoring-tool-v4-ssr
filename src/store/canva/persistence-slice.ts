@@ -276,11 +276,14 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           }
         }
 
-        // ── Projection sync: Let reactive startProjectionSync() handle this ──
+        // ── Sprint 7.2A-7: Hydration suppression ──
+        // Suppress markDirty() during load to prevent false "unsaved" state.
+        const { useDirtyStore } = require('@/store/dirty-store');
+        useDirtyStore.getState().startHydration();
+
         // Sprint 7.1: Reset the revision-based dirty store on load.
         // After loading, the loaded state is considered "clean" — editRevision
         // and lastSavedRevision are both reset to 0.
-        const { useDirtyStore } = require('@/store/dirty-store');
         useDirtyStore.getState().resetOnLoad();
         useAuthoringStore.setState({ dirty: false });
 
@@ -303,10 +306,19 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           rightPanelOpen: true,
           leftTab,
         });
+
+        // Sprint 7.2A-7: End hydration after set() completes
+        useDirtyStore.getState().endHydration();
         return true;
       }
       return false;
     } catch {
+      // Sprint 7.2A-7: End hydration even on load failure to prevent stuck state
+      try {
+        const { useDirtyStore } = require('@/store/dirty-store');
+        useDirtyStore.getState().endHydration();
+      } catch { /* best effort */ }
+
       // FASE 6: Try safe boot before giving up
       try {
         const rawForRecovery = localStorage.getItem(CANVA_STORAGE_KEY);
@@ -416,9 +428,11 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           logger.warn('CanvaStore', 'Purity check on DB load failed: ' + String(purityErr));
         }
 
-        // ── Projection sync: Let reactive startProjectionSync() handle this ──
-        // Sprint 7.1: Reset the revision-based dirty store on load.
+        // ── Sprint 7.2A-7: Hydration suppression for DB load ──
         const { useDirtyStore } = require('@/store/dirty-store');
+        useDirtyStore.getState().startHydration();
+
+        // Sprint 7.1: Reset the revision-based dirty store on load.
         useDirtyStore.getState().resetOnLoad();
         useAuthoringStore.setState({ dirty: false });
 
@@ -436,9 +450,17 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           rightPanelOpen: true,
           leftTab: 'pages',
         });
+
+        // Sprint 7.2A-7: End hydration after set() completes
+        useDirtyStore.getState().endHydration();
       }
     } catch (err) {
       logger.warn('CanvaStore', 'Failed to load from DB: ' + String(err));
+      // End hydration even on failure to prevent stuck state
+      try {
+        const { useDirtyStore } = require('@/store/dirty-store');
+        useDirtyStore.getState().endHydration();
+      } catch { /* best effort */ }
     }
   },
 

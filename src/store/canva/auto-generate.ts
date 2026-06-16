@@ -355,6 +355,9 @@ export const createAutoGenerateSlice: StateCreator<CanvaState, [], [], AutoGener
 
     set({ pages: newPages, currentPageIndex: 0, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
 
+    // Sprint 7.2A: Page generation replaces ALL pages — must notify dirty store
+    useDirtyStore.getState().markDirty();
+
     // FASE 6: Commit transaction — generation succeeded
     transactionRollback.commit(txId);
     toast.success(

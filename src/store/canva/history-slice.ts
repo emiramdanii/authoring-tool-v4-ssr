@@ -29,6 +29,7 @@ import { showUndoRedoToast } from '@/components/shared/StatusToast';
 import { getBlockMeta } from '@/core/registry/BlockDefinitionRegistry';
 import { teacherTerm } from '@/core/i18n/teacher-terminology';
 import { logger } from '@/core/utils/logger';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type HistorySlice = Pick<
   CanvaState,
@@ -198,6 +199,8 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               editingBlockId: null,
               selectedBlockIds: [],
             });
+            // Sprint 7.2A: Undo changes page data — must notify dirty store
+            notifyMutation();
             showUndoRedoToast(formatUndoMessage(undoDescription));
             return;
           } catch {
@@ -226,6 +229,8 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       editingBlockId: null,
     });
     _set({ _skipHistory: false });
+    // Sprint 7.2A: Undo changes page data — must notify dirty store
+    notifyMutation();
     showUndoRedoToast('Kembalikan'); // Snapshot fallback
   },
 
@@ -262,6 +267,8 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
               editingBlockId: null,
               selectedBlockIds: [],
             });
+            // Sprint 7.2A: Redo changes page data — must notify dirty store
+            notifyMutation();
             showUndoRedoToast(formatRedoMessage(redoDescription));
             return;
           } catch {
@@ -284,6 +291,8 @@ export const createHistorySlice: StateCreator<CanvaState, [], [], HistorySlice> 
       selectedElId: null,
     });
     _set({ _skipHistory: false });
+    // Sprint 7.2A: Redo changes page data — must notify dirty store
+    notifyMutation();
     showUndoRedoToast('Ulangi'); // Snapshot fallback
   },
 
