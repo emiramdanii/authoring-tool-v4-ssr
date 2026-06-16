@@ -15,6 +15,7 @@ import { GAME_TYPES } from '@/lib/canva-constants';
 import { getModuleIcon, getGameIcon } from '@/lib/canva-icon-maps';
 import { createElId } from './constants';
 import { resolveModule, generateKuisId } from '@/lib/module-resolver';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type ElementSlice = Pick<
   CanvaState,
@@ -77,6 +78,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     };
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
+    notifyMutation();
     toast.success(`${typeInfo?.name || type} ditambahkan`);
   },
 
@@ -104,6 +106,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     };
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
+    notifyMutation();
   },
 
   addGameElement: (idx) => {
@@ -131,6 +134,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     };
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
+    notifyMutation();
   },
 
   addModuleElement: (dataIdx, moduleId, layoutVariant) => {
@@ -158,6 +162,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     };
     get()._pushHistory();
     set({ pages: newPages, selectedElId: el.id, selectedElIds: [el.id] });
+    notifyMutation();
     toast.success(`${typeInfo.name} ditambahkan`);
   },
 
@@ -202,6 +207,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       elements: page.elements.filter(e => !selectedElIds.includes(e.id)),
     };
     set({ pages: newPages, selectedElIds: [], selectedElId: null });
+    notifyMutation();
     toast.success(`${selectedElIds.length} elemen dihapus`);
   },
 
@@ -218,6 +224,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       ),
     };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   deleteElement: (elId) => {
@@ -236,6 +243,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       selectedElId: selectedElId === elId ? (newSelectedIds.length > 0 ? newSelectedIds[0] : null) : selectedElId,
       selectedElIds: newSelectedIds,
     });
+    notifyMutation();
   },
 
   deleteSelected: () => {
@@ -269,6 +277,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, elements: els };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   toggleElementVisibility: (elId) => {
@@ -284,6 +293,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       ),
     };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   saveTextContent: (elId, text) => {
@@ -342,6 +352,7 @@ export const createElementSlice: StateCreator<CanvaState, [], [], ElementSlice> 
       selectedElIds: newIds,
       selectedElId: newIds[0],
     });
+    notifyMutation();
     toast.success(`${newEls.length} elemen ditempel`);
   },
 });

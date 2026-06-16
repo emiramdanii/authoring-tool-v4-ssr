@@ -78,3 +78,29 @@ export function saveAllToStorage(): void {
 export function getCombinedSaveStatus(): SaveStatus {
   return useDirtyStore.getState().saveStatus;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Sprint 7.2: Dirty coverage — notifyMutation() helper
+// ═══════════════════════════════════════════════════════════════════
+// Every Canva Store mutation that modifies project data MUST call
+// this function to increment editRevision and set dirty=true.
+// Without it, auto-save won't trigger and data exists only in memory.
+//
+// Usage: Call after every set({ pages: ... }) that represents a
+// meaningful project data change (NOT UI-only changes like selection,
+// zoom, or tool state).
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Notify the dirty store that a project mutation occurred.
+ * Increments editRevision and sets dirty=true, which triggers
+ * auto-save scheduling via the useAutoSave subscription.
+ *
+ * SSR-safe: wrapped in try/catch for environments where the
+ * store may not be initialized.
+ */
+export function notifyMutation(): void {
+  try {
+    useDirtyStore.getState().markDirty();
+  } catch { /* SSR guard — store may not be initialized during SSR */ }
+}

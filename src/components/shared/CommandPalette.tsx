@@ -361,14 +361,23 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
       {
         id: 'action-save-now',
         label: 'Simpan Sekarang',
-        description: 'Simpan ke penyimpanan lokal',
+        description: 'Simpan proyek ke database',
         icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>save</span>,
         category: 'action',
         shortcut: 'Ctrl+S',
-        action: () => {
-          useCanvaStore.getState().saveToStorage();
-          useAuthoringStore.getState().saveToStorage();
-          toast.success('Tersimpan');
+        action: async () => {
+          // Sprint 7.2: Route through saveProject() for durable save.
+          // Previously this only saved to localStorage, which was a P0 data-loss risk.
+          try {
+            const { useProjectManager } = await import('@/hooks/use-project-manager');
+            await useProjectManager().saveProject();
+            toast.success('Tersimpan');
+          } catch {
+            // Fallback: if project manager is unavailable, save to localStorage only
+            useCanvaStore.getState().saveToStorage();
+            useAuthoringStore.getState().saveToStorage();
+            toast.success('Tersimpan (lokal)');
+          }
         },
       },
       // ── Page / Scene transaction actions ─────────────────────

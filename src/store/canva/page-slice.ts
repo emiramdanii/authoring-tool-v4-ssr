@@ -19,6 +19,7 @@ import { saveCrashCheckpoint } from '@/core/recovery';
 import { patchHistory } from '@/core/editor/patch-history';
 import { createPageFromPreset, getPreset } from '@/core/preset/PagePresetRegistry';
 import { resolvePrimaryEditableTarget } from '@/core/schema/primary-edit-target';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type PageSlice = Pick<
   CanvaState,
@@ -76,6 +77,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
       editingBlockId: null,
       selectedBlockIds: [],
     });
+    notifyMutation();
     toast.success('Halaman baru ditambahkan');
   },
 
@@ -105,6 +107,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
       editingBlockId: null,
       selectedBlockIds: primaryTarget.blockId ? [primaryTarget.blockId] : [],
     });
+    notifyMutation();
     toast.success(`${newPage.label} ditambahkan`);
   },
 
@@ -160,6 +163,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
       editingBlockId: null,
       selectedBlockIds: dupePrimaryTarget.blockId ? [dupePrimaryTarget.blockId] : [],
     });
+    notifyMutation();
     toast.success('Halaman diduplikat');
   },
 
@@ -178,6 +182,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
       selectedElId: null,
       activeTabId: null,
     });
+    notifyMutation();
     toast.success('Halaman dihapus');
   },
 
@@ -186,6 +191,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...newPages[currentPageIndex], label };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   setTemplateType: (templateType) => {
@@ -232,6 +238,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
     newPages[currentPageIndex] = newPage;
     set({ pages: newPages, selectedElId: null });
+    notifyMutation();
   },
 
   setVariant: (variant) => {
@@ -259,6 +266,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
 
     newPages[currentPageIndex] = { ...page, templateVariant: variant, schema: updatedSchema };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   reorderPage: (fromIndex, toIndex) => {
@@ -274,6 +282,7 @@ export const createPageSlice: StateCreator<CanvaState, [], [], PageSlice> = (set
     else if (fromIndex < currentPageIndex && toIndex >= currentPageIndex) newCurrentIdx = currentPageIndex - 1;
     else if (fromIndex > currentPageIndex && toIndex <= currentPageIndex) newCurrentIdx = currentPageIndex + 1;
     set({ pages: newPages, currentPageIndex: newCurrentIdx, selectedElId: null, activeTabId: null });
+    notifyMutation();
   },
 
 });

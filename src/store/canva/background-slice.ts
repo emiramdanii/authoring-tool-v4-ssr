@@ -7,6 +7,7 @@ import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import { extractColorPalette } from '@/lib/color-palette';
 import { compressImage } from '@/lib/compress-image';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type BackgroundSlice = Pick<
   CanvaState,
@@ -32,6 +33,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...newPages[currentPageIndex], bgColor: hex };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   setBgImage: (dataUrl) => {
@@ -52,6 +54,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
       const newPages = [...pages];
       newPages[currentPageIndex] = { ...newPages[currentPageIndex], bgDataUrl: compressedUrl };
       set({ pages: newPages });
+      notifyMutation();
       // Auto-extract color palette from image
       get().extractAndSetPalette(compressedUrl);
       toast.success('Background diterapkan');
@@ -72,6 +75,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...newPages[currentPageIndex], overlay: val };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   // ── Color Palette actions ────────────────────────────────────
@@ -82,6 +86,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...newPages[currentPageIndex], colorPalette: palette };
     set({ pages: newPages });
+    notifyMutation();
     toast.success('Palet warna diekstrak dari gambar');
   },
 
@@ -97,6 +102,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, colorPalette: newPalette };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   // ── Nav Config actions ───────────────────────────────────────
@@ -111,6 +117,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
       navConfig: { ...page.navConfig, ...updates },
     };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   // ── Schema Background actions ────────────────────────────────
@@ -134,6 +141,7 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
       },
     };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   // ── Schema Theme ID action ────────────────────────────────
@@ -222,5 +230,6 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
       };
     }
     set({ pages: newPages });
+    notifyMutation();
   },
 });

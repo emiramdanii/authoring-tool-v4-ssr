@@ -1,0 +1,656 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useEffect, useCallback, Suspense } from 'react';
+     4→import dynamic from 'next/dynamic';
+     5→import { useAuthoringStore } from '@/store/authoring-store';
+     6→import type { PanelId } from '@/store/authoring-store';
+     7→import { useCanvaStore } from '@/store/canva-store';
+     8→import { useDirtyStore } from '@/store/dirty-store';
+     9→import { useTeacherMode } from '@/hooks/use-teacher-mode';
+    10→import { Button } from '@/components/ui/button';
+    11→import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+    12→import { keyboardManager } from '@/core/shortcuts/keyboard-manager';
+    13→import { ProjectProvider, useProjectManager } from '@/hooks/use-project-manager';
+    14→import WorkflowStepIndicator from '@/components/shared/WorkflowStepIndicator';
+    15→import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
+    16→import RecoveryDialog, { setDirtyExitFlag, clearDirtyExitFlag } from '@/components/shared/RecoveryDialog';
+    17→const PerformanceMonitor = dynamic(() => import('@/components/shared/PerformanceMonitor'), { ssr: false });
+    18→
+    19→// Lazy-load panels — each panel is only loaded when first rendered
+    20→const Dashboard = React.lazy(() => import('./Dashboard'));
+    21→const Dokumen = React.lazy(() => import('./Dokumen'));
+    22→const Konten = React.lazy(() => import('./Konten'));
+    23→const AutoGenerate = React.lazy(() => import('./auto-generate'));
+    24→const Projects = React.lazy(() => import('./Projects'));
+    25→const ImportExport = React.lazy(() => import('./import-export'));
+    26→const Riwayat = React.lazy(() => import('./Riwayat'));
+    27→const LivePreview = React.lazy(() => import('./live-preview'));
+    28→
+    29→// Lazy-load CanvaBuilder (heavy component, SSR disabled)
+    30→const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
+    31→  ssr: false,
+    32→  loading: () => <PanelSkeleton />,
+    33→});
+    34→
+    35→// Lazy-load TemplateWizard
+    36→const TemplateWizard = dynamic(() => import('@/components/canva/TemplateWizard'), { ssr: false });
+    37→
+    38→// ── Navigation items ─────────────────────────────────────────────
+    39→interface NavItem {
+    40→  id: PanelId;
+    41→  icon: string; // Material Symbols Outlined icon name
+    42→  label: string;
+    43→}
+    44→
+    45→// ═══ SILSE v4 Navigation — Unified nav (mode-aware labels) ════════
+    46→const NAV_ITEMS: NavItem[] = [
+    47→  { id: 'dashboard', icon: 'dashboard', label: 'Dashboard' },
+    48→  { id: 'dokumen', icon: 'edit_note', label: 'RPP & Dokumen' },
+    49→  { id: 'konten', icon: 'folder_open', label: 'Assets' },
+    50→  { id: 'canva', icon: 'palette', label: 'Edit Media' },
+    51→];
+    52→
+    53→// Panel titles — mode-aware
+    54→const PANEL_TITLES_SEDERHANA: Record<PanelId, string> = {
+    55→  dashboard: 'Beranda',
+    56→  dokumen: 'RPP & Dokumen',
+    57→  konten: 'Materi Pembelajaran',
+    58→  canva: 'Desain Visual',
+    59→  autogen: 'Buat dengan AI',
+    60→  projects: 'Kelola Proyek',
+    61→  import: 'Impor / Ekspor',
+    62→  preview: 'Pratinjau',
+    63→  versions: 'Versi',
+    64→};
+    65→
+    66→const PANEL_TITLES_LENGKAP: Record<PanelId, string> = {
+    67→  dashboard: 'Dashboard',
+    68→  dokumen: 'Dokumen',
+    69→  konten: 'Konten Pembelajaran',
+    70→  canva: 'Canva Editor',
+    71→  autogen: 'Auto-Generate',
+    72→  projects: 'Kelola Proyek',
+    73→  import: 'Import / Export',
+    74→  preview: 'Live Preview',
+    75→  versions: 'Riwayat Versi',
+    76→};
+    77→
+    78→// ── Panel loading skeleton ──────────────────────────────────────────
+    79→function PanelSkeleton() {
+    80→  return (
+    81→    <div className="flex-1 flex items-center justify-center h-full">
+    82→      <div className="flex flex-col items-center gap-3">
+    83→        <div className="h-8 w-8 animate-spin rounded-full border-2 border-silse-primary border-t-transparent" />
+    84→        <p className="text-sm text-silse-on-surface-variant">Memuat...</p>
+    85→      </div>
+    86→    </div>
+    87→  );
+    88→}
+    89→
+    90→// ── Preload map — triggers import on hover ─────────────────────────
+    91→const PRELOAD_MAP: Record<string, () => Promise<unknown>> = {
+    92→  dashboard: () => import('./Dashboard'),
+    93→  dokumen: () => import('./Dokumen'),
+    94→  konten: () => import('./Konten'),
+    95→  canva: () => import('@/components/canva/CanvaBuilder'),
+    96→  autogen: () => import('./auto-generate'),
+    97→  projects: () => import('./Projects'),
+    98→  import: () => import('./import-export'),
+    99→  preview: () => import('./live-preview'),
+   100→  versions: () => import('./Riwayat'),
+   101→};
+   102→
+   103→function handleNavHover(panel: string) {
+   104→  PRELOAD_MAP[panel]?.();
+   105→}
+   106→
+   107→// ── Guided Tour Config ──────────────────────────────────────────
+   108→const TOUR_STEPS = [
+   109→  { title: 'Sidebar', desc: 'Gunakan sidebar untuk berpindah antar panel editor.' },
+   110→  { title: 'Dashboard', desc: 'Dashboard menampilkan kelengkapan dan quick actions.' },
+   111→  { title: 'Dokumen', desc: 'Isi Meta, CP, TP, ATP, dan Alur di panel Dokumen.' },
+   112→  { title: 'Import', desc: 'Import data dari Excel atau JSON di panel Import.' },
+   113→  { title: 'Auto-Generate', desc: 'Gunakan AI untuk generate konten otomatis.' },
+   114→  { title: 'Preview', desc: 'Preview media pembelajaran sebelum export.' },
+   115→];
+   116→
+   117→// ── Inner Component (needs ProjectProvider context) ─────────────
+   118→function AuthoringToolInner() {
+   119→  const [showTour, setShowTour] = useState(() => {
+   120→    if (typeof window === 'undefined') return false;
+   121→    return localStorage.getItem('at_tour_done') === null;
+   122→  });
+   123→  const [tourStep, setTourStep] = useState(0);
+   124→  const [wizardOpen, setWizardOpen] = useState(false);
+   125→  const activePanel = useAuthoringStore((s) => s.activePanel);
+   126→  const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
+   127→  const dirty = useDirtyStore((s) => s.dirty);
+   128→  const meta = useAuthoringStore((s) => s.meta);
+   129→  const loadFromStorage = useAuthoringStore((s) => s.loadFromStorage);
+   130→  const { saveProject, currentProjectId, saving } = useProjectManager();
+   131→  const { isSederhana } = useTeacherMode();
+   132→
+   133→  // Mode-aware panel titles
+   134→  const panelTitles = isSederhana ? PANEL_TITLES_SEDERHANA : PANEL_TITLES_LENGKAP;
+   135→
+   136→  // Load from storage on mount (authoring only — canva is loaded by StoreInit)
+   137→  // Phase 5-F: Removed duplicate CanvaStore.loadFromStorage() call.
+   138→  // StoreInit.tsx (sibling component) already calls CanvaStore.loadFromStorage()
+   139→  // which derives projection from schema and writes to AuthoringStore.
+   140→  // Calling it here would cause a double-load race condition.
+   141→  useEffect(() => {
+   142→    loadFromStorage();
+   143→    clearDirtyExitFlag();
+   144→  }, [loadFromStorage]);
+   145→
+   146→  // ── Dirty exit flag + browser confirmation ──
+   147→  useEffect(() => {
+   148→    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+   149→      const isDirty = useDirtyStore.getState().dirty || useCanvaStore.getState()._saveStatus === 'unsaved';
+   150→      if (isDirty) {
+   151→        setDirtyExitFlag();
+   152→        e.preventDefault();
+   153→        e.returnValue = 'Perubahan belum tersimpan. Yakin ingin keluar?';
+   154→      }
+   155→    };
+   156→    window.addEventListener('beforeunload', handleBeforeUnload);
+   157→    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+   158→  }, []);
+   159→
+   160→  // ── Tour: dismiss / advance ──
+   161→  const dismissTour = useCallback(() => {
+   162→    setShowTour(false);
+   163→    localStorage.setItem('at_tour_done', '1');
+   164→  }, []);
+   165→
+   166→  // Auto-dismiss tour when navigating away from dashboard
+   167→  if (activePanel !== 'dashboard' && showTour) {
+   168→    dismissTour();
+   169→  }
+   170→
+   171→  // Unified save helper
+   172→  const saveAll = useCallback(() => {
+   173→    if (currentProjectId) {
+   174→      saveProject();
+   175→    } else {
+   176→      useCanvaStore.getState().saveToStorage();
+   177→      useAuthoringStore.getState().saveToStorage();
+   178→    }
+   179→  }, [currentProjectId, saveProject]);
+   180→
+   181→  // ── Unified keyboard shortcuts via registry ──
+   182→  useKeyboardShortcuts([
+   183→    {
+   184→      id: 'global.save',
+   185→      keys: 'ctrl+s',
+   186→      scope: 'global',
+   187→      priority: 20,
+   188→      handler: (e) => { e.preventDefault(); saveAll(); },
+   189→      description: 'Simpan',
+   190→      category: 'App',
+   191→    },
+   192→    {
+   193→      id: 'global.toggle-preview',
+   194→      keys: 'ctrl+p',
+   195→      scope: 'global',
+   196→      priority: 15,
+   197→      handler: (e) => {
+   198→        e.preventDefault();
+   199→        const current = useAuthoringStore.getState().activePanel;
+   200→        if (current === 'preview') {
+   201→          useAuthoringStore.getState().setActivePanel('canva');
+   202→        } else {
+   203→          useAuthoringStore.getState().setActivePanel('preview');
+   204→        }
+   205→      },
+   206→      description: 'Toggle Live Preview',
+   207→      category: 'App',
+   208→    },
+   209→  ], [saveAll]);
+   210→
+   211→  // ── Context switching for keyboard shortcuts ──
+   212→  useEffect(() => {
+   213→    if (activePanel === 'canva') {
+   214→      keyboardManager.setContext('canvas');
+   215→    } else if (activePanel === 'preview') {
+   216→      keyboardManager.setContext('canvas');
+   217→    } else {
+   218→      keyboardManager.setContext('authoring');
+   219→    }
+   220→  }, [activePanel]);
+   221→
+   222→  // ── Cross-panel navigation from SchemaBlockTree → Konten panel ──
+   223→  useEffect(() => {
+   224→    const unsub = useCanvaStore.subscribe(
+   225→      (s) => s.kontenPanelRequest,
+   226→      (requested) => {
+   227→        if (requested) {
+   228→          setActivePanel('konten');
+   229→          useCanvaStore.setState({ kontenPanelRequest: false });
+   230→        }
+   231→      }
+   232→    );
+   233→    return unsub;
+   234→  }, [setActivePanel]);
+   235→
+   236→  // ── General cross-panel navigation request ──
+   237→  useEffect(() => {
+   238→    const unsub = useCanvaStore.subscribe(
+   239→      (s) => s.panelRequest,
+   240→      (requested) => {
+   241→        if (requested) {
+   242→          setActivePanel(requested as any);
+   243→          useCanvaStore.setState({ panelRequest: null });
+   244→        }
+   245→      }
+   246→    );
+   247→    return unsub;
+   248→  }, [setActivePanel]);
+   249→
+   250→  const exportJSON = useCallback(() => {
+   251→    const s = useAuthoringStore.getState();
+   252→    const c = useCanvaStore.getState();
+   253→    const data = {
+   254→      meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
+   255→      skenario: s.skenario, kuis: s.kuis, modules: s.modules,
+   256→      games: s.games, materi: s.materi,
+   257→      canva: {
+   258→        pages: c.pages,
+   259→        ratioId: c.ratioId,
+   260→        currentPageIndex: c.currentPageIndex,
+   261→      },
+   262→    };
+   263→    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+   264→    const url = URL.createObjectURL(blob);
+   265→    const a = document.createElement('a');
+   266→    a.href = url;
+   267→    a.download = `authoring-tool-${Date.now()}.json`;
+   268→    a.click();
+   269→    URL.revokeObjectURL(url);
+   270→  }, []);
+   271→
+   272→  const renderPanel = () => {
+   273→    const panel = (() => {
+   274→      switch (activePanel) {
+   275→        case 'dashboard': return <Dashboard />;
+   276→        case 'dokumen': return <Dokumen />;
+   277→        case 'konten': return <Konten />;
+   278→        case 'canva': return <CanvaBuilder />;
+   279→        case 'autogen': return <AutoGenerate />;
+   280→        case 'projects': return <Projects />;
+   281→        case 'import': return <ImportExport />;
+   282→        case 'preview': return <LivePreview />;
+   283→        case 'versions': return <Riwayat />;
+   284→        default: return <Dashboard />;
+   285→      }
+   286→    })();
+   287→    return (
+   288→      <Suspense fallback={<PanelSkeleton />}>
+   289→        {panel}
+   290→      </Suspense>
+   291→    );
+   292→  };
+   293→
+   294→  const isCanva = activePanel === 'canva';
+   295→  const isPreview = activePanel === 'preview';
+   296→
+   297→  const nextTourStep = useCallback(() => {
+   298→    if (tourStep < TOUR_STEPS.length - 1) {
+   299→      setTourStep((s) => s + 1);
+   300→    } else {
+   301→      dismissTour();
+   302→    }
+   303→  }, [tourStep, dismissTour]);
+   304→
+   305→  // ── Map active panel to sidebar nav id for highlight ──
+   306→  const getActiveNavId = (): string => {
+   307→    if (activePanel === 'dashboard') return 'dashboard';
+   308→    if (activePanel === 'dokumen') return 'dokumen';
+   309→    if (activePanel === 'konten' || activePanel === 'autogen') return 'konten';
+   310→    if (activePanel === 'canva') return 'canva';
+   311→    return activePanel;
+   312→  };
+   313→
+   314→  return (
+   315→    <div className="h-screen w-screen flex bg-silse-surface-bright text-silse-on-surface overflow-hidden">
+   316→      {/* ── SILSE v4 Sidebar — MD3 Navigation Drawer, hidden in Canva/Preview mode ── */}
+   317→      {!isCanva && !isPreview && (
+   318→      <aside
+   319→        role="navigation"
+   320→        aria-label="Menu utama"
+   321→        className="w-[272px] flex-shrink-0 bg-silse-surface-container-lowest border-r border-silse-outline-variant/60 flex flex-col"
+   322→      >
+   323→        {/* ── Brand Header — SILSE v4 identity ── */}
+   324→        <div className="px-5 pt-5 pb-3">
+   325→          <div className="flex items-center gap-3">
+   326→            <div className="w-10 h-10 rounded-2xl bg-silse-primary-container/20 flex items-center justify-center border border-silse-primary-container/30">
+   327→              <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '22px', fontVariationSettings: "'FILL' 1, 'wght' 500" }}>school</span>
+   328→            </div>
+   329→            <div>
+   330→              <div
+   331→                className="text-lg font-bold text-silse-on-surface tracking-tight leading-tight"
+   332→                style={{ fontFamily: 'var(--font-plus-jakarta), Plus Jakarta Sans, sans-serif' }}
+   333→              >
+   334→                SILSE Studio
+   335→              </div>
+   336→              <div className="text-[11px] font-medium text-silse-on-surface-variant">
+   337→                Media Pembelajaran Interaktif
+   338→              </div>
+   339→            </div>
+   340→          </div>
+   341→        </div>
+   342→
+   343→        {/* ── New Project CTA — MD3 FAB-style ── */}
+   344→        <div className="px-4 pb-3">
+   345→          <button
+   346→            onClick={() => setWizardOpen(true)}
+   347→            className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl bg-silse-primary-container text-silse-on-primary-container font-bold text-sm border-b-2 border-silse-primary/40 hover:bg-silse-primary-container/90 active:scale-[0.97] transition-[transform,background-color]"
+   348→          >
+   349→            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add_circle</span>
+   350→            Proyek Baru
+   351→          </button>
+   352→        </div>
+   353→
+   354→        {/* ── Primary Navigation — MD3 Navigation Drawer spec ── */}
+   355→        <nav className="flex-1 px-2.5 py-1 space-y-0.5 overflow-y-auto custom-scrollbar">
+   356→          {/* Section label */}
+   357→          <div className="px-3 pt-2 pb-1.5">
+   358→            <span className="text-[10px] font-bold text-silse-outline uppercase tracking-widest">Workspace</span>
+   359→          </div>
+   360→
+   361→          {NAV_ITEMS.map((item) => {
+   362→            const isActive = getActiveNavId() === item.id;
+   363→            return (
+   364→              <button
+   365→                key={item.id}
+   366→                data-testid={`nav-${item.id}`}
+   367→                onClick={() => setActivePanel(item.id)}
+   368→                onMouseEnter={() => handleNavHover(item.id)}
+   369→                className={`w-full flex items-center rounded-xl px-3 py-2.5 gap-3 text-[13px] font-medium transition-[background-color,color] duration-150 focus-ring ${
+   370→                  isActive
+   371→                    ? 'bg-silse-primary-container/25 text-silse-primary'
+   372→                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface'
+   373→                }`}
+   374→                title={item.label}
+   375→              >
+   376→                {/* MD3 Active indicator — left pill bar */}
+   377→                {isActive && (
+   378→                  <span className="absolute left-0 w-[3px] h-5 rounded-r-full bg-silse-primary" />
+   379→                )}
+   380→                <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '20px', fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}>{item.icon}</span>
+   381→                <span style={{ fontFamily: 'var(--font-nunito), Nunito Sans, sans-serif' }}>{item.label}</span>
+   382→              </button>
+   383→            );
+   384→          })}
+   385→
+   386→          {/* ── Secondary section ── */}
+   387→          <div className="px-3 pt-4 pb-1.5">
+   388→            <span className="text-[10px] font-bold text-silse-outline uppercase tracking-widest">Alat</span>
+   389→          </div>
+   390→
+   391→          {[
+   392→            { id: 'autogen' as PanelId, icon: 'auto_awesome', label: isSederhana ? 'Buat AI' : 'Auto-Generate' },
+   393→            { id: 'projects' as PanelId, icon: 'folder_open', label: isSederhana ? 'Proyek' : 'Projects' },
+   394→            { id: 'import' as PanelId, icon: 'swap_horiz', label: isSederhana ? 'Impor/Ekspor' : 'Import/Export' },
+   395→            { id: 'preview' as PanelId, icon: 'visibility', label: isSederhana ? 'Pratinjau' : 'Preview' },
+   396→            { id: 'versions' as PanelId, icon: 'schedule', label: isSederhana ? 'Versi' : 'Versions' },
+   397→          ].map((item) => {
+   398→            const isActive = activePanel === item.id;
+   399→            return (
+   400→              <button
+   401→                key={item.id}
+   402→                data-testid={`nav-${item.id}`}
+   403→                onClick={() => setActivePanel(item.id)}
+   404→                onMouseEnter={() => handleNavHover(item.id)}
+   405→                className={`w-full flex items-center rounded-xl px-3 py-2 gap-3 text-[12px] transition-[background-color,color] duration-150 focus-ring ${
+   406→                  isActive
+   407→                    ? 'bg-silse-primary-container/25 text-silse-primary font-semibold'
+   408→                    : 'text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface'
+   409→                }`}
+   410→                title={item.label}
+   411→              >
+   412→                <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px', fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400" }}>{item.icon}</span>
+   413→                <span>{item.label}</span>
+   414→              </button>
+   415→            );
+   416→          })}
+   417→        </nav>
+   418→
+   419→        {/* ── Bottom Actions — Settings, Support ── */}
+   420→        <div className="px-2.5 py-2 space-y-0.5 border-t border-silse-outline-variant/40">
+   421→          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150">
+   422→            <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px' }}>settings</span>
+   423→            <span>Pengaturan</span>
+   424→          </button>
+   425→          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] text-silse-on-surface-variant hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface transition-[background-color,color] duration-150">
+   426→            <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px' }}>contact_support</span>
+   427→            <span>Bantuan</span>
+   428→          </button>
+   429→        </div>
+   430→
+   431→        {/* ── User Profile + Save ── */}
+   432→        <div className="px-3 py-3 space-y-2.5 border-t border-silse-outline-variant/40 bg-silse-surface-container-lowest">
+   433→          {/* User profile card */}
+   434→          <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-silse-surface-container-high/40 transition-colors">
+   435→            <div className="w-9 h-9 rounded-full bg-silse-primary-container/20 flex items-center justify-center flex-shrink-0 border border-silse-primary-container/30">
+   436→              <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '18px' }}>school</span>
+   437→            </div>
+   438→            <div className="min-w-0 flex-1">
+   439→              <div className="text-[12px] font-semibold text-silse-on-surface truncate">Guru PPKn</div>
+   440→              <div className="text-[10px] text-silse-on-surface-variant">Mode {isSederhana ? 'Sederhana' : 'Lengkap'}</div>
+   441→            </div>
+   442→            <TeacherModeToggle />
+   443→          </div>
+   444→
+   445→          {/* Save + Export buttons */}
+   446→          <button
+   447→            onClick={saveAll}
+   448→            disabled={saving}
+   449→            className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 w-full text-[12px] inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition-[background-color,transform] active:scale-[0.97] disabled:opacity-50"
+   450→          >
+   451→            <span className="material-symbols-outlined" style={{ fontSize: '16px', animation: saving ? 'spin 1s linear infinite' : 'none' }}>save</span>
+   452→            {saving ? 'Menyimpan...' : 'Simpan Semua'}
+   453→          </button>
+   454→          <button
+   455→            onClick={exportJSON}
+   456→            className="text-silse-on-surface-variant border border-silse-outline-variant/60 hover:bg-silse-surface-container-high/60 hover:text-silse-on-surface w-full text-[12px] inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium transition-[background-color,color] active:scale-[0.97]"
+   457→          >
+   458→            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>download</span>
+   459→            Export JSON
+   460→          </button>
+   461→        </div>
+   462→      </aside>
+   463→      )}
+   464→
+   465→      {/* ── Canva mode: Floating back-to-dashboard button ──── */}
+   466→      {isCanva && (
+   467→        <div className="fixed top-3 left-3 z-50">
+   468→          <Button
+   469→            variant="ghost"
+   470→            size="sm"
+   471→            onClick={() => setActivePanel('dashboard')}
+   472→            className="bg-silse-surface-container-lowest/95 border border-silse-outline-variant/60 shadow-md text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-md rounded-xl px-3 py-1.5 text-[12px] font-semibold"
+   473→          >
+   474→            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
+   475→            {isSederhana ? 'Beranda' : 'Dashboard'}
+   476→          </Button>
+   477→        </div>
+   478→      )}
+   479→
+   480→      {/* ── Preview mode: Floating back button ──── */}
+   481→      {isPreview && (
+   482→        <div className="fixed top-3 left-3 z-50">
+   483→          <Button
+   484→            variant="ghost"
+   485→            size="sm"
+   486→            onClick={() => setActivePanel('dashboard')}
+   487→            className="bg-silse-surface-container-lowest/95 border border-silse-outline-variant/60 shadow-md text-silse-on-surface-variant hover:text-silse-on-surface gap-1.5 backdrop-blur-md rounded-xl px-3 py-1.5 text-[12px] font-semibold"
+   488→          >
+   489→            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
+   490→            {isSederhana ? 'Beranda' : 'Dashboard'}
+   491→          </Button>
+   492→        </div>
+   493→      )}
+   494→
+   495→      {/* ── Main Area ───────────────────────────────────────── */}
+   496→      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
+   497→        {/* ── Header Bar — SILSE v4 breadcrumb + actions ── */}
+   498→        {!isCanva && !isPreview && (
+   499→          <header className="h-12 flex-shrink-0 bg-silse-surface-container-lowest border-b border-silse-outline-variant/60 flex items-center gap-3 px-5">
+   500→            <div className="flex items-center gap-2">
+   501→              <span className="material-symbols-outlined text-silse-on-surface-variant" style={{ fontSize: '16px' }}>{
+   502→                activePanel === 'dashboard' ? 'space_dashboard' :
+   503→                activePanel === 'dokumen' ? 'edit_note' :
+   504→                activePanel === 'konten' ? 'folder_open' :
+   505→                activePanel === 'autogen' ? 'auto_awesome' :
+   506→                activePanel === 'projects' ? 'folder_open' :
+   507→                activePanel === 'import' ? 'swap_horiz' :
+   508→                activePanel === 'versions' ? 'schedule' :
+   509→                'space_dashboard'
+   510→              }</span>
+   511→              <span className="text-[13px] font-semibold text-silse-on-surface">
+   512→                {panelTitles[activePanel]}
+   513→              </span>
+   514→              <span className="text-silse-outline-variant mx-0.5">/</span>
+   515→              <span className="text-[12px] text-silse-on-surface-variant">{meta.judulPertemuan || 'Proyek Baru'}</span>
+   516→            </div>
+   517→
+   518→            {/* Dirty indicator */}
+   519→            <div className="flex items-center gap-1.5">
+   520→              <div
+   521→                className={`w-2 h-2 rounded-full flex-shrink-0 transition-opacity duration-300 ${
+   522→                  dirty ? 'bg-silse-primary pulse-dot opacity-100' : 'bg-silse-primary/50 opacity-0'
+   523→                }`}
+   524→                title={dirty ? 'Perubahan belum disimpan' : 'Tersimpan'}
+   525→              />
+   526→              {dirty && (
+   527→                <span className="text-[9px] text-silse-on-surface-variant font-medium">Belum simpan</span>
+   528→              )}
+   529→            </div>
+   530→
+   531→            {/* Workflow step indicator */}
+   532→            <WorkflowStepIndicator />
+   533→
+   534→            <div className="ml-auto flex items-center gap-2">
+   535→              <Button
+   536→                variant="outline"
+   537→                size="sm"
+   538→                onClick={() => setActivePanel('preview')}
+   539→                className="text-silse-primary border-silse-outline-variant/60 hover:bg-silse-primary/5 hover:text-silse-primary rounded-xl text-[12px] font-semibold gap-1.5"
+   540→              >
+   541→                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>visibility</span>
+   542→                {isSederhana ? 'Pratinjau' : 'Preview'}
+   543→              </Button>
+   544→              <Button
+   545→                variant="ghost"
+   546→                size="sm"
+   547→                onClick={() => setActivePanel('canva')}
+   548→                className="text-silse-on-surface-variant hover:text-silse-on-surface hover:bg-silse-surface-container-high/60 rounded-xl text-[12px] font-semibold gap-1.5"
+   549→              >
+   550→                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>palette</span>
+   551→                {isSederhana ? 'Desain' : 'Canva'}
+   552→              </Button>
+   553→              <Button
+   554→                size="sm"
+   555→                onClick={saveAll}
+   556→                disabled={saving}
+   557→                className="bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 disabled:opacity-50 font-semibold rounded-xl text-[12px] gap-1.5"
+   558→              >
+   559→                <span className="material-symbols-outlined" style={{ fontSize: '14px', animation: saving ? 'spin 1s linear infinite' : 'none' }}>save</span>
+   560→                {saving ? '...' : 'Simpan'}
+   561→              </Button>
+   562→            </div>
+   563→          </header>
+   564→        )}
+   565→
+   566→        {/* ── Content ──────────────────────────────────────── */}
+   567→        <div
+   568→          key={activePanel}
+   569→          role="main"
+   570→          className={`flex-1 flex flex-col min-h-0 anim-enter-fade ${
+   571→            isCanva || isPreview ? 'overflow-hidden' : 'overflow-y-auto bg-silse-surface-bright'
+   572→          }`}
+   573→        >
+   574→          {renderPanel()}
+   575→        </div>
+   576→      </div>
+   577→
+   578→      {/* ── Template Wizard Modal ── */}
+   579→      <TemplateWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+   580→
+   581→      {/* ── Dev Performance Monitor (only in development) ── */}
+   582→      <PerformanceMonitor />
+   583→
+   584→      {/* ── Unified Recovery Dialog ─────────────────────────── */}
+   585→      <RecoveryDialog />
+   586→
+   587→      {/* ── Guided Tour Overlay ────────────────────────────── */}
+   588→      {showTour && activePanel === 'dashboard' && (
+   589→        <div className="fixed inset-0 z-50 flex items-center justify-center">
+   590→          <div className="absolute inset-0 bg-silse-on-surface/40 backdrop-blur-sm" />
+   591→          <div className="relative z-10 w-full max-w-sm mx-4 page-transition">
+   592→            <div className="bg-silse-surface-container-lowest border border-silse-outline-variant/50 rounded-2xl shadow-2xl overflow-hidden">
+   593→              <div className="bg-silse-primary-container/10 px-5 pt-5 pb-3">
+   594→                <div className="flex items-center gap-3">
+   595→                  <div className="w-10 h-10 rounded-lg bg-silse-primary-container/20 flex items-center justify-center">
+   596→                    <span className="material-symbols-outlined text-silse-primary" style={{ fontSize: '20px' }}>location_on</span>
+   597→                  </div>
+   598→                  <div>
+   599→                    <div className="text-xs font-medium text-silse-primary/70">
+   600→                      Langkah {tourStep + 1} dari {TOUR_STEPS.length}
+   601→                    </div>
+   602→                    <h3 className="text-base font-bold text-silse-on-surface">
+   603→                      {TOUR_STEPS[tourStep]!.title}
+   604→                    </h3>
+   605→                  </div>
+   606→                </div>
+   607→              </div>
+   608→              <div className="px-5 py-4">
+   609→                <p className="text-sm text-silse-on-surface-variant leading-relaxed">
+   610→                  {TOUR_STEPS[tourStep]!.desc}
+   611→                </p>
+   612→              </div>
+   613→              <div className="px-5 pb-2 flex justify-center gap-1.5">
+   614→                {TOUR_STEPS.map((_, i) => (
+   615→                  <span
+   616→                    key={i}
+   617→                    className={`block h-1.5 rounded-full transition-all duration-300 ${
+   618→                      i === tourStep
+   619→                        ? 'w-5 bg-silse-primary'
+   620→                        : 'w-1.5 bg-silse-surface-container-high'
+   621→                    }`}
+   622→                  />
+   623→                ))}
+   624→              </div>
+   625→              <div className="px-5 pb-5 pt-3 flex items-center gap-3">
+   626→                <Button
+   627→                  variant="ghost"
+   628→                  onClick={dismissTour}
+   629→                  className="px-4 py-2 text-xs font-medium"
+   630→                >
+   631→                  Lewati
+   632→                </Button>
+   633→                <Button
+   634→                  onClick={nextTourStep}
+   635→                  className="flex-1 bg-silse-primary text-silse-on-primary hover:bg-silse-primary/90 shadow-sm hover:shadow-md hover:-translate-y-px"
+   636→                >
+   637→                  {tourStep < TOUR_STEPS.length - 1 ? 'Berikutnya →' : 'Mulai ✨'}
+   638→                </Button>
+   639→              </div>
+   640→            </div>
+   641→          </div>
+   642→        </div>
+   643→      )}
+   644→    </div>
+   645→  );
+   646→}
+   647→
+   648→// ── Main Component (wraps with ProjectProvider) ────────────────
+   649→export default function AuthoringTool() {
+   650→  return (
+   651→    <ProjectProvider>
+   652→      <AuthoringToolInner />
+   653→    </ProjectProvider>
+   654→  );
+   655→}
+   656→

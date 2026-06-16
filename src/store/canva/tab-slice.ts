@@ -11,6 +11,7 @@ import type { StateCreator } from 'zustand';
 import type { CanvaState } from './types';
 import type { TabDefinition } from '@/core/schema/types';
 import { BLOCK_TYPE_TAB_ICON } from '@/lib/canva-icon-maps';
+import { notifyMutation } from '@/lib/save-utils';
 
 // ── Slice Type ──────────────────────────────────────────────────
 
@@ -69,6 +70,7 @@ export const createTabSlice: StateCreator<CanvaState, [], [], TabSlice> = (set, 
           : p
       ),
     });
+    notifyMutation();
   },
 
   // ── Remove a tab ──────────────────────────────────────────────
@@ -107,6 +109,7 @@ export const createTabSlice: StateCreator<CanvaState, [], [], TabSlice> = (set, 
       ),
       activeTabId: activeTabId === tabId ? null : activeTabId,
     });
+    notifyMutation();
   },
 
   // ── Rename a tab ──────────────────────────────────────────────
@@ -128,6 +131,7 @@ export const createTabSlice: StateCreator<CanvaState, [], [], TabSlice> = (set, 
           : p
       ),
     });
+    notifyMutation();
   },
 
   // ── Change a tab's icon ───────────────────────────────────────
@@ -149,6 +153,7 @@ export const createTabSlice: StateCreator<CanvaState, [], [], TabSlice> = (set, 
           : p
       ),
     });
+    notifyMutation();
   },
 
   // ── Assign a block to a tab ───────────────────────────────────
@@ -173,6 +178,7 @@ export const createTabSlice: StateCreator<CanvaState, [], [], TabSlice> = (set, 
           : p
       ),
     });
+    notifyMutation();
   },
 
   // ── Remove a block from a tab ─────────────────────────────────
@@ -195,6 +201,7 @@ export const createTabSlice: StateCreator<CanvaState, [], [], TabSlice> = (set, 
           : p
       ),
     });
+    notifyMutation();
   },
 
   // ── Auto-cluster blocks into tabs by type ─────────────────────
@@ -241,5 +248,6 @@ export const createTabSlice: StateCreator<CanvaState, [], [], TabSlice> = (set, 
           : p
       ),
     });
+    notifyMutation();
   },
 });

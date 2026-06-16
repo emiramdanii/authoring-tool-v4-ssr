@@ -20,6 +20,7 @@ import { findBlockOwner, commitSchemaUpdate } from './schema-helpers';
 import { removeCompressedHeight } from '@/core/schema/session-state';
 import { removeMeasurement } from '@/core/layout/BlockMeasurer';
 import { saveCrashCheckpoint } from '@/core/recovery';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type SchemaOpsSlice = Pick<
   CanvaState,
@@ -93,6 +94,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     set({ pages: newPages });
+    notifyMutation();
     get().selectBlock(newBlock.id!, clipboard.type);
     toast.success('Block ditempel', {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
@@ -160,6 +162,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks) };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   // ── Schema Block Bulk Delete ─────────────────────────────────
@@ -224,6 +227,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
       removeMeasurement(deletedId);
     }
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+    notifyMutation();
     toast.success(`${blockIds.length} block dihapus`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
@@ -266,6 +270,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   // ── Schema Block Alignment ───────────────────────────────────
@@ -325,6 +330,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     set({ pages: newPages });
+    notifyMutation();
     toast.success(`Block align ${direction} diterapkan`);
   },
 
@@ -387,6 +393,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     set({ pages: newPages });
+    notifyMutation();
     toast.success(`Block distribusi ${axis === 'horizontal' ? 'horizontal' : 'vertikal'} diterapkan`);
   },
 
@@ -407,6 +414,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks) };
     set({ pages: newPages });
+    notifyMutation();
     toast.success(`${blockIds.length} block diubah ke Variant ${variant}`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
@@ -453,6 +461,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
       set({ pages: newPages });
     }
 
+    notifyMutation();
     toast.success(`${blockIds.length} block diduplikasi`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
@@ -481,6 +490,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, blocks) };
     set({ pages: newPages });
+    notifyMutation();
     toast.success(`${blockIds.length} block dipindah ke ${delta === -1 ? 'atas' : 'bawah'}`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
@@ -507,6 +517,7 @@ export const createSchemaOpsSlice: StateCreator<CanvaState, [], [], SchemaOpsSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     set({ pages: newPages });
+    notifyMutation();
     const priorityLabel = priority === 'high' ? 'Tinggi' : priority === 'medium' ? 'Sedang' : 'Rendah';
     toast.success(`${blockIds.length} block: prioritas kompresi = ${priorityLabel}`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },

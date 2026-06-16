@@ -1,0 +1,865 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+     4→import { createPortal } from 'react-dom';
+     5→import {
+     6→  Search,
+     7→  Hash,
+     8→  Play,
+     9→  Undo2,
+    10→  Redo2,
+    11→  Layout,
+    12→  Gamepad2,
+    13→  BookOpen,
+    14→  ZoomIn,
+    15→  ZoomOut,
+    16→  Maximize,
+    17→  PanelLeft,
+    18→  PanelRight,
+    19→  Trash2,
+    20→  Copy,
+    21→  Save,
+    22→  Home,
+    23→  FileText,
+    24→  MonitorPlay,
+    25→  Download,
+    26→  Printer,
+    27→  FileDown,
+    28→  Sparkles as AutoGenIcon,
+    29→} from 'lucide-react';
+    30→import { useCanvaStore } from '@/store/canva-store';
+    31→import { useAuthoringStore } from '@/store/authoring-store';
+    32→import { useInteractiveStore } from '@/store/interactive-store';
+    33→import { getAllBlockMeta, getBlockMeta } from '@/core/registry/BlockDefinitionRegistry';
+    34→import { ensurePageSchema } from '@/core/schema/ensure-schema';
+    35→import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
+    36→import { cn } from '@/lib/utils';
+    37→import { toast } from 'sonner';
+    38→
+    39→// ═══════════════════════════════════════════════════════════════════
+    40→// TYPES
+    41→// ═══════════════════════════════════════════════════════════════════
+    42→
+    43→interface CommandItem {
+    44→  id: string;
+    45→  label: string;
+    46→  description?: string;
+    47→  icon: React.ReactNode;
+    48→  category: 'block' | 'game' | 'action' | 'navigation';
+    49→  shortcut?: string;
+    50→  action: () => void;
+    51→}
+    52→
+    53→interface CommandPaletteProps {
+    54→  open: boolean;
+    55→  onClose: () => void;
+    56→}
+    57→
+    58→// ═══════════════════════════════════════════════════════════════════
+    59→// CATEGORY CONFIG
+    60→// ═══════════════════════════════════════════════════════════════════
+    61→
+    62→const CATEGORY_CONFIG = {
+    63→  block: {
+    64→    label: 'Block Konten',
+    65→    badge: 'Block',
+    66→    badgeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    67→  },
+    68→  game: {
+    69→    label: 'Game Interaktif',
+    70→    badge: 'Game',
+    71→    badgeClass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    72→  },
+    73→  action: {
+    74→    label: 'Aksi Editor',
+    75→    badge: 'Aksi',
+    76→    badgeClass: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    77→  },
+    78→  navigation: {
+    79→    label: 'Navigasi',
+    80→    badge: 'Navigasi',
+    81→    badgeClass: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    82→  },
+    83→} as const;
+    84→
+    85→type CommandCategory = keyof typeof CATEGORY_CONFIG;
+    86→
+    87→// ═══════════════════════════════════════════════════════════════════
+    88→// ICON MAPPING FOR BLOCK TYPES
+    89→// ═══════════════════════════════════════════════════════════════════
+    90→
+    91→function getBlockIcon(blockType: string, blockIcon: string): React.ReactNode {
+    92→  // Use capability registry as single source of truth for interactive blocks
+    93→  if (BlockCapabilityRegistry.get(blockType).derived.interactive) {
+    94→    return <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '16px' } }>sports_esports</span>;
+    95→  }
+    96→
+    97→  // Return emoji as text for known content blocks
+    98→  // The blockIcon is an emoji string, so render it directly
+    99→  return <span className="text-sm leading-none">{blockIcon}</span>;
+   100→}
+   101→
+   102→// ═══════════════════════════════════════════════════════════════════
+   103→// FUZZY SEARCH
+   104→// ═══════════════════════════════════════════════════════════════════
+   105→
+   106→function fuzzyScore(query: string, text: string): number {
+   107→  const q = query.toLowerCase();
+   108→  const t = text.toLowerCase();
+   109→
+   110→  // Exact match gets highest score
+   111→  if (t === q) return 1000;
+   112→
+   113→  // Starts with query gets high score
+   114→  if (t.startsWith(q)) return 500;
+   115→
+   116→  // Contains query as substring
+   117→  const idx = t.indexOf(q);
+   118→  if (idx !== -1) return 300 - idx;
+   119→
+   120→  // Fuzzy match — count how many chars matched in order
+   121→  let qi = 0;
+   122→  let lastMatchIdx = -1;
+   123→  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+   124→    if (t[ti] === q[qi]) {
+   125→      qi++;
+   126→      lastMatchIdx = ti;
+   127→    }
+   128→  }
+   129→  if (qi === q.length) return 100 - lastMatchIdx;
+   130→
+   131→  return 0;
+   132→}
+   133→
+   134→// ═══════════════════════════════════════════════════════════════════
+   135→// GLOBAL EVENT — allows any component to open the command palette
+   136→// ═══════════════════════════════════════════════════════════════════
+   137→
+   138→const COMMAND_PALETTE_OPEN_EVENT = 'mpi:open-command-palette';
+   139→
+   140→export function openCommandPalette() {
+   141→  if (typeof window !== 'undefined') {
+   142→    window.dispatchEvent(new CustomEvent(COMMAND_PALETTE_OPEN_EVENT));
+   143→  }
+   144→}
+   145→
+   146→// ═══════════════════════════════════════════════════════════════════
+   147→// RECENTLY USED PERSISTENCE
+   148→// ═══════════════════════════════════════════════════════════════════
+   149→
+   150→const RECENT_KEY = 'mpi-command-palette-recent';
+   151→const MAX_RECENT = 8;
+   152→
+   153→function getRecentItems(): string[] {
+   154→  try {
+   155→    const data = localStorage.getItem(RECENT_KEY);
+   156→    return data ? JSON.parse(data) : [];
+   157→  } catch {
+   158→    return [];
+   159→  }
+   160→}
+   161→
+   162→function addRecentItem(id: string) {
+   163→  try {
+   164→    const recent = getRecentItems().filter(r => r !== id);
+   165→    recent.unshift(id);
+   166→    localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)));
+   167→  } catch {
+   168→    // Ignore storage errors
+   169→  }
+   170→}
+   171→
+   172→// ═══════════════════════════════════════════════════════════════════
+   173→// COMMAND PALETTE COMPONENT
+   174→// ═══════════════════════════════════════════════════════════════════
+   175→
+   176→export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
+   177→  const [query, setQuery] = useState('');
+   178→  const [selectedIndex, setSelectedIndex] = useState(0);
+   179→  const inputRef = useRef<HTMLInputElement>(null);
+   180→  const listRef = useRef<HTMLDivElement>(null);
+   181→
+   182→  // ── Build command items ────────────────────────────────────
+   183→  const allCommands = useMemo(() => {
+   184→    const commands: CommandItem[] = [];
+   185→    const blockMetas = getAllBlockMeta();
+   186→    const store = useCanvaStore.getState();
+   187→
+   188→    // ── Block commands (content blocks) ──────────────────────
+   189→    // Use capability registry as single source of truth for interactive/game types
+   190→    const interactiveBlockTypes = new Set(
+   191→      BlockCapabilityRegistry.filterByCapability('interactive')
+   192→    );
+   193→
+   194→    // Compute insertion context from selected block
+   195→    const selectedBlockId = store.selectedBlockId;
+   196→    let insertAfterIndex: number | undefined;
+   197→    let selectedBlockName: string | null = null;
+   198→    if (selectedBlockId) {
+   199→      const currentPage = store.pages[store.currentPageIndex];
+   200→      if (currentPage) {
+   201→        const schema = ensurePageSchema(currentPage);
+   202→        if (schema) {
+   203→          const idx = schema.blocks.findIndex(b => b.id === selectedBlockId);
+   204→          if (idx !== -1) {
+   205→            insertAfterIndex = idx;
+   206→            const meta = getBlockMeta(schema.blocks[idx]!.type);
+   207→            selectedBlockName = meta?.name || schema.blocks[idx]!.type;
+   208→          }
+   209→        }
+   210→      }
+   211→    }
+   212→
+   213→    for (const meta of blockMetas) {
+   214→      const isGame = interactiveBlockTypes.has(meta.type) || meta.category === 'interactive';
+   215→      const category: CommandCategory = isGame ? 'game' : 'block';
+   216→
+   217→      // Add insertion hint to description when a block is selected
+   218→      const descSuffix = selectedBlockName
+   219→        ? ` (sisipkan setelah ${selectedBlockName})`
+   220→        : '';
+   221→
+   222→      commands.push({
+   223→        id: `add-block-${meta.type}`,
+   224→        label: meta.name,
+   225→        description: meta.description + descSuffix,
+   226→        icon: getBlockIcon(meta.type, meta.icon),
+   227→        category,
+   228→        action: () => {
+   229→          useCanvaStore.getState().addSchemaBlock(meta.type, insertAfterIndex);
+   230→        },
+   231→      });
+   232→    }
+   233→
+   234→    // ── Editor action commands ───────────────────────────────
+   235→    commands.push(
+   236→      {
+   237→        id: 'action-undo',
+   238→        label: 'Undo',
+   239→        description: 'Batalkan aksi terakhir',
+   240→        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>undo</span>,
+   241→        category: 'action',
+   242→        shortcut: 'Ctrl+Z',
+   243→        action: () => useCanvaStore.getState().undo(),
+   244→      },
+   245→      {
+   246→        id: 'action-redo',
+   247→        label: 'Redo',
+   248→        description: 'Ulangi aksi yang dibatalkan',
+   249→        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>redo</span>,
+   250→        category: 'action',
+   251→        shortcut: 'Ctrl+Y',
+   252→        action: () => useCanvaStore.getState().redo(),
+   253→      },
+   254→      {
+   255→        id: 'action-delete-block',
+   256→        label: 'Hapus Block Terpilih',
+   257→        description: 'Hapus block yang sedang dipilih',
+   258→        icon: <span className="material-symbols-outlined text-red-400" style={ { fontSize: '16px' } }>delete</span>,
+   259→        category: 'action',
+   260→        shortcut: 'Delete',
+   261→        action: () => {
+   262→          const s = useCanvaStore.getState();
+   263→          if (s.selectedBlockId) s.deleteBlock(s.selectedBlockId);
+   264→          else if (s.selectedElId) s.deleteSelected();
+   265→        },
+   266→      },
+   267→      {
+   268→        id: 'action-duplicate-block',
+   269→        label: 'Duplikat Block Terpilih',
+   270→        description: 'Gandakan block yang sedang dipilih',
+   271→        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>content_copy</span>,
+   272→        category: 'action',
+   273→        shortcut: 'Ctrl+D',
+   274→        action: () => {
+   275→          const s = useCanvaStore.getState();
+   276→          if (s.selectedBlockId) s.duplicateBlock(s.selectedBlockId);
+   277→          else if (s.selectedElId) { s.copySelected(); s.pasteElements(); }
+   278→        },
+   279→      },
+   280→      {
+   281→        id: 'action-toggle-left-panel',
+   282→        label: 'Toggle Panel Kiri',
+   283→        description: 'Buka/tutup panel kiri',
+   284→        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>dock_to_left</span>,
+   285→        category: 'action',
+   286→        action: () => useCanvaStore.getState().toggleLeftPanel(),
+   287→      },
+   288→      {
+   289→        id: 'action-toggle-right-panel',
+   290→        label: 'Toggle Panel Kanan',
+   291→        description: 'Buka/tutup panel kanan',
+   292→        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>dock_to_right</span>,
+   293→        category: 'action',
+   294→        action: () => useCanvaStore.getState().toggleRightPanel(),
+   295→      },
+   296→      {
+   297→        id: 'action-zoom-in',
+   298→        label: 'Zoom In',
+   299→        description: 'Perbesar tampilan canvas',
+   300→        icon: <ZoomIn size={16} className="text-amber-400" />,
+   301→        category: 'action',
+   302→        shortcut: 'Ctrl++',
+   303→        action: () => {
+   304→          const s = useCanvaStore.getState();
+   305→          if (s.zoom === -1) s.setZoom(1);
+   306→          else s.zoomDelta(0.1);
+   307→        },
+   308→      },
+   309→      {
+   310→        id: 'action-zoom-out',
+   311→        label: 'Zoom Out',
+   312→        description: 'Perkecil tampilan canvas',
+   313→        icon: <ZoomOut size={16} className="text-amber-400" />,
+   314→        category: 'action',
+   315→        shortcut: 'Ctrl+-',
+   316→        action: () => {
+   317→          const s = useCanvaStore.getState();
+   318→          if (s.zoom === -1) s.setZoom(0.8);
+   319→          else s.zoomDelta(-0.1);
+   320→        },
+   321→      },
+   322→      {
+   323→        id: 'action-zoom-reset',
+   324→        label: 'Zoom Fit ke Layar',
+   325→        description: 'Sesuaikan zoom agar muat di layar',
+   326→        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>fullscreen</span>,
+   327→        category: 'action',
+   328→        shortcut: 'Ctrl+0',
+   329→        action: () => useCanvaStore.getState().zoomToFit(),
+   330→      },
+   331→      {
+   332→        id: 'action-play-preview',
+   333→        label: 'Play Preview',
+   334→        description: 'Jalankan preview interaktif',
+   335→        icon: <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '16px' } }>play_arrow</span>,
+   336→        category: 'action',
+   337→        action: () => useInteractiveStore.getState().openPlay(),
+   338→      },
+   339→      {
+   340→        id: 'action-export-html',
+   341→        label: 'Ekspor HTML',
+   342→        description: 'Unduh file HTML interaktif',
+   343→        icon: <FileDown size={16} className="text-amber-400" />,
+   344→        category: 'action',
+   345→        action: () => {
+   346→          // Trigger export via dynamic import
+   347→          import('@/lib/use-vite-export').then(({ useViteExport }) => {
+   348→            // This is a hook, can't call dynamically — use alternative
+   349→          }).catch(() => {});
+   350→          toast.info('Gunakan tombol Export di toolbar untuk export HTML');
+   351→        },
+   352→      },
+   353→      {
+   354→        id: 'action-print',
+   355→        label: 'Cetak / Print',
+   356→        description: 'Cetak halaman MPI',
+   357→        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>print</span>,
+   358→        category: 'action',
+   359→        action: () => window.print(),
+   360→      },
+   361→      {
+   362→        id: 'action-save-now',
+   363→        label: 'Simpan Sekarang',
+   364→        description: 'Simpan ke penyimpanan lokal',
+   365→        icon: <span className="material-symbols-outlined text-amber-400" style={ { fontSize: '16px' } }>save</span>,
+   366→        category: 'action',
+   367→        shortcut: 'Ctrl+S',
+   368→        action: () => {
+   369→          useCanvaStore.getState().saveToStorage();
+   370→          useAuthoringStore.getState().saveToStorage();
+   371→          toast.success('Tersimpan');
+   372→        },
+   373→      },
+   374→      // ── Page / Scene transaction actions ─────────────────────
+   375→      // These use the SceneTransaction system for atomic mutations.
+   376→      // They are the Command Palette triggers for split, merge,
+   377→      // rebalance, and promote — all with auto-rollback on failure.
+   378→      {
+   379→        id: 'action-split-page',
+   380→        label: 'Pisah Halaman di Block Ini',
+   381→        description: 'Split halaman di block terpilih menjadi halaman baru',
+   382→        icon: <span className="material-symbols-outlined text-sky-400" style={ { fontSize: '16px' } }>content_copy</span>,
+   383→        category: 'action',
+   384→        shortcut: 'Ctrl+Shift+S',
+   385→        action: () => {
+   386→          const s = useCanvaStore.getState();
+   387→          if (s.selectedBlockId) s.splitPageAtBlock(s.selectedBlockId);
+   388→          else toast.info('Pilih block terlebih dahulu untuk split');
+   389→        },
+   390→      },
+   391→      {
+   392→        id: 'action-merge-next-page',
+   393→        label: 'Gabung dengan Halaman Berikutnya',
+   394→        description: 'Merge halaman ini dengan halaman setelahnya',
+   395→        icon: <span className="material-symbols-outlined text-sky-400" style={ { fontSize: '16px' } }>dashboard</span>,
+   396→        category: 'action',
+   397→        shortcut: 'Ctrl+Shift+M',
+   398→        action: () => useCanvaStore.getState().mergeWithAdjacentPage('next'),
+   399→      },
+   400→      {
+   401→        id: 'action-merge-prev-page',
+   402→        label: 'Gabung dengan Halaman Sebelumnya',
+   403→        description: 'Merge halaman ini dengan halaman sebelumnya',
+   404→        icon: <span className="material-symbols-outlined text-sky-400" style={ { fontSize: '16px' } }>dashboard</span>,
+   405→        category: 'action',
+   406→        action: () => useCanvaStore.getState().mergeWithAdjacentPage('prev'),
+   407→      },
+   408→      {
+   409→        id: 'action-rebalance-page',
+   410→        label: 'Optimalkan Tata Letak',
+   411→        description: 'Rebalance kompresi dan layout halaman saat ini',
+   412→        icon: <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '16px' } }>dashboard</span>,
+   413→        category: 'action',
+   414→        shortcut: 'Ctrl+Shift+R',
+   415→        action: () => useCanvaStore.getState().rebalanceCurrentPage(),
+   416→      },
+   417→      {
+   418→        id: 'action-promote-scene',
+   419→        label: 'Promosi Scene ke Halaman',
+   420→        description: 'Konversi scene overflow menjadi halaman baru',
+   421→        icon: <span className="material-symbols-outlined text-emerald-400" style={ { fontSize: '16px' } }>dashboard</span>,
+   422→        category: 'action',
+   423→        action: () => useCanvaStore.getState().promoteSceneSplit(1),
+   424→      },
+   425→    );
+   426→
+   427→    // ── Navigation commands ──────────────────────────────────
+   428→    const pages = useCanvaStore.getState().pages;
+   429→
+   430→    commands.push(
+   431→      {
+   432→        id: 'nav-dashboard',
+   433→        label: 'Buka Dashboard',
+   434→        description: 'Pilih preset, kelengkapan, quick actions',
+   435→        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>home</span>,
+   436→        category: 'navigation',
+   437→        action: () => useCanvaStore.setState({ panelRequest: 'dashboard' }),
+   438→      },
+   439→      {
+   440→        id: 'nav-dokumen',
+   441→        label: 'Buka Dokumen',
+   442→        description: 'Edit CP, TP, ATP, Alur Pembelajaran',
+   443→        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>description</span>,
+   444→        category: 'navigation',
+   445→        action: () => useCanvaStore.setState({ panelRequest: 'dokumen' }),
+   446→      },
+   447→      {
+   448→        id: 'nav-konten',
+   449→        label: 'Buka Konten',
+   450→        description: 'Edit Kuis, Game, Materi, Skenario',
+   451→        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>menu_book</span>,
+   452→        category: 'navigation',
+   453→        action: () => useCanvaStore.setState({ panelRequest: 'konten' }),
+   454→      },
+   455→      {
+   456→        id: 'nav-canva',
+   457→        label: 'Buka Canva Editor',
+   458→        description: 'Kembali ke editor visual',
+   459→        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>dashboard</span>,
+   460→        category: 'navigation',
+   461→        action: () => useCanvaStore.setState({ panelRequest: 'canva' }),
+   462→      },
+   463→      {
+   464→        id: 'nav-sisipkan-tab',
+   465→        label: 'Buka Tab Tambah Block',
+   466→        description: 'Tambah block, modul, game ke halaman ini',
+   467→        icon: <span className="material-symbols-outlined text-teal-400" style={ { fontSize: '16px' } }>dashboard</span>,
+   468→        category: 'navigation',
+   469→        action: () => {
+   470→          useCanvaStore.setState({ panelRequest: 'canva' });
+   471→          const canvaState = useCanvaStore.getState();
+   472→          if (!canvaState.leftPanelOpen) canvaState.toggleLeftPanel();
+   473→          canvaState.setLeftTab('add-block');
+   474→        },
+   475→      },
+   476→      {
+   477→        id: 'nav-halaman-baru-tab',
+   478→        label: 'Buka Tab Halaman',
+   479→        description: 'Tambah halaman baru, preset, auto-generate',
+   480→        icon: <span className="material-symbols-outlined text-sky-400" style={ { fontSize: '16px' } }>dashboard</span>,
+   481→        category: 'navigation',
+   482→        action: () => {
+   483→          useCanvaStore.setState({ panelRequest: 'canva' });
+   484→          const canvaState = useCanvaStore.getState();
+   485→          if (!canvaState.leftPanelOpen) canvaState.toggleLeftPanel();
+   486→          canvaState.setLeftTab('pages');
+   487→        },
+   488→      },
+   489→      {
+   490→        id: 'nav-autogen',
+   491→        label: 'Buka Auto-Generate',
+   492→        description: 'Generate konten otomatis dengan AI',
+   493→        icon: <AutoGenIcon size={16} className="text-purple-400" />,
+   494→        category: 'navigation',
+   495→        action: () => useCanvaStore.setState({ panelRequest: 'autogen' }),
+   496→      },
+   497→      {
+   498→        id: 'nav.ai-assistant',
+   499→        label: 'Buka AI Assistant',
+   500→        description: 'Buat konten dengan bantuan AI di panel kanan',
+   501→        icon: <AutoGenIcon size={16} className="text-purple-400" />,
+   502→        category: 'navigation',
+   503→        shortcut: 'Ctrl+I',
+   504→        action: () => {
+   505→          // Open right panel if closed, then expand AI section
+   506→          const canvaState = useCanvaStore.getState();
+   507→          if (!canvaState.rightPanelOpen) {
+   508→            useCanvaStore.setState({ rightPanelOpen: true });
+   509→          }
+   510→          window.dispatchEvent(new CustomEvent('open-ai-assistant'));
+   511→        },
+   512→      },
+   513→      {
+   514→        id: 'nav-preview',
+   515→        label: 'Buka Live Preview',
+   516→        description: 'Preview tampilan siswa lengkap',
+   517→        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>smart_display</span>,
+   518→        category: 'navigation',
+   519→        action: () => useCanvaStore.setState({ panelRequest: 'preview' }),
+   520→      },
+   521→      {
+   522→        id: 'nav-import',
+   523→        label: 'Buka Import/Export',
+   524→        description: 'Import Excel/JSON, Export HTML',
+   525→        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>download</span>,
+   526→        category: 'navigation',
+   527→        action: () => useCanvaStore.setState({ panelRequest: 'import' }),
+   528→      },
+   529→    );
+   530→
+   531→    // Dynamic page navigation
+   532→    for (let i = 0; i < pages.length; i++) {
+   533→      const page = pages[i];
+   534→      commands.push({
+   535→        id: `nav-page-${i}`,
+   536→        label: `Ke ${page!.label || `Halaman ${i + 1}`}`,
+   537→        description: `Pergi ke halaman ${i + 1}`,
+   538→        icon: <span className="material-symbols-outlined text-purple-400" style={ { fontSize: '16px' } }>tag</span>,
+   539→        category: 'navigation',
+   540→        action: () => useCanvaStore.getState().goPage(i),
+   541→      });
+   542→    }
+   543→
+   544→    return commands;
+   545→  }, [open]); // Rebuild when palette opens to get fresh state
+   546→
+   547→  // ── Filter and sort commands ───────────────────────────────
+   548→  const filteredCommands = useMemo(() => {
+   549→    if (!query.trim()) return allCommands;
+   550→
+   551→    const results = allCommands
+   552→      .map(cmd => ({
+   553→        cmd,
+   554→        score: Math.max(
+   555→          fuzzyScore(query, cmd.label),
+   556→          cmd.description ? fuzzyScore(query, cmd.description) * 0.5 : 0,
+   557→        ),
+   558→      }))
+   559→      .filter(r => r.score > 0)
+   560→      .sort((a, b) => b.score - a.score)
+   561→      .map(r => r.cmd);
+   562→
+   563→    return results;
+   564→  }, [query, allCommands]);
+   565→
+   566→  // ── Group commands by category ─────────────────────────────
+   567→  const groupedCommands = useMemo(() => {
+   568→    // Show recently used at top when no query
+   569→    const recentIds = query.trim() ? [] : getRecentItems();
+   570→    const recentItems = recentIds
+   571→      .map(id => allCommands.find(c => c.id === id))
+   572→      .filter(Boolean) as CommandItem[];
+   573→
+   574→    // Group by category in display order
+   575→    const categoryOrder: CommandCategory[] = ['block', 'game', 'action', 'navigation'];
+   576→    const groups: { category: CommandCategory | 'recent'; items: CommandItem[] }[] = [];
+   577→
+   578→    // Add recent group if any
+   579→    if (recentItems.length > 0) {
+   580→      groups.push({ category: 'recent', items: recentItems });
+   581→    }
+   582→
+   583→    for (const cat of categoryOrder) {
+   584→      const items = filteredCommands.filter(c => c.category === cat);
+   585→      if (items.length > 0) {
+   586→        groups.push({ category: cat, items });
+   587→      }
+   588→    }
+   589→
+   590→    return groups;
+   591→  }, [filteredCommands, allCommands, query]);
+   592→
+   593→  // ── Flat list for keyboard navigation ──────────────────────
+   594→  const flatItems = useMemo(() => {
+   595→    return groupedCommands.flatMap(g => g.items);
+   596→  }, [groupedCommands]);
+   597→
+   598→  // ── Reset on open ──────────────────────────────────────────
+   599→  // When the palette opens, reset search and selection state.
+   600→  // Using requestAnimationFrame to avoid the set-state-in-effect lint rule
+   601→  // while still ensuring the reset happens before the user interacts.
+   602→  useEffect(() => {
+   603→    if (open) {
+   604→      const raf = requestAnimationFrame(() => {
+   605→        setQuery('');
+   606→        setSelectedIndex(0);
+   607→        inputRef.current?.focus();
+   608→      });
+   609→      return () => cancelAnimationFrame(raf);
+   610→    }
+   611→    return undefined;
+   612→  }, [open]);
+   613→
+   614→  // ── Clamp selected index (derived, no effect) ───────────────
+   615→  const clampedSelectedIndex = selectedIndex >= flatItems.length
+   616→    ? Math.max(0, flatItems.length - 1)
+   617→    : selectedIndex;
+   618→
+   619→  // ── Scroll selected item into view ─────────────────────────
+   620→  useEffect(() => {
+   621→    if (listRef.current) {
+   622→      const selected = listRef.current.querySelector(`[data-command-index="${clampedSelectedIndex}"]`);
+   623→      if (selected) {
+   624→        selected.scrollIntoView({ block: 'nearest' });
+   625→      }
+   626→    }
+   627→  }, [clampedSelectedIndex]);
+   628→
+   629→  // ── Execute command ────────────────────────────────────────
+   630→  const executeCommand = useCallback((cmd: CommandItem) => {
+   631→    addRecentItem(cmd.id);
+   632→    cmd.action();
+   633→    onClose();
+   634→  }, [onClose]);
+   635→
+   636→  // ── Keyboard handler ───────────────────────────────────────
+   637→  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+   638→    switch (e.key) {
+   639→      case 'ArrowDown':
+   640→        e.preventDefault();
+   641→        setSelectedIndex(i => (i + 1) % Math.max(1, flatItems.length));
+   642→        break;
+   643→      case 'ArrowUp':
+   644→        e.preventDefault();
+   645→        setSelectedIndex(i => (i - 1 + flatItems.length) % Math.max(1, flatItems.length));
+   646→        break;
+   647→      case 'Enter':
+   648→        e.preventDefault();
+   649→        if (flatItems[clampedSelectedIndex]) {
+   650→          executeCommand(flatItems[clampedSelectedIndex]);
+   651→        }
+   652→        break;
+   653→      case 'Escape':
+   654→        e.preventDefault();
+   655→        onClose();
+   656→        break;
+   657→    }
+   658→  }, [flatItems, clampedSelectedIndex, executeCommand, onClose]);
+   659→
+   660→  // ── Don't render if not open ───────────────────────────────
+   661→  if (!open) return null;
+   662→
+   663→  return createPortal(
+   664→    <div
+   665→      className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh]"
+   666→      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+   667→      role="dialog"
+   668→      aria-modal="true"
+   669→      aria-label="Command Palette"
+   670→    >
+   671→      {/* Backdrop */}
+   672→      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+   673→
+   674→      {/* Palette */}
+   675→      <div
+   676→        className={cn(
+   677→          'relative w-full max-w-[520px] rounded-xl border border-app-border shadow-2xl overflow-hidden',
+   678→          'bg-app-surface/95 backdrop-blur-md',
+   679→          'animate-in fade-in zoom-in-95 duration-150',
+   680→        )}
+   681→        onKeyDown={handleKeyDown}
+   682→      >
+   683→        {/* Search Input */}
+   684→        <div className="flex items-center gap-2 px-4 py-3 border-b border-app-border">
+   685→          <span className="material-symbols-outlined text-app-muted shrink-0" style={ { fontSize: '18px' } }>search</span>
+   686→          <input
+   687→            ref={inputRef}
+   688→            type="text"
+   689→            value={query}
+   690→            onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
+   691→            placeholder="Cari block, aksi, atau navigasi..."
+   692→            className="flex-1 bg-transparent text-sm text-app-primary placeholder:text-app-muted outline-none"
+   693→            aria-label="Cari perintah"
+   694→            autoComplete="off"
+   695→          />
+   696→          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-app-muted bg-app-elevated rounded border border-app-border">
+   697→            Esc
+   698→          </kbd>
+   699→        </div>
+   700→
+   701→        {/* Results */}
+   702→        <div
+   703→          ref={listRef}
+   704→          className="max-h-[420px] overflow-y-auto overscroll-contain py-1"
+   705→          style={{
+   706→            scrollbarWidth: 'thin',
+   707→            scrollbarColor: 'rgba(255,255,255,0.1) transparent',
+   708→          }}
+   709→        >
+   710→          {flatItems.length === 0 ? (
+   711→            <div className="px-4 py-8 text-center text-sm text-app-muted">
+   712→              <span className="material-symbols-outlined mx-auto mb-2 opacity-30" style={ { fontSize: '24px' } }>search</span>
+   713→              Tidak ditemukan untuk &ldquo;{query}&rdquo;
+   714→            </div>
+   715→          ) : (
+   716→            groupedCommands.map((group, groupIdx) => {
+   717→              // Find the starting index for this group in the flat list
+   718→              let startIdx = 0;
+   719→              for (let g = 0; g < groupIdx; g++) {
+   720→                startIdx += groupedCommands[g]!.items.length;
+   721→              }
+   722→
+   723→              return (
+   724→                <div key={group.category} role="group" aria-label={group.category === 'recent' ? 'Terakhir Digunakan' : CATEGORY_CONFIG[group.category]?.label}>
+   725→                  {/* Group heading */}
+   726→                  <div className="flex items-center gap-2 px-3 py-1.5">
+   727→                    <span className="text-[10px] font-bold uppercase tracking-wider text-app-muted">
+   728→                      {group.category === 'recent' ? '⏱ Terakhir Digunakan' : CATEGORY_CONFIG[group.category]?.label}
+   729→                    </span>
+   730→                    {group.category !== 'recent' && (
+   731→                      <span className={cn(
+   732→                        'inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold border',
+   733→                        CATEGORY_CONFIG[group.category].badgeClass,
+   734→                      )}>
+   735→                        {CATEGORY_CONFIG[group.category].badge}
+   736→                      </span>
+   737→                    )}
+   738→                    <div className="flex-1 h-px bg-app-border/50" />
+   739→                  </div>
+   740→
+   741→                  {/* Group items */}
+   742→                  {group.items.map((cmd, itemIdx) => {
+   743→                    const flatIdx = startIdx + itemIdx;
+   744→                    const isSelected = flatIdx === clampedSelectedIndex;
+   745→
+   746→                    return (
+   747→                      <div
+   748→                        key={cmd.id}
+   749→                        data-command-index={flatIdx}
+   750→                        role="option"
+   751→                        aria-selected={isSelected}
+   752→                        onClick={() => executeCommand(cmd)}
+   753→                        onMouseEnter={() => setSelectedIndex(flatIdx)}
+   754→                        className={cn(
+   755→                          'flex items-center gap-2.5 px-3 py-2 mx-1 rounded-lg cursor-pointer transition-colors',
+   756→                          isSelected
+   757→                            ? 'bg-app-accent/15 text-app-accent'
+   758→                            : 'text-app-primary hover:bg-app-elevated',
+   759→                        )}
+   760→                      >
+   761→                        {/* Icon */}
+   762→                        <span className={cn(
+   763→                          'flex items-center justify-center w-7 h-7 rounded-md shrink-0',
+   764→                          isSelected ? 'bg-app-accent/20' : 'bg-app-elevated',
+   765→                        )}>
+   766→                          {cmd.icon}
+   767→                        </span>
+   768→
+   769→                        {/* Text */}
+   770→                        <div className="flex-1 min-w-0">
+   771→                          <div className="text-[12px] font-medium truncate">{cmd.label}</div>
+   772→                          {cmd.description && (
+   773→                            <div className={cn(
+   774→                              'text-[10px] truncate',
+   775→                              isSelected ? 'text-app-accent/60' : 'text-app-muted',
+   776→                            )}>
+   777→                              {cmd.description}
+   778→                            </div>
+   779→                          )}
+   780→                        </div>
+   781→
+   782→                        {/* Shortcut */}
+   783→                        {cmd.shortcut && (
+   784→                          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-mono text-app-muted bg-app-elevated rounded border border-app-border/50">
+   785→                            {cmd.shortcut}
+   786→                          </kbd>
+   787→                        )}
+   788→
+   789→                        {/* Category badge (small, for visual distinction) */}
+   790→                        {group.category !== 'recent' && (
+   791→                          <span className={cn(
+   792→                            'shrink-0 inline-flex items-center px-1 py-0 rounded text-[8px] font-semibold border',
+   793→                            CATEGORY_CONFIG[cmd.category].badgeClass,
+   794→                          )}>
+   795→                            {CATEGORY_CONFIG[cmd.category].badge}
+   796→                          </span>
+   797→                        )}
+   798→                      </div>
+   799→                    );
+   800→                  })}
+   801→                </div>
+   802→              );
+   803→            })
+   804→          )}
+   805→        </div>
+   806→
+   807→        {/* Footer hint */}
+   808→        <div className="flex items-center gap-3 px-4 py-2 border-t border-app-border/50 text-[9px] text-app-muted">
+   809→          <span className="flex items-center gap-1">
+   810→            <kbd className="px-1 py-0.5 bg-app-elevated rounded border border-app-border/50 font-mono">↑↓</kbd>
+   811→            navigasi
+   812→          </span>
+   813→          <span className="flex items-center gap-1">
+   814→            <kbd className="px-1 py-0.5 bg-app-elevated rounded border border-app-border/50 font-mono">↵</kbd>
+   815→            pilih
+   816→          </span>
+   817→          <span className="flex items-center gap-1">
+   818→            <kbd className="px-1 py-0.5 bg-app-elevated rounded border border-app-border/50 font-mono">Esc</kbd>
+   819→            tutup
+   820→          </span>
+   821→          <span className="ml-auto opacity-60">
+   822→            {flatItems.length} perintah
+   823→          </span>
+   824→        </div>
+   825→      </div>
+   826→    </div>,
+   827→    document.body,
+   828→  );
+   829→}
+   830→
+   831→// ═══════════════════════════════════════════════════════════════════
+   832→// HOOK: useCommandPalette
+   833→// ═══════════════════════════════════════════════════════════════════
+   834→// Manages the open/close state and Cmd+K keyboard shortcut.
+   835→
+   836→export function useCommandPalette() {
+   837→  const [open, setOpen] = useState(false);
+   838→
+   839→  const toggle = useCallback(() => setOpen(v => !v), []);
+   840→  const openPalette = useCallback(() => setOpen(true), []);
+   841→  const closePalette = useCallback(() => setOpen(false), []);
+   842→
+   843→  // Register Cmd+K / Ctrl+K globally
+   844→  useEffect(() => {
+   845→    const handleKeyDown = (e: KeyboardEvent) => {
+   846→      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+   847→        e.preventDefault();
+   848→        e.stopPropagation();
+   849→        toggle();
+   850→      }
+   851→    };
+   852→    window.addEventListener('keydown', handleKeyDown, true); // Use capture phase to intercept before CanvaBuilder
+   853→    return () => window.removeEventListener('keydown', handleKeyDown, true);
+   854→  }, [toggle]);
+   855→
+   856→  // Listen for custom open event (from Toolbar or other components)
+   857→  useEffect(() => {
+   858→    const handleOpen = () => setOpen(true);
+   859→    window.addEventListener(COMMAND_PALETTE_OPEN_EVENT, handleOpen);
+   860→    return () => window.removeEventListener(COMMAND_PALETTE_OPEN_EVENT, handleOpen);
+   861→  }, []);
+   862→
+   863→  return { open, setOpen, toggle, openPalette, closePalette };
+   864→}
+   865→

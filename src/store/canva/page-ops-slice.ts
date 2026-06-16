@@ -23,6 +23,7 @@ import { assertValidSchema } from '@/core/schema/validation';
 import { assertDocumentPurity } from '@/core/schema/session-state';
 import { saveCrashCheckpoint, transactionRollback } from '@/core/recovery';
 import { isFullPageBlockType } from '@/core/schema/capability-registry';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type PageOpsSlice = Pick<
   CanvaState,
@@ -80,6 +81,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     });
 
     set({ pages: newPages, currentPageIndex: targetPageIndex, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+    notifyMutation();
     const targetLabel = targetPage.label || `Halaman ${targetPageIndex + 1}`;
     toast.success(`"${blockName}" dipindahkan ke ${targetLabel}`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
@@ -138,6 +140,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     newPages.splice(currentPageIndex + 1, 0, newPage);
 
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+    notifyMutation();
 
     // [UNDO-03] Emit as 'cross-page' event — no _immerPatches, snapshot undo handles this
     editBus.emit({
@@ -259,6 +262,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     newPages[pageIndex] = { ...sourcePage, schema: commitSchemaUpdate(sourceSchema, result.schema.blocks) };
     newPages.splice(pageIndex + 1, 1);
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+    notifyMutation();
 
     // [UNDO-03] Emit as 'cross-page' event — no _immerPatches, snapshot undo handles this
     editBus.emit({
@@ -312,6 +316,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks) };
     set({ pages: newPages });
+    notifyMutation();
     toast.success(`Block dipindah ke ${targetContainer.type === 'root' ? 'root' : targetContainer.type}`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
@@ -336,6 +341,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
       return;
     }
 
+    notifyMutation();
     toast.success('Layout halaman dioptimalkan', {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
@@ -371,6 +377,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     const result = promoteSceneSplitToPage(page.id, scenePlan, sceneIndex);
     if (!result.success) { toast.error('Split gagal: ' + (result.error || 'Kesalahan tidak diketahui')); return; }
 
+    notifyMutation();
     toast.success('Scene dipisah menjadi halaman baru', {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
@@ -401,6 +408,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
 
     if (!result.success) { toast.error('Merge gagal: ' + (result.error || 'Kesalahan tidak diketahui')); return; }
 
+    notifyMutation();
     toast.success('Halaman berhasil digabung', {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
@@ -517,6 +525,7 @@ export const createPageOpsSlice: StateCreator<CanvaState, [], [], PageOpsSlice> 
     newPages.splice(currentPageIndex + 1, 0, newPage);
 
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+    notifyMutation();
 
     editBus.emit({
       type: 'cross-page',

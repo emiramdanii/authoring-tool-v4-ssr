@@ -45,6 +45,11 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
   const lastDBSaveRef = useRef<number>(0);
   const lastErrorToastRef = useRef<number>(0);
   const pendingSaveRef = useRef<boolean>(false);
+  // Sprint 7.2: Track current projectId via ref for stale-save detection.
+  // When a debounce timer from a previous project fires after the project
+  // has been switched, we detect the mismatch and abort the save.
+  const projectIdRef = useRef<string | null | undefined>(projectId);
+  projectIdRef.current = projectId;
 
   // ── Helper: build sync payload from current store state ──────
   const buildSyncPayload = useCallback((): SyncPayload => {
@@ -80,6 +85,14 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
 
   // ── Core save logic — revision-based, single-flight ─────────────
   const saveNow = useCallback(async () => {
+    // Sprint 7.2: Stale-save guard — if the project ID has changed since
+    // this saveNow was created (e.g., project was switched), abort the save
+    // to prevent saving Project B data under Project A's ID.
+    if (projectId !== projectIdRef.current) {
+      logger.warn('useAutoSave', 'Stale saveNow detected — project ID changed, aborting');
+      return;
+    }
+
     const dirtyState = useDirtyStore.getState();
 
     // SINGLE-FLIGHT GUARD: If a save is already in progress, mark

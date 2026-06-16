@@ -108,8 +108,17 @@ export const useDirtyStore = create<DirtyState>((set, get) => ({
   saveSucceeded: () => {
     const { editRevision, savingRevision } = get();
     if (savingRevision === null) {
-      // No save was in progress — shouldn't happen, but be safe
-      set({ saveStatus: 'saved' });
+      // No save was in progress — this can happen when saveProjectToDBInternal
+      // is called directly (e.g., from Ctrl+S or saveProject) without going
+      // through useAutoSave.saveNow(). In this case, treat the current
+      // editRevision as the saved revision.
+      set({
+        lastSavedRevision: editRevision,
+        savingRevision: null,
+        dirty: false,
+        saveStatus: 'saved',
+        lastError: null,
+      });
       return true;
     }
 

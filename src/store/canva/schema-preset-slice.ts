@@ -23,6 +23,7 @@ import { generatePageId } from '@/core/schema/ensure-schema';
 import type { LessonSchema } from '@/core/schema/types';
 import { logger } from '@/core/utils/logger';
 import { saveCrashCheckpoint, transactionRollback } from '@/core/recovery';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type SchemaPresetSlice = Pick<CanvaState, 'loadSchemaPreset' | 'loadCustomSchema' | 'loadGoldenPreset'>;
 
@@ -94,6 +95,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
       // FASE 6: Commit transaction — preset load succeeded
       transactionRollback.commit(txId);
 
+      notifyMutation();
       toast.success(`📦 Preset "${schema.title}" dimuat — ${pages.length} layar`);
     } catch (err) {
       logger.error('SchemaPreset', err);
@@ -159,6 +161,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
       // FASE 6: Commit transaction — custom schema load succeeded
       transactionRollback.commit(txId);
 
+      notifyMutation();
       toast.success(`🏪 Template "${schema.title}" diterapkan — ${pages.length} layar`);
     } catch (err) {
       logger.error('CustomSchema', err);
@@ -215,6 +218,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
       // FASE 6: Commit transaction — golden preset load succeeded
       transactionRollback.commit(txId);
 
+      notifyMutation();
       toast.success(`✨ Golden preset "${presetId}" dimuat — ${safePages.length} layar`);
     } catch (err) {
       logger.error('GoldenPreset', err);

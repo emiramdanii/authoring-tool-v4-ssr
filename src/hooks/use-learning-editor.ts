@@ -85,12 +85,10 @@ export function useLearningEditor(editable: boolean): UseLearningEditorReturn {
     });
 
     if (result.success) {
-      // Mark dirty so auto-save picks up the change
-      try {
-        useDirtyStore.getState().markDirty();
-      } catch {
-        // SSR guard
-      }
+      // Sprint 7.2: markDirty() is already called inside applyGuidedSchemaPatch()
+      // (via the updateSchemaBlock path). The redundant call here was incrementing
+      // editRevision twice per edit, causing an unnecessary extra save cycle.
+      // Removed redundant markDirty() — the mutation is already tracked.
     } else {
       console.warn(
         `[useLearningEditor] Failed to apply patch to block "${blockId}": ${result.error}`

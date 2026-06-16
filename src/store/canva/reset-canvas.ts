@@ -13,6 +13,7 @@ import { GAME_TYPES, MATERI_RAKIT_TYPES } from '@/lib/canva-constants';
 // FASE 3: Schema-native page creation — no more buildTemplateData()
 import { createPageFromPreset } from '@/core/preset/PagePresetRegistry';
 import { clearCompressedHeightCache } from '@/core/schema/session-state';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type ResetCanvasSlice = Pick<CanvaState, 'resetCanvas'>;
 
@@ -102,6 +103,7 @@ export const createResetCanvasSlice: StateCreator<CanvaState, [], [], ResetCanva
     // on next mount will get the fresh pages, not stale data.
     get().saveToStorage();
 
+    notifyMutation();
     toast.success(`${newPages.length} halaman dibuat dari data authoring`);
   },
 });

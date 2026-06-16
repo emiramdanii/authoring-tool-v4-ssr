@@ -14,6 +14,7 @@ import { LAYOUT_PRESETS } from '@/components/canva/types';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { ZOOM_FIT, clampZoom } from '@/lib/canva-constants';
 import { commitSchemaUpdate } from './schema-helpers';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type ViewportSlice = Pick<
   CanvaState,
@@ -40,7 +41,10 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
     set({ zoom: clampZoom(base + delta) });
   },
   zoomToFit: () => set({ zoom: ZOOM_FIT }),
-  setRatio: (ratioId) => set({ ratioId, zoom: ZOOM_FIT }),
+  setRatio: (ratioId) => {
+    set({ ratioId, zoom: ZOOM_FIT });
+    notifyMutation();
+  },
 
   // ── Grid & Snap ──────────────────────────────────────────────
   toggleGrid: () => set(s => ({ showGrid: !s.showGrid })),
@@ -75,6 +79,7 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, elements: updated };
     set({ pages: newPages });
+    notifyMutation();
     toast.success(`Layout "${preset.name}" diterapkan`);
   },
 
@@ -124,6 +129,7 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
       } : {}),
     };
     set({ pages: newPages, selectedElId: null, selectedElIds: [], selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+    notifyMutation();
     toast.success('Stage dibersihkan');
   },
 
@@ -149,6 +155,7 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
       }),
     };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   // ── Legacy Element Alignment ─────────────────────────────────
@@ -192,6 +199,7 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
       elements: page.elements.map(e => ids.includes(e.id) ? updateEl(e) : e),
     };
     set({ pages: newPages });
+    notifyMutation();
     toast.success(`Align ${direction} diterapkan`);
   },
 
@@ -221,6 +229,7 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
         elements: page.elements.map(e => updates.has(e.id) ? { ...e, x: updates.get(e.id)! } : e),
       };
       set({ pages: newPages });
+      notifyMutation();
     } else {
       const sorted = [...targets].sort((a, b) => a.y - b.y);
       const min = sorted[0]!.y;
@@ -236,6 +245,7 @@ export const createViewportSlice: StateCreator<CanvaState, [], [], ViewportSlice
         elements: page.elements.map(e => updates.has(e.id) ? { ...e, y: updates.get(e.id)! } : e),
       };
       set({ pages: newPages });
+      notifyMutation();
     }
     toast.success(`Distribusi ${axis === 'horizontal' ? 'horizontal' : 'vertikal'} diterapkan`);
   },

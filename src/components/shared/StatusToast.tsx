@@ -207,6 +207,12 @@ export const SaveNowButton: React.FC = React.memo(function SaveNowButton() {
   const handleSaveNow = useCallback(async () => {
     setSaving(true);
     try {
+      // Sprint 7.2: Route through saveProject() for durable save.
+      // Previously this only saved to localStorage, which was a P0 data-loss risk.
+      const { useProjectManager } = await import('@/hooks/use-project-manager');
+      await useProjectManager().saveProject();
+    } catch {
+      // Fallback: if project manager is unavailable, save to localStorage only
       useCanvaStore.getState().saveToStorage();
       useAuthoringStore.getState().saveToStorage();
     } finally {

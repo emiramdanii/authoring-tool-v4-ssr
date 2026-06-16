@@ -5,6 +5,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { DBProjectData } from '@/store/canva-store';
 import { canvaPagesToSavePages } from '@/lib/save-utils';
+import { useDirtyStore } from '@/store/dirty-store';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
 
@@ -109,12 +110,22 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   }, [loadProjects]);
 
   // Internal save helper (doesn't depend on state to avoid stale closures)
+  // Sprint 7.2: Now integrates with the dirty store state machine.
+  // Calls startSaving() before and saveSucceeded()/saveFailed() after.
   const saveProjectToDBInternal = useCallback(async (projectId: string) => {
     if (!projectId) return;
 
     const now = Date.now();
     if (now - lastSaveRef.current < 1000) return;
     lastSaveRef.current = now;
+
+    // Sprint 7.2: Coordinate with dirty store state machine.
+    // If auto-save is already in progress (saveStatus === 'saving'),
+    // don't start a competing save — auto-save will handle it.
+    const dirtyState = useDirtyStore.getState();
+    if (dirtyState.saveStatus !== 'saving') {
+      dirtyState.startSaving();
+    }
 
     try {
       setSaving(true);
@@ -154,23 +165,38 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       });
 
       if (!res.ok) throw new Error('Failed to save project');
-      // Sprint 7.1: DB save succeeded. Let the state machine know.
-      // The auto-save hook's saveNow() will call saveSucceeded()
-      // which checks revision match before marking clean.
-      // We also update the legacy _saveStatus for backward compat.
+
+      // Sprint 7.2: DB save succeeded — let the state machine know.
+      // saveSucceeded() checks if revision matches (handles edits during save).
+      useDirtyStore.getState().saveSucceeded();
       useCanvaStore.setState({ _saveStatus: 'saved' });
     } catch (error) {
       logger.error('ProjectProvider', error);
       useCanvaStore.setState({ _saveStatus: 'error' });
-      // Sprint 7.1: Don't touch dirty state on error — it stays dirty
-      // so the user can retry and beforeunload guard still works.
+      // Sprint 7.2: Let the state machine know save failed.
+      // dirty stays true so user can retry and beforeunload guard still works.
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      useDirtyStore.getState().saveFailed(errorMsg);
     } finally {
       setSaving(false);
     }
   }, []);
 
   // Load project into stores
+  // Sprint 7.2: Save current project if dirty before switching to prevent data loss.
   const loadProject = useCallback(async (id: string) => {
+    // Sprint 7.2: Save current project before switching if it has unsaved changes.
+    // This prevents silent data loss when the user switches projects with pending edits.
+    if (currentProjectId && useDirtyStore.getState().dirty) {
+      try {
+        await saveProjectToDBInternal(currentProjectId);
+      } catch (err) {
+        // Log but don't block project switch — user explicitly chose to switch.
+        // Recovery snapshot may still be available.
+        logger.warn('ProjectProvider', 'Failed to save before switching: ' + String(err));
+      }
+    }
+
     try {
       const res = await fetch(`/api/projects/${id}`);
       if (!res.ok) throw new Error('Failed to load project');
@@ -188,7 +214,6 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       // would overwrite the schema-derived projection with stale DB data.
       //
       // Sprint 7.1: Reset dirty store on project load
-      const { useDirtyStore } = require('@/store/dirty-store');
       useDirtyStore.getState().resetOnLoad();
 
       if (data.authoringData) {
@@ -218,7 +243,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       logger.error('ProjectProvider', error);
       toast.error('Gagal memuat proyek');
     }
-  }, []);
+  }, [currentProjectId, saveProjectToDBInternal]);
 
   // Save current project (public API)
   const saveProject = useCallback(async () => {

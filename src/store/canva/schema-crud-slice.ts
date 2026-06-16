@@ -20,6 +20,7 @@ import { findBlockOwner, commitSchemaUpdate, type BlockOwner } from './schema-he
 import { removeCompressedHeight } from '@/core/schema/session-state';
 import { removeMeasurement } from '@/core/layout/BlockMeasurer';
 import { saveCrashCheckpoint } from '@/core/recovery';
+import { notifyMutation } from '@/lib/save-utils';
 
 export type SchemaCRDSlice = Pick<
   CanvaState,
@@ -132,10 +133,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     set({ pages: newPages });
 
     // D2: Dirty tracking — mark project as having unsaved changes
-    try {
-      const { useDirtyStore } = require('@/store/dirty-store');
-      useDirtyStore.getState().markDirty();
-    } catch { /* SSR guard */ }
+    notifyMutation();
 
     // D2: Optional overflow check — same engine as applyGuidedSchemaPatch
     if (overflowPolicy !== 'none') {
@@ -238,6 +236,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     removeCompressedHeight(blockId);
     removeMeasurement(blockId);
     set({ pages: newPages, selectedBlockId: null, selectedBlockType: null, editingBlockId: null, selectedBlockIds: [] });
+    notifyMutation();
     toast.success(`Block "${blockName}" dihapus`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
       duration: 4000,
@@ -291,6 +290,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   // ── Move Block Down ──────────────────────────────────────────
@@ -340,6 +340,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks as SchemaBlock[]) };
     set({ pages: newPages });
+    notifyMutation();
   },
 
   // ── Duplicate Block ──────────────────────────────────────────
@@ -372,6 +373,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks) };
     set({ pages: newPages });
+    notifyMutation();
     get().selectBlock(clonedBlock.id ?? null, clonedBlock.type);
     toast.success('Block diduplikat', {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
@@ -434,6 +436,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
       ...(needsSchemaInit ? { elements: [] } : {}),
     };
     set({ pages: newPages });
+    notifyMutation();
     get().selectBlock(newBlock.id as string, blockType);
     toast.success(`${definition.name} ditambahkan`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
@@ -486,6 +489,7 @@ export const createSchemaCRDSlice: StateCreator<CanvaState, [], [], SchemaCRDSli
     const newPages = [...pages];
     newPages[currentPageIndex] = { ...page, schema: commitSchemaUpdate(schema, newBlocks) };
     set({ pages: newPages });
+    notifyMutation();
     get().selectBlock(newBlock.id as string, blockType);
     toast.success(`${definition.name} ditambahkan ke ${container.type}`, {
       action: { label: 'Undo', onClick: () => { get().undo(); } },
