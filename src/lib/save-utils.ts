@@ -96,11 +96,24 @@ export function getCombinedSaveStatus(): SaveStatus {
 export { notifyMutation } from './notify-mutation';
 
 // ═══════════════════════════════════════════════════════════════════
-// Sprint 7.2A: Durable-Save Coordinator
+// Sprint 7.2A-Patch: Durable-Save Coordinator
 // ═══════════════════════════════════════════════════════════════════
 // Single entry point for ALL saves (auto-save, Ctrl+S, SaveNowButton,
 // save-before-switch). Routes through the same revision-based
 // state machine with project-scoped save tokens.
+//
+// P0-1 Fix: Only executeDurableSave() owns the save lifecycle
+//   (startSaving → dbSaveFn → saveSucceeded/saveFailed).
+//   The dbSaveFn must be a pure persistence primitive that throws
+//   on error and does NOT touch the state machine.
+//
+// P0-2 Fix: dbSaveFn errors propagate as exceptions, ensuring
+//   failed saves are never marked as clean.
+//
+// P0-3 Fix: No rate-limit/throttle on durable-save path.
+//   Debounce on autosave is sufficient. If a save is needed,
+//   it MUST actually reach the DB — skipping it and marking
+//   clean is data loss.
 //
 // Guarantees:
 //   1. Only one save in-flight at a time (single-flight)
@@ -108,12 +121,12 @@ export { notifyMutation } from './notify-mutation';
 //   3. localStorage backup always runs first (crash recovery)
 //   4. DB save only when projectId exists and we're online
 //   5. saveSucceeded() only clears dirty if revision matches
+//   6. saveSucceeded() with null savingRevision is a no-op (P0-1)
 // ═══════════════════════════════════════════════════════════════════
 
 const DEBOUNCE_MS = 2000;
 const MAX_WAIT_MS = 30000;
 const HIDE_SAVED_MS = 3000;
-const DB_SAVE_MIN_INTERVAL = 2000;
 const ERROR_TOAST_MIN_INTERVAL = 10000;
 
 /** Coordinator state — module-level singleton */
@@ -121,7 +134,6 @@ let _debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let _maxWaitTimer: ReturnType<typeof setTimeout> | null = null;
 let _hideSavedTimer: ReturnType<typeof setTimeout> | null = null;
 let _pendingSave = false;
-let _lastDBSaveTime = 0;
 let _lastErrorToastTime = 0;
 
 /**
@@ -163,11 +175,20 @@ export function buildSyncPayload(): SyncPayload {
  * Execute a durable save using the revision-based state machine.
  * This is the single coordination point for all saves.
  *
- * @param dbSaveFn - Function that performs the DB save (from useProjectManager)
- * @returns true if save completed (either clean or still dirty due to concurrent edits)
+ * P0-1 Fix: This is the ONLY place that owns the save lifecycle:
+ *   startSaving() → dbSaveFn() → saveSucceeded()/saveFailed()
+ * The dbSaveFn must be a pure persistence primitive (no lifecycle calls).
+ *
+ * P0-3 Fix: No rate-limit. If a save is needed, it reaches the DB.
+ * Debounce on autosave handles timing; skipping saves is data loss.
+ *
+ * @param dbSaveFn - Pure persistence function (build payload + fetch + throw on error)
+ * @param options - Optional: { force: true } to save even when not dirty (e.g., createProject)
+ * @returns true if save completed, false if failed or deferred
  */
 export async function executeDurableSave(
   dbSaveFn?: () => Promise<void>,
+  options?: { force?: boolean },
 ): Promise<boolean> {
   const dirtyState = useDirtyStore.getState();
 
@@ -180,8 +201,8 @@ export async function executeDurableSave(
     return false;
   }
 
-  // Nothing to save if not dirty and no error
-  if (!dirtyState.dirty && dirtyState.saveStatus !== 'error') {
+  // Nothing to save if not dirty and no error (unless force=true)
+  if (!dirtyState.dirty && dirtyState.saveStatus !== 'error' && !options?.force) {
     return true;
   }
 
@@ -195,6 +216,10 @@ export async function executeDurableSave(
     useAuthoringStore.getState().saveToStorage();
 
     // ── Step 3: DB save (durable) ──
+    // P0-3 Fix: No rate-limit. If we need to save, we save.
+    // The dbSaveFn is a pure persistence primitive — it does NOT
+    // call startSaving/saveSucceeded/saveFailed. It just builds
+    // the payload, fetches, and throws on error.
     if (saveToken.projectId && dbSaveFn) {
       const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
 
@@ -202,12 +227,8 @@ export async function executeDurableSave(
         // Offline: enqueue for later sync
         enqueueSave(saveToken.projectId, buildSyncPayload());
       } else {
-        // Online: save to DB directly with rate limit
-        const now = Date.now();
-        if (now - _lastDBSaveTime >= DB_SAVE_MIN_INTERVAL) {
-          _lastDBSaveTime = now;
-          await dbSaveFn();
-        }
+        // Online: save to DB directly — no rate limit
+        await dbSaveFn();
       }
     }
 
@@ -219,6 +240,9 @@ export async function executeDurableSave(
     }
 
     // ── Step 5: Mark save succeeded ──
+    // P0-1 Fix: saveSucceeded() with null savingRevision is now a no-op.
+    // This prevents double-lifecycle bugs where a stale saveSucceeded()
+    // call incorrectly marks the project clean.
     const fullyClean = useDirtyStore.getState().saveSucceeded();
 
     if (fullyClean) {
@@ -277,6 +301,53 @@ export async function executeDurableSave(
       }
     }
   }
+}
+
+/**
+ * Flush any in-flight save and ensure the project is fully saved.
+ * Used by save-before-switch to guarantee data is persisted before
+ * loading a different project.
+ *
+ * P0-4 Fix: This function WAITS for any in-flight save to complete,
+ * then checks if another save is needed. If the in-flight save failed,
+ * returns false (don't switch projects).
+ *
+ * @param dbSaveFn - Pure persistence function (same as executeDurableSave)
+ * @returns true if project is clean, false if save failed
+ */
+export async function flushDurableSave(dbSaveFn?: () => Promise<void>): Promise<boolean> {
+  const dirtyState = useDirtyStore.getState();
+
+  // If a save is in-flight, wait for it to complete
+  if (dirtyState.saveStatus === 'saving') {
+    await new Promise<void>((resolve) => {
+      const unsubscribe = useDirtyStore.subscribe((state) => {
+        if (state.saveStatus !== 'saving') {
+          unsubscribe();
+          resolve();
+        }
+      });
+      // Safety timeout — don't wait forever (30s max)
+      setTimeout(() => {
+        unsubscribe();
+        resolve();
+      }, 30000);
+    });
+  }
+
+  const afterState = useDirtyStore.getState();
+
+  // If save failed, return false — don't switch projects
+  if (afterState.saveStatus === 'error') {
+    return false;
+  }
+
+  // If still dirty after the in-flight save, do one more save
+  if (afterState.dirty) {
+    return executeDurableSave(dbSaveFn);
+  }
+
+  return true; // Clean
 }
 
 /**

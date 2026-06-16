@@ -30,6 +30,7 @@ import {
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useInteractiveStore } from '@/store/interactive-store';
+import { useProjectManager } from '@/hooks/use-project-manager';
 import { getAllBlockMeta, getBlockMeta } from '@/core/registry/BlockDefinitionRegistry';
 import { ensurePageSchema } from '@/core/schema/ensure-schema';
 import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
@@ -178,6 +179,13 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // P0-5 Fix: Use useProjectManager() at top level (legal hook call).
+  // Previously the save command did dynamic import + hook call in
+  // action callback, which violates Rules of Hooks.
+  const { saveProject } = useProjectManager();
+  const saveProjectRef = useRef(saveProject);
+  saveProjectRef.current = saveProject;
 
   // ── Build command items ────────────────────────────────────
   const allCommands = useMemo(() => {
@@ -366,17 +374,18 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         category: 'action',
         shortcut: 'Ctrl+S',
         action: async () => {
-          // Sprint 7.2: Route through saveProject() for durable save.
-          // Previously this only saved to localStorage, which was a P0 data-loss risk.
+          // P0-5 Fix: Use saveProject from top-level hook via ref.
+          // Previously this did dynamic import + useProjectManager() in
+          // the action callback, which violates Rules of Hooks.
           try {
-            const { useProjectManager } = await import('@/hooks/use-project-manager');
-            await useProjectManager().saveProject();
+            await saveProjectRef.current();
             toast.success('Tersimpan');
           } catch {
-            // Fallback: if project manager is unavailable, save to localStorage only
+            // Fallback: if saveProject fails, save to localStorage only.
+            // P0-5 Fix: Honest message — this is a local backup, NOT durable save.
             useCanvaStore.getState().saveToStorage();
             useAuthoringStore.getState().saveToStorage();
-            toast.success('Tersimpan (lokal)');
+            toast.info('Cadangan lokal tersimpan, tetapi database belum diperbarui.');
           }
         },
       },

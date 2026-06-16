@@ -18,6 +18,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useDirtyStore } from '@/store/dirty-store';
+import { useProjectManager } from '@/hooks/use-project-manager';
 import { Save, Check, AlertCircle, Loader2, RotateCcw, Undo2, Redo2, Clock } from 'lucide-react';
 
 // ── Undo/Redo Toast ─────────────────────────────────────────────
@@ -122,19 +123,24 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
     };
   }, [status]);
 
+  // P0-5 Fix: Use useProjectManager() at top level (legal hook call).
+  // Previously this did dynamic import + hook call in callback, which
+  // violates Rules of Hooks and can cause Invalid hook call errors.
+  const { saveProject } = useProjectManager();
+
   // Retry handler — Sprint 7.2A: Route through durable save coordinator
   const handleRetry = useCallback(async () => {
     // Clear error state before retrying
     useDirtyStore.getState().clearError();
     try {
-      const { useProjectManager } = await import('@/hooks/use-project-manager');
-      await useProjectManager().saveProject();
+      await saveProject();
     } catch {
-      // Fallback: if project manager is unavailable, save to localStorage only
+      // Fallback: if saveProject fails, save to localStorage only.
+      // P0-5 Fix: Honest message — this is a local backup, NOT durable save.
       useCanvaStore.getState().saveToStorage();
       useAuthoringStore.getState().saveToStorage();
     }
-  }, []);
+  }, [saveProject]);
 
   // Don't render anything for saved when auto-hidden
   if (status === 'saved' && !showSaved) return null;
@@ -212,22 +218,27 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
 export const SaveNowButton: React.FC = React.memo(function SaveNowButton() {
   const [saving, setSaving] = useState(false);
 
+  // P0-5 Fix: Use useProjectManager() at top level (legal hook call).
+  // Previously this did dynamic import + hook call in callback, which
+  // violates Rules of Hooks and can cause Invalid hook call errors.
+  const { saveProject } = useProjectManager();
+
   const handleSaveNow = useCallback(async () => {
     setSaving(true);
     try {
-      // Sprint 7.2: Route through saveProject() for durable save.
-      // Previously this only saved to localStorage, which was a P0 data-loss risk.
-      const { useProjectManager } = await import('@/hooks/use-project-manager');
-      await useProjectManager().saveProject();
+      // P0-5 Fix: Use saveProject from top-level hook call.
+      // Routes through executeDurableSave() → persistProjectToDB().
+      await saveProject();
     } catch {
-      // Fallback: if project manager is unavailable, save to localStorage only
+      // Fallback: if saveProject fails, save to localStorage only.
+      // P0-5 Fix: Honest message — this is a local backup, NOT durable save.
       useCanvaStore.getState().saveToStorage();
       useAuthoringStore.getState().saveToStorage();
     } finally {
       // Brief visual feedback
       setTimeout(() => setSaving(false), 400);
     }
-  }, []);
+  }, [saveProject]);
 
   return (
     <button

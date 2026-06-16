@@ -276,16 +276,27 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           }
         }
 
-        // ── Sprint 7.2A-7: Hydration suppression ──
+        // ── P0-6 Fix: Hydration suppression with depth counter ──
         // Suppress markDirty() during load to prevent false "unsaved" state.
+        //
+        // ORDERING: resetOnLoad() is called FIRST (resets revision counters),
+        // then startHydration() increments the depth counter. This ensures
+        // the depth counter is > 0 during the set() call that follows,
+        // which triggers store subscriptions that would otherwise mark dirty.
+        //
+        // resetOnLoad() does NOT touch _hydrationDepth (by design), so
+        // it's safe to call before startHydration().
         const { useDirtyStore } = require('@/store/dirty-store');
-        useDirtyStore.getState().startHydration();
 
         // Sprint 7.1: Reset the revision-based dirty store on load.
         // After loading, the loaded state is considered "clean" — editRevision
         // and lastSavedRevision are both reset to 0.
         useDirtyStore.getState().resetOnLoad();
         useAuthoringStore.setState({ dirty: false });
+
+        // Start hydration AFTER resetOnLoad — depth counter increments,
+        // ensuring markDirty() is suppressed during the set() call below.
+        useDirtyStore.getState().startHydration();
 
         // Migrate legacy leftTab names
         let leftTab: LeftTab = 'pages';
@@ -428,13 +439,17 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           logger.warn('CanvaStore', 'Purity check on DB load failed: ' + String(purityErr));
         }
 
-        // ── Sprint 7.2A-7: Hydration suppression for DB load ──
+        // ── P0-6 Fix: Hydration suppression with depth counter for DB load ──
+        // Same ordering as loadFromStorage: resetOnLoad() first, then
+        // startHydration() to ensure markDirty() is suppressed during set().
         const { useDirtyStore } = require('@/store/dirty-store');
-        useDirtyStore.getState().startHydration();
 
         // Sprint 7.1: Reset the revision-based dirty store on load.
         useDirtyStore.getState().resetOnLoad();
         useAuthoringStore.setState({ dirty: false });
+
+        // Start hydration AFTER resetOnLoad — depth counter increments.
+        useDirtyStore.getState().startHydration();
 
         set({
           pages: cleanPages,

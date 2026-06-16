@@ -5,7 +5,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { DBProjectData } from '@/store/canva-store';
 import { canvaPagesToSavePages } from '@/lib/save-utils';
-import { cancelAutoSaveTimers, executeDurableSave } from '@/lib/save-utils';
+import { cancelAutoSaveTimers, executeDurableSave, flushDurableSave } from '@/lib/save-utils';
 import { useDirtyStore } from '@/store/dirty-store';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
@@ -45,13 +45,73 @@ interface ProjectContextValue {
 
 const ProjectContext = createContext<ProjectContextValue | null>(null);
 
+// ═══════════════════════════════════════════════════════════════════
+// P0-1 + P0-2 Fix: Pure persistence primitive
+// ═══════════════════════════════════════════════════════════════════
+// persistProjectToDB() is a PURE persistence function:
+//   - Builds payload from current store state
+//   - Sends to DB via fetch
+//   - Throws on error
+//   - Does NOT touch: startSaving, saveSucceeded, saveFailed,
+//     _saveStatus, or any dirty-store lifecycle.
+//
+// The ONLY code that owns the save lifecycle is executeDurableSave()
+// in save-utils.ts. It calls startSaving() → dbSaveFn() →
+// saveSucceeded()/saveFailed(). This prevents the double-lifecycle
+// bug where both the coordinator AND the persistence function
+// were managing the state machine.
+// ═══════════════════════════════════════════════════════════════════
+
+async function persistProjectToDB(projectId: string): Promise<void> {
+  if (!projectId) return;
+
+  const canvaState = useCanvaStore.getState();
+  const authoringState = useAuthoringStore.getState();
+  const savePages = canvaPagesToSavePages(canvaState.pages);
+
+  const res = await fetch(`/api/projects/${projectId}/save`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      pages: savePages,
+      ratioId: canvaState.ratioId,
+      meta: {
+        title: authoringState.meta.judulPertemuan || 'Proyek Baru',
+        subject: authoringState.meta.mapel,
+        grade: authoringState.meta.kelas,
+      },
+      authoringData: {
+        meta: authoringState.meta,
+        cp: authoringState.cp,
+        tp: authoringState.tp,
+        atp: authoringState.atp,
+        alur: authoringState.alur,
+        skenario: authoringState.skenario,
+        kuis: authoringState.kuis,
+        modules: authoringState.modules,
+        games: authoringState.games,
+        materi: authoringState.materi,
+        petunjuk: authoringState.petunjuk,
+        diskusi: authoringState.diskusi,
+        refleksi: authoringState.refleksi,
+        penutup: authoringState.penutup,
+        suara: authoringState.suara,
+      },
+    }),
+  });
+
+  // P0-2 Fix: Throw on error so the coordinator's catch block
+  // handles it properly. Previously this was swallowed, causing
+  // the coordinator to think the save succeeded.
+  if (!res.ok) throw new Error(`Failed to save project: ${res.status} ${res.statusText}`);
+}
+
 // ── Provider Component ─────────────────────────────────────────
 export function ProjectProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<ProjectMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
-  const lastSaveRef = useRef<number>(0);
 
   // Load projects list from DB (with timeout — API may be unavailable in sandbox)
   const loadProjects = useCallback(async () => {
@@ -73,6 +133,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Create new project
+  // P0-7 Fix: Use setCurrentProjectId() to bind the new project ID
+  // to the dirty-store token without resetting revision counters.
   const createProject = useCallback(async (meta?: {
     title?: string;
     description?: string;
@@ -95,10 +157,18 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       if (!res.ok) throw new Error('Failed to create project');
       const json = await res.json();
       const project = json.data;
+
+      // P0-7 Fix: Bind the new project ID to the dirty-store token.
+      // Use setCurrentProjectId() instead of resetOnLoad() so that
+      // any existing dirty revision is preserved. This ensures the
+      // coordinator knows which project to save to.
+      useDirtyStore.getState().setCurrentProjectId(project.id);
       setCurrentProjectId(project.id);
 
-      // Immediately save current stores to the new project
-      await saveProjectToDBInternal(project.id);
+      // Force an initial durable save for the new project content.
+      // { force: true } bypasses the "not dirty" check since this
+      // is the first save and we need to persist initial content.
+      await executeDurableSave(() => persistProjectToDB(project.id), { force: true });
 
       await loadProjects();
       toast.success(`Proyek "${title}" dibuat`);
@@ -110,105 +180,32 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     }
   }, [loadProjects]);
 
-  // Internal save helper (doesn't depend on state to avoid stale closures)
-  // Sprint 7.2A: Now integrates with the dirty store state machine.
-  // Calls startSaving() before and saveSucceeded()/saveFailed() after.
-  const saveProjectToDBInternal = useCallback(async (projectId: string) => {
-    if (!projectId) return;
-
-    const now = Date.now();
-    if (now - lastSaveRef.current < 1000) return;
-    lastSaveRef.current = now;
-
-    // Sprint 7.2A: Coordinate with dirty store state machine.
-    // If auto-save is already in progress (saveStatus === 'saving'),
-    // don't start a competing save — auto-save will handle it.
-    const dirtyState = useDirtyStore.getState();
-    if (dirtyState.saveStatus !== 'saving') {
-      dirtyState.startSaving();
-    }
-
-    try {
-      setSaving(true);
-      const canvaState = useCanvaStore.getState();
-      const authoringState = useAuthoringStore.getState();
-      const savePages = canvaPagesToSavePages(canvaState.pages);
-
-      const res = await fetch(`/api/projects/${projectId}/save`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pages: savePages,
-          ratioId: canvaState.ratioId,
-          meta: {
-            title: authoringState.meta.judulPertemuan || 'Proyek Baru',
-            subject: authoringState.meta.mapel,
-            grade: authoringState.meta.kelas,
-          },
-          authoringData: {
-            meta: authoringState.meta,
-            cp: authoringState.cp,
-            tp: authoringState.tp,
-            atp: authoringState.atp,
-            alur: authoringState.alur,
-            skenario: authoringState.skenario,
-            kuis: authoringState.kuis,
-            modules: authoringState.modules,
-            games: authoringState.games,
-            materi: authoringState.materi,
-            petunjuk: authoringState.petunjuk,
-            diskusi: authoringState.diskusi,
-            refleksi: authoringState.refleksi,
-            penutup: authoringState.penutup,
-            suara: authoringState.suara,
-          },
-        }),
-      });
-
-      if (!res.ok) throw new Error('Failed to save project');
-
-      // Sprint 7.2A: DB save succeeded — let the state machine know.
-      // saveSucceeded() checks if revision matches (handles edits during save).
-      useDirtyStore.getState().saveSucceeded();
-      useCanvaStore.setState({ _saveStatus: 'saved' });
-    } catch (error) {
-      logger.error('ProjectProvider', error);
-      useCanvaStore.setState({ _saveStatus: 'error' });
-      // Sprint 7.2A: Let the state machine know save failed.
-      // dirty stays true so user can retry and beforeunload guard still works.
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      useDirtyStore.getState().saveFailed(errorMsg);
-    } finally {
-      setSaving(false);
-    }
-  }, []);
-
   // Load project into stores
-  // Sprint 7.2A: Save current project before switching, cancel timers,
-  // use hydration suppression to prevent false dirty.
+  // P0-4 Fix: Save-before-switch now BLOCKS the switch if save fails.
+  // P0-6 Fix: Hydration depth is managed properly — startHydration at
+  // the outermost level, endHydration in finally block.
   const loadProject = useCallback(async (id: string) => {
     // ── Sprint 7.2A-5: Cancel autosave timers before switching ──
     // This prevents a timer from Project A firing and saving Project A data
     // after Project B has been loaded into the stores.
     cancelAutoSaveTimers();
 
-    // ── Sprint 7.2A-6: Save current project before switching ──
-    // This prevents silent data loss when the user switches projects with pending edits.
+    // ── P0-4 Fix: Save current project before switching ──
+    // If the current project is dirty, we MUST flush the save before
+    // switching. If the save fails, we BLOCK the switch — loading
+    // Project B while Project A's data is unsaved would cause data loss.
     if (currentProjectId && useDirtyStore.getState().dirty) {
-      try {
-        await saveProjectToDBInternal(currentProjectId);
-      } catch (err) {
-        // Sprint 7.2A-6: If save-before-switch fails, warn the user
-        // but still allow the switch — blocking would be worse UX.
-        // Recovery snapshot in localStorage may still be available.
-        logger.warn('ProjectProvider', 'Failed to save before switching: ' + String(err));
-        toast.warning('Gagal menyimpan proyek sebelum berpindah. Data terakhir tersimpan di browser.');
+      const saved = await flushDurableSave(() => persistProjectToDB(currentProjectId));
+      if (!saved) {
+        toast.error('Proyek belum dapat disimpan. Perpindahan dibatalkan.');
+        return;
       }
     }
 
-    // ── Sprint 7.2A-7: Start hydration suppression ──
-    // This prevents markDirty() from firing during load (e.g., when
-    // store subscriptions detect the pages[] change from loading).
+    // ── P0-6 Fix: Start hydration suppression at the outermost level ──
+    // This ensures markDirty() is suppressed during the entire load
+    // process, including CanvaStore.loadFromDB() which has its own
+    // hydration pair (nested hydration, depth counter handles this).
     useDirtyStore.getState().startHydration();
 
     try {
@@ -218,6 +215,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       const data = json.data as DBProjectData;
 
       // Load canva store data from DB format
+      // (loadFromDB has its own startHydration/endHydration pair for
+      // nested hydration — the depth counter makes this safe)
       useCanvaStore.getState().loadFromDB(data);
 
       // Load authoring store data
@@ -243,6 +242,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       }
 
       // Sprint 7.2A-4: Reset dirty store with new projectId
+      // P0-6 Fix: resetOnLoad() does NOT touch _hydrationDepth,
+      // so the outer hydration suppression remains active until
+      // the finally block calls endHydration().
       useDirtyStore.getState().resetOnLoad(id);
 
       setCurrentProjectId(id);
@@ -252,25 +254,28 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       logger.error('ProjectProvider', error);
       toast.error('Gagal memuat proyek');
     } finally {
-      // ── Sprint 7.2A-7: End hydration suppression ──
+      // ── P0-6 Fix: End hydration suppression ──
       // This must run even if load fails, otherwise the app gets stuck
       // in hydration mode where markDirty() is permanently suppressed.
       useDirtyStore.getState().endHydration();
     }
-  }, [currentProjectId, saveProjectToDBInternal]);
+  }, [currentProjectId]);
 
   // Save current project (public API)
-  // Sprint 7.2A: Routes through the durable save coordinator for both
-  // localStorage backup AND DB save (fixes P0 where Ctrl+S only saved to localStorage).
+  // P0-1 + P0-3 Fix: Routes through executeDurableSave() which is
+  // the SINGLE owner of the save lifecycle. persistProjectToDB is
+  // a pure primitive — no lifecycle calls, no throttle.
   const saveProject = useCallback(async () => {
     if (!currentProjectId) {
-      // No project — just save to localStorage
+      // No project — just save to localStorage as crash recovery backup.
+      // Honest message: this is a local backup, NOT a durable save.
       useCanvaStore.getState().saveToStorage();
       useAuthoringStore.getState().saveToStorage();
+      toast.info('Cadangan lokal tersimpan. Buat proyek untuk menyimpan ke database.');
       return;
     }
-    await saveProjectToDBInternal(currentProjectId);
-  }, [currentProjectId, saveProjectToDBInternal]);
+    await executeDurableSave(() => persistProjectToDB(currentProjectId));
+  }, [currentProjectId]);
 
   // Delete project
   const deleteProject = useCallback(async (id: string) => {
@@ -281,6 +286,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         setCurrentProjectId(null);
         // Sprint 7.2A-5: Cancel timers when current project is deleted
         cancelAutoSaveTimers();
+        // Reset hydration depth to 0 as part of full cleanup
+        useDirtyStore.setState({ _hydrationDepth: 0 });
         useDirtyStore.getState().resetOnLoad(null);
       }
       await loadProjects();

@@ -1,4 +1,51 @@
 ---
+Task ID: 7.2A-Patch
+Agent: Super Z (main)
+Task: Sprint 7.2A-Patch — Fix 7 P0 Issues from Senior Review
+
+Work Log:
+- P0-1 Fix: saveSucceeded() with null savingRevision is now a no-op (returns false, does NOT mark clean)
+  - Eliminates double-lifecycle bug where stale saveSucceeded could incorrectly mark project clean
+  - Replaced saveProjectToDBInternal() with persistProjectToDB() pure primitive (no lifecycle calls)
+  - Only executeDurableSave() owns the save lifecycle: startSaving → dbSaveFn → saveSucceeded/saveFailed
+- P0-2 Fix: persistProjectToDB() throws on error (does not swallow/catch)
+  - Previously saveProjectToDBInternal() caught errors and called saveFailed() but didn't rethrow
+  - Now coordinator's catch block handles all error state properly
+- P0-3 Fix: Removed all rate-limit/throttle from durable-save path
+  - Removed DB_SAVE_MIN_INTERVAL (2s) from save-utils.ts coordinator
+  - Removed lastSaveRef (1s) throttle from use-project-manager.tsx
+  - Debounce on autosave is sufficient; skipping saves and marking clean was data loss
+- P0-4 Fix: Save-before-switch now BLOCKS the switch if save fails
+  - Added flushDurableSave() that waits for in-flight save before starting new one
+  - loadProject() returns early with error toast if flushDurableSave returns false
+  - Previously: "warn the user but still allow the switch" → now: "jangan muat B"
+- P0-5 Fix: SaveNowButton, AutoSaveIndicator retry, and CommandPalette use legal hook calls
+  - Replaced dynamic import + useProjectManager() in callbacks with top-level hook calls
+  - SaveNowButton: useProjectManager() at component top level
+  - AutoSaveIndicator: useProjectManager() at component top level for retry handler
+  - CommandPalette: useProjectManager() at component top level + ref for action callbacks
+  - Fallback localStorage message is now honest: "Cadangan lokal tersimpan, tetapi database belum diperbarui."
+- P0-6 Fix: Hydration depth counter replaces boolean
+  - _hydrating: boolean → _hydrationDepth: number (0-based, +1/-1)
+  - resetOnLoad() does NOT touch _hydrationDepth (hydration lifecycle managed exclusively by pairs)
+  - Fixed ordering: resetOnLoad() first, then startHydration() (so depth > 0 during set())
+  - Nested hydration (ProjectManager + CanvaStore.loadFromDB) now safe
+- P0-7 Fix: setCurrentProjectId() action for createProject without resetting revision
+  - createProject() calls setCurrentProjectId(project.id) instead of resetOnLoad()
+  - Preserves dirty/editRevision state so initial content gets saved
+  - executeDurableSave() with { force: true } for initial project save
+- Rewrote test suite: 36 tests covering all 9 mandatory test categories
+  - All 36 tests pass + 24 Sprint 7.1 regression tests pass = 60 total
+  - Zero new TypeScript errors in modified files
+
+Stage Summary:
+- 7 files changed: dirty-store.ts, save-utils.ts, use-project-manager.tsx, persistence-slice.ts, StatusToast.tsx, CommandPalette.tsx, dirty-coverage-sprint7.2.test.ts
+- All 7 P0 fixes implemented and tested
+- 60/60 tests passing (24 Sprint 7.1 + 36 Sprint 7.2A-Patch)
+- Key new exports: setCurrentProjectId(), flushDurableSave(), persistProjectToDB()
+- Key removed: saveProjectToDBInternal() (replaced by pure primitive), DB_SAVE_MIN_INTERVAL throttle, lastSaveRef throttle
+
+---
 Task ID: 7.2
 Agent: Super Z (main)
 Task: Sprint 7.2 — Dirty Coverage & Autosave Lifecycle Audit (P0 Implementation)
@@ -72,3 +119,29 @@ Stage Summary:
   6. Guru sees honest save status ✅
   7. Recovery snapshot preserved on failure ✅
   8. Build and tests pass ✅
+---
+Task ID: 7.2A
+Agent: main
+Task: Sprint 7.2A — Persistence Boundary P0
+
+Work Log:
+- Classified all Canva Store mutations: 42 persistent, 27 UI-only, 10 meta
+- Fixed 2 critical missing notifyMutation() calls: setSchemaThemeId(), generateFromPageType()
+- Added notifyMutation() to undo/redo (patch + snapshot paths) and rollbackTransaction()
+- Extracted notifyMutation() to @/lib/notify-mutation.ts for test-safe imports
+- Built durable-save coordinator in save-utils.ts: executeDurableSave(), scheduleAutoSave(), cancelAutoSaveTimers()
+- Added project-scoped save token (SaveToken with projectId + revision)
+- Added hydration suppression (_hydrating flag, startHydration/endHydration)
+- Cancel autosave timers on project switch (loadProject + deleteProject)
+- Save-before-switch with warning toast on failure
+- Hydration suppression in loadFromStorage(), loadFromDB(), loadProject()
+- Fixed retry button in StatusToast to route through durable save + clearError()
+- Created Sprint 7.2A test suite: 29 tests covering all new features
+- Total: 53 tests (24 Sprint 7.1 + 29 Sprint 7.2A) — ALL PASS
+- Zero new TypeScript errors in modified files
+
+Stage Summary:
+- All 9 subtasks completed and committed
+- Pushed to origin/main as commit b56380c
+- Key new files: src/lib/notify-mutation.ts
+- Key modified files: dirty-store.ts, save-utils.ts, use-auto-save.ts, use-project-manager.tsx, persistence-slice.ts, history-slice.ts, background-slice.ts, auto-generate.ts, recovery-slice.ts, StatusToast.tsx

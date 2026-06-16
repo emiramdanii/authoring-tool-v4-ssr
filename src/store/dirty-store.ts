@@ -6,7 +6,13 @@
 // prevents stale save completions from overwriting newer edits.
 //
 // Sprint 7.2A: Added projectId-scoped save token, hydration
-// suppression, and project-scoped stale-save detection.
+// suppression (depth counter), and project-scoped stale-save detection.
+//
+// Sprint 7.2A-Patch: Fixed 7 P0s:
+//   - Hydration depth counter replaces boolean (P0-6)
+//   - resetOnLoad() no longer touches hydration depth
+//   - setCurrentProjectId() for createProject without resetting revision (P0-7)
+//   - saveSucceeded() with null savingRevision no longer marks clean (P0-1)
 //
 // INVARIANTS:
 //   1. `dirty` is derived: editRevision > lastSavedRevision
@@ -18,7 +24,11 @@
 //      and recovery snapshots are preserved
 //   5. saveStatus reflects the honest state of persistence
 //   6. resetOnLoad() resets all counters for a fresh project load
-//   7. Hydration suppression prevents false dirty during load
+//      but does NOT touch _hydrationDepth (hydration is managed
+//      by startHydration/endHydration pairs)
+//   7. Hydration suppression (depth counter) prevents false dirty
+//      during load, including nested hydration (e.g., ProjectManager
+//      wrapping CanvaStore.loadFromDB)
 //   8. Project-scoped save token prevents cross-project save corruption
 // ═══════════════════════════════════════════════════════════════════
 
@@ -54,8 +64,14 @@ interface DirtyState {
   // ── Sprint 7.2A: Project-scoped save token ─────────────────────
   /** Current project ID — set on project load, null if no project */
   currentProjectId: string | null;
-  /** Hydration flag — true while loading/hydrating, suppresses dirty */
-  _hydrating: boolean;
+  /**
+   * Hydration depth counter — > 0 while loading/hydrating, suppresses markDirty.
+   * Uses depth instead of boolean to support nested hydration
+   * (e.g., ProjectManager wrapping CanvaStore.loadFromDB).
+   * resetOnLoad() does NOT touch this — hydration lifecycle is
+   * managed exclusively by startHydration/endHydration pairs.
+   */
+  _hydrationDepth: number;
 
   // ── Derived (backward compat) ────────────────────────────────────
   /** Whether the project has unsaved changes (editRevision > lastSavedRevision) */
@@ -72,12 +88,13 @@ interface DirtyState {
    * Call when a save operation succeeds.
    * If savingRevision matches current editRevision → mark saved.
    * If editRevision has advanced past savingRevision → stay dirty.
-   * Returns true if fully clean, false if still dirty (edits happened during save).
+   * If savingRevision is null (no save was in progress) → no-op, return false.
+   * Returns true if fully clean, false if still dirty or no-op.
    */
   saveSucceeded: () => boolean;
   /** Call when a save operation fails — keeps dirty, records error */
   saveFailed: (msg: string) => void;
-  /** Reset all counters — call on project load/create */
+  /** Reset all counters — call on project load/create. Does NOT touch _hydrationDepth. */
   resetOnLoad: (projectId?: string | null) => void;
   /** Clear error status without changing revision state — for retry */
   clearError: () => void;
@@ -87,14 +104,22 @@ interface DirtyState {
    */
   buildSaveToken: () => SaveToken;
   /**
-   * Check if a save token is still valid (same project + revision).
-   * Returns false if the project has switched or revision advanced.
+   * Strict completion token validation.
+   * Returns true ONLY if the token matches the current in-flight save
+   * (same project + token.revision === savingRevision).
+   * Returns false if no save is in progress (savingRevision === null).
    */
   isSaveTokenValid: (token: SaveToken) => boolean;
-  /** Enter hydration mode — suppresses markDirty */
+  /** Enter hydration mode (+1 depth) — suppresses markDirty */
   startHydration: () => void;
-  /** Exit hydration mode — re-enables markDirty */
+  /** Exit hydration mode (-1 depth) — re-enables markDirty when depth reaches 0 */
   endHydration: () => void;
+  /**
+   * Update currentProjectId without resetting revision counters.
+   * Used by createProject() to bind the new project ID to the token
+   * store while preserving any existing dirty state.
+   */
+  setCurrentProjectId: (id: string | null) => void;
 }
 
 function isDirty(editRev: number, savedRev: number): boolean {
@@ -108,15 +133,17 @@ export const useDirtyStore = create<DirtyState>((set, get) => ({
   savingRevision: null,
   lastError: null,
   currentProjectId: null,
-  _hydrating: false,
+  _hydrationDepth: 0,
   dirty: false,
 
   markDirty: () => {
-    // Sprint 7.2A: Suppress dirty during hydration/load.
+    // Sprint 7.2A-Patch: Use depth counter instead of boolean.
     // When loading a project, store subscriptions may fire and trigger
     // markDirty() before the data is fully loaded. This would create
-    // a false "unsaved" state. The _hydrating flag prevents this.
-    if (get()._hydrating) return;
+    // a false "unsaved" state. The depth counter prevents this,
+    // including for nested hydration (e.g., ProjectManager wrapping
+    // CanvaStore.loadFromDB).
+    if (get()._hydrationDepth > 0) return;
 
     const newRev = get().editRevision + 1;
     set({
@@ -154,18 +181,13 @@ export const useDirtyStore = create<DirtyState>((set, get) => ({
   saveSucceeded: () => {
     const { editRevision, savingRevision } = get();
     if (savingRevision === null) {
-      // No save was in progress — this can happen when saveProjectToDBInternal
-      // is called directly (e.g., from Ctrl+S or saveProject) without going
-      // through useAutoSave.saveNow(). In this case, treat the current
-      // editRevision as the saved revision.
-      set({
-        lastSavedRevision: editRevision,
-        savingRevision: null,
-        dirty: false,
-        saveStatus: 'saved',
-        lastError: null,
-      });
-      return true;
+      // P0-1 Fix: No save was in progress — this is a stale/double
+      // lifecycle call. Do NOT mark clean. Return false to signal
+      // that the save was not properly tracked. The coordinator
+      // (executeDurableSave) is the ONLY code that should call
+      // saveSucceeded(), and it always calls startSaving() first.
+      // A null savingRevision means the lifecycle was violated.
+      return false;
     }
 
     if (editRevision === savingRevision) {
@@ -202,6 +224,10 @@ export const useDirtyStore = create<DirtyState>((set, get) => ({
   },
 
   resetOnLoad: (projectId?: string | null) => {
+    // P0-6 Fix: resetOnLoad() does NOT touch _hydrationDepth.
+    // Hydration lifecycle is managed exclusively by startHydration/
+    // endHydration pairs. This prevents the bug where resetOnLoad()
+    // cancels hydration suppression before mutations complete.
     set({
       saveStatus: 'idle',
       editRevision: 0,
@@ -210,7 +236,8 @@ export const useDirtyStore = create<DirtyState>((set, get) => ({
       lastError: null,
       dirty: false,
       currentProjectId: projectId ?? null,
-      _hydrating: false,
+      // NOTE: _hydrationDepth is intentionally NOT reset here.
+      // Use startHydration/endHydration to manage hydration state.
     });
   },
 
@@ -229,17 +256,40 @@ export const useDirtyStore = create<DirtyState>((set, get) => ({
   },
 
   isSaveTokenValid: (token: SaveToken): boolean => {
-    const { currentProjectId, editRevision } = get();
-    // Token is valid if project hasn't changed and revision hasn't advanced
-    // (revision may be equal if no edits since token was created)
-    return token.projectId === currentProjectId && token.revision <= editRevision;
+    const { currentProjectId, savingRevision } = get();
+    // Strict completion token: token must match the in-flight save exactly.
+    // Previous check (token.revision <= editRevision) was too loose —
+    // it would accept a token from a completely different save attempt
+    // as long as its revision wasn't from the future.
+    // The strict check ensures:
+    //   1. Project hasn't switched (projectId match)
+    //   2. Token was issued for the CURRENT in-flight save (revision === savingRevision)
+    // If savingRevision is null (no save in progress), token is invalid.
+    if (savingRevision === null) return false;
+    return token.projectId === currentProjectId && token.revision === savingRevision;
   },
 
   startHydration: () => {
-    set({ _hydrating: true });
+    // P0-6 Fix: Use depth counter instead of boolean.
+    // Each startHydration() increments depth; each endHydration()
+    // decrements it. markDirty() is suppressed when depth > 0.
+    // This supports nested hydration (e.g., ProjectManager wrapping
+    // CanvaStore.loadFromDB) where the outer hydration must remain
+    // active even after the inner hydration ends.
+    const { _hydrationDepth } = get();
+    set({ _hydrationDepth: _hydrationDepth + 1 });
   },
 
   endHydration: () => {
-    set({ _hydrating: false });
+    // P0-6 Fix: Decrement depth, never go below 0.
+    const { _hydrationDepth } = get();
+    set({ _hydrationDepth: Math.max(0, _hydrationDepth - 1) });
+  },
+
+  setCurrentProjectId: (id: string | null) => {
+    // P0-7 Fix: Update currentProjectId without resetting revision.
+    // Used by createProject() to bind the new project ID to the
+    // token store while preserving existing dirty/editRevision state.
+    set({ currentProjectId: id });
   },
 }));
