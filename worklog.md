@@ -208,3 +208,48 @@ Stage Summary:
 - P0-3b FIXED: flushDurableSave loops until clean
 - P0-3c FIXED: loadProject rechecks dirty before switch
 - 4 regression tests added
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Sprint 8.1 — Style Contract Audit & Consolidation
+
+Work Log:
+- Read worklog & confirmed cleanup commit b85c218 is on remote (skills/tool-results untracked)
+- Confirmed Contract & Boundary FROZEN — no persistence/save/renderer/export/TemplateAdapter changes allowed
+- Launched Explore subagent for exhaustive style inventory across 8 required directories + reference files
+- Subagent returned exhaustive audit: 19 style concerns mapped, 5 classification categories, 15 consolidation opportunities identified
+- Created new directory: src/core/style/ with __tests__ subdirectory
+- Built types.ts: StylePresetId (6 IDs), DocumentStyle, PageStyle, BlockStyle, StyleContract, ResolvedStyleTokens, FontScale, Density, TeacherStyleControl, TechnicalTokenKey
+- Built defaults.ts: DEFAULT_PRESET_ID='academic-clean', default values for all optional fields, FONT_SCALE_MULTIPLIER map (0.92/1.0/1.12), DENSITY_SPACING map (compact/comfortable/spacious → pagePadding/cardPadding/blockGap)
+- Built preset-registry.ts: StylePresetDefinition interface, STYLE_PRESETS (6 presets with full color/typography/shape/spacing/navigation definitions), PRESET_ID_ORDER, isValidPresetId(), getPreset(), getPresetOrThrow(), getAllStylePresets()
+  - 6 presets: academic-clean (golden-presentation), school-cheerful (ceria), mission-adventure (petualangan), dark-elegant (neon), nusantara-nature (warm-light), modern-interactive (ios-light)
+  - All use only existing app fonts (Fredoka, Poppins, Nunito) — no new font deps
+- Built resolve-style-contract.ts: pure resolveStyleContract() + resolvePresetTokens() — deterministic, SSR-safe, no React/DOM access, no store mutations, default fallbacks for every optional field
+- Built legacy-style-adapter.ts: resolveLegacyStyle() converts legacy schemaThemeId/bgColor/bgDataUrl/overlay/navbarStyle/templateVariant/blockVariant/blockStylePreset into normalized StyleContract
+  - LEGACY_THEME_TO_PRESET mapping table (11 entries: 6 direct + 5 approximate)
+  - PRESET_TO_LEGACY_THEME reverse identity mapping
+  - Auto-converts overlay 0-1 float → 0-100 (legacy DB scale)
+  - colorPalette intentionally NOT mapped (kept honest — preset owns color)
+  - hasLegacyStyleFields() detector for future migration scanner
+- Built index.ts barrel export
+- Wrote style-contract.test.ts (49 tests): purity/determinism, preset resolution, invalid preset fallback, empty input, document overrides (accent/fontScale/density), page overrides (background/overlay clamping), block overrides, runtime/UI state isolation (no displayMode/saveStatus/projectId in tokens, fully JSON-serializable, no window/document access), type shape invariants, cross-preset distinctness
+- Wrote legacy-style-adapter.test.ts (54 tests): schemaThemeId→presetId mapping for all 6 direct + unknown/null/empty fallbacks, mapping table integrity, background field mapping (bgDataUrl precedence over bgColor, overlay 0-1 auto-convert, NaN/out-of-range clamping), navbarStyle preservation, block fields (variant precedence, stylePreset carry-through), colorPalette honesty (NOT mapped to accentColor), hasLegacyStyleFields detector (10 cases), end-to-end legacy→contract→tokens (realistic/minimal/empty/all-null), purity
+- Wrote style-parity.test.ts (29 tests): core parity (4 modes return identical tokens for same contract), explicit Canvas=Export/Canvas=Preview/Preview=Present/Present=Export pair assertions, all 6 presets cross-mode parity, different inputs produce different tokens, invalid input fallback parity, legacy project parity, field shape parity (top-level keys + colors/typography/spacing keys identical, no _mode/consumer markers), determinism across 10 rounds, JSON serializability parity
+- All 132 new tests pass (49 + 54 + 29)
+- Created STYLE_CONTRACT_AUDIT.md with: §1 audit summary, §2 19-row style inventory matrix (with source of truth + Canvas/Preview/Export columns + risk), §3 field classification (Document/Page/Block/Runtime/Legacy), §4 source of truth decisions, §5 architecture (flow + forbidden flows + teacher controls vs technical tokens), §6 six preset IDs, §7 compatibility mapping (legacy themeId→presetId, legacy field→contract field, migration constraints), §8 deliverables checklist (14 items all ✅), §9 Sprint 8.1 gate verification (10 gates all ✅), §10 deferred items (11 items for Sprint 8.2+), §11 Senior Review report
+- Verified no new TypeScript errors introduced (60 pre-existing errors in e2e/ and scripts/ — zero in src/core/style/)
+- Verified no new test failures introduced (27 pre-existing failures unchanged; 132 new passing tests; zero new failures)
+- All changes purely additive: only src/core/style/ created + STYLE_CONTRACT_AUDIT.md + worklog appended — zero modifications to existing files
+
+Stage Summary:
+- Sprint 8.1 deliverables: 14/14 ✅
+- 6 source files in src/core/style/ (types.ts, defaults.ts, preset-registry.ts, resolve-style-contract.ts, legacy-style-adapter.ts, index.ts)
+- 3 test files in src/core/style/__tests__/ (132 tests total, all passing)
+- 1 audit document (STYLE_CONTRACT_AUDIT.md)
+- 6 stable preset IDs: academic-clean, school-cheerful, mission-adventure, dark-elegant, nusantara-nature, modern-interactive
+- Pure resolver: deterministic, SSR-safe, no React/DOM access, no store mutations
+- Legacy adapter: read-only, maps 11 legacy themeIds, auto-converts overlay scale, intentionally NOT mapping colorPalette (honesty)
+- Parity: Canvas = Preview = Present = Export (29 tests enforce identical tokens)
+- Boundary respected: zero modifications to schema, persistence, renderer, export pipeline, TemplateAdapter
+- Ready for Senior Review
