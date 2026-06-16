@@ -172,3 +172,39 @@ Stage Summary:
 - P0-3 FIXED: authoringData parse failure aborts entire load
 - 13 real integration tests covering malformed data, null pages, authoring contamination, hydration depth, cross-project preservation
 - Contract & Boundary ready for FREEZE pending Senior Review
+---
+Task ID: 2
+Agent: Main Agent
+Task: Sprint 7.2A-Patch-4 — authoring isolation, honest save, no outer hydration
+
+Work Log:
+- Read all files from Patch-3 (persistence-slice, use-project-manager, save-utils, tests)
+- P0-1: Changed authoring commit to use proper defaults (DEFAULT_CP etc.) instead of store.cp fallback
+  - When authoringData is null: reset all non-schema fields to DEFAULT_CP/ATP/PETUNJUK/PENUTUP/SUARA
+  - When authoringData is partial: missing fields get defaults, never current store values
+  - Imported DEFAULT_* from @/store/authoring/initial-state
+- P0-2: Removed outer startHydration/endHydration from loadProject
+  - Previously wrapped the entire fetch+load in hydration, suppressing markDirty during network wait
+  - Now only loadFromDB's internal hydration is active during commit phase
+  - Removed finally block that called endHydration
+- P0-3a: executeDurableSave now returns fullyClean (result of saveSucceeded())
+  - Previously always returned true, causing flushDurableSave to report success when still dirty
+- P0-3b: flushDurableSave loops until clean or fail (max 5 attempts)
+  - Each iteration: check dirty → save if needed → recheck
+  - Breaks on: clean, error, max attempts, project change
+- P0-3c: loadProject rechecks dirty after fetch, before committing Project B
+  - Second flushDurableSave if user edited Project A during the fetch
+- Updated test file: mock DEFAULT_* values, fix authoring data structure (objects not arrays)
+- Added 4 regression tests: authoringData=null, partial authoringData, edit-during-save, no outer hydration
+- All 79 tests pass (36 + 25 + 18)
+- No new TypeScript errors
+- Commit d226fc0 pushed to origin/main
+
+Stage Summary:
+- Commit chain: b56380c → f163e9d → d580391 → 9999631 → d226fc0
+- P0-1 FIXED: Authoring isolation — no Project A fallback
+- P0-2 FIXED: No outer hydration during network fetch
+- P0-3a FIXED: executeDurableSave returns fullyClean
+- P0-3b FIXED: flushDurableSave loops until clean
+- P0-3c FIXED: loadProject rechecks dirty before switch
+- 4 regression tests added
