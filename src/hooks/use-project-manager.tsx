@@ -231,42 +231,23 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       const json = await res.json();
       const data = json.data as DBProjectData;
 
-      // Load canva store data from DB format
-      // Patch-2 P0-3 Fix: loadFromDB returns boolean — check it.
-      // If hydration failed (malformed data), abort the switch.
-      // (loadFromDB has its own startHydration/endHydration pair for
-      // nested hydration — the depth counter makes this safe)
+      // Patch-3: loadFromDB is now fully transactional.
+      //   - Parses & validates ALL data (canva + authoring) BEFORE mutation
+      //   - Commits both stores atomically inside a hydration block
+      //   - Returns false if ANY parsing fails — NO stores mutated
+      //   - resetOnLoad() is NOT called inside loadFromDB anymore
+      // This prevents cross-project contamination when Project B's data
+      // is corrupted: if parsing fails, Project A's state stays intact.
       const canvaLoaded = useCanvaStore.getState().loadFromDB(data);
       if (!canvaLoaded) {
-        throw new Error('Canvas project hydration failed — data may be corrupted');
+        throw new Error('Project hydration failed — data may be corrupted');
       }
 
-      // Load authoring store data
-      // Phase 5-F: Only load non-schema fields from raw authoringData.
-      if (data.authoringData) {
-        try {
-          const authData = JSON.parse(data.authoringData);
-          const store = useAuthoringStore.getState();
-          useAuthoringStore.setState({
-            // Non-schema fields — these have no schema block representation
-            cp: authData.cp || store.cp,
-            atp: authData.atp || store.atp,
-            petunjuk: authData.petunjuk || store.petunjuk,
-            penutup: authData.penutup || store.penutup,
-            suara: authData.suara || store.suara,
-            dirty: false,
-            // Schema-backed fields — already loaded by CanvaStore.loadFromDB()
-            // via deriveProjectionFromPages() above. Do NOT overwrite them here.
-          });
-        } catch (err) {
-          logger.warn('ProjectProvider', 'Failed to parse authoringData: ' + String(err));
-        }
-      }
-
-      // Sprint 7.2A-4: Reset dirty store with new projectId
-      // P0-6 Fix: resetOnLoad() does NOT touch _hydrationDepth,
-      // so the outer hydration suppression remains active until
-      // the finally block calls endHydration().
+      // Patch-3: resetOnLoad() is called ONLY after loadFromDB succeeds.
+      // Previously it was called inside loadFromDB BEFORE parsing,
+      // which meant a parse failure would corrupt Project A's revision state.
+      // Now: parse failure → loadFromDB returns false → we throw →
+      // resetOnLoad is never called → Project A state is preserved.
       useDirtyStore.getState().resetOnLoad(id);
 
       setCurrentProjectId(id);

@@ -16,6 +16,7 @@ import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { assertDocumentPurity, clearCompressedHeightCache } from '@/core/schema/session-state';
 import { clearMeasurementCache } from '@/core/layout/BlockMeasurer';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useDirtyStore } from '@/store/dirty-store';
 import { logger } from '@/core/utils/logger';
 
 // ── Migration version for localStorage data ──────────────────
@@ -291,11 +292,6 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         //
         // resetOnLoad() does NOT touch _hydrationDepth (by design), so
         // it's safe to call before startHydration().
-        const { useDirtyStore } = require('@/store/dirty-store');
-
-        // Sprint 7.1: Reset the revision-based dirty store on load.
-        // After loading, the loaded state is considered "clean" — editRevision
-        // and lastSavedRevision are both reset to 0.
         useDirtyStore.getState().resetOnLoad();
         useAuthoringStore.setState({ dirty: false });
 
@@ -331,7 +327,6 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
     } catch {
       // Sprint 7.2A-7: End hydration even on load failure to prevent stuck state
       try {
-        const { useDirtyStore } = require('@/store/dirty-store');
         useDirtyStore.getState().endHydration();
       } catch { /* best effort */ }
 
@@ -374,95 +369,129 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
   },
 
   // ── Load from Database ──────────────────────────────────────────
-  // Patch-2 P0-3 Fix: Returns boolean — true if hydration succeeded,
-  // false if parsing/setting failed. Hydration is managed via
-  // startHydration/finally-endHydration so the depth counter always
-  // returns to its entry value, even on early parse errors.
+  // Patch-3: TRANSACTIONAL loadFromDB — parse/validate ALL payloads
+  // BEFORE any store mutation. This prevents cross-project contamination
+  // when Project B's data is corrupted: if parsing fails, Project A's
+  // state remains untouched.
+  //
+  // Key changes from Patch-2:
+  //   1. resetOnLoad() REMOVED — Project Manager handles this only after success
+  //   2. authoring dirty NOT cleared until after successful parse
+  //   3. pages must be an array — null/undefined/other fails closed (P0-2)
+  //   4. authoringData parsed and validated before any mutation (P0-3)
+  //   5. All parsing is PURE (no store side effects)
+  //   6. Hydration + commit only happen after ALL parsing succeeds
+  //
+  // Returns true if ALL data was parsed and committed successfully.
+  // Returns false if any parsing failed — NO stores are mutated.
   loadFromDB: (data: DBProjectData): boolean => {
-    // ── P0-6 Fix: Hydration suppression with depth counter for DB load ──
-    // startHydration FIRST, then parse/mutate, endHydration in finally.
-    // This ensures:
-    //   1. markDirty() is suppressed during ALL mutations (even failed ones)
-    //   2. endHydration ALWAYS runs, even if parsing fails early
-    //   3. The outer hydration (ProjectManager) is never left incrementing
-    //      without a matching decrement
-    const { useDirtyStore } = require('@/store/dirty-store');
-
-    // Sprint 7.1: Reset the revision-based dirty store on load.
-    useDirtyStore.getState().resetOnLoad();
-    useAuthoringStore.setState({ dirty: false });
-
-    // Start hydration AFTER resetOnLoad — depth counter increments.
-    useDirtyStore.getState().startHydration();
-
     try {
-      // Clear runtime caches when loading new project data from DB.
+      // ══════════════════════════════════════════════════════════
+      // PHASE 1: VALIDATE — Fail closed on invalid payload shape
+      // ══════════════════════════════════════════════════════════
+      // P0-2 Fix: pages MUST be an array. null, undefined, or any
+      // other type is a hard failure — we never mutate stores.
+      // Empty array [] is valid (blank project).
+      if (!Array.isArray(data.pages)) {
+        throw new Error('Invalid project pages payload: expected array, got ' + typeof data.pages);
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // PHASE 2: PURE PREPARATION — Parse everything, touch nothing
+      // ══════════════════════════════════════════════════════════
+      // All JSON.parse, migrations, and transformations happen here.
+      // If ANY step throws, we catch it and return false WITHOUT
+      // having mutated any store. Project A stays intact.
+
+      // Parse and migrate canva pages
+      const rawPages: CanvaPage[] = data.pages.map((p) => {
+        const schema = p.schemaData ? JSON.parse(p.schemaData) : undefined;
+        const parsedNavConfig = p.navConfig ? JSON.parse(p.navConfig) : {};
+        const navConfig: NavConfig = {
+          ...DEFAULT_NAV_CONFIG,
+          ...parsedNavConfig,
+          navbarStyle: parsedNavConfig.navbarStyle || DEFAULT_NAV_CONFIG.navbarStyle,
+        };
+        const templateData = p.templateData ? JSON.parse(p.templateData) : {};
+        const colorPalette = p.colorPalette ? JSON.parse(p.colorPalette) : null;
+
+        // Map DB blocks → schema blocks
+        const schemaBlocks = (p.blocks || []).map((b) => {
+          const content = b.content ? JSON.parse(b.content) : {};
+          const layout = b.layout ? JSON.parse(b.layout) : undefined;
+          return {
+            type: b.blockType,
+            ...content,
+            ...(layout ? { layout } : {}),
+          };
+        });
+
+        const migrated: CanvaPage = {
+          id: p.id,
+          label: p.label || `Halaman ${p.pageIndex + 1}`,
+          bgDataUrl: p.bgImage || null,
+          bgColor: p.bgColor || '#ffffff',
+          overlay: p.bgOverlay !== null ? Math.round(p.bgOverlay * 100) : 20,
+          elements: [], // Always empty — schema is the source of truth
+          templateType: (p.templateType as CanvaPage['templateType']) || 'custom',
+          colorPalette,
+          navConfig,
+          templateData,
+          templateVariant: (p.variant as 'A' | 'B' | 'C') || undefined,
+          contractId: (p.contractId as string) || undefined,
+          schema: schema || (schemaBlocks.length > 0 ? { id: p.id, templateType: p.templateType || 'custom', blocks: schemaBlocks } : undefined),
+        };
+
+        return migrated;
+      });
+
+      // Apply schema migration + clear elements[] for schema pages
+      const pages = migrateAllPages(rawPages);
+
+      // D-P0B.3: Apply schema version migrations (v0→v1, etc.) and USE the result.
+      const { pages: migratedPages } = migrateAllSchemas(pages);
+
+      // Strip derived runtime fields from legacy data
+      const cleanPages = stripRuntimeFieldsFromPages(migratedPages);
+
+      // Purity Guard (non-fatal — just logs)
+      try {
+        for (const page of cleanPages) {
+          if (page.schema) {
+            assertDocumentPurity(page.schema, `loadFromDB page=${page.id}`);
+          }
+        }
+      } catch (purityErr) {
+        logger.warn('CanvaStore', 'Purity check on DB load failed: ' + String(purityErr));
+      }
+
+      // P0-3 Fix: Parse authoring data BEFORE any mutation.
+      // If this fails, the entire load is aborted — canva store
+      // is NOT mutated, so Project A pages remain intact.
+      let parsedAuthoring: Record<string, unknown> | null = null;
+      if (data.authoringData) {
+        try {
+          parsedAuthoring = JSON.parse(data.authoringData) as Record<string, unknown>;
+        } catch (err) {
+          throw new Error('Failed to parse authoringData: ' + String(err));
+        }
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // PHASE 3: HYDRATE & COMMIT — Only after ALL parsing succeeds
+      // ══════════════════════════════════════════════════════════
+      // We've reached this point only if every JSON.parse and
+      // migration succeeded. Now it's safe to mutate stores.
+
+      // Clear runtime caches for the new project data
       clearCompressedHeightCache();
       clearMeasurementCache();
 
-      if (data.pages && Array.isArray(data.pages)) {
-        const rawPages: CanvaPage[] = data.pages.map((p) => {
-          // Map DB Page → CanvaPage
-          const schema = p.schemaData ? JSON.parse(p.schemaData) : undefined;
-          const parsedNavConfig = p.navConfig ? JSON.parse(p.navConfig) : {};
-          const navConfig: NavConfig = {
-            ...DEFAULT_NAV_CONFIG,
-            ...parsedNavConfig,
-            navbarStyle: parsedNavConfig.navbarStyle || DEFAULT_NAV_CONFIG.navbarStyle,
-          };
-          const templateData = p.templateData ? JSON.parse(p.templateData) : {};
-          const colorPalette = p.colorPalette ? JSON.parse(p.colorPalette) : null;
+      // Start hydration — suppresses markDirty() during commit
+      useDirtyStore.getState().startHydration();
 
-          // Map DB blocks → schema blocks
-          const schemaBlocks = (p.blocks || []).map((b) => {
-            const content = b.content ? JSON.parse(b.content) : {};
-            const layout = b.layout ? JSON.parse(b.layout) : undefined;
-            return {
-              type: b.blockType,
-              ...content,
-              ...(layout ? { layout } : {}),
-            };
-          });
-
-          const migrated: CanvaPage = {
-            id: p.id,
-            label: p.label || `Halaman ${p.pageIndex + 1}`,
-            bgDataUrl: p.bgImage || null,
-            bgColor: p.bgColor || '#ffffff',
-            overlay: p.bgOverlay !== null ? Math.round(p.bgOverlay * 100) : 20,
-            elements: [], // Always empty — schema is the source of truth
-            templateType: (p.templateType as CanvaPage['templateType']) || 'custom',
-            colorPalette,
-            navConfig,
-            templateData,
-            templateVariant: (p.variant as 'A' | 'B' | 'C') || undefined,
-            contractId: (p.contractId as string) || undefined,
-            schema: schema || (schemaBlocks.length > 0 ? { id: p.id, templateType: p.templateType || 'custom', blocks: schemaBlocks } : undefined),
-          };
-
-          return migrated;
-        });
-
-        // Apply schema migration + clear elements[] for schema pages
-        const pages = migrateAllPages(rawPages);
-
-        // D-P0B.3: Apply schema version migrations (v0→v1, etc.) and USE the result.
-        const { pages: migratedPages } = migrateAllSchemas(pages);
-
-        // ── Strip derived runtime fields from legacy data ──
-        const cleanPages = stripRuntimeFieldsFromPages(migratedPages);
-
-        // ── Purity Guard: Check loaded data for runtime state leakage ──
-        try {
-          for (const page of cleanPages) {
-            if (page.schema) {
-              assertDocumentPurity(page.schema, `loadFromDB page=${page.id}`);
-            }
-          }
-        } catch (purityErr) {
-          logger.warn('CanvaStore', 'Purity check on DB load failed: ' + String(purityErr));
-        }
-
+      try {
+        // Commit canva store
         set({
           pages: cleanPages,
           ratioId: data.ratioId || '16:9',
@@ -477,16 +506,43 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           rightPanelOpen: true,
           leftTab: 'pages',
         });
-      }
 
-      return true;
+        // Commit authoring store atomically with canva
+        // This prevents the cross-project contamination bug where
+        // canva shows Project B but authoring still has Project A.
+        if (parsedAuthoring) {
+          const store = useAuthoringStore.getState();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- parsedAuthoring is dynamic JSON from DB
+          const auth = parsedAuthoring as any;
+          useAuthoringStore.setState({
+            // Non-schema fields — these have no schema block representation
+            cp: auth.cp || store.cp,
+            atp: auth.atp || store.atp,
+            petunjuk: auth.petunjuk || store.petunjuk,
+            penutup: auth.penutup || store.penutup,
+            suara: auth.suara || store.suara,
+            dirty: false,
+            // Schema-backed fields — already loaded via deriveProjectionFromPages()
+          });
+        } else {
+          // No authoring data — just clear dirty
+          useAuthoringStore.setState({ dirty: false });
+        }
+
+        return true;
+      } finally {
+        // ALWAYS end hydration, even if set() throws (unlikely but defensive).
+        useDirtyStore.getState().endHydration();
+      }
     } catch (err) {
+      // ALL parsing errors land here. NO stores have been mutated
+      // because we only mutate in Phase 3 which is unreachable on error.
       logger.warn('CanvaStore', 'Failed to load from DB: ' + String(err));
       return false;
-    } finally {
-      // ALWAYS end hydration, whether success or failure.
-      // This prevents the depth counter from getting stuck.
-      useDirtyStore.getState().endHydration();
+      // NOTE: No endHydration() here because startHydration() is only
+      // called in Phase 3. If we reach this catch, hydration was never
+      // started, so there's nothing to end. The outer hydration (from
+      // ProjectManager) is managed by ProjectManager's finally block.
     }
   },
 
