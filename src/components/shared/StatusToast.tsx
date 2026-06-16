@@ -129,14 +129,18 @@ export const AutoSaveIndicator: React.FC = React.memo(function AutoSaveIndicator
   const { saveProject } = useProjectManager();
 
   // Retry handler — Sprint 7.2A: Route through durable save coordinator
+  // Patch-2 P0-2 Fix: Check saveProject result — don't assume success.
   const handleRetry = useCallback(async () => {
     // Clear error state before retrying
     useDirtyStore.getState().clearError();
     try {
-      await saveProject();
+      const saved = await saveProject();
+      if (!saved) {
+        // Save failed or local-only — the dirty-store already reflects this.
+        // No additional action needed; the AutoSaveIndicator will show the right status.
+      }
     } catch {
-      // Fallback: if saveProject fails, save to localStorage only.
-      // P0-5 Fix: Honest message — this is a local backup, NOT durable save.
+      // Fallback: if saveProject throws (shouldn't normally), save to localStorage.
       useCanvaStore.getState().saveToStorage();
       useAuthoringStore.getState().saveToStorage();
     }
@@ -226,12 +230,14 @@ export const SaveNowButton: React.FC = React.memo(function SaveNowButton() {
   const handleSaveNow = useCallback(async () => {
     setSaving(true);
     try {
-      // P0-5 Fix: Use saveProject from top-level hook call.
-      // Routes through executeDurableSave() → persistProjectToDB().
-      await saveProject();
+      // Patch-2 P0-2 Fix: Check result — don't assume success.
+      const saved = await saveProject();
+      if (!saved) {
+        // saveProject returns false for local-only or failed saves.
+        // The StatusToast indicator already shows the honest state.
+      }
     } catch {
-      // Fallback: if saveProject fails, save to localStorage only.
-      // P0-5 Fix: Honest message — this is a local backup, NOT durable save.
+      // Fallback: if saveProject throws, save to localStorage only.
       useCanvaStore.getState().saveToStorage();
       useAuthoringStore.getState().saveToStorage();
     } finally {

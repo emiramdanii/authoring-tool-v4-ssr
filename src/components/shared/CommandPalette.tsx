@@ -374,15 +374,16 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         category: 'action',
         shortcut: 'Ctrl+S',
         action: async () => {
-          // P0-5 Fix: Use saveProject from top-level hook via ref.
-          // Previously this did dynamic import + useProjectManager() in
-          // the action callback, which violates Rules of Hooks.
+          // Patch-2 P0-2 Fix: Check saveProject result before "Tersimpan".
           try {
-            await saveProjectRef.current();
-            toast.success('Tersimpan');
+            const saved = await saveProjectRef.current();
+            if (saved) {
+              toast.success('Tersimpan');
+            } else {
+              toast.error('Database belum berhasil diperbarui.');
+            }
           } catch {
-            // Fallback: if saveProject fails, save to localStorage only.
-            // P0-5 Fix: Honest message — this is a local backup, NOT durable save.
+            // Fallback: if saveProject throws, save to localStorage only.
             useCanvaStore.getState().saveToStorage();
             useAuthoringStore.getState().saveToStorage();
             toast.info('Cadangan lokal tersimpan, tetapi database belum diperbarui.');

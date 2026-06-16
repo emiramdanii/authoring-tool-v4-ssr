@@ -49,6 +49,11 @@ export type PersistenceSlice = Pick<
   | 'saveToStorage' | 'loadFromStorage' | 'loadFromDB' | 'factoryReset'
 >;
 
+// Patch-2 P0-3 Fix: loadFromDB now returns boolean.
+// The CanvaState type needs updating if it doesn't already include
+// the return type — but since it's inferred from the slice, this is
+// handled automatically.
+
 // ── Schema Strip Helper ───────────────────────────────────────
 // Removes derived runtime fields that might have been written to
 // schema blocks before the purity enforcement was in place.
@@ -369,7 +374,27 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
   },
 
   // ── Load from Database ──────────────────────────────────────────
-  loadFromDB: (data: DBProjectData) => {
+  // Patch-2 P0-3 Fix: Returns boolean — true if hydration succeeded,
+  // false if parsing/setting failed. Hydration is managed via
+  // startHydration/finally-endHydration so the depth counter always
+  // returns to its entry value, even on early parse errors.
+  loadFromDB: (data: DBProjectData): boolean => {
+    // ── P0-6 Fix: Hydration suppression with depth counter for DB load ──
+    // startHydration FIRST, then parse/mutate, endHydration in finally.
+    // This ensures:
+    //   1. markDirty() is suppressed during ALL mutations (even failed ones)
+    //   2. endHydration ALWAYS runs, even if parsing fails early
+    //   3. The outer hydration (ProjectManager) is never left incrementing
+    //      without a matching decrement
+    const { useDirtyStore } = require('@/store/dirty-store');
+
+    // Sprint 7.1: Reset the revision-based dirty store on load.
+    useDirtyStore.getState().resetOnLoad();
+    useAuthoringStore.setState({ dirty: false });
+
+    // Start hydration AFTER resetOnLoad — depth counter increments.
+    useDirtyStore.getState().startHydration();
+
     try {
       // Clear runtime caches when loading new project data from DB.
       clearCompressedHeightCache();
@@ -422,7 +447,6 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         const pages = migrateAllPages(rawPages);
 
         // D-P0B.3: Apply schema version migrations (v0→v1, etc.) and USE the result.
-        // Previously the return value was discarded — migrated schemas were lost.
         const { pages: migratedPages } = migrateAllSchemas(pages);
 
         // ── Strip derived runtime fields from legacy data ──
@@ -439,18 +463,6 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           logger.warn('CanvaStore', 'Purity check on DB load failed: ' + String(purityErr));
         }
 
-        // ── P0-6 Fix: Hydration suppression with depth counter for DB load ──
-        // Same ordering as loadFromStorage: resetOnLoad() first, then
-        // startHydration() to ensure markDirty() is suppressed during set().
-        const { useDirtyStore } = require('@/store/dirty-store');
-
-        // Sprint 7.1: Reset the revision-based dirty store on load.
-        useDirtyStore.getState().resetOnLoad();
-        useAuthoringStore.setState({ dirty: false });
-
-        // Start hydration AFTER resetOnLoad — depth counter increments.
-        useDirtyStore.getState().startHydration();
-
         set({
           pages: cleanPages,
           ratioId: data.ratioId || '16:9',
@@ -465,17 +477,16 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           rightPanelOpen: true,
           leftTab: 'pages',
         });
-
-        // Sprint 7.2A-7: End hydration after set() completes
-        useDirtyStore.getState().endHydration();
       }
+
+      return true;
     } catch (err) {
       logger.warn('CanvaStore', 'Failed to load from DB: ' + String(err));
-      // End hydration even on failure to prevent stuck state
-      try {
-        const { useDirtyStore } = require('@/store/dirty-store');
-        useDirtyStore.getState().endHydration();
-      } catch { /* best effort */ }
+      return false;
+    } finally {
+      // ALWAYS end hydration, whether success or failure.
+      // This prevents the depth counter from getting stuck.
+      useDirtyStore.getState().endHydration();
     }
   },
 

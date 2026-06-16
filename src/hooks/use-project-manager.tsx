@@ -35,7 +35,19 @@ interface ProjectContextValue {
   loadProjects: () => Promise<void>;
   createProject: (meta?: { title?: string; description?: string; subject?: string; grade?: string }) => Promise<{ id: string; title: string } | null>;
   loadProject: (id: string) => Promise<void>;
-  saveProject: () => Promise<void>;
+  /**
+   * Pure persistence primitive — builds payload and sends to DB.
+   * Does NOT touch the save lifecycle (startSaving/saveSucceeded/saveFailed).
+   * This is what useAutoSave should receive as its dbSaveFn.
+   * Returns void; throws on DB failure.
+   */
+  persistCurrentProject: () => Promise<void>;
+  /**
+   * Coordinator-wrapped save for UI actions (Ctrl+S, SaveNowButton, CommandPalette).
+   * Routes through executeDurableSave() → persistCurrentProject().
+   * Returns true if DB save succeeded, false if failed or local-only.
+   */
+  saveProject: () => Promise<boolean>;
   deleteProject: (id: string) => Promise<void>;
   renameProject: (id: string, title: string) => Promise<void>;
   importFromLocalStorage: () => Promise<void>;
@@ -168,10 +180,15 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       // Force an initial durable save for the new project content.
       // { force: true } bypasses the "not dirty" check since this
       // is the first save and we need to persist initial content.
-      await executeDurableSave(() => persistProjectToDB(project.id), { force: true });
+      // Patch-2 P0-2 Fix: Check result — don't show full success if initial save failed.
+      const initialSaveOk = await executeDurableSave(() => persistProjectToDB(project.id), { force: true });
 
       await loadProjects();
-      toast.success(`Proyek "${title}" dibuat`);
+      if (initialSaveOk) {
+        toast.success(`Proyek "${title}" dibuat`);
+      } else {
+        toast.success(`Proyek "${title}" dibuat, tetapi konten awal belum tersimpan ke database.`);
+      }
       return project;
     } catch (error) {
       logger.error('ProjectProvider', error);
@@ -215,9 +232,14 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       const data = json.data as DBProjectData;
 
       // Load canva store data from DB format
+      // Patch-2 P0-3 Fix: loadFromDB returns boolean — check it.
+      // If hydration failed (malformed data), abort the switch.
       // (loadFromDB has its own startHydration/endHydration pair for
       // nested hydration — the depth counter makes this safe)
-      useCanvaStore.getState().loadFromDB(data);
+      const canvaLoaded = useCanvaStore.getState().loadFromDB(data);
+      if (!canvaLoaded) {
+        throw new Error('Canvas project hydration failed — data may be corrupted');
+      }
 
       // Load authoring store data
       // Phase 5-F: Only load non-schema fields from raw authoringData.
@@ -261,20 +283,30 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     }
   }, [currentProjectId]);
 
-  // Save current project (public API)
-  // P0-1 + P0-3 Fix: Routes through executeDurableSave() which is
-  // the SINGLE owner of the save lifecycle. persistProjectToDB is
-  // a pure primitive — no lifecycle calls, no throttle.
-  const saveProject = useCallback(async () => {
+  // ── persistCurrentProject: Pure persistence primitive for useAutoSave ──
+  // Patch-2 P0-1 Fix: useAutoSave must receive a PURE persistence function,
+  // NOT saveProject which wraps executeDurableSave (coordinator-inside-coordinator).
+  // This function only builds the payload and sends it to the DB.
+  // It throws on failure — the coordinator (executeDurableSave) handles errors.
+  const persistCurrentProject = useCallback(async () => {
+    if (!currentProjectId) return;
+    await persistProjectToDB(currentProjectId);
+  }, [currentProjectId]);
+
+  // ── saveProject: Coordinator-wrapped save for UI actions ──
+  // Patch-2 P0-2 Fix: Returns boolean so callers can check success.
+  // true = DB save succeeded, false = failed or local-only.
+  // UI must check the result before showing "Tersimpan".
+  const saveProject = useCallback(async (): Promise<boolean> => {
     if (!currentProjectId) {
       // No project — just save to localStorage as crash recovery backup.
       // Honest message: this is a local backup, NOT a durable save.
       useCanvaStore.getState().saveToStorage();
       useAuthoringStore.getState().saveToStorage();
       toast.info('Cadangan lokal tersimpan. Buat proyek untuk menyimpan ke database.');
-      return;
+      return false;
     }
-    await executeDurableSave(() => persistProjectToDB(currentProjectId));
+    return executeDurableSave(() => persistProjectToDB(currentProjectId));
   }, [currentProjectId]);
 
   // Delete project
@@ -402,6 +434,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     loadProjects,
     createProject,
     loadProject,
+    persistCurrentProject,
     saveProject,
     deleteProject,
     renameProject,
