@@ -1,18 +1,22 @@
 // ═══════════════════════════════════════════════════════════════════
-// STYLE CONTRACT — Default Values
+// STYLE CONTRACT — Default Values  (Sprint 8.1-Patch)
 // ═══════════════════════════════════════════════════════════════════
 // Sprint 8.1 — Style Contract Audit & Consolidation
-//
-// Default values used when a StyleContract field is missing or invalid.
-// These are also the values the resolver falls back to, ensuring
-// deterministic output for any input (including empty/legacy projects).
+// Patch: P0-4 — overlay range aligned with ScreenSchema (0-80, not 0-100).
 // ═══════════════════════════════════════════════════════════════════
 
 import type {
   BlockStyle,
+  CompositionIntent,
+  Density,
   DocumentStyle,
+  FontScale,
+  ImageFit,
+  OverlayType,
+  PageBackgroundType,
   PageStyle,
   StylePresetId,
+  SurfaceTreatment,
 } from './types';
 
 /**
@@ -46,58 +50,53 @@ export const DEFAULT_PAGE_STYLE: PageStyle = {};
  */
 export const DEFAULT_BLOCK_STYLE: BlockStyle = {};
 
+// ─────────────────────────────────────────────────────────────────
+// Schema-aligned background defaults (P0-4)
+// ─────────────────────────────────────────────────────────────────
+
 /**
- * Default overlay opacity (0-100) when a page background image is set
- * but no overlay value is provided.
+ * Default overlay opacity. ALIGNED with ScreenSchema.background.overlay
+ * which uses 0-80 range (default 40).
+ *
+ * Sprint 8.1 originally used 0-100; this was a contract drift.
  */
 export const DEFAULT_OVERLAY_OPACITY = 40;
 
-/**
- * Default overlay tone when a page background image is set but no
- * overlayType is provided.
- */
-export const DEFAULT_OVERLAY_TYPE: PageStyle['background'] extends {
-  overlayType?: infer T;
-}
-  ? T
-  : 'dark' = 'dark' as const;
+/** Maximum overlay opacity in the schema-aligned 0-80 scale. */
+export const MAX_OVERLAY_OPACITY = 80;
 
-/**
- * Default background type when none is specified.
- */
-export const DEFAULT_BACKGROUND_TYPE: PageStyle['background'] extends {
-  type?: infer T;
-}
-  ? T
-  : 'solid' = 'solid' as const;
+/** Default overlay tone. */
+export const DEFAULT_OVERLAY_TYPE: OverlayType = 'dark';
 
-/**
- * Default surface treatment.
- */
-export const DEFAULT_SURFACE: NonNullable<PageStyle['surface']> = 'soft';
+/** Default background type. */
+export const DEFAULT_BACKGROUND_TYPE: PageBackgroundType = 'solid';
 
-/**
- * Default composition intent.
- */
-export const DEFAULT_COMPOSITION: NonNullable<
-  PageStyle['composition']
-> = 'default';
+/** Default image fit. */
+export const DEFAULT_IMAGE_FIT: ImageFit = 'cover';
 
-/**
- * Default block emphasis.
- */
-export const DEFAULT_BLOCK_EMPHASIS: NonNullable<
-  BlockStyle['emphasis']
-> = 'normal';
+/** Default image opacity (0-100). */
+export const DEFAULT_IMAGE_OPACITY = 100;
 
-/**
- * Default block variant.
- */
+/** Default image blur in px (0-20). */
+export const DEFAULT_IMAGE_BLUR = 0;
+
+// ─────────────────────────────────────────────────────────────────
+// Other defaults
+// ─────────────────────────────────────────────────────────────────
+
+/** Default surface treatment. */
+export const DEFAULT_SURFACE: SurfaceTreatment = 'soft';
+
+/** Default composition intent. */
+export const DEFAULT_COMPOSITION: CompositionIntent = 'default';
+
+/** Default block emphasis. */
+export const DEFAULT_BLOCK_EMPHASIS: NonNullable<BlockStyle['emphasis']> = 'normal';
+
+/** Default block variant. */
 export const DEFAULT_BLOCK_VARIANT: NonNullable<BlockStyle['variant']> = 'A';
 
-/**
- * Default navbar style.
- */
+/** Default navbar style. */
 export const DEFAULT_NAVIGATION_STYLE = 'colorful';
 
 /**
@@ -108,10 +107,7 @@ export const DEFAULT_NAVIGATION_STYLE = 'colorful';
  *   comfortable → 1.00  (preset default)
  *   large       → 1.12  (slightly larger, more readable)
  */
-export const FONT_SCALE_MULTIPLIER: Record<
-  NonNullable<DocumentStyle['fontScale']>,
-  number
-> = {
+export const FONT_SCALE_MULTIPLIER: Record<FontScale, number> = {
   compact: 0.92,
   comfortable: 1.0,
   large: 1.12,
@@ -122,7 +118,7 @@ export const FONT_SCALE_MULTIPLIER: Record<
  * These are CSS strings consumed by the resolver.
  */
 export const DENSITY_SPACING: Record<
-  NonNullable<DocumentStyle['density']>,
+  Density,
   { pagePadding: string; cardPadding: string; blockGap: string }
 > = {
   compact: {
@@ -141,3 +137,38 @@ export const DENSITY_SPACING: Record<
     blockGap: '20px',
   },
 };
+
+// ─────────────────────────────────────────────────────────────────
+// Token-key → CSS hex resolution map (P1)
+// ─────────────────────────────────────────────────────────────────
+// Sprint 8.1 originally passed token keys ('y','c','g',...) through
+// verbatim, leaving each consumer to resolve them. The senior reviewer
+// required that ResolvedStyleTokens be fully resolved — no second
+// resolver. This map is the single source for token-key → hex.
+//
+// Values mirror src/core/themes/primitive-tokens.ts so the contract
+// produces identical colors to the legacy DesignTokens system.
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Token key → CSS hex map. The 6 accent colors from the legacy
+ * DesignTokens.colors map (y/c/r/p/g/o).
+ *
+ * These are the DEFAULT values; presets override per-preset via
+ * StylePresetDefinition.semantic.accents.
+ */
+export const DEFAULT_TOKEN_KEY_HEX: Record<string, string> = {
+  y: '#fbbf24', // yellow
+  c: '#3ecfcf', // cyan (macam-norma teal — also the default)
+  r: '#ff6b6b', // red
+  p: '#a78bfa', // purple
+  g: '#34d399', // green
+  o: '#fb923c', // orange
+};
+
+/**
+ * Check whether a string is a known token key.
+ */
+export function isTokenKey(value: string): boolean {
+  return value in DEFAULT_TOKEN_KEY_HEX;
+}

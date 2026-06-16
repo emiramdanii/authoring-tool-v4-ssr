@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════
-// STYLE CONTRACT — Type Definitions
+// STYLE CONTRACT — Type Definitions  (Sprint 8.1-Patch)
 // ═══════════════════════════════════════════════════════════════════
 // Sprint 8.1 — Style Contract Audit & Consolidation
+// Patch: Senior Review CHANGES REQUIRED — P0-1/P0-2/P0-3/P0-4 + P1.
 //
 // This module defines the SINGLE source of truth for style types:
 //   - DocumentStyle   → persisted, affects whole media/project
@@ -14,18 +15,18 @@
 //   Teacher Style Choice
 //     → StyleContract persisted in schema
 //       → resolveStyleContract()
-//         → ResolvedStyleTokens
+//         → ResolvedStyleTokens  (FULLY resolved — no second resolver)
 //           → Canvas / Preview / Present / Export HTML
 //
-// Forbidden:
-//   - Canvas computing its own style tokens
-//   - Preview computing its own style tokens
-//   - Export computing its own style tokens
-//   - Templates hardcoding their own style tokens
-//
-// Sprint 8.1 constraint: this module is purely additive. It does NOT
-// modify existing schema, persistence, renderer, export pipeline, or
-// TemplateAdapter boundaries. Consumers will be wired in 8.2+.
+// Patch changes vs Sprint 8.1:
+//   - PageBackgroundStyle aligned with ScreenSchema.background
+//     (radial, color1/color2, imageFit, imageOpacity, imageBlur, overlay 0-80)
+//   - ResolvedStyleTokens extended with page + block sections so every
+//     teacher-facing control actually changes the output (P0-1)
+//   - Semantic palette added (accents + categories) so DesignTokens
+//     features (norma colors, feedback colors, phase colors) survive (P0-3)
+//   - Token keys ('y','c','g',...) resolved to concrete CSS hex inside
+//     the resolver — ResolvedStyleTokens is now consumer-ready (P1)
 // ═══════════════════════════════════════════════════════════════════
 
 /**
@@ -56,12 +57,15 @@ export type FontScale = 'compact' | 'comfortable' | 'large';
 export type Density = 'compact' | 'comfortable' | 'spacious';
 
 /**
- * Background type for a page. Teacher-facing control.
+ * Background type — ALIGNED with ScreenSchema.background.type.
+ * Sprint 8.1 originally had 'solid' | 'gradient' | 'image'; the actual
+ * schema uses 'solid' | 'gradient' | 'radial', with image layered on
+ * top via separate `imageUrl` field (NOT a separate type).
  */
-export type PageBackgroundType = 'solid' | 'gradient' | 'image';
+export type PageBackgroundType = 'solid' | 'gradient' | 'radial';
 
 /**
- * Overlay tone for background images. Teacher-facing control.
+ * Overlay tone — ALIGNED with ScreenSchema.background.overlayType.
  */
 export type OverlayType = 'dark' | 'light' | 'gradient';
 
@@ -90,11 +94,69 @@ export type CompositionIntent = 'default' | 'focus' | 'immersive';
 export type BlockEmphasis = 'normal' | 'highlight' | 'strong';
 
 /**
- * Document-level style. Persisted in schema at the project/lesson level.
- * Affects every page in the media.
+ * Image fit mode — ALIGNED with ScreenSchema.background.imageFit.
+ */
+export type ImageFit = 'cover' | 'contain';
+
+/**
+ * Page background style — ALIGNED with ScreenSchema.background.
  *
- * Teachers choose `presetId` plus optional overrides. Overrides are only
- * persisted when they differ from the preset default (storage honesty).
+ * Key alignment changes (P0-4):
+ *   - `type` includes 'radial' (was missing in Sprint 8.1)
+ *   - `color1` / `color2` replace the old `color` field (gradient support)
+ *   - `imageUrl` is layered ON TOP of solid/gradient/radial — NOT a
+ *     separate background type
+ *   - `imageFit` / `imageOpacity` / `imageBlur` are now in the contract
+ *   - `overlay` range is 0-80 (matches ScreenSchema) NOT 0-100
+ *
+ * Legacy adapters convert their respective scales to 0-80.
+ */
+export interface PageBackgroundStyle {
+  type: PageBackgroundType;
+  /** Primary color — hex string OR token key ('bg','y','c','g','p','o','r'). */
+  color1?: string;
+  /** Secondary color (gradient/radial only). */
+  color2?: string;
+  /** Background image URL (data URL or remote URL), layered on top. */
+  imageUrl?: string;
+  /** Overlay opacity 0-80. Default 40 (matches ScreenSchema). */
+  overlay?: number;
+  /** Overlay tone. Default 'dark'. */
+  overlayType?: OverlayType;
+  /** Image fit mode. Default 'cover'. */
+  imageFit?: ImageFit;
+  /** Image opacity 0-100. Default 100. */
+  imageOpacity?: number;
+  /** Image blur radius in px 0-20. Default 0. */
+  imageBlur?: number;
+}
+
+/**
+ * Resolved background — output form. All token keys resolved to CSS.
+ * All numeric ranges normalized. Image fields passed through verbatim.
+ */
+export interface ResolvedBackground {
+  type: PageBackgroundType;
+  /** Resolved CSS color (hex), never a token key. */
+  color1: string;
+  /** Resolved CSS color (hex), never a token key. '' if not set. */
+  color2: string;
+  /** Image URL passed through verbatim. '' if not set. */
+  imageUrl: string;
+  /** Overlay opacity 0-80. */
+  overlay: number;
+  /** Overlay tone. */
+  overlayType: OverlayType;
+  /** Image fit. */
+  imageFit: ImageFit;
+  /** Image opacity 0-100. */
+  imageOpacity: number;
+  /** Image blur in px 0-20. */
+  imageBlur: number;
+}
+
+/**
+ * Document-level style. Persisted in schema at the project/lesson level.
  */
 export interface DocumentStyle {
   /** Stable preset identity. Source of truth for visual DNA. */
@@ -102,6 +164,7 @@ export interface DocumentStyle {
   /**
    * Optional accent color override. May be a token key ('y','c','g','p','o','r')
    * or a hex string ('#...'). When omitted, the preset's accent is used.
+   * The resolver converts token keys to concrete CSS hex.
    */
   accentColor?: string;
   /** Optional text scale override. */
@@ -112,34 +175,17 @@ export interface DocumentStyle {
 
 /**
  * Page-level style. Persisted in schema at the page level.
- * Affects a single page.
- *
- * All fields are optional — when omitted, the document-level defaults
- * (or preset defaults) apply.
+ * All fields optional — when omitted, document-level defaults apply.
  */
 export interface PageStyle {
-  background?: {
-    type: PageBackgroundType;
-    /** Solid color: hex string OR token key (e.g. 'bg','y'). */
-    color?: string;
-    /** Gradient preset ID (referenced from a future gradient registry). */
-    gradientId?: string;
-    /** Background image URL (data URL or remote URL). */
-    imageUrl?: string;
-    /** Overlay opacity 0-100. */
-    overlay?: number;
-    /** Overlay tone. */
-    overlayType?: OverlayType;
-  };
+  /** Page background. Aligned with ScreenSchema.background. */
+  background?: PageBackgroundStyle;
   surface?: SurfaceTreatment;
   composition?: CompositionIntent;
 }
 
 /**
  * Block-level style. Persisted in schema at the block level.
- * Affects a single block.
- *
- * All fields are optional — when omitted, the document/page defaults apply.
  */
 export interface BlockStyle {
   /** Block style preset ID (e.g. 'ceria','formal','modern'). */
@@ -148,13 +194,15 @@ export interface BlockStyle {
   variant?: 'A' | 'B' | 'C';
   /** Block emphasis. */
   emphasis?: BlockEmphasis;
+  /**
+   * Optional accent override specific to this block. Token key or hex.
+   * When omitted, the document-level accent applies.
+   */
+  accentColor?: string;
 }
 
 /**
  * Combined style contract — the resolver's input.
- *
- * `document` is required (it carries the preset identity).
- * `page` and `block` are optional context layers.
  */
 export interface StyleContract {
   document: DocumentStyle;
@@ -163,14 +211,89 @@ export interface StyleContract {
 }
 
 /**
- * Resolved technical tokens — the resolver's output.
+ * Semantic palette — covers the 6 accent colors (y/c/r/p/g/o) plus
+ * domain-specific category colors (e.g. macam-norma's 4 norma types).
+ * This replaces the lossy single-`accent` model from Sprint 8.1.
  *
- * Runtime-only. NEVER persisted to schema. NEVER written to a store.
- * Consumers (Canvas / Preview / Present / Export) read from this shape.
+ * All values are concrete CSS hex strings — NO token keys.
+ */
+export interface SemanticPalette {
+  /** Standard semantic colors. */
+  primary: string;
+  secondary: string;
+  info: string;
+  warning: string;
+  success: string;
+  error: string;
+
+  /** The 6 accent colors from the legacy DesignTokens.colors map. */
+  accents: {
+    yellow: string; // 'y'
+    cyan: string; // 'c'
+    red: string; // 'r'
+    purple: string; // 'p'
+    green: string; // 'g'
+    orange: string; // 'o'
+  };
+
+  /**
+   * Domain-specific category colors. Populated only when the preset
+   * defines them (e.g. macam-norma). Empty record otherwise.
+   * Consumers MAY read keys like 'agama', 'kesusilaan', etc.
+   */
+  categories: Record<string, string>;
+}
+
+/**
+ * Resolved page tokens — every PageStyle field produces a change here.
+ */
+export interface ResolvedPageTokens {
+  background: ResolvedBackground;
+  surface: SurfaceTreatment;
+  composition: CompositionIntent;
+}
+
+/**
+ * Resolved block tokens — every BlockStyle field produces a change here.
+ */
+export interface ResolvedBlockTokens {
+  presetId: string;
+  variant: 'A' | 'B' | 'C';
+  emphasis: BlockEmphasis;
+  /** Resolved CSS color for the block's accent (hex, never token key). */
+  accent: string;
+  /**
+   * Resolved CSS surface color for the block, influenced by `emphasis`:
+   *   - normal    → preset surface
+   *   - highlight → preset surfaceStrong
+   *   - strong    → preset accent
+   */
+  surface: string;
+  /**
+   * Resolved CSS text color for the block, influenced by `emphasis`:
+   *   - normal    → preset text
+   *   - highlight → preset text
+   *   - strong    → preset accentContrast
+   */
+  text: string;
+  /** Resolved CSS border color for the block. */
+  border: string;
+}
+
+/**
+ * Resolved technical tokens — the resolver's FULLY-RESOLVED output.
  *
- * The `_legacy*` fields are metadata for compatibility mapping during
- * the migration period (Sprint 8.1–8.4). They MUST NOT be relied upon
- * as the source of truth — only `presetId` is the contract.
+ * Runtime-only. NEVER persisted. Consumers read directly — no second
+ * resolver needed. All token keys ('y','c','g',...) have been resolved
+ * to concrete CSS hex strings.
+ *
+ * Patch vs Sprint 8.1:
+ *   - Semantic palette added (P0-3)
+ *   - `page` section added — surface/composition/background now produce
+ *     visible output changes (P0-1)
+ *   - `block` section added — presetId/variant/emphasis now produce
+ *     visible output changes (P0-1)
+ *   - All accent colors are concrete CSS hex, not token keys (P1)
  */
 export interface ResolvedStyleTokens {
   colors: {
@@ -185,6 +308,7 @@ export interface ResolvedStyleTokens {
     success: string;
     error: string;
   };
+  semantic: SemanticPalette;
   typography: {
     headingFamily: string;
     bodyFamily: string;
@@ -216,15 +340,18 @@ export interface ResolvedStyleTokens {
     /** Navbar style: 'colorful' | 'minimal' | 'glass'. */
     style: string;
   };
+  /** Page-level resolved tokens. Always present (P0-1 patch). */
+  page: ResolvedPageTokens;
+  /** Block-level resolved tokens. Always present (P0-1 patch). */
+  block: ResolvedBlockTokens;
   /**
    * Legacy themeId this contract maps to. Used by consumers during
-   * migration to look up the existing `THEME_PRESETS` resolver.
-   * Sprint 8.2+ will replace these lookups with direct token reads.
+   * migration to look up the existing THEME_PRESETS resolver.
+   * Sprint 8.4 will remove this field.
    */
   _legacyThemeId: string;
   /**
-   * Legacy template contractId this preset maps to. Optional — only
-   * presets that have a 1:1 contract mapping set this field.
+   * Legacy template contractId this preset maps to, if any.
    */
   _legacyContractId?: string;
 }
@@ -232,15 +359,13 @@ export interface ResolvedStyleTokens {
 /**
  * Teacher-facing control surface. ONLY these fields may appear in
  * teacher-facing UI pickers. Anything else is a technical token.
- *
- * Sprint 8.1 establishes the contract; the actual picker UI is Sprint 8.2.
  */
 export type TeacherStyleControl =
   | { kind: 'preset'; value: StylePresetId }
   | { kind: 'accentColor'; value: string }
   | { kind: 'fontScale'; value: FontScale }
   | { kind: 'density'; value: Density }
-  | { kind: 'pageBackground'; value: NonNullable<PageStyle['background']> }
+  | { kind: 'pageBackground'; value: PageBackgroundStyle }
   | { kind: 'surface'; value: SurfaceTreatment }
   | { kind: 'composition'; value: CompositionIntent }
   | { kind: 'blockPreset'; value: string }
@@ -249,7 +374,6 @@ export type TeacherStyleControl =
 
 /**
  * Technical tokens that MUST NOT be exposed directly to teachers.
- * These are derived from the preset, never edited one-by-one.
  */
 export type TechnicalTokenKey =
   | 'colors.background'
@@ -262,10 +386,24 @@ export type TechnicalTokenKey =
   | 'colors.border'
   | 'colors.success'
   | 'colors.error'
+  | 'semantic.primary'
+  | 'semantic.secondary'
+  | 'semantic.info'
+  | 'semantic.warning'
+  | 'semantic.success'
+  | 'semantic.error'
+  | 'semantic.accents.yellow'
+  | 'semantic.accents.cyan'
+  | 'semantic.accents.red'
+  | 'semantic.accents.purple'
+  | 'semantic.accents.green'
+  | 'semantic.accents.orange'
+  | 'semantic.categories'
   | 'typography.headingFamily'
   | 'typography.bodyFamily'
   | 'typography.headingScale'
   | 'typography.bodyScale'
+  | 'typography.fontScaleMultiplier'
   | 'shape.radius'
   | 'shape.borderWidth'
   | 'shape.shadow'

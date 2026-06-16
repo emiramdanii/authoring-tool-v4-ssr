@@ -1,28 +1,31 @@
 // ═══════════════════════════════════════════════════════════════════
-// STYLE CONTRACT — Preset Registry
+// STYLE CONTRACT — Preset Registry  (Sprint 8.1-Patch)
 // ═══════════════════════════════════════════════════════════════════
 // Sprint 8.1 — Style Contract Audit & Consolidation
+// Patch: P0-3 — semantic palette added to every preset definition.
+//        P0-2 — preset → legacy themeId mappings verified against
+//               the actual THEME_PRESETS registry (17 themes).
 //
-// Six stable preset IDs. Each preset defines its visual DNA inline.
+// Six stable preset IDs. Each preset defines its visual DNA inline
+// INCLUDING the full semantic palette (6 accent colors + categories).
 // Sprint 8.1 establishes the IDENTITY and STRUCTURE only — visual
 // polishing happens in Sprint 8.2.
 //
 // Constraints honored:
 //   - Fonts use only families already loaded by the app (no new deps).
-//     The app loads --font-fredoka (display) and --font-nunito (body)
-//     via next/font in src/app/layout.tsx. We also fall back to the
-//     'Poppins' stack already used by ThemePreset.
 //   - Colors are self-contained — no runtime lookup into THEME_PRESETS.
-//     This keeps the resolver pure, deterministic, and SSR-safe.
 //   - _legacyThemeId is metadata for the migration period only.
+//   - Semantic palette colors mirror the legacy THEME_PRESETS values
+//     where a direct mapping exists, so old projects render the same.
 // ═══════════════════════════════════════════════════════════════════
 
-import type { Density, StylePresetId } from './types';
+import type { Density, SemanticPalette, StylePresetId } from './types';
 import { DEFAULT_PRESET_ID } from './defaults';
 
 /**
  * Full definition of a style preset. Each preset is a complete visual
- * identity — colors, typography, shape, spacing, navigation.
+ * identity — colors, typography, shape, spacing, navigation, AND the
+ * full semantic palette.
  */
 export interface StylePresetDefinition {
   /** Stable preset identifier. */
@@ -46,6 +49,14 @@ export interface StylePresetDefinition {
     success: string;
     error: string;
   };
+
+  /**
+   * Semantic palette — 6 accent colors + standard semantic colors +
+   * optional domain categories. Mirrors the legacy DesignTokens.colors
+   * map so consumers don't lose features like norma cards, feedback
+   * colors, or phase badges.
+   */
+  semantic: SemanticPalette;
 
   typography: {
     /** Font family stack for headings. */
@@ -85,7 +96,7 @@ export interface StylePresetDefinition {
   _legacyThemeId: string;
 
   /**
-   * Legacy template contractId this preset maps to, if any. Optional.
+   * Legacy template contractId this preset maps to, if any.
    */
   _legacyContractId?: string;
 }
@@ -101,17 +112,51 @@ const FONT_BODY =
   "'Nunito', 'Segoe UI', var(--font-nunito), system-ui, -apple-system, sans-serif";
 
 /**
+ * Helper: build a standard semantic palette from the 6 accent colors.
+ * Domain-specific `categories` is left empty by default; presets that
+ * need it (e.g. macam-norma) override.
+ */
+function buildSemanticPalette(accents: {
+  yellow: string;
+  cyan: string;
+  red: string;
+  purple: string;
+  green: string;
+  orange: string;
+  categories?: Record<string, string>;
+}): SemanticPalette {
+  return {
+    primary: accents.yellow,
+    secondary: accents.cyan,
+    info: accents.cyan,
+    warning: accents.orange,
+    success: accents.green,
+    error: accents.red,
+    accents: {
+      yellow: accents.yellow,
+      cyan: accents.cyan,
+      red: accents.red,
+      purple: accents.purple,
+      green: accents.green,
+      orange: accents.orange,
+    },
+    categories: accents.categories ?? {},
+  };
+}
+
+/**
  * The six preset definitions. IDs are stable contracts.
  *
- * Color choices are conservative and high-contrast for accessibility.
- * Each preset's accent color is tuned to be readable against its
- * background, with accentContrast providing text-on-accent contrast.
+ * Color choices mirror the legacy THEME_PRESETS values where a direct
+ * mapping exists, so old projects render identically after migration.
  */
 export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
   // ─────────────────────────────────────────────────────────────
   // academic-clean
-  // Conservative, scholarly, high-contrast. Maps to the existing
-  // 'golden-presentation' theme + 'golden-pertemuan' contract.
+  // Mirrors legacy 'golden-presentation' theme (golden accent + navy bg).
+  // Also serves as the default for unmapped PPKn domain themes
+  // (hakikat-norma, nilai-pancasila, etc.) which inherit golden accent.
+  // Includes macam-norma categories in case old PPKn projects migrate.
   // ─────────────────────────────────────────────────────────────
   'academic-clean': {
     id: 'academic-clean',
@@ -120,16 +165,32 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
       'Tampilan tenang dan profesional dengan aksen emas. Cocok untuk materi formal dan presentasi akademik.',
     colors: {
       background: '#0f172a',
-      surface: '#1e293b',
-      surfaceStrong: '#334155',
-      text: '#f8fafc',
-      textMuted: '#cbd5e1',
+      surface: 'rgba(255,255,255,0.06)',
+      surfaceStrong: '#1e293b',
+      text: '#ffffff',
+      textMuted: '#64748b',
       accent: '#fbbf24',
       accentContrast: '#1a1a1a',
-      border: '#475569',
-      success: '#34d399',
+      border: 'rgba(255,255,255,0.1)',
+      success: '#4ade80',
       error: '#f87171',
     },
+    semantic: buildSemanticPalette({
+      yellow: '#fbbf24',
+      cyan: '#2563eb',
+      red: '#f87171',
+      purple: '#c084fc',
+      green: '#4ade80',
+      orange: '#fb923c',
+      // macam-norma categories — preserved so PPKn projects keep their
+      // 4-color norma distinction after migration
+      categories: {
+        agama: '#fbbf24',
+        kesusilaan: '#f87171',
+        kesopanan: '#38bdf8',
+        hukum: '#c084fc',
+      },
+    }),
     typography: {
       headingFamily: FONT_DISPLAY,
       bodyFamily: FONT_BODY,
@@ -139,7 +200,7 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     shape: {
       radius: '16px',
       borderWidth: '1px',
-      shadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+      shadow: '0 4px 6px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.12)',
     },
     spacing: {
       density: 'comfortable',
@@ -154,6 +215,7 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
   // ─────────────────────────────────────────────────────────────
   // school-cheerful
   // Bright, friendly, rounded. For elementary/middle-school media.
+  // Maps from legacy 'colorful' + 'ios-warm' themes.
   // ─────────────────────────────────────────────────────────────
   'school-cheerful': {
     id: 'school-cheerful',
@@ -161,17 +223,25 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     description:
       'Warna cerah dan ramah dengan sudut membulat. Cocok untuk SD/SMP dan materi yang menyenangkan.',
     colors: {
-      background: '#fffbeb',
-      surface: '#ffffff',
-      surfaceStrong: '#fef3c7',
-      text: '#1f2937',
-      textMuted: '#6b7280',
-      accent: '#f97316',
-      accentContrast: '#ffffff',
-      border: '#fcd34d',
-      success: '#22c55e',
-      error: '#ef4444',
+      background: '#1a1030',
+      surface: '#301f58',
+      surfaceStrong: '#3d2970',
+      text: '#f0e6ff',
+      textMuted: '#9b8ab8',
+      accent: '#ffd166',
+      accentContrast: '#1a1030',
+      border: 'rgba(255,255,255,0.1)',
+      success: '#06d6a0',
+      error: '#ef476f',
     },
+    semantic: buildSemanticPalette({
+      yellow: '#ffd166',
+      cyan: '#06d6a0',
+      red: '#ef476f',
+      purple: '#9b5de5',
+      green: '#06d6a0',
+      orange: '#ff9f1c',
+    }),
     typography: {
       headingFamily: FONT_DISPLAY,
       bodyFamily: FONT_BODY,
@@ -181,7 +251,7 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     shape: {
       radius: '20px',
       borderWidth: '2px',
-      shadow: '0 4px 12px rgba(251, 191, 36, 0.25)',
+      shadow: '0 4px 12px rgba(155, 90, 229, 0.25)',
     },
     spacing: {
       density: 'comfortable',
@@ -189,12 +259,15 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     navigation: {
       style: 'colorful',
     },
-    _legacyThemeId: 'ceria',
+    _legacyThemeId: 'colorful',
   },
 
   // ─────────────────────────────────────────────────────────────
   // mission-adventure
   // Earthy, expedition-style. For thematic / scenario-based learning.
+  // NOTE: 'petualangan' is a BLOCK style preset (not a theme preset),
+  // so this preset has no direct legacy themeId mapping. We use
+  // 'glass' (earth-toned dark) as the closest legacy bridge.
   // ─────────────────────────────────────────────────────────────
   'mission-adventure': {
     id: 'mission-adventure',
@@ -213,6 +286,14 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
       success: '#22c55e',
       error: '#f87171',
     },
+    semantic: buildSemanticPalette({
+      yellow: '#fbbf24',
+      cyan: '#3ecfcf',
+      red: '#f87171',
+      purple: '#a78bfa',
+      green: '#84cc16',
+      orange: '#fb923c',
+    }),
     typography: {
       headingFamily: FONT_DISPLAY,
       bodyFamily: FONT_BODY,
@@ -230,12 +311,15 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     navigation: {
       style: 'minimal',
     },
-    _legacyThemeId: 'petualangan',
+    // No direct legacy themeId — 'petualangan' is a block preset.
+    // Default to glass as the closest earth-toned dark legacy theme.
+    _legacyThemeId: 'glass',
   },
 
   // ─────────────────────────────────────────────────────────────
   // dark-elegant
   // Sophisticated dark with neon accents. For senior high / premium feel.
+  // Maps from legacy 'neon' theme (1:1 color match).
   // ─────────────────────────────────────────────────────────────
   'dark-elegant': {
     id: 'dark-elegant',
@@ -243,17 +327,25 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     description:
       'Latar gelap dengan aksen neon terang. Cocok untuk SMA dan presentasi yang berkarakter.',
     colors: {
-      background: '#020617',
-      surface: '#0f172a',
-      surfaceStrong: '#1e293b',
-      text: '#f1f5f9',
-      textMuted: '#94a3b8',
+      background: '#0a0a1a',
+      surface: '#12122e',
+      surfaceStrong: '#1a1a3e',
+      text: '#e0e7ff',
+      textMuted: '#6366f1',
       accent: '#22d3ee',
-      accentContrast: '#020617',
-      border: '#334155',
+      accentContrast: '#0a0a1a',
+      border: 'rgba(139,92,246,0.15)',
       success: '#34d399',
-      error: '#fb7185',
+      error: '#f472b6',
     },
+    semantic: buildSemanticPalette({
+      yellow: '#c084fc',
+      cyan: '#22d3ee',
+      red: '#f472b6',
+      purple: '#8b5cf6',
+      green: '#34d399',
+      orange: '#fb923c',
+    }),
     typography: {
       headingFamily: FONT_DISPLAY,
       bodyFamily: FONT_BODY,
@@ -278,6 +370,7 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
   // ─────────────────────────────────────────────────────────────
   // nusantara-nature
   // Warm, natural, batik-inspired earth tones. Cultural identity.
+  // Maps from legacy 'warm-light' theme.
   // ─────────────────────────────────────────────────────────────
   'nusantara-nature': {
     id: 'nusantara-nature',
@@ -285,17 +378,25 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     description:
       'Nuansa alam dan tanah Nusantara dengan aksen terra-cotta. Cocok untuk materi budaya dan IPA.',
     colors: {
-      background: '#fef7ed',
-      surface: '#fffbeb',
-      surfaceStrong: '#fef3c7',
-      text: '#451a03',
-      textMuted: '#92400e',
+      background: '#fefce8',
+      surface: '#ffffff',
+      surfaceStrong: '#fef9c3',
+      text: '#1c1917',
+      textMuted: '#78716c',
       accent: '#c2410c',
       accentContrast: '#fff7ed',
-      border: '#fed7aa',
-      success: '#65a30d',
+      border: 'rgba(0,0,0,0.06)',
+      success: '#15803d',
       error: '#dc2626',
     },
+    semantic: buildSemanticPalette({
+      yellow: '#ca8a04',
+      cyan: '#0d9488',
+      red: '#dc2626',
+      purple: '#9333ea',
+      green: '#15803d',
+      orange: '#c2410c',
+    }),
     typography: {
       headingFamily: FONT_DISPLAY,
       bodyFamily: FONT_BODY,
@@ -319,6 +420,7 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
   // ─────────────────────────────────────────────────────────────
   // modern-interactive
   // Clean iOS-inspired light theme. For interactive / game-heavy media.
+  // Maps from legacy 'ios-light' theme (1:1 color match).
   // ─────────────────────────────────────────────────────────────
   'modern-interactive': {
     id: 'modern-interactive',
@@ -326,17 +428,25 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     description:
       'Tema terang minimalis dengan aksen biru. Cocok untuk media interaktif dan kuis berbasis game.',
     colors: {
-      background: '#f8fafc',
-      surface: '#ffffff',
+      background: '#F5F7FB',
+      surface: '#FFFFFF',
       surfaceStrong: '#f1f5f9',
-      text: '#0f172a',
-      textMuted: '#64748b',
-      accent: '#3b82f6',
+      text: '#1C1C1E',
+      textMuted: '#8E8E93',
+      accent: '#007AFF',
       accentContrast: '#ffffff',
-      border: '#e2e8f0',
-      success: '#22c55e',
-      error: '#ef4444',
+      border: 'rgba(15,23,42,0.06)',
+      success: '#34C759',
+      error: '#FF3B30',
     },
+    semantic: buildSemanticPalette({
+      yellow: '#FF9F0A',
+      cyan: '#007AFF',
+      red: '#FF3B30',
+      purple: '#AF52DE',
+      green: '#34C759',
+      orange: '#FF9500',
+    }),
     typography: {
       headingFamily: FONT_DISPLAY,
       bodyFamily: FONT_BODY,
@@ -346,7 +456,7 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     shape: {
       radius: '14px',
       borderWidth: '1px',
-      shadow: '0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.04)',
+      shadow: '0 1px 2px rgba(0,0,0,0.04)',
     },
     spacing: {
       density: 'comfortable',
@@ -395,8 +505,7 @@ export function getPreset(id: string | undefined | null): StylePresetDefinition 
 }
 
 /**
- * Strict variant of getPreset — throws if the ID is invalid. Used in
- * tests and internal code paths where the caller has already validated.
+ * Strict variant of getPreset — throws if the ID is invalid.
  */
 export function getPresetOrThrow(id: StylePresetId): StylePresetDefinition {
   if (!isValidPresetId(id)) {
@@ -406,8 +515,7 @@ export function getPresetOrThrow(id: StylePresetId): StylePresetDefinition {
 }
 
 /**
- * Get all preset definitions in canonical display order. Used by
- * future picker UI (Sprint 8.2).
+ * Get all preset definitions in canonical display order.
  */
 export function getAllStylePresets(): StylePresetDefinition[] {
   return PRESET_ID_ORDER.map((id) => STYLE_PRESETS[id]);

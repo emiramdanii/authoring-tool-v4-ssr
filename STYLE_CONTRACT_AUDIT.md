@@ -1,8 +1,28 @@
 # STYLE_CONTRACT_AUDIT.md
 
-**Sprint:** 8.1 — Style Contract Audit & Consolidation
-**Status:** Ready for Senior Review
+**Sprint:** 8.1 — Style Contract Audit & Consolidation (Patch)
+**Status:** Ready for Senior Review (Patch — addresses CHANGES REQUIRED verdict)
 **Date:** 2026-06-17
+**Patch commit:** (pending push)
+**Predecessor:** Sprint 8.1 commit `b79df6b` (returned CHANGES REQUIRED)
+
+## Patch Summary
+
+This patch addresses all 4 P0 and 2 P1 issues from the Senior Review
+verdict on commit `b79df6b`. All changes are confined to `src/core/style/`,
+its tests, and this document. No frozen boundary (persistence, renderer,
+export, TemplateAdapter) was modified.
+
+| Issue | Severity | Resolution |
+|---|---|---|
+| P0-1 — Resolver discards teacher controls via `void` | P0 | Added `page` + `block` sections to `ResolvedStyleTokens`; every teacher-facing field now produces a visible output change. Behavioral tests assert surface/composition/emphasis/overlay all change output. |
+| P0-2 — Legacy mapping incomplete vs actual THEME_PRESETS | P0 | Built exhaustive 17-entry mapping covering every theme in `THEME_PRESETS` (incl. 7 PPKn domain themes). Cross-registry test imports the actual `THEME_PRESETS` and verifies every ID has an explicit decision. Removed incorrect `ceria`/`petualangan` entries (they are block presets, not theme IDs). |
+| P0-3 — Missing semantic color palette | P0 | Added `SemanticPalette` (6 accents + standard semantic + domain categories). `academic-clean` carries the 4 macam-norma categories so PPKn norma cards keep their color distinction. Cross-registry test verifies the 6 accent keys match `DesignTokens.colors`. |
+| P0-4 — Background contract drift from ScreenSchema | P0 | Aligned `PageBackgroundStyle` with `ScreenSchema.background`: added `radial`, `color1`/`color2`, `imageFit`, `imageOpacity`, `imageBlur`, overlay range 0-80. Removed ambiguous `<=1 → fraction` heuristic; split adapters by source (`resolveCanvaOverlay` 0-100, `resolveDbOverlay` 0-1, `resolveSchemaOverlay` 0-80). |
+| P1 — Resolver passes token keys through verbatim | P1 | Token keys (`'y'`,`'c'`,`'g'`,...) now resolve to concrete CSS hex inside the resolver. `ResolvedStyleTokens` is consumer-ready — no second resolver needed. |
+| P1 — Parity test tautological + gate marked PASS prematurely | P1 | Renamed suite to "Style Resolver Consistency Contract". Gate downgraded from PASS to **READY FOR INTEGRATION**. Will flip to PASS after Sprint 8.2 wires real consumers. |
+| P1 — `_legacyNavbarStyle` side-channel | P1 | Removed. Resolver no longer accepts hidden fields. Tests assert it does not leak. |
+
 **Predecessor:** Sprint 7.2A-Patch-4 (Contract & Boundary FROZEN), cleanup commit `b85c218`
 
 ---
@@ -261,18 +281,20 @@ LEGACY_THEME_TO_PRESET = {
 };
 ```
 
-### 7.2 Legacy field → New contract field
+### 7.2 Legacy field → New contract field (Patch P0-1/P0-4/P1)
 
 | Legacy Field | New Contract Field | Notes |
 |---|---|---|
-| `schemaThemeId` | `DocumentStyle.presetId` | Via `LEGACY_THEME_TO_PRESET` |
+| `schemaThemeId` | `DocumentStyle.presetId` | Via `LEGACY_THEME_TO_PRESET` (17 entries — exhaustive) |
 | `colorPalette` | (intentionally NOT mapped) | Legacy extraction — preset owns color |
 | `templateVariant` | `BlockStyle.variant` (default) | Page-level variant doubles as block default |
-| `bgColor` | `PageStyle.background.color` | When no image present |
-| `bgDataUrl` | `PageStyle.background.imageUrl` | Takes precedence over `bgColor` |
-| `overlay` (0-100 or 0-1) | `PageStyle.background.overlay` | Auto-converted from 0-1 if needed |
-| `navbarStyle` | (carried as `_legacyNavbarStyle` hint) | Resolver doesn't yet consume — Sprint 8.2 |
-| `block.accentColor` | (stays on block — not lifted) | Block-level concern, not document-level |
+| `bgColor` | `PageStyle.background.color1` | When no image present (P0-4: color → color1) |
+| `bgDataUrl` | `PageStyle.background.imageUrl` | Layered on top of solid/gradient (P0-4: not a separate type) |
+| `overlay` (Canva 0-100) | `PageStyle.background.overlay` | Via `resolveCanvaOverlay()` — multiplies by 0.8 (P0-4) |
+| `overlay` (DB 0-1 float) | `PageStyle.background.overlay` | Via `resolveDbOverlay()` — multiplies by 80 (P0-4) |
+| `overlay` (Schema 0-80) | `PageStyle.background.overlay` | Via `resolveSchemaOverlay()` — pass-through (P0-4) |
+| `navbarStyle` | (NOT mapped — P1 patch) | Side-channel removed; resolver derives nav style from preset |
+| `block.accentColor` | `BlockStyle.accentColor` (P0-1 patch) | Now lifted to block contract; drives `block.accent` output |
 | `block.variant` | `BlockStyle.variant` | Direct mapping |
 | `block.stylePreset` (applied patch) | `BlockStyle.presetId` | Direct mapping (when known) |
 
@@ -285,43 +307,59 @@ LEGACY_THEME_TO_PRESET = {
 
 ---
 
-## 8. Deliverables Checklist
+## 8. Deliverables Checklist (Patch)
 
 | # | Deliverable | Status | Location |
 |---|---|---|---|
 | 1 | STYLE_CONTRACT_AUDIT.md | ✅ | `STYLE_CONTRACT_AUDIT.md` (this file) |
 | 2 | Matrix of all current style fields | ✅ | §2 above |
 | 3 | Source of truth decisions | ✅ | §4 above |
-| 4 | `StyleContract` types | ✅ | `src/core/style/types.ts` |
-| 5 | `ResolvedStyleTokens` types | ✅ | `src/core/style/types.ts` |
-| 6 | `StylePresetRegistry` | ✅ | `src/core/style/preset-registry.ts` |
-| 7 | `resolveStyleContract()` pure function | ✅ | `src/core/style/resolve-style-contract.ts` |
-| 8 | Legacy compatibility mapping | ✅ | `src/core/style/legacy-style-adapter.ts` |
-| 9 | Tests for resolver | ✅ | `src/core/style/__tests__/style-contract.test.ts` (49 tests) |
-| 10 | Tests for fallback old projects | ✅ | `src/core/style/__tests__/legacy-style-adapter.test.ts` (54 tests) |
+| 4 | `StyleContract` types | ✅ | `src/core/style/types.ts` (patched: PageBackgroundStyle aligned w/ ScreenSchema) |
+| 5 | `ResolvedStyleTokens` types | ✅ | `src/core/style/types.ts` (patched: +page, +block, +semantic) |
+| 6 | `StylePresetRegistry` | ✅ | `src/core/style/preset-registry.ts` (patched: +semantic palette per preset) |
+| 7 | `resolveStyleContract()` pure function | ✅ | `src/core/style/resolve-style-contract.ts` (patched: resolves token keys, consumes all teacher controls) |
+| 8 | Legacy compatibility mapping | ✅ | `src/core/style/legacy-style-adapter.ts` (patched: 17-entry exhaustive map, source-split overlay adapters, no side-channel) |
+| 9 | Tests for resolver | ✅ | `src/core/style/__tests__/style-contract.test.ts` (72 tests — incl. P0-1 behavioral) |
+| 10 | Tests for fallback old projects | ✅ | `src/core/style/__tests__/legacy-style-adapter.test.ts` (69 tests — incl. P0-2 exhaustive) |
 | 11 | Tests that runtime/UI state doesn't enter contract | ✅ | `src/core/style/__tests__/style-contract.test.ts` → "runtime/UI state isolation" suite |
 | 12 | Tests that invalid preset ID falls back to default | ✅ | `src/core/style/__tests__/style-contract.test.ts` → "invalid preset id fallback" suite |
-| 13 | Parity test Canvas/Preview/Export at token level | ✅ | `src/core/style/__tests__/style-parity.test.ts` (29 tests) |
-| 14 | Worklog Sprint 8.1 | ✅ | `worklog.md` (appended) |
+| 13 | Resolver consistency test (was "parity") | ✅ READY FOR INTEGRATION | `src/core/style/__tests__/style-parity.test.ts` (33 tests — P1 patch: downgraded gate) |
+| 14 | Cross-registry consistency test (NEW) | ✅ | `src/core/style/__tests__/cross-registry-consistency.test.ts` (19 tests — verifies against actual THEME_PRESETS, DesignTokens, BLOCK_STYLE_PRESETS, ScreenSchema) |
+| 15 | Worklog Sprint 8.1 + Patch | ✅ | `worklog.md` (appended) |
 
-**Test totals:** 132 new tests across 3 files, all passing.
+**Test totals (patched):** 193 tests across 4 files, all passing (up from 132 in Sprint 8.1).
 
 ---
 
-## 9. Sprint 8.1 Gate Verification
+## 9. Sprint 8.1 Gate Verification (Patch)
 
 | Gate | Status | Evidence |
 |---|---|---|
 | 1. One style contract documented | ✅ | §5 above + `src/core/style/types.ts` |
 | 2. Document/page/block/runtime style clearly separated | ✅ | §3 above + `types.ts` interfaces |
 | 3. Preset registry has stable IDs | ✅ | §6 above + `preset-registry.ts` (6 IDs) |
-| 4. Resolver is pure and testable | ✅ | `resolve-style-contract.ts` + 49 resolver tests |
-| 5. Old projects continue to render | ✅ | Legacy adapter is read-only; no schema changes; 54 legacy tests pass |
-| 6. Canvas and Export can use identical tokens | ✅ | 29 parity tests pass (Canvas = Preview = Present = Export) |
-| 7. No UI-only style enters schema | ✅ | "runtime/UI state isolation" test suite enforces |
-| 8. No persistence boundary changes | ✅ | `git diff` shows only `src/core/style/` additions — zero modifications to existing files |
+| 4. Resolver is pure and testable | ✅ | `resolve-style-contract.ts` + 72 resolver tests (P0-1 behavioral coverage) |
+| 5. Old projects continue to render | ✅ | Legacy adapter is read-only; no schema changes; 69 legacy tests pass (P0-2 exhaustive coverage) |
+| 6. Canvas and Export can use identical tokens | ⏳ READY FOR INTEGRATION | 33 resolver-consistency tests pass at the resolver level (P1 patch: gate downgraded from PASS). Real consumer wiring deferred to Sprint 8.2. |
+| 7. No UI-only style enters schema | ✅ | "runtime/UI state isolation" test suite enforces (incl. `_legacyNavbarStyle` absence check) |
+| 8. No persistence boundary changes | ✅ | `git diff` shows only `src/core/style/` modifications — zero changes to existing files outside the new module |
 | 9. No major redesign of teacher flow | ✅ | No teacher UI touched in Sprint 8.1 |
-| 10. Old tests remain green | ✅ | 27 pre-existing failures unchanged; 132 new tests pass; zero new failures |
+| 10. Old tests remain green | ✅ | 27 pre-existing failures unchanged; 193 new tests pass; zero new failures |
+| 11. Cross-registry consistency (NEW) | ✅ | 19 tests verify against actual `THEME_PRESETS`, `DesignTokens`, `BLOCK_STYLE_PRESETS`, `ScreenSchema` |
+| 12. Semantic palette covers 6 accents + categories (NEW) | ✅ | `academic-clean` carries 4 macam-norma categories; cross-registry test verifies accent key coverage |
+| 13. Background contract matches ScreenSchema (NEW) | ✅ | `PageBackgroundStyle` aligned with `ScreenSchema.background` (radial, color2, imageFit/Opacity/Blur, overlay 0-80) |
+
+### Patch-specific gate additions
+
+The Senior Review verdict required explicit evidence that each P0 issue is resolved. The patch adds:
+
+- **P0-1 evidence:** `style-contract.test.ts` "page-level overrides produce visible changes" suite + "block-level overrides produce visible changes" suite (24 behavioral tests asserting surface/composition/emphasis/overlay actually change the output, not just `not.toThrow()`).
+- **P0-2 evidence:** `cross-registry-consistency.test.ts` imports the real `THEME_PRESETS` array and verifies every ID has a mapping. Also verifies `ceria`/`petualangan` are NOT in the theme mapping (they are block presets).
+- **P0-3 evidence:** `style-contract.test.ts` "semantic palette" suite verifies all 6 accents present + macam-norma 4 categories preserved + cross-registry test confirms accent hex values match the legacy `THEME_PRESETS` for direct-mapped presets.
+- **P0-4 evidence:** `legacy-style-adapter.test.ts` "source-aware overlay resolution" suite tests `resolveCanvaOverlay`/`resolveDbOverlay`/`resolveSchemaOverlay` separately with explicit scale conversions. `cross-registry-consistency.test.ts` verifies `PageBackgroundStyle` field names match `ScreenSchema.background`.
+- **P1 evidence:** `style-contract.test.ts` asserts token keys (`'y'`, `'c'`, `'g'`) resolve to CSS hex (not passed through). `style-parity.test.ts` renamed to "Resolver Consistency Contract" with explicit READY FOR INTEGRATION gate.
+
+
 
 ---
 

@@ -253,3 +253,95 @@ Stage Summary:
 - Parity: Canvas = Preview = Present = Export (29 tests enforce identical tokens)
 - Boundary respected: zero modifications to schema, persistence, renderer, export pipeline, TemplateAdapter
 - Ready for Senior Review
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Sprint 8.1-Patch — Style Contract (Senior Review CHANGES REQUIRED)
+
+Work Log:
+- Received Senior Review verdict: CHANGES REQUIRED with 4 P0 + 2 P1 issues on commit b79df6b
+- Read actual THEME_PRESETS registry (17 themes in src/core/themes/tokens.ts) — identified missing PPKn domain themes: hakikat-norma, macam-norma, nilai-pancasila, bhinneka-tunggal-ika, ham-hak-kewajiban, demokrasi-pancasila, globalisasi
+- Read ScreenSchema.background type — found contract drift: missing 'radial', 'color2', 'imageFit', 'imageOpacity', 'imageBlur'; overlay range was 0-100 instead of 0-80
+- Confirmed 'ceria' and 'petualangan' are BLOCK style presets (BLOCK_STYLE_PRESETS in src/core/schema/block-style-presets.ts), NOT theme presets — Sprint 8.1 incorrectly listed them as theme IDs
+- Read PRIMITIVES.color from primitive-tokens.ts — confirmed 6 accent hex values for token-key resolution
+
+P0-1 FIX (Resolver discards teacher controls):
+- Rewrote src/core/style/types.ts: added ResolvedPageTokens (background/surface/composition) and ResolvedBlockTokens (presetId/variant/emphasis/accent/surface/text/border) to ResolvedStyleTokens
+- Rewrote src/core/style/resolve-style-contract.ts: removed all `void` discards; emphasis now drives block.surface (normal→preset surface, highlight→surfaceStrong, strong→accent); block.accentColor now lifted to BlockStyle and drives block.accent output
+- Added 24 behavioral tests asserting surface/composition/emphasis/overlay ACTUALLY change output (not just not.toThrow)
+
+P0-2 FIX (Legacy mapping incomplete):
+- Rebuilt LEGACY_THEME_TO_PRESET with all 17 actual THEME_PRESETS entries:
+  * 5 direct: golden-presentation→academic-clean, ios-light→modern-interactive, neon→dark-elegant, warm-light→nusantara-nature, colorful→school-cheerful
+  * 5 approximate: ios-warm→school-cheerful, glass→dark-elegant, minimal→modern-interactive, ocean-light→modern-interactive, default→academic-clean
+  * 7 PPKn domain: hakikat-norma, macam-norma, nilai-pancasila, bhinneka-tunggal-ika, ham-hak-kewajiban, demokrasi-pancasila, globalisasi → all academic-clean (carries macam-norma categories)
+- Removed incorrect 'ceria' and 'petualangan' entries (they are block presets)
+- Added cross-registry-consistency.test.ts that imports real THEME_PRESETS and verifies every ID has a mapping (19 tests)
+
+P0-3 FIX (Missing semantic palette):
+- Added SemanticPalette interface to types.ts: primary/secondary/info/warning/success/error + accents{yellow,cyan,red,purple,green,orange} + categories{Record<string,string>}
+- Added semantic field to StylePresetDefinition and every preset
+- academic-clean carries macam-norma categories (agama/kesusilaan/kesopanan/hukum) so PPKn norma cards keep their 4-color distinction
+- Added buildSemanticPalette() helper
+- Cross-registry test verifies academic-clean.yellow === legacy golden-presentation.y, modern-interactive.cyan === legacy ios-light.c, dark-elegant.cyan === legacy neon.c
+
+P0-4 FIX (Background contract drift):
+- Aligned PageBackgroundStyle with ScreenSchema.background:
+  * Added 'radial' to PageBackgroundType (was missing)
+  * Replaced 'color' with 'color1' + added 'color2' (gradient support)
+  * Added imageFit, imageOpacity, imageBlur fields
+  * Changed overlay range from 0-100 to 0-80 (matches ScreenSchema)
+  * Image is now layered ON TOP of solid/gradient/radial (not a separate type)
+- Removed ambiguous '<=1 → fraction' heuristic
+- Split overlay adapters by source:
+  * resolveCanvaOverlay (0-100 → 0-80, multiply by 0.8)
+  * resolveDbOverlay (0-1 → 0-80, multiply by 80)
+  * resolveSchemaOverlay (0-80 → 0-80, pass-through with clamping)
+- Added OverlaySource type to LegacyStyleInput ('canva' | 'db' | 'schema')
+- Added 12 source-aware overlay tests
+
+P1 FIX (Token keys not resolved):
+- Added DEFAULT_TOKEN_KEY_HEX map to defaults.ts (mirrors PRIMITIVES.color values)
+- Added resolveColor() function in resolver that looks up token keys in preset semantic.accents first, then DEFAULT_TOKEN_KEY_HEX
+- All color outputs are now concrete CSS hex strings — ResolvedStyleTokens is consumer-ready (no second resolver needed)
+- Tests assert 'y' resolves to academic-clean.semantic.accents.yellow (not passed through as 'y')
+
+P1 FIX (Parity test tautological):
+- Renamed style-parity.test.ts suite to "Style Resolver Consistency Contract (Sprint 8.1 — READY FOR INTEGRATION)"
+- Added explicit test documenting that real consumer parity is READY FOR INTEGRATION, not PASS
+- Updated STYLE_CONTRACT_AUDIT.md §9 gate 6 from "✅ PASS" to "⏳ READY FOR INTEGRATION"
+- Will flip to PASS after Sprint 8.2 wires real consumers
+
+P1 FIX (_legacyNavbarStyle side-channel):
+- Removed _legacyNavbarStyle storage from legacy-style-adapter.ts
+- navbarStyle is now silently dropped (resolver derives nav style from preset)
+- Tests assert navbarStyle does NOT leak anywhere in contract or resolved tokens
+
+Cross-registry test (NEW):
+- Created src/core/style/__tests__/cross-registry-consistency.test.ts (19 tests)
+- Imports REAL THEME_PRESETS, DEFAULT_TOKENS, BLOCK_STYLE_PRESETS, ScreenSchema
+- Verifies: every THEME_PRESETS ID has mapping; mapping count matches (17); block preset IDs not in theme mapping; semantic.accents cover same 6 keys as DesignTokens.colors; specific color matches for direct-mapped presets; PageBackgroundStyle field names match ScreenSchema.background
+
+Updated STYLE_CONTRACT_AUDIT.md:
+- Added Patch Summary table at top
+- Updated §7.2 Legacy field → New contract field table with patch annotations
+- Updated §8 Deliverables Checklist (now 15 items, 193 tests)
+- Updated §9 Gate Verification with patch-specific evidence
+- Added §9 "Patch-specific gate additions" with per-P0 evidence pointers
+
+Verification:
+- 193 new tests pass (up from 132 in Sprint 8.1)
+- Zero TS errors in src/core/style/ (60 pre-existing errors elsewhere unchanged)
+- Zero new test failures in full suite (27 pre-existing failures unchanged)
+- All changes confined to src/core/style/, its tests, and STYLE_CONTRACT_AUDIT.md
+- Zero modifications to frozen boundaries (persistence, renderer, export, TemplateAdapter)
+
+Stage Summary:
+- All 4 P0 + 2 P1 issues from Senior Review resolved
+- 193 tests (up from 132) across 4 files, all passing
+- Cross-registry test imports real legacy registries — not self-referential
+- Behavioral tests prove teacher controls actually change output
+- Resolver is now fully consumer-ready (token keys → CSS hex)
+- Parity gate honestly marked READY FOR INTEGRATION (not PASS)
+- Ready for Senior Review re-evaluation
