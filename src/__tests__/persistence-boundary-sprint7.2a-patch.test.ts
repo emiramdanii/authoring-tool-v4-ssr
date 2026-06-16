@@ -650,3 +650,72 @@ describe('Patch-2: Hydration parse failure safety', () => {
     expect(useDirtyStore.getState().dirty).toBe(true);
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// P1 Hardening: flushDurableSave retries until clean
+// ═══════════════════════════════════════════════════════════════════
+// When executeDurableSave() returns false because edits happened during
+// save (not because of error), flushDurableSave() should continue
+// looping instead of returning false immediately. Only hard failures
+// (error, project change, max attempts) cause early false return.
+//
+// Scenario:
+//   save 1: edit happens during save → still dirty
+//   save 2: no edit → clean
+//   result: DB called 2 times, flushDurableSave() === true
+// ═══════════════════════════════════════════════════════════════════
+describe('P1 Hardening: flushDurableSave retries until clean', () => {
+  it('first save: edit during save → still dirty; second save: no edit → clean; DB called twice, flush returns true', async () => {
+    let saveCallCount = 0;
+
+    // First dbSaveFn: simulates edit happening during save
+    // (editRevision advances past savingRevision → saveSucceeded returns false)
+    const dbSaveFn = vi.fn().mockImplementation(async () => {
+      saveCallCount++;
+      if (saveCallCount === 1) {
+        // First save: user edits while DB is saving
+        useDirtyStore.getState().markDirty(); // editRevision advances
+      }
+      // Second save: no edit, just succeeds
+    });
+
+    useDirtyStore.getState().markDirty(); // revision 1
+
+    const result = await flushDurableSave(dbSaveFn);
+
+    // DB was called twice: once for the edit-during-save, once for the clean save
+    expect(dbSaveFn).toHaveBeenCalledTimes(2);
+
+    // flushDurableSave eventually succeeds because it retried
+    expect(result).toBe(true);
+
+    // Project is clean
+    expect(useDirtyStore.getState().dirty).toBe(false);
+    expect(useDirtyStore.getState().saveStatus).toBe('saved');
+  });
+
+  it('flushDurableSave returns false on DB error (not retry-forever)', async () => {
+    const failFn = createFailDbSaveFn('Persistent error');
+
+    useDirtyStore.getState().markDirty();
+    const result = await flushDurableSave(failFn);
+
+    // Error is a hard failure — don't loop forever
+    expect(result).toBe(false);
+    expect(useDirtyStore.getState().saveStatus).toBe('error');
+    expect(useDirtyStore.getState().dirty).toBe(true);
+  });
+
+  it('flushDurableSave returns false on project change mid-flush', async () => {
+    const dbSaveFn = vi.fn().mockImplementation(async () => {
+      // Simulate project switch during save
+      useDirtyStore.getState().resetOnLoad('different-project');
+    });
+
+    useDirtyStore.getState().markDirty();
+    const result = await flushDurableSave(dbSaveFn);
+
+    // Project changed → hard failure
+    expect(result).toBe(false);
+  });
+});

@@ -325,6 +325,14 @@ export async function executeDurableSave(
  * would then report success, allowing a project switch with unsaved
  * data. Now we loop: save → check dirty → save again if needed.
  *
+ * P1 Hardening: When executeDurableSave() returns false because
+ * save succeeded but edits happened during save (still dirty),
+ * we continue looping instead of returning false immediately.
+ * Only hard failures (error / project change / max attempts)
+ * cause an early return of false. This ensures flush retries
+ * until the project is truly clean, so the user doesn't need
+ * to manually retry a project switch.
+ *
  * @param dbSaveFn - Pure persistence function (same as executeDurableSave)
  * @returns true if project is clean, false if save failed
  */
@@ -381,14 +389,19 @@ export async function flushDurableSave(dbSaveFn?: () => Promise<void>): Promise<
       return true;
     }
 
-    // Still dirty — save again
-    const result = await executeDurableSave(dbSaveFn);
-    if (!result) {
-      // Save failed (DB error, stale token, etc.)
-      return false;
-    }
-    // result === true means saveSucceeded() returned true (fully clean)
-    // But check one more time in case a new edit happened
+    // Still dirty — attempt save
+    await executeDurableSave(dbSaveFn);
+
+    // P1 Hardening: Don't return on executeDurableSave() === false.
+    // A false return can mean "save succeeded but edits happened during save"
+    // (still dirty). We must re-check state instead of aborting, because:
+    //   - If error → caught by saveStatus === 'error' above on next iteration
+    //   - If project changed → caught by projectId check above on next iteration
+    //   - If still dirty from edit-during-save → loop will try again
+    //   - If clean → !dirty check above will return true on next iteration
+    //
+    // Only abort on hard failures (error / project change), not on
+    // "saved but still dirty" (which just means we need another iteration).
   }
 
   // Max attempts reached — project is still dirty
