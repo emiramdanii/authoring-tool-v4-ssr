@@ -667,3 +667,40 @@ Stage Summary:
 - Contract & Boundary remains FROZEN — zero frozen-boundary files touched.
 - Sprint 8.2A-Patch READY FOR INTEGRATION → Senior Review.
 - Sprint 8.2B (Present) still deferred until 8.2A-Patch PASS verdict.
+
+---
+Task ID: 8.2A-Cleanup
+Agent: Super Z (main)
+Task: Sprint 8.2A-Cleanup — Address 2 follow-up hygiene notes from Senior Review PASS
+
+Work Log:
+- Senior Review on commit 262dd1b returned **PASS WITH 2 FOLLOW-UP NOTES**.
+  Sprint 8.2A is now CLOSED. Both notes addressed in this cleanup commit:
+- Follow-up Note 1 (FIXED): @testing-library/dom dependency placement.
+  * Was in `dependencies` (added by 8.2A-Patch when installing for
+    page-renderer-integration.test.tsx).
+  * Now moved to `devDependencies` — it's a test-only package.
+  * Verified 303/303 style tests still pass after the move.
+- Follow-up Note 2 (BY DESIGN — no action): Lockfile tidak terlihat di diff.
+  * Investigated: package-lock.json exists locally but is explicitly
+    listed in .gitignore.
+  * This is the repo maintainer's intentional choice for flexible
+    patch-version resolution.
+  * Documented in STYLE_CONTRACT_AUDIT.md for future reference.
+  * If CI is added later, it will run `npm install` (not `npm ci`)
+    and resolve its own lockfile.
+- Updated STYLE_CONTRACT_AUDIT.md:
+  * New status header: "PASS — Sprint 8.2A CLOSED".
+  * Added "Senior Review Verdict" section with the PASS verdict.
+  * Added "Follow-up Notes — Cleanup Actions" section documenting
+    both notes and their resolution.
+- All verification passed:
+  * npx vitest run src/core/style → 303/303 PASS (unchanged)
+
+Stage Summary:
+- 1 file modified: package.json (@testing-library/dom moved to devDependencies)
+- 2 doc files updated: STYLE_CONTRACT_AUDIT.md + worklog.md (this entry)
+- Zero source code changes — pure hygiene commit.
+- Contract & Boundary remains FROZEN.
+- Sprint 8.2A: ✅ CLOSED / PASS.
+- Sprint 8.2B (Present wiring): ▶️ UNBLOCKED.

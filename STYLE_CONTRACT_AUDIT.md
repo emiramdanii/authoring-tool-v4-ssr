@@ -1,14 +1,68 @@
 # STYLE_CONTRACT_AUDIT.md
 
-**Sprint:** 8.2A-Patch — Style Consumer Wiring Patch (Senior Review CHANGES REQUIRED)
-**Status:** Ready for Senior Review (8.2A-Patch — addresses 4 P0 + 2 P1 from Senior Review)
+**Sprint:** 8.2A-Patch — Style Consumer Wiring Patch (Senior Review: PASS with 2 follow-up notes)
+**Status:** ✅ PASS — Sprint 8.2A CLOSED. Follow-up notes addressed in cleanup commit.
 **Date:** 2026-06-17
-**Sprint 8.2A-Patch commit:** (pending push)
+**Sprint 8.2A-Patch commit:** `262dd1b1fb3c3f5356f83312f21f8f07a1431023`
+**Sprint 8.2A-Cleanup commit:** (pending push — follow-up hygiene)
 **Predecessors:**
   - Sprint 8.1     commit `b79df6b` (returned CHANGES REQUIRED → 4 P0 + 2 P1)
   - Sprint 8.1-Patch commit `e2178e4` (returned CHANGES REQUIRED → 3 P0 + 2 P1)
   - Sprint 8.1-Patch-2 commit `50af012` (returned PASS — closed Sprint 8.1)
   - Sprint 8.2A   commit `c02adb5` (returned CHANGES REQUIRED → 4 P0 + 2 P1)
+  - Sprint 8.2A-Patch commit `262dd1b` (returned **PASS** with 2 follow-up notes)
+
+## Senior Review Verdict — Sprint 8.2A-Patch
+
+```text
+Verdict: PASS WITH 2 FOLLOW-UP NOTES
+```
+
+All 4 P0 + 2 P1 + 1 P1-hardening issues from the previous review are
+resolved. Sprint 8.2A is now CLOSED. Sprint 8.2B (Present wiring) is
+UNBLOCKED.
+
+## Follow-up Notes — Cleanup Actions
+
+### Note 1 — Dependency placement (FIXED)
+
+`@testing-library/dom` was added to `dependencies` in the 8.2A-Patch
+commit. It is a test-only package and belongs in `devDependencies`.
+This cleanup commit moves it to the correct section.
+
+Before:
+```json
+"dependencies": { ... "@testing-library/dom": "^10.4.1" ... }
+"devDependencies": { ... (missing) ... }
+```
+
+After:
+```json
+"dependencies": { ... (no @testing-library/dom) ... }
+"devDependencies": { ... "@testing-library/dom": "^10.4.1" ... }
+```
+
+### Note 2 — Lockfile tidak terlihat di diff (BY DESIGN — no action needed)
+
+The repo's `.gitignore` explicitly excludes `package-lock.json`:
+
+```text
+# .gitignore
+package-lock.json
+```
+
+This is an intentional decision by the repo maintainer to allow
+flexible patch-version resolution. `package-lock.json` exists locally
+but is never committed. The reviewer's concern about "lockfile not
+visible in diff" is therefore by-design, not a hygiene gap.
+
+If a future CI run is added, the CI environment will run
+`npm install` (not `npm ci`) and resolve its own lockfile. This may
+produce slightly different patch versions than local, but the test
+suite's behavior should be stable across patch versions of
+testing-library packages.
+
+**Action:** none. Documented here for future reference.
 
 ## Sprint 8.2A-Patch Summary
 
