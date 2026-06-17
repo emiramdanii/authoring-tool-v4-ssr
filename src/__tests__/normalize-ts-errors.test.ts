@@ -1,22 +1,18 @@
 // ═══════════════════════════════════════════════════════════════════
 // TypeScript Normalizer Unit Tests  (Sprint 8.2S-2-Patch-4)
 // ═══════════════════════════════════════════════════════════════════
-// Sprint 8.2S-2-Patch-4 — Senior Review P0-2 + P1-2
+// Sprint 8.2S-2-Patch-4 — Senior Review P0-2 + P1-1 + P1-2
 //
-// Unit tests for the normalizer logic. The normalizer script
-// (scripts/normalize-ts-errors.js) is CommonJS and vitest has trouble
-// importing it reliably across test environments. Since the functions
-// under test (normalizeTscOutput, readBaseline) are pure, we inline
-// copies of them here and verify they match the script's behavior.
+// These tests import from the PRODUCTION core module
+// (scripts/ts-error-normalizer-core.cjs) — NOT inline copies.
+// This ensures tests can never diverge from production logic.
 //
-// The script itself is verified end-to-end via:
-//   `node scripts/normalize-ts-errors.js --check`
-// which runs the real tsc + baseline comparison.
-//
-// These unit tests verify the LOGIC of:
+// Coverage:
 //   - normalizeTscOutput: parsing + multiset counting + whitespace normalization
 //   - readBaseline: fail-closed on malformed lines, invalid counts, duplicates
-//   - Signal/status capture (P0-2): documented behavior paths
+//   - classifyProcessResult: signal kill, null status, ENOENT, normal exit
+//   - compareBaseline: new errors, fixed errors, multiset comparison
+//   - TSC_ENTRY: cross-platform binary path exists
 // ═══════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from 'vitest';
@@ -24,63 +20,9 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 
-// ─────────────────────────────────────────────────────────────────
-// Inline copies of the normalizer functions (pure, for unit testing)
-// These MUST match scripts/normalize-ts-errors.js
-// ─────────────────────────────────────────────────────────────────
-
-function normalizeTscOutput(output: string): Map<string, number> {
-  const lines = output.split('\n');
-  const pattern = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.+)$/;
-  const multiset = new Map<string, number>();
-
-  for (const line of lines) {
-    const m = line.match(pattern);
-    if (!m) continue;
-    const filepath = m[1];
-    const tscode = m[4];
-    let message = m[5];
-    message = message.replace(/\s+/g, ' ').trim();
-    const signature = `${filepath}|${tscode}|${message}`;
-    multiset.set(signature, (multiset.get(signature) ?? 0) + 1);
-  }
-
-  return multiset;
-}
-
-function readBaseline(filePath: string): Map<string, number> {
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Baseline file not found: ${filePath}`);
-  }
-  const content = fs.readFileSync(filePath, 'utf-8');
-  const lines = content.split('\n');
-  const multiset = new Map<string, number>();
-
-  let lineNumber = 0;
-  for (const line of lines) {
-    lineNumber++;
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-
-    const firstPipe = trimmed.indexOf('|');
-    if (firstPipe === -1) {
-      throw new Error(`Invalid baseline line ${lineNumber}: missing pipe separator: "${trimmed}"`);
-    }
-    const countStr = trimmed.substring(0, firstPipe);
-    const rest = trimmed.substring(firstPipe + 1);
-    const count = parseInt(countStr, 10);
-    if (!Number.isInteger(count) || count < 1) {
-      throw new Error(`Invalid baseline count at line ${lineNumber}: "${countStr}" (must be positive integer)`);
-    }
-    if (multiset.has(rest)) {
-      throw new Error(`Duplicate baseline signature at line ${lineNumber}: "${rest}"`);
-    }
-
-    multiset.set(rest, count);
-  }
-
-  return multiset;
-}
+// Import from PRODUCTION core module — tests verify real production code.
+const core = require('../../scripts/ts-error-normalizer-core.cjs');
+const { normalizeTscOutput, readBaseline, compareBaseline, classifyProcessResult, TSC_ENTRY } = core;
 
 // ═══════════════════════════════════════════════════════════════════
 // normalizeTscOutput tests
@@ -196,69 +138,116 @@ describe('readBaseline (P1-2 fail-closed)', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// Signal/status fail-closed tests (P0-2)
+// classifyProcessResult tests (P0-2)
 // ═══════════════════════════════════════════════════════════════════
 
-describe('runTsc signal/status capture (P0-2)', () => {
-  it('would fail-closed on SIGKILL (process killed by OOM)', () => {
-    // Simulate the main function's signal check
-    const killResult = { status: null, signal: 'SIGKILL', stdout: '', stderr: '', error: undefined };
-    expect(killResult.signal).not.toBeNull();
-    expect(killResult.signal).toBe('SIGKILL');
-    // Main function would: process.exit(1)
+describe('classifyProcessResult (P0-2 signal + null status)', () => {
+  it('returns ok=false on SIGKILL (OOM kill)', () => {
+    const result = classifyProcessResult({
+      status: null, signal: 'SIGKILL', stdout: '', stderr: '', error: undefined,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain('SIGKILL');
   });
 
-  it('would fail-closed on SIGTERM (process killed by timeout)', () => {
-    const termResult = { status: null, signal: 'SIGTERM', stdout: '', stderr: '', error: undefined };
-    expect(termResult.signal).not.toBeNull();
-    expect(termResult.signal).toBe('SIGTERM');
+  it('returns ok=false on SIGTERM (timeout kill)', () => {
+    const result = classifyProcessResult({
+      status: null, signal: 'SIGTERM', stdout: '', stderr: '', error: undefined,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain('SIGTERM');
   });
 
-  it('would fail-closed on null status without signal (abnormal termination)', () => {
-    const nullResult = { status: null, signal: null, stdout: '', stderr: '', error: undefined };
-    expect(nullResult.status).toBeNull();
-    expect(nullResult.signal).toBeNull();
-    // Main function would: process.exit(1) — both null is unexpected
+  it('returns ok=false on null status without signal (abnormal)', () => {
+    const result = classifyProcessResult({
+      status: null, signal: null, stdout: '', stderr: '', error: undefined,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain('abnormally');
   });
 
-  it('would fail-closed on ENOENT error (executable not found)', () => {
-    const enoentResult = { status: null, signal: null, stdout: '', stderr: '', error: new Error('spawn ENOENT') };
-    expect(enoentResult.error).toBeDefined();
-    expect(enoentResult.error.message).toContain('ENOENT');
+  it('returns ok=false on ENOENT error (executable not found)', () => {
+    const result = classifyProcessResult({
+      status: null, signal: null, stdout: '', stderr: '',
+      error: new Error('spawn tsc ENOENT'),
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain('failed to start');
   });
 
-  it('passes through normal exit (status 1, no signal)', () => {
-    const normalResult = { status: 1, signal: null, stdout: 'errors here', stderr: '', error: undefined };
-    expect(normalResult.status).toBe(1);
-    expect(normalResult.signal).toBeNull();
-    // Main function would continue to diagnostic check
+  it('returns ok=true on normal exit status 1 (errors found)', () => {
+    const result = classifyProcessResult({
+      status: 1, signal: null, stdout: 'errors here', stderr: '', error: undefined,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.exitCode).toBe(1);
   });
 
-  it('passes through clean exit (status 0, no signal)', () => {
-    const cleanResult = { status: 0, signal: null, stdout: '', stderr: '', error: undefined };
-    expect(cleanResult.status).toBe(0);
-    expect(cleanResult.signal).toBeNull();
+  it('returns ok=true on clean exit status 0 (no errors)', () => {
+    const result = classifyProcessResult({
+      status: 0, signal: null, stdout: '', stderr: '', error: undefined,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.exitCode).toBe(0);
   });
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// Cross-platform binary tests (P1-1)
+// compareBaseline tests (multiset)
 // ═══════════════════════════════════════════════════════════════════
 
-describe('TSC entry point (P1-1 cross-platform)', () => {
-  it('uses process.execPath + typescript/bin/tsc (not .cmd or npx)', () => {
-    // The normalizer script uses:
-    //   process.execPath (Node binary) + TSC_ENTRY (node_modules/typescript/bin/tsc)
-    // This is cross-platform — no .cmd issues on Windows, no npx resolution.
-    //
-    // Verify the TypeScript bin entry exists (if typescript is installed)
-    const tscEntry = path.join(__dirname, '..', '..', 'node_modules', 'typescript', 'bin', 'tsc');
-    // In CI/test env, typescript should be installed
-    if (fs.existsSync(path.join(__dirname, '..', '..', 'node_modules', 'typescript'))) {
-      expect(fs.existsSync(tscEntry)).toBe(true);
+describe('compareBaseline (multiset comparison)', () => {
+  it('detects new errors (current count > baseline)', () => {
+    const current = new Map([['a|TS1|msg', 3], ['b|TS2|msg', 1]]);
+    const baseline = new Map([['a|TS1|msg', 1]]);
+    const { newErrors, fixedErrors } = compareBaseline(current, baseline);
+    expect(newErrors.length).toBe(2); // a (3>1) + b (1>0)
+    expect(fixedErrors.length).toBe(0);
+  });
+
+  it('detects fixed errors (current count < baseline)', () => {
+    const current = new Map([['a|TS1|msg', 1]]);
+    const baseline = new Map([['a|TS1|msg', 3], ['b|TS2|msg', 1]]);
+    const { newErrors, fixedErrors } = compareBaseline(current, baseline);
+    expect(newErrors.length).toBe(0);
+    expect(fixedErrors.length).toBe(2);
+  });
+
+  it('detects completely new signatures not in baseline', () => {
+    const current = new Map([['new|TS1|msg', 1]]);
+    const baseline = new Map([['old|TS2|msg', 1]]);
+    const { newErrors, fixedErrors } = compareBaseline(current, baseline);
+    expect(newErrors.length).toBe(1);
+    expect(fixedErrors.length).toBe(1);
+  });
+
+  it('returns empty arrays when counts match exactly', () => {
+    const current = new Map([['a|TS1|msg', 2]]);
+    const baseline = new Map([['a|TS1|msg', 2]]);
+    const { newErrors, fixedErrors } = compareBaseline(current, baseline);
+    expect(newErrors.length).toBe(0);
+    expect(fixedErrors.length).toBe(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// TSC_ENTRY cross-platform tests (P1-1)
+// ═══════════════════════════════════════════════════════════════════
+
+describe('TSC_ENTRY (P1-1 cross-platform)', () => {
+  it('points to typescript/bin/tsc (JS entry, not .cmd)', () => {
+    expect(TSC_ENTRY).toContain('typescript');
+    expect(TSC_ENTRY).toContain('bin');
+    expect(TSC_ENTRY).toContain('tsc');
+    // Must NOT use .bin/tsc or .cmd
+    expect(TSC_ENTRY).not.toContain('.bin');
+    expect(TSC_ENTRY).not.toContain('.cmd');
+  });
+
+  it('file exists if typescript is installed', () => {
+    const tsPkgDir = path.join(__dirname, '..', '..', 'node_modules', 'typescript');
+    if (fs.existsSync(tsPkgDir)) {
+      expect(fs.existsSync(TSC_ENTRY)).toBe(true);
     }
-    // process.execPath is always available
-    expect(process.execPath).toBeDefined();
-    expect(typeof process.execPath).toBe('string');
   });
 });

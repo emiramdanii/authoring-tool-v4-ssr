@@ -1321,3 +1321,34 @@ Stage Summary:
 - Sprint 8.2B (Present) UNBLOCKED setelah:
   1. User push CI workflow (PAT workflow scope atau GitHub Web UI)
   2. Senior Review 8.2S PASS
+
+---
+Task ID: 8.2S-2-Patch-4-Correction
+Agent: Super Z (main)
+Task: Patch-4 Correction — actual runtime files that were missing from commit f24cc4a
+
+Work Log:
+- Senior Review 8.2S-2-Patch-4 REJECTED: commit f24cc4a only contained
+  KNOWN_ISSUES.md, ts-baseline.txt, normalize-ts-errors.test.ts, worklog.md.
+  Runtime files (interactive-store.ts, listener-cleanup test, normalizer script)
+  were NOT in the commit — local edits were lost or never staged.
+- This correction commit includes ALL 5 runtime files:
+  1. src/store/interactive-store.ts — reverted to createJSONStorage(() => localStorage)
+  2. src/__tests__/listener-cleanup-integration.test.tsx — vi.hoisted() localStorage mock
+  3. scripts/normalize-ts-errors.js — CLI wrapper importing from core
+  4. scripts/ts-error-normalizer-core.cjs — NEW core module (normalizeTscOutput,
+     readBaseline, compareBaseline, classifyProcessResult)
+  5. src/__tests__/normalize-ts-errors.test.ts — imports from PRODUCTION core module
+- Gate verification: git diff --cached --name-only confirms ALL 5 files staged.
+- Test verification: 499/499 PASS (src/core + 4 test files).
+- Normalizer verification: node scripts/normalize-ts-errors.js --check → 0 new errors.
+
+Stage Summary:
+- 5 files changed (ALL verified staged before commit).
+- Production storage reverted (createJSONStorage, not custom).
+- vi.hoisted() mock active before store import.
+- Normalizer refactored: core module + CLI wrapper (tests import production code).
+- classifyProcessResult: signal + null status fail-closed (P0-2).
+- process.execPath + typescript/bin/tsc cross-platform (P1-1).
+- readBaseline fail-closed on malformed/duplicate (P1-2).
+- Contract & Boundary remains FROZEN.

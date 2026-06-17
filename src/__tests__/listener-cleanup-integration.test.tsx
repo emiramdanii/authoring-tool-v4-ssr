@@ -25,6 +25,52 @@ import { render, cleanup, fireEvent } from '@testing-library/react';
 import type { CanvaPage, NavConfig } from '@/components/canva/types';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 
+// ═══════════════════════════════════════════════════════════════════
+// Sprint 8.2S-2-Patch-4 (P0-2): Synchronous localStorage mock via vi.hoisted()
+// ═══════════════════════════════════════════════════════════════════
+// jsdom's Storage.setItem calls setTimeout(... 0) internally to dispatch
+// storage events. This creates pending timers that are NOT from our code.
+// In a real browser, localStorage.setItem is synchronous.
+//
+// vi.hoisted() guarantees the factory runs before ALL imports (including
+// top-level await import()), so the mock is active before zustand persist
+// middleware initializes.
+//
+// This is a TEST-HARNESS fix only. Production code uses standard zustand
+// createJSONStorage(() => localStorage) — no changes.
+// See KNOWN_ISSUES.md M-007 (CLOSED — TEST-HARNESS FALSE POSITIVE).
+// ═══════════════════════════════════════════════════════════════════
+
+vi.hoisted(() => {
+  if (typeof globalThis.window === 'undefined') return;
+
+  const syncStorageMap = new Map<string, string>();
+  const syncLocalStorage: Storage = {
+    get length() { return syncStorageMap.size; },
+    key(index: number): string | null {
+      return [...syncStorageMap.keys()][index] ?? null;
+    },
+    getItem(name: string): string | null {
+      return syncStorageMap.has(name) ? syncStorageMap.get(name)! : null;
+    },
+    setItem(name: string, value: string): void {
+      syncStorageMap.set(name, value);
+      // No setTimeout — synchronous. This is the whole point.
+    },
+    removeItem(name: string): void {
+      syncStorageMap.delete(name);
+    },
+    clear(): void {
+      syncStorageMap.clear();
+    },
+  };
+
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: syncLocalStorage,
+  });
+});
+
 // ─────────────────────────────────────────────────────────────────
 // Mocks — same as mode-lifecycle-smoke.test.ts. These tests don't
 // need real store behavior; they only verify listener cleanup.
@@ -101,41 +147,8 @@ if (typeof document !== 'undefined' && !document.fullscreenElement) {
   });
 }
 
-// Sprint 8.2S-2-Patch-3 (M-007 fix): jsdom's Storage.setItem calls
-// setTimeout(... 0) internally to dispatch storage events. This creates
-// pending timers that are NOT from our code — they're jsdom internals.
-// In a real browser, localStorage.setItem is synchronous and doesn't
-// use setTimeout. To get accurate timer-leak detection in tests,
-// replace jsdom's localStorage with a synchronous Map-based mock
-// that doesn't dispatch storage events.
-//
-// This mock is ONLY for the listener-cleanup tests. Other tests that
-// rely on storage events should use the real jsdom localStorage.
-const _syncStorageMap = new Map<string, string>();
-const syncLocalStorage: Storage = {
-  get length() { return _syncStorageMap.size; },
-  key(index: number): string | null {
-    return [..._syncStorageMap.keys()][index] ?? null;
-  },
-  getItem(name: string): string | null {
-    return _syncStorageMap.has(name) ? _syncStorageMap.get(name)! : null;
-  },
-  setItem(name: string, value: string): void {
-    _syncStorageMap.set(name, value);
-  },
-  removeItem(name: string): void {
-    _syncStorageMap.delete(name);
-  },
-  clear(): void {
-    _syncStorageMap.clear();
-  },
-};
-if (typeof window !== 'undefined') {
-  Object.defineProperty(window, 'localStorage', {
-    configurable: true,
-    value: syncLocalStorage,
-  });
-}
+// Sprint 8.2S-2-Patch-4: localStorage mock moved to vi.hoisted() above
+// (before store imports). The old inline mock is removed.
 
 // ─────────────────────────────────────────────────────────────────
 // Test fixtures

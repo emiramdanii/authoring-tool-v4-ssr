@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import type { StoreApi } from 'zustand';
 import { logger } from '@/core/utils/logger';
 
@@ -260,37 +260,13 @@ export const useInteractiveStore = create<InteractiveState>()(
           replayGeneration: state.replayGeneration,
         }),
         version: 1,
-        // Sprint 8.2S-2-Patch-3 (M-007 fix): use synchronous storage
-        // instead of zustand's default createJSONStorage(() => localStorage).
-        // The default wraps setItem in setTimeout for debouncing, which
-        // leaks timers on unmount (M-007). Our app already debounces
-        // saves via useAutoSave hook — we don't need zustand's internal
-        // debounce. Synchronous storage eliminates the timer leak.
-        storage: {
-          getItem: (name: string) => {
-            try {
-              const str = localStorage.getItem(name);
-              return str ? JSON.parse(str) : null;
-            } catch {
-              return null;
-            }
-          },
-          setItem: (name: string, value: unknown) => {
-            try {
-              localStorage.setItem(name, JSON.stringify(value));
-            } catch {
-              // localStorage may be full or unavailable — silent fail
-              // (same as zustand default behavior)
-            }
-          },
-          removeItem: (name: string) => {
-            try {
-              localStorage.removeItem(name);
-            } catch {
-              // silent fail
-            }
-          },
-        },
+        // Sprint 8.2S-2-Patch-4 (P0-1): restore standard zustand storage.
+        // Patch-3 replaced this with custom synchronous storage to "fix"
+        // M-007 timer leak, but the leak was actually a jsdom test-harness
+        // artifact (jsdom's Storage.setItem uses setTimeout internally).
+        // Production browsers have synchronous localStorage — no leak.
+        // The jsdom artifact is handled in the test file via vi.hoisted().
+        storage: createJSONStorage(() => localStorage),
       }
     ),
     { name: 'InteractiveStore', enabled: process.env.NODE_ENV === 'development' }
