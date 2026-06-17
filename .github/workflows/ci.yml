@@ -1,0 +1,127 @@
+# Sprint 8.2S-2-Patch-4 — CI workflow (final, single source of truth)
+#
+# Senior Review 8.2S-2-Patch-3 P1-3: workflow sebelumnya masih
+# memiliki logika baseline terpisah (comm -23, grep, sort). Patch-4
+# menghapus semua logika inline dan memanggil normalize-ts-errors.js
+# sebagai SATU source of truth untuk TypeScript gate.
+#
+# Three jobs:
+#   1. test  — vitest run (core + smoke + listener + store-init + normalizer)
+#   2. types — node scripts/normalize-ts-errors.js --check
+#   3. build — npm run build (exit code + artifact verification)
+#
+# Uses `npm ci` (requires package-lock.json committed — see CI-002).
+# Uses `process.execPath + typescript/bin/tsc` via the normalizer
+# script (cross-platform, no .cmd issues).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test (vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (reproducible)
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run all tests
+        run: npx vitest run
+
+  types:
+    name: TypeScript gate (normalize-ts-errors.js --check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (reproducible)
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: TypeScript regression gate (single source of truth)
+        # Sprint 8.2S-2-Patch-4 (P1-3): no inline shell logic.
+        # The normalizer script handles:
+        #   - spawnSync with signal + status capture (P0-2)
+        #   - process.execPath + typescript/bin/tsc (P1-1, cross-platform)
+        #   - Multiset baseline comparison (P1-1)
+        #   - Fail-closed on malformed baseline (P1-2)
+        #   - Fail-closed on tsc failure / signal / null status (P0-2, P0-3)
+        run: node scripts/normalize-ts-errors.js --check
+
+  build:
+    name: Build (exit code + artifact verification)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [test, types]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (reproducible)
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Build (next build, exit code 0 required)
+        env:
+          NODE_OPTIONS: '--max-old-space-size=2048'
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "❌ .next/ directory missing"
+            exit 1
+          fi
+          if [ ! -d ".next/standalone" ]; then
+            echo "❌ .next/standalone/ directory missing — standalone output config may be broken"
+            exit 1
+          fi
+          if [ ! -d ".next/standalone/.next/static" ]; then
+            echo "❌ .next/standalone/.next/static/ missing — cp step in build script failed"
+            exit 1
+          fi
+          echo "✅ Build artifacts verified"
+          echo "--- .next/ size ---"
+          du -sh .next/
+          echo "--- .next/standalone/ size ---"
+          du -sh .next/standalone/

@@ -56,7 +56,6 @@ server.log
 tool-results/
 # dev artifacts
 agent-ctx/
-package-lock.json
 worklog.md
 export-output/
 
@@ -78,4 +77,11 @@ db/
 
 # Download outputs
 download/
-.github/workflows/
+
+# Sprint 8.2S-2-Patch (Senior Review):
+# - package-lock.json WAJIB di-commit untuk `npm ci` reproducible install.
+#   Sebelumnya di-ignore (CI-002) — kebijakan dibalik.
+# - .github/workflows/ WAJIB di-commit agar CI trigger di GitHub Actions.
+#   Sebelumnya di-ignore (penyebab commit 855a5c9 ditolak PAT workflow
+#   scope — setelah ini di-un-ignore, user perlu push manual dengan PAT
+#   yang berbeda atau via GitHub Web UI).
