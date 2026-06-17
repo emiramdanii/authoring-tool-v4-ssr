@@ -1241,3 +1241,83 @@ Stage Summary:
 - Sprint 8.2B (Present) UNBLOCKED setelah:
   1. User push CI workflow (PAT workflow scope atau GitHub Web UI)
   2. Senior Review 8.2S PASS
+
+---
+Task ID: 8.2S-2-Patch-4
+Agent: Super Z (main)
+Task: Sprint 8.2S-2-Patch-4 — revert production storage + harden normalizer + cross-platform + baseline fail-closed + workflow cleanup
+
+Work Log:
+- Senior Review 8.2S-2-Patch-3 menolak dengan 3 temuan:
+  P0-1: Production storage tidak perlu diubah untuk fix jsdom artifact
+  P0-2: Normalizer masih false-green saat proses dibunuh (signal/null status)
+  P1-1: Binary TypeScript tidak cross-platform (TSC_BIN .cmd + shell:false)
+  P1-2: readBaseline() skip malformed line secara diam-diam
+  P1-3: Workflow stash jangan langsung dipush (masih pakai inline logic)
+  + Catatan kecil: reclassify M-007 sebagai test-harness artifact
+- Tahap 1 — P0-1 revert: Revert interactive-store.ts ke standard zustand:
+  * Import createJSONStorage dari zustand/middleware
+  * Ganti custom synchronous storage dengan createJSONStorage(() => localStorage)
+  * Hapus silent catch — production pakai standard zustand failure semantics
+- Tahap 2 — P0-1 mock: Pindahkan sync localStorage mock ke vi.hoisted():
+  * vi.hoisted() guarantee factory jalan sebelum ALL imports
+  * Mock pakai Map<string, string> synchronous (no setTimeout)
+  * Hapus inline mock lama
+- Tahap 3 — P0-1 reclassify: Update KNOWN_ISSUES.md M-007:
+  * Status: FIXED → CLOSED — TEST-HARNESS FALSE POSITIVE
+  * Root cause: jsdom's Storage.setItem calls setTimeout(0) — bukan production bug
+- Tahap 4 — P0-2: Hardened normalizer dengan signal capture:
+  * Tambah result.signal ke return value runTsc()
+  * Fail-closed: if signal !== null (SIGTERM/SIGKILL) → exit 1
+  * Fail-closed: if status === null (abnormal termination) → exit 1
+- Tahap 5 — P1-1: Cross-platform TypeScript binary:
+  * Ganti TSC_BIN dengan TSC_ENTRY (node_modules/typescript/bin/tsc)
+  * Pakai process.execPath (Node binary) sebagai spawnSync command
+  * shell: false — konsisten di Linux, Windows, CI
+- Tahap 6 — P1-2: readBaseline() fail-closed:
+  * Tambah filePath parameter (opsional, untuk testing)
+  * Throw pada missing pipe, non-integer count, count < 1, duplicate signature
+- Tahap 7 — Normalizer unit tests (19 tests):
+  * src/__tests__/normalize-ts-errors.test.ts
+  * Inline copy pure functions (tidak dependen pada CommonJS resolution)
+  * Test normalizeTscOutput: parse, skip non-error, multiset, whitespace, empty
+  * Test readBaseline: valid, missing pipe, invalid count, duplicate, missing file
+  * Test signal/status: SIGKILL, SIGTERM, null, ENOENT, normal, clean
+  * Test cross-platform: TSC_ENTRY exists, process.execPath available
+- Tahap 8 — P1-3: Review & update ci.yml di stash:
+  * Hapus SEMUA inline shell logic (comm -23, grep, sort, count)
+  * Single source of truth: `node scripts/normalize-ts-errors.js --check`
+  * 3 jobs: test (npx vitest run), types (normalizer), build (npm run build)
+  * Stash ulang (tidak bisa push — PAT workflow scope)
+- Tahap 9 — Regenerate baseline (revert mengubah union type order):
+  * 48 signatures, 63 occurrences
+  * Verify: 0 new errors
+- Tahap 10 — Update KNOWN_ISSUES.md CI-001 (Patch-4 final design)
+- Tahap 11 — Verifikasi:
+  * npx vitest run src/core + 4 test files → 494/494 PASS
+  * npx tsc --noEmit → 46 src/ errors (unchanged) — zero new errors
+  * node scripts/normalize-ts-errors.js --check → 0 new errors (multiset)
+
+Stage Summary:
+- Files modified:
+  * src/store/interactive-store.ts (P0-1 revert: standard zustand storage)
+  * src/__tests__/listener-cleanup-integration.test.tsx (P0-1: vi.hoisted mock)
+  * scripts/normalize-ts-errors.js (P0-2 + P1-1 + P1-2 hardened)
+  * scripts/ts-baseline.txt (regenerate: 48 signatures, 63 occurrences)
+  * KNOWN_ISSUES.md (M-007 reclassify, CI-001 update)
+  * worklog.md (this entry)
+- Files baru:
+  * src/__tests__/normalize-ts-errors.test.ts (19 unit tests)
+- Files di stash (butuh PAT workflow scope):
+  * .github/workflows/ci.yml (Patch-4 final: single source of truth)
+  * .gitignore (un-ignore package-lock.json + .github/workflows/)
+  * package-lock.json (15162 lines untuk npm ci)
+- M-007 reclassified: CLOSED — TEST-HARNESS FALSE POSITIVE (not production bug)
+- Normalizer: fail-closed on signal/null/ENOENT + cross-platform + multiset + baseline fail-closed
+- CI workflow: single source of truth (normalize-ts-errors.js --check, no inline logic)
+- 19 normalizer unit tests baru
+- Contract & Boundary remains FROZEN.
+- Sprint 8.2S-2-Patch-4 READY untuk Senior Review.
+- Sprint 8.2B (Present) UNBLOCKED setelah:
+  1. User push CI workflow (PAT workflow scope atau GitHub Web UI)
+  2. Senior Review 8.2S PASS

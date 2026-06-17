@@ -33,23 +33,24 @@ Closure:      <commit SHA + tanggal | OPEN>
 ### CI-001 — Tidak ada CI workflow
 - **Severity**: P1
 - **Area**: ci
-- **Reproduction**: `ls .github/workflows/` returns "No such file or directory" di remote. Workflow file `ci.yml` sudah dibuat lokal di Sprint 8.2S-2 dan direvisi di Sprint 8.2S-2-Patch, tetapi **TIDAK BISA di-push** karena PAT yang tersedia tidak punya `workflow` scope (GitHub menolak: "refusing to allow a Personal Access Token to create or update workflow without `workflow` scope"). Percobaan push commit `cfdb1eb` ditolak; commit di-reset dan perubahan di-stash (`git stash list` → "WIP on main: 52a42c9").
-- **Workaround**: Verifikasi lokal manual sebelum push (`npx vitest run src/core && npx tsc --noEmit && npm run build`). File `ci.yml` + `package-lock.json` + `.gitignore` update tersimpan di stash lokal.
-- **Owner**: User (perlu push manual dengan PAT yang punya `workflow` scope, atau push via GitHub Web UI)
+- **Reproduction**: `ls .github/workflows/` returns "No such file or directory" di remote. Workflow file `ci.yml` sudah dibuat dan direvisi (Patch-4: single source of truth `normalize-ts-errors.js --check`), tetapi **TIDAK BISA di-push** karena PAT yang tersedia tidak punya `workflow` scope.
+- **Workaround**: Verifikasi lokal: `npx vitest run` + `node scripts/normalize-ts-errors.js --check` + `npm run build`. File `ci.yml` + `package-lock.json` + `.gitignore` update tersimpan di stash lokal.
+- **Owner**: User (perlu push manual dengan PAT workflow scope, atau via GitHub Web UI)
 - **Target**: Immediate — user action required
 - **Closure**: OPEN — blocked on PAT workflow scope
 - **User action**:
-  1. Buat PAT baru di https://github.com/settings/tokens dengan scope `repo` + `workflow` (PASTIKAN tidak menempelkan token ke chat/log).
-  2. Di lokal repo: `git stash pop` untuk restore perubahan CI workflow + lockfile + .gitignore.
+  1. Buat PAT baru di https://github.com/settings/tokens dengan scope `repo` + `workflow`.
+  2. `git stash pop`
   3. `git add .gitignore .github/workflows/ci.yml package-lock.json`
-  4. `git commit -m "ci(reproducible): track package-lock.json + push CI workflow"`
-  5. `git push origin main` (pakai PAT baru dengan workflow scope).
-  6. Atau: push file `.github/workflows/ci.yml` + `package-lock.json` + `.gitignore` manual via GitHub Web UI.
-- **CI workflow design (revised in 8.2S-2-Patch)**:
-  - `npm ci` (reproducible install, bukan `npm install`)
-  - `tsc --noEmit` dengan baseline SET diff via `comm -23` (bukan toleransi count 46±2)
-  - Build via exit code + artifact verification (`.next/standalone` existence)
-  - Tidak ada grep "Compiled successfully", tidak ada toleransi error
+  4. `git commit -m "ci: add reproducible exact-sha quality gates"`
+  5. `git push origin main`
+  6. Atau: push via GitHub Web UI.
+- **CI workflow design (Patch-4 final)**:
+  - 3 jobs: test (vitest run), types (node scripts/normalize-ts-errors.js --check), build (npm run build + artifact verify)
+  - `npm ci` (reproducible install)
+  - TypeScript gate: SINGLE source of truth = `normalize-ts-errors.js --check` (no inline shell logic)
+  - Normalizer: spawnSync + signal capture + process.execPath + multiset + fail-closed baseline
+  - Build: exit code 0 + .next/standalone artifact verification
 
 ### CI-002 — `package-lock.json` di-gitignore (POLICY REVERSED — pending push)
 - **Severity**: P2

@@ -1,14 +1,9 @@
-# Sprint 8.2S-2-Patch-3 — Normalized TypeScript baseline (MULTISET)
+# Sprint 8.2S-2-Patch-4 — Normalized TypeScript baseline (MULTISET, fail-closed)
 # Format: <count>|<file-path>|<TS-error-code>|<normalized-message>
 #
-# Line/col omitted so line shifts don't create false "new errors".
-# Multiset format: count tracks how many times the same signature appears.
-#   - If current count > baseline count → CI FAILS (new duplicate error)
-#   - If current count < baseline count → CI WARNS (errors fixed, update baseline)
-#   - If current count === baseline count → OK
-#
-# CI compares this multiset against current tsc output (normalized the same way).
-# Use `node scripts/normalize-ts-errors.js --check` to verify locally.
+# Patch-4: baseline parser fail-closed (malformed/duplicate throw).
+# Patch-3: multiset format (count tracks occurrences).
+# Patch-2: normalized format (no line/col).
 #
 # Total signatures: 48
 # Total error occurrences: 63
@@ -60,4 +55,4 @@
 2|src/presets/ppkn/pancasila-golden-schema.ts|TS2322|Type '"evaluasi"' is not assignable to type '"penutup" | "pendahuluan" | "inti" | undefined'.
 1|src/store/authoring/index.ts|TS2345|Argument of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]], { petunjuk: PetunjukData; penutup: PenutupData; motivasi: MotivasiData; ... 50 more ...; setActivePanel: (panel: PanelId) => void; }>' is not assignable to parameter of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]]>'.
 2|src/store/canva/persistence-slice.ts|TS2345|Argument of type '{ schema?: ScreenSchema | null | undefined; }[]' is not assignable to parameter of type 'CanvaPage[]'.
-2|src/store/canva/schema-crud-slice.ts|TS2322|Type '"user" | "ai" | "system"' is not assignable to type '"auto" | "user" | "ai" | "sync" | "guided-form" | "konten-tab" | "dokumen-tab" | undefined'.
+2|src/store/canva/schema-crud-slice.ts|TS2322|Type '"user" | "ai" | "system"' is not assignable to type '"user" | "ai" | "sync" | "auto" | "guided-form" | "konten-tab" | "dokumen-tab" | undefined'.
