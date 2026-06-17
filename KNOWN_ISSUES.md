@@ -162,14 +162,44 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Target**: Sprint 8.2S-2-Patch
 - **Closure**: FIXED in 8.2S-2-Patch — `resetCrossStoreStateForMode()` calls `useLearningMediaStore.setLearnSubMode('play')` on Learn entry. Verified by `src/__tests__/mode-lifecycle-smoke.test.ts` M-002 (FIXED) test.
 
-### M-003 — Keyboard listener & timer cleanup (FIXED via integration test)
+### M-003 — Keyboard listener & timer cleanup (PARTIAL — Sprint 8.2S-2-Patch-2)
 - **Severity**: P2
 - **Area**: mode-lifecycle
-- **Reproduction**: Belum ada audit apakah semua `useEffect` yang nge-register `window.addEventListener('keydown', ...)` di PreviewMode/PresentMode/LearningMediaShell dibersihkan saat unmount.
-- **Workaround**: Tidak ada (pre-fix).
-- **Owner**: Sprint 8.2S-2-Patch
-- **Target**: Sprint 8.2S-2-Patch
-- **Closure**: FIXED in 8.2S-2-Patch — `src/__tests__/listener-cleanup-integration.test.tsx` (6 tests) verifies PreviewMode, PresentMode, PlayOverlay all pass net-delta-0 after unmount + rapid render/unmount (5x) + single keypress → single action. Listener cleanup is now acceptance-tested.
+- **Reproduction**: Listener cleanup audit per komponen.
+- **Workaround**: Tidak ada.
+- **Owner**: Sprint 8.2B (saat touch Present wiring, fix M-007 timer leak)
+- **Target**: Sprint 8.2B
+- **Closure**: PARTIAL — see breakdown below.
+
+**Coverage breakdown (Sprint 8.2S-2-Patch-2)**:
+| Sub-area | Status | Evidence |
+|---|---|---|
+| Window listeners (PreviewMode) | ✅ PASS_LOCAL | `listener-cleanup-integration.test.tsx` "all window listeners removed after unmount" |
+| Window listeners (PresentMode) | ✅ PASS_LOCAL | same file |
+| Window listeners (PlayOverlay) | ✅ PASS_LOCAL | same file |
+| Window listeners (LearningMediaShell) | ✅ PASS_LOCAL | same file (Patch-2 added) |
+| Document listeners (all 4 components) | ✅ PASS_LOCAL | same file (Patch-2 added) |
+| ResizeObserver.disconnect (PreviewMode/PresentMode) | ✅ PASS_LOCAL | same file (Patch-2 added) |
+| fullscreenchange cleanup (PreviewMode) | ✅ PASS_LOCAL | same file (Patch-2 added) |
+| **setTimeout cleanup (PreviewMode)** | ❌ **FAIL — leaks 2 timers** | M-007 below |
+| **setTimeout cleanup (PresentMode)** | ❌ **FAIL — leaks 1 timer** | M-007 below |
+| **setTimeout cleanup (LearningMediaShell)** | ❌ **FAIL — leaks 1 timer** | M-007 below |
+| setInterval cleanup (all) | ✅ PASS_LOCAL | no intervals used |
+
+**Summary**: Window + document + ResizeObserver + fullscreen listeners are properly cleaned up. **Timer cleanup is NOT** — see M-007.
+
+### M-007 — setTimeout timer leak on unmount (DITEMUKAN 8.2S-2-Patch-2)
+- **Severity**: P1
+- **Area**: mode-lifecycle
+- **Reproduction**: Render PreviewMode/PresentMode/LearningMediaShell, then unmount. Pending setTimeout timers remain:
+  - PreviewMode: 2 pending timers
+  - PresentMode: 1 pending timer
+  - LearningMediaShell: 1 pending timer
+  - Rapid 5x render/unmount of PreviewMode: 10 pending timers (2 × 5, accumulates)
+- **Workaround**: Tidak ada. Timers will eventually fire (after their delay) but if the component is gone, the callback may error or cause unexpected state changes. Memory leak in long sessions.
+- **Owner**: Sprint 8.2B (saat touch PreviewMode/PresentMode/LearningMediaShell untuk Present wiring)
+- **Target**: Sprint 8.2B
+- **Closure**: OPEN — characterization tests in `listener-cleanup-integration.test.tsx` document the bug. When fixed, flip assertions from `toBe(N)` to `toBe(0)`.
 
 ### M-004 — `setAppMode('learn')` tidak clearAllSelections (FIXED)
 - **Severity**: P1

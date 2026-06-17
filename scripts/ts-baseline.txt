@@ -1,46 +1,56 @@
-src/components/canva/CanvaBuilder.tsx(139,23): error TS2345: Argument of type '{ getCanvaState: () => CanvaState; setCanvaState: { (partial: CanvaState | Partial<CanvaState> | ((state: CanvaState) => CanvaState | Partial<...>), replace?: false | undefined, action?: Action | undefined): void; (state: CanvaState | ((state: CanvaState) => CanvaState), replace: true, action?: Action | undefined): ...' is not assignable to parameter of type 'CanvaShortcutDeps'.
-src/components/canva/right-panel/block-properties/KuisImportPanel.tsx(73,7): error TS2322: Type 'KuisImportPatch' is not assignable to type 'Record<string, unknown>'.
-src/components/canva/right-panel/block-properties/RodaImportPanel.tsx(75,7): error TS2322: Type 'RodaImportPatch' is not assignable to type 'Record<string, unknown>'.
-src/components/canva/right-panel/block-properties/SortirImportPanel.tsx(74,7): error TS2322: Type 'SortirImportPatch' is not assignable to type 'Record<string, unknown>'.
-src/components/ui/accordion.tsx(4,37): error TS2307: Cannot find module '@radix-ui/react-accordion' or its corresponding type declarations.
-src/components/ui/alert-dialog.tsx(4,39): error TS2307: Cannot find module '@radix-ui/react-alert-dialog' or its corresponding type declarations.
-src/components/ui/checkbox.tsx(4,36): error TS2307: Cannot find module '@radix-ui/react-checkbox' or its corresponding type declarations.
-src/components/ui/collapsible.tsx(3,39): error TS2307: Cannot find module '@radix-ui/react-collapsible' or its corresponding type declarations.
-src/components/ui/command.tsx(4,45): error TS2307: Cannot find module 'cmdk' or its corresponding type declarations.
-src/components/ui/context-menu.tsx(4,39): error TS2307: Cannot find module '@radix-ui/react-context-menu' or its corresponding type declarations.
-src/components/ui/form.tsx(14,8): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
-src/components/ui/form.tsx(4,33): error TS2307: Cannot find module '@radix-ui/react-label' or its corresponding type declarations.
-src/components/ui/label.tsx(4,33): error TS2307: Cannot find module '@radix-ui/react-label' or its corresponding type declarations.
-src/components/ui/progress.tsx(4,36): error TS2307: Cannot find module '@radix-ui/react-progress' or its corresponding type declarations.
-src/components/ui/radio-group.tsx(4,38): error TS2307: Cannot find module '@radix-ui/react-radio-group' or its corresponding type declarations.
-src/components/ui/separator.tsx(4,37): error TS2307: Cannot find module '@radix-ui/react-separator' or its corresponding type declarations.
-src/components/ui/slider.tsx(4,34): error TS2307: Cannot find module '@radix-ui/react-slider' or its corresponding type declarations.
-src/components/ui/switch.tsx(4,34): error TS2307: Cannot find module '@radix-ui/react-switch' or its corresponding type declarations.
-src/components/ui/toast.tsx(4,34): error TS2307: Cannot find module '@radix-ui/react-toast' or its corresponding type declarations.
-src/core/schema/__tests__/primary-edit-target.test.ts(147,18): error TS2352: Conversion of type '{ id: string; label: string; templateType: "custom"; bgColor: string; bgDataUrl: string; elements: never[]; overlay: {}; colorPalette: {}; navConfig: {}; templateData: {}; templateVariant: "A"; pageMode: "schema"; }' to type 'CanvaPage' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-src/core/schema/__tests__/primary-edit-target.test.ts(37,10): error TS2352: Conversion of type '{ id: string; label: string; templateType: CanvaPage["templateType"]; bgColor: string; bgDataUrl: string; elements: never[]; overlay: {}; colorPalette: {}; navConfig: {}; templateData: {}; templateVariant: "A"; schema: ScreenSchema; pageMode: "schema"; }' to type 'CanvaPage' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-src/core/schema/guided-patch.ts(1210,3): error TS1117: An object literal cannot have multiple properties with the same name.
-src/core/schema/guided-patch.ts(1326,97): error TS2353: Object literal may only specify known properties, and 'defaultValue' does not exist in type 'GuidedFieldDef'.
-src/core/schema/primary-edit-target.ts(110,18): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
-src/core/schema/primary-edit-target.ts(121,16): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
-src/core/schema/primary-edit-target.ts(130,14): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
-src/core/template/CourseTemplateRegistry.ts(921,16): error TS2339: Property 'info' does not exist on type '{ error(context: string, error: unknown, ...extra: unknown[]): void; warn(context: string, message: string): void; }'.
-src/core/template/health-check/auto-repair.ts(259,17): error TS2352: Conversion of type 'BaseBlock | KuisBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-src/core/template/health-check/auto-repair.ts(578,69): error TS7006: Parameter 'i' implicitly has an 'any' type.
-src/core/template/visual-audit/visual-parity-check.ts(176,38): error TS2352: Conversion of type 'CoverBlock | BaseBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-src/core/template/visual-audit/visual-parity-check.ts(214,20): error TS2352: Conversion of type 'BaseBlock | NcGridBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-src/core/template/visual-audit/visual-parity-check.ts(220,25): error TS2352: Conversion of type 'BaseBlock | TabelAccordionBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-src/core/template/visual-audit/visual-parity-check.ts(223,19): error TS2352: Conversion of type 'BaseBlock | MateriSectionBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-src/features/canvas/components/SortableCanvas.tsx(24,8): error TS2307: Cannot find module '@dnd-kit/core' or its corresponding type declarations.
-src/features/canvas/components/SortableCanvas.tsx(30,8): error TS2307: Cannot find module '@dnd-kit/sortable' or its corresponding type declarations.
-src/features/canvas/components/SortableCanvas.tsx(31,21): error TS2307: Cannot find module '@dnd-kit/utilities' or its corresponding type declarations.
-src/lib/db.ts(32,5): error TS2322: Type 'PrismaClient<PrismaClientOptions, never, DefaultArgs> | null' is not assignable to type 'PrismaClient<PrismaClientOptions, never, DefaultArgs> | undefined'.
-src/lib/db.ts(34,3): error TS2322: Type 'PrismaClient<PrismaClientOptions, never, DefaultArgs> | null' is not assignable to type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
-src/lib/db.ts(41,13): error TS2352: Conversion of type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>' to type 'Record<string | symbol, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-src/presets/ppkn/pancasila-golden-schema.ts(1024,53): error TS2322: Type '"evaluasi"' is not assignable to type '"penutup" | "pendahuluan" | "inti" | undefined'.
-src/presets/ppkn/pancasila-golden-schema.ts(971,19): error TS2322: Type '"evaluasi"' is not assignable to type '"penutup" | "pendahuluan" | "inti" | undefined'.
-src/store/authoring/index.ts(25,59): error TS2345: Argument of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]], { petunjuk: PetunjukData; penutup: PenutupData; motivasi: MotivasiData; ... 50 more ...; setActivePanel: (panel: PanelId) => void; }>' is not assignable to parameter of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]]>'.
-src/store/canva/persistence-slice.ts(243,56): error TS2345: Argument of type '{ schema?: ScreenSchema | null | undefined; }[]' is not assignable to parameter of type 'CanvaPage[]'.
-src/store/canva/persistence-slice.ts(456,54): error TS2345: Argument of type '{ schema?: ScreenSchema | null | undefined; }[]' is not assignable to parameter of type 'CanvaPage[]'.
-src/store/canva/schema-crud-slice.ts(123,11): error TS2322: Type '"user" | "ai" | "system"' is not assignable to type '"user" | "ai" | "sync" | "auto" | "guided-form" | "konten-tab" | "dokumen-tab" | undefined'.
-src/store/canva/schema-crud-slice.ts(82,11): error TS2322: Type '"user" | "ai" | "system"' is not assignable to type '"user" | "ai" | "sync" | "auto" | "guided-form" | "konten-tab" | "dokumen-tab" | undefined'.
+# Sprint 8.2S-2-Patch-2 — Normalized TypeScript baseline
+# Format: <file-path>|<TS-error-code>|<normalized-message>
+# Line/col omitted so line shifts don't create false "new errors".
+# CI compares this set against current tsc output (normalized the same way).
+# New errors (in current but not in baseline) fail CI.
+# Fixed errors (in baseline but not in current) print a warning to update baseline.
+# Total entries: 48
+
+e2e/manual-qa-core.spec.ts|TS18047|'bodyText' is possibly 'null'.
+scripts/generate-quiz-qa-html.ts|TS2305|Module '"../src/lib/export/index"' has no exported member 'ClientExportPayload'.
+scripts/generate-quiz-qa-html.ts|TS2305|Module '"../src/lib/export/index"' has no exported member 'generateClientExportHtml'.
+scripts/generate-quiz-variant-qa.ts|TS2305|Module '"../src/lib/export/index"' has no exported member 'ClientExportPayload'.
+scripts/generate-quiz-variant-qa.ts|TS2305|Module '"../src/lib/export/index"' has no exported member 'generateClientExportHtml'.
+scripts/health-check-macam-norma.ts|TS2322|Type '{ id: string; label: string; templateType: string; bgColor: string; templateData: Record<string, unknown>; schema: ScreenSchema; contractId?: string | undefined; }[]' is not assignable to type 'CanvaPage[]'.
+scripts/runtime-contract-check.ts|TS18048|'nav' is possibly 'undefined'.
+src/components/canva/CanvaBuilder.tsx|TS2345|Argument of type '{ getCanvaState: () => CanvaState; setCanvaState: { (partial: CanvaState | Partial<CanvaState> | ((state: CanvaState) => CanvaState | Partial<...>), replace?: false | undefined, action?: Action | undefined): void; (state: CanvaState | ((state: CanvaState) => CanvaState), replace: true, action?: Action | undefined): ...' is not assignable to parameter of type 'CanvaShortcutDeps'.
+src/components/canva/right-panel/block-properties/KuisImportPanel.tsx|TS2322|Type 'KuisImportPatch' is not assignable to type 'Record<string, unknown>'.
+src/components/canva/right-panel/block-properties/RodaImportPanel.tsx|TS2322|Type 'RodaImportPatch' is not assignable to type 'Record<string, unknown>'.
+src/components/canva/right-panel/block-properties/SortirImportPanel.tsx|TS2322|Type 'SortirImportPatch' is not assignable to type 'Record<string, unknown>'.
+src/components/ui/accordion.tsx|TS2307|Cannot find module '@radix-ui/react-accordion' or its corresponding type declarations.
+src/components/ui/alert-dialog.tsx|TS2307|Cannot find module '@radix-ui/react-alert-dialog' or its corresponding type declarations.
+src/components/ui/checkbox.tsx|TS2307|Cannot find module '@radix-ui/react-checkbox' or its corresponding type declarations.
+src/components/ui/collapsible.tsx|TS2307|Cannot find module '@radix-ui/react-collapsible' or its corresponding type declarations.
+src/components/ui/command.tsx|TS2307|Cannot find module 'cmdk' or its corresponding type declarations.
+src/components/ui/context-menu.tsx|TS2307|Cannot find module '@radix-ui/react-context-menu' or its corresponding type declarations.
+src/components/ui/form.tsx|TS2307|Cannot find module '@radix-ui/react-label' or its corresponding type declarations.
+src/components/ui/form.tsx|TS2307|Cannot find module 'react-hook-form' or its corresponding type declarations.
+src/components/ui/label.tsx|TS2307|Cannot find module '@radix-ui/react-label' or its corresponding type declarations.
+src/components/ui/progress.tsx|TS2307|Cannot find module '@radix-ui/react-progress' or its corresponding type declarations.
+src/components/ui/radio-group.tsx|TS2307|Cannot find module '@radix-ui/react-radio-group' or its corresponding type declarations.
+src/components/ui/separator.tsx|TS2307|Cannot find module '@radix-ui/react-separator' or its corresponding type declarations.
+src/components/ui/slider.tsx|TS2307|Cannot find module '@radix-ui/react-slider' or its corresponding type declarations.
+src/components/ui/switch.tsx|TS2307|Cannot find module '@radix-ui/react-switch' or its corresponding type declarations.
+src/components/ui/toast.tsx|TS2307|Cannot find module '@radix-ui/react-toast' or its corresponding type declarations.
+src/core/schema/__tests__/primary-edit-target.test.ts|TS2352|Conversion of type '{ id: string; label: string; templateType: "custom"; bgColor: string; bgDataUrl: string; elements: never[]; overlay: {}; colorPalette: {}; navConfig: {}; templateData: {}; templateVariant: "A"; pageMode: "schema"; }' to type 'CanvaPage' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/core/schema/__tests__/primary-edit-target.test.ts|TS2352|Conversion of type '{ id: string; label: string; templateType: CanvaPage["templateType"]; bgColor: string; bgDataUrl: string; elements: never[]; overlay: {}; colorPalette: {}; navConfig: {}; templateData: {}; templateVariant: "A"; schema: ScreenSchema; pageMode: "schema"; }' to type 'CanvaPage' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/core/schema/guided-patch.ts|TS1117|An object literal cannot have multiple properties with the same name.
+src/core/schema/guided-patch.ts|TS2353|Object literal may only specify known properties, and 'defaultValue' does not exist in type 'GuidedFieldDef'.
+src/core/schema/primary-edit-target.ts|TS2322|Type 'string | undefined' is not assignable to type 'string | null'.
+src/core/template/CourseTemplateRegistry.ts|TS2339|Property 'info' does not exist on type '{ error(context: string, error: unknown, ...extra: unknown[]): void; warn(context: string, message: string): void; }'.
+src/core/template/health-check/auto-repair.ts|TS2352|Conversion of type 'BaseBlock | KuisBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/core/template/health-check/auto-repair.ts|TS7006|Parameter 'i' implicitly has an 'any' type.
+src/core/template/visual-audit/visual-parity-check.ts|TS2352|Conversion of type 'BaseBlock | MateriSectionBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/core/template/visual-audit/visual-parity-check.ts|TS2352|Conversion of type 'BaseBlock | NcGridBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/core/template/visual-audit/visual-parity-check.ts|TS2352|Conversion of type 'BaseBlock | TabelAccordionBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/core/template/visual-audit/visual-parity-check.ts|TS2352|Conversion of type 'CoverBlock | BaseBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/features/canvas/components/SortableCanvas.tsx|TS2307|Cannot find module '@dnd-kit/core' or its corresponding type declarations.
+src/features/canvas/components/SortableCanvas.tsx|TS2307|Cannot find module '@dnd-kit/sortable' or its corresponding type declarations.
+src/features/canvas/components/SortableCanvas.tsx|TS2307|Cannot find module '@dnd-kit/utilities' or its corresponding type declarations.
+src/lib/db.ts|TS2322|Type 'PrismaClient<PrismaClientOptions, never, DefaultArgs> | null' is not assignable to type 'PrismaClient<PrismaClientOptions, never, DefaultArgs> | undefined'.
+src/lib/db.ts|TS2322|Type 'PrismaClient<PrismaClientOptions, never, DefaultArgs> | null' is not assignable to type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/lib/db.ts|TS2352|Conversion of type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>' to type 'Record<string | symbol, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/presets/ppkn/pancasila-golden-schema.ts|TS2322|Type '"evaluasi"' is not assignable to type '"penutup" | "pendahuluan" | "inti" | undefined'.
+src/store/authoring/index.ts|TS2345|Argument of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]], { petunjuk: PetunjukData; penutup: PenutupData; motivasi: MotivasiData; ... 50 more ...; setActivePanel: (panel: PanelId) => void; }>' is not assignable to parameter of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]]>'.
+src/store/canva/persistence-slice.ts|TS2345|Argument of type '{ schema?: ScreenSchema | null | undefined; }[]' is not assignable to parameter of type 'CanvaPage[]'.
+src/store/canva/schema-crud-slice.ts|TS2322|Type '"user" | "ai" | "system"' is not assignable to type '"auto" | "user" | "ai" | "sync" | "guided-form" | "konten-tab" | "dokumen-tab" | undefined'.

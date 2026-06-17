@@ -20,6 +20,12 @@ import { setCanvaStoreRef, startInteractiveCanvaSync, stopInteractiveCanvaSync }
 import { subscriptionManager } from './subscription-manager';
 import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
 import { useAuthoringStore } from '@/store/authoring-store';
+import { useInteractiveStore } from '@/store/interactive-store';
+import { useLearningMediaStore } from '@/store/learning-media-store';
+// Sprint 8.2S-2-Patch-2 — configure mode orchestrator at bootstrap
+// so resetCrossStoreStateForMode is synchronous (no lazy import, no
+// cold-start silent no-op). See mode-orchestrator.ts P0-1 fix.
+import { configureModeOrchestrator } from './mode-orchestrator';
 import { logger } from '@/core/utils/logger';
 
 let _initialized = false;
@@ -111,6 +117,16 @@ export function initCanvaStoreSubscriptions() {
   // Inject canva store reference into interactive store
   // This breaks the circular import between the two modules
   setCanvaStoreRef(useCanvaStore);
+
+  // Sprint 8.2S-2-Patch-2: Configure mode orchestrator synchronously
+  // at bootstrap. This ensures resetCrossStoreStateForMode (called by
+  // setAppMode) has the interactive + learning-media store refs ready
+  // BEFORE the user can switch modes. Previous lazy-import approach
+  // could silently skip reset on cold-start (Senior Review P0-1).
+  configureModeOrchestrator({
+    interactive: useInteractiveStore.getState(),
+    learning: useLearningMediaStore.getState(),
+  });
 
   // Auto-sync: when authoring data changes, sync canva templateData
   // [G.4] Track the auto-sync subscription

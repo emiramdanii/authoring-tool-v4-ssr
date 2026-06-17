@@ -30,7 +30,7 @@
 | Import      | LOCAL_REPORTED  | N/A             | LOCAL_REPORTED  | LOCAL_REPORTED  | LOCAL_REPORTED  | NOT_TESTED      | NOT_TESTED      | NOT_TESTED      |
 | Schema migration | N/A        | N/A             | N/A             | LOCAL_REPORTED  | N/A             | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Style Contract | PASS_LOCAL   | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
-| Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PASS_LOCAL      | BLOCKED (M-005) | N/A             |
+| Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PASS_LOCAL (M-007 timer leak) | BLOCKED (M-005) | N/A             |
 | Error recovery  | N/A         | N/A             | N/A             | N/A             | N/A             | NOT_TESTED      | NOT_TESTED      | N/A             |
 
 ## Evidence Index
@@ -125,17 +125,21 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - Evidence: `src/__tests__/mode-lifecycle-smoke.test.ts` (commit `a701eb4` + `8.2S-2-Patch`)
   - Edit → Preview transition verified
   - M-006 fix (hoveredBlockId clear) verified
-- **Present**: `PASS_LOCAL`
-  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (commit `8.2S-2-Patch`)
-  - PresentMode listener cleanup verified
-  - M-001 fix (scores reset on Present entry) verified via smoke test
+- **Present**: `PASS_LOCAL (M-007 timer leak)`
+  - Evidence: `src/__tests__/mode-lifecycle-smoke.test.ts` cold-start tests (commit 8.2S-2-Patch-2)
+  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` expanded cleanup (commit 8.2S-2-Patch-2)
+  - Caveat: M-007 timer leak — PreviewMode/PresentMode/LearningMediaShell leak setTimeout timers on unmount. Listener cleanup PASS, timer cleanup FAIL. See KNOWN_ISSUES.md M-007.
 - **Export**: `BLOCKED (M-005)`
   - M-005 fix already applied in 8.2S-2-Patch (selection cleared)
   - Status moved to PASS_LOCAL after this patch — but export pipeline
     itself NOT_TESTED, so blocked on Sprint 8.2C
-- **Listener cleanup**: `PASS_LOCAL`
-  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (6 tests)
-  - PreviewMode, PresentMode, PlayOverlay all pass net-delta-0
+- **Listener cleanup (window + document + ResizeObserver + fullscreen)**: `PASS_LOCAL`
+  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (19 tests, commit 8.2S-2-Patch-2)
+  - PreviewMode, PresentMode, PlayOverlay, LearningMediaShell all pass net-delta-0
+- **Timer cleanup (setTimeout/setInterval)**: `FAIL_LOCAL (M-007)`
+  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` M-007 tests
+  - PreviewMode leaks 2 timers, PresentMode leaks 1, LearningMediaShell leaks 1
+  - See KNOWN_ISSUES.md M-007
 
 ### Error recovery
 - **All**: `NOT_TESTED`

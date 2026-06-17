@@ -16,6 +16,9 @@ import type { AuthoringState } from '@/store/authoring/types';
 import { useCanvaStore } from '@/store/canva-store';
 import type { CanvaState } from '@/store/canva/types';
 import { useInteractiveStore, setCanvaStoreRef } from '@/store/interactive-store';
+import { useLearningMediaStore } from '@/store/learning-media-store';
+// Sprint 8.2S-2-Patch-2: configure mode orchestrator for export path.
+import { configureModeOrchestrator } from '@/store/canva/mode-orchestrator';
 
 // ── Error Boundary for export mode ────────────────────────────────
 // Catches render errors in any template component and shows a
@@ -141,6 +144,15 @@ if (exportData) {
   //    which is called by navigation methods (goInteractivePage, etc.).
   //    Without this, those methods would throw errors.
   setCanvaStoreRef(useCanvaStore);
+
+  // Sprint 8.2S-2-Patch-2: Configure mode orchestrator here too.
+  // Export entry-client is a separate bootstrap path (not init.ts),
+  // so it needs its own configuration. Without this, setAppMode
+  // during export would throw "orchestrator not configured".
+  configureModeOrchestrator({
+    interactive: useInteractiveStore.getState(),
+    learning: useLearningMediaStore.getState(),
+  });
 
   // 4. Set interactive store to interactive mode with fresh state
   //    Clear scores and reset so each export session starts clean.

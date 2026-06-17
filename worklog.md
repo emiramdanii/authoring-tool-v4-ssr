@@ -1011,3 +1011,124 @@ Stage Summary:
 - Sprint 8.2B (Present) UNBLOCKED setelah:
   1. User push CI workflow (butuh PAT workflow scope atau GitHub Web UI)
   2. Senior Review 8.2S PASS
+
+---
+Task ID: 8.2S-2-Patch-2
+Agent: Super Z (main)
+Task: Sprint 8.2S-2-Patch-2 — Senior Review cold-start + expanded cleanup + baseline normalize
+
+Work Log:
+- Senior Review 8.2S-2-Patch menolak klaim "stability gate selesai"
+  dengan 4 temuan:
+  P0-1: orchestrator cold-start gagal (lazy dynamic import silent no-op)
+  P0-2: CI belum ada di remote (PAT workflow scope)
+  P1-1: M-003 listener cleanup PARTIAL (hanya window listeners di-test)
+  P1-2: ts-baseline format belum dinilai (line/col sebagai identitas)
+- Tahap 1 — P0-1: Rewrite mode-orchestrator.ts:
+  * Hapus lazy dynamic import (resolveStores + void + return)
+  * Tambah configureModeOrchestrator({interactive, learning}) —
+    explicit bootstrap registration API
+  * resetCrossStoreStateForMode: THROW jika unconfigured (bukan silent skip)
+  * Tambah isModeOrchestratorConfigured() + __resetModeOrchestratorForTest()
+  * Header docstring jelaskan PATCH-2 COLD-START FIX lengkap
+- Tahap 2 — P0-1 wire: Update init.ts:
+  * Import useInteractiveStore, useLearningMediaStore, configureModeOrchestrator
+  * Di initCanvaStoreSubscriptions(): panggil configureModeOrchestrator
+    tepat setelah setCanvaStoreRef (sama dengan production bootstrap path)
+  * Update entry-client.tsx (export path): panggil configureModeOrchestrator
+    juga setelah setCanvaStoreRef
+- Tahap 3 — P0-1 test: Update mode-lifecycle-smoke.test.ts:
+  * Ganti __setOrchestratorStoreRefsForTest dengan configureModeOrchestrator
+    (PRODUCTION API, bukan test-only helper)
+  * Tambah 4 cold-start production tests:
+    - throws when setAppMode called before configureModeOrchestrator
+    - cold-start Edit → Present: scores reset on first mode switch
+    - cold-start Edit → Learn: learnSubMode reset on first mode switch
+    - cold-start Edit → Edit (round-trip via Preview): scores reset
+    - configureModeOrchestrator is idempotent (calling twice is safe)
+  * Total: 19 → 23 tests
+  * Hapus M-003 deferred placeholder (sudah ditangani listener-cleanup)
+- Tahap 4 — P1-1: Expand listener-cleanup-integration.test.tsx:
+  * Tambah helpers: spyDocumentListeners, spyTimers, spyResizeObserver
+  * Update existing tests untuk pakai configureModeOrchestrator (bukan
+    __setOrchestratorStoreRefsForTest yang sudah dihapus)
+  * Fix syntax error: `akePage('p1')` → `[makePage('p1')`
+  * Tambah 13 expanded tests:
+    - PreviewMode: document listeners, pending timers (M-007 known),
+      ResizeObserver.disconnect
+    - PresentMode: document listeners, pending timers (M-007 known),
+      ResizeObserver.disconnect
+    - LearningMediaShell: window listeners, document listeners, pending
+      timers (M-007 known) — KOMPONEN INI SEBELUMNYA TIDAK DITEST
+    - PlayOverlay: pending timers, document listeners
+    - fullscreenchange listeners (PreviewMode) — spesifik dipanggil
+      oleh Senior Review
+    - rapid render/unmount 5x pending timers (M-007 known)
+  * Total: 6 → 19 tests
+  * BUG BARU DITEMUKAN: M-007 — PreviewMode/PresentMode/LearningMediaShell
+    leak setTimeout timers on unmount. Tests document the bug with
+    toBe(N) assertions; flip to toBe(0) when fixed.
+- Tahap 5 — P1-1 reopen: Update KNOWN_ISSUES.md:
+  * Reopen M-003 sebagai PARTIAL dengan coverage breakdown table:
+    - Window listeners: PASS_LOCAL (4 komponen)
+    - Document listeners: PASS_LOCAL (4 komponen, Patch-2 added)
+    - ResizeObserver.disconnect: PASS_LOCAL (Patch-2 added)
+    - fullscreenchange: PASS_LOCAL (Patch-2 added)
+    - setTimeout cleanup: FAIL (M-007)
+    - setInterval cleanup: PASS_LOCAL (no intervals used)
+  * Tambah M-007 entry: setTimeout timer leak on unmount (P1)
+    - PreviewMode: 2 pending, PresentMode: 1, LearningMediaShell: 1
+    - Rapid 5x render/unmount PreviewMode: 10 pending (accumulates)
+    - Owner: Sprint 8.2B (saat touch Present wiring)
+- Tahap 6 — P1-2: Normalize ts-baseline.txt:
+  * Format baru: `<file-path>|<TS-error-code>|<normalized-message>`
+  * Hapus line/col supaya line shifts tidak create false new errors
+  * Sort + dedupe → 48 entries (was 46 with line/col, beberapa dedupe)
+  * Tambah header docstring
+  * Tambah scripts/normalize-ts-errors.js — Node script yang:
+    - Run tsc --noEmit
+    - Normalize output (parse + strip line/col + collapse whitespace)
+    - Compare SET vs baseline (comm -23 logic)
+    - --check mode: exit 1 if new errors, warn if fixed errors
+  * Verify: `node scripts/normalize-ts-errors.js --check` →
+    "✅ No new TypeScript errors introduced"
+- Tahap 7 — Update Closure Matrix:
+  * Mode lifecycle Present: `PASS_LOCAL (M-007 timer leak)`
+  * Tambah evidence untuk window/document/ResizeObserver/fullscreen cleanup
+  * Tambah evidence untuk timer cleanup FAIL_LOCAL (M-007)
+- Tahap 8 — Verifikasi:
+  * npx vitest run src/__tests__/mode-lifecycle-smoke.test.ts → 23/23 PASS
+  * npx vitest run src/__tests__/listener-cleanup-integration.test.tsx → 19/19 PASS
+  * npx vitest run src/core + smoke + listener → 469/469 PASS
+    (was 452 + 17 baru: 4 cold-start + 13 expanded listener)
+  * npx tsc --noEmit → 46 src/ errors (unchanged) — zero new errors
+    di file yang diubah
+  * node scripts/normalize-ts-errors.js --check → 0 new errors
+
+Stage Summary:
+- Files baru:
+  * scripts/normalize-ts-errors.js (baseline normalizer + check tool)
+- Files modified:
+  * src/store/canva/mode-orchestrator.ts (P0-1: configureModeOrchestrator
+    + throw on unconfigured)
+  * src/store/canva/init.ts (wire configureModeOrchestrator at bootstrap)
+  * src/export/entry-client.tsx (wire configureModeOrchestrator for export path)
+  * src/__tests__/mode-lifecycle-smoke.test.ts (23 tests, +4 cold-start)
+  * src/__tests__/listener-cleanup-integration.test.tsx (19 tests, +13 expanded)
+  * scripts/ts-baseline.txt (normalized format, 48 entries)
+  * KNOWN_ISSUES.md (M-003 PARTIAL + M-007 baru)
+  * SYSTEM_CLOSURE_MATRIX.md (M-007 evidence)
+  * worklog.md (this entry)
+- 1 P0 bug FIXED (cold-start orchestrator) dengan 4 acceptance tests.
+- 1 P1 bug baru DITEMUKAN (M-007 timer leak) dengan 4 characterization tests.
+- 13 expanded listener cleanup tests (document/timer/observer/fullscreen/
+  LearningMediaShell — sebelumnya hanya window listeners).
+- Baseline normalizer script + normalized format (P1-2).
+- Contract & Boundary remains FROZEN.
+- Sprint 8.2S-2-Patch-2 READY untuk Senior Review.
+- Sprint 8.2B (Present) UNBLOCKED setelah:
+  1. User push CI workflow (butuh PAT workflow scope atau GitHub Web UI)
+     — workflow file + .gitignore + package-lock.json + ci.yml masih
+     di stash lokal
+  2. Senior Review 8.2S PASS
+  3. M-007 timer leak fix (recommended sebelum Present wiring)

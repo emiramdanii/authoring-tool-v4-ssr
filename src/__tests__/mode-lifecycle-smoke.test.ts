@@ -76,13 +76,12 @@ vi.mock('@/store/authoring-store', () => {
 const { useCanvaStore } = await import('@/store/canva-store');
 const { useInteractiveStore, setCanvaStoreRef } = await import('@/store/interactive-store');
 const { useLearningMediaStore } = await import('@/store/learning-media-store');
-// Sprint 8.2S-2-Patch: import orchestrator test helpers so we can
-// wire the cross-store reset synchronously (the production code
-// lazy-loads the stores via dynamic import, which is async and would
-// require `await` before every setAppMode call in tests).
+// Sprint 8.2S-2-Patch-2: import the PRODUCTION configureModeOrchestrator
+// (not a test-only helper). Cold-start tests verify production behavior.
 const {
-  __setOrchestratorStoreRefsForTest,
-  __resetOrchestratorStoreRefsForTest,
+  configureModeOrchestrator,
+  __resetModeOrchestratorForTest,
+  isModeOrchestratorConfigured,
 } = await import('@/store/canva/mode-orchestrator');
 
 // Wire interactive-store ↔ canva-store ref. In production this is
@@ -144,13 +143,14 @@ function resetAllStores(): void {
     learnSubMode: 'play',
   });
 
-  // Sprint 8.2S-2-Patch: wire orchestrator store refs synchronously
-  // so setAppMode can call resetCrossStoreStateForMode without `await`.
-  // The orchestrator reads these refs at call time.
-  __setOrchestratorStoreRefsForTest(
-    useInteractiveStore.getState(),
-    useLearningMediaStore.getState(),
-  );
+  // Sprint 8.2S-2-Patch-2: use the PRODUCTION configureModeOrchestrator
+  // API (not a test-only helper). This verifies that production
+  // bootstrap wiring works correctly. Cold-start tests below verify
+  // the unconfigured-then-configured flow.
+  configureModeOrchestrator({
+    interactive: useInteractiveStore.getState(),
+    learning: useLearningMediaStore.getState(),
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -459,22 +459,129 @@ describe('Sprint 8.2S-2 — Mode Lifecycle Smoke (invariants from MODE_LIFECYCLE
     });
   });
 
-  // ── Documented deferrals (M-003) ──────────────────────────────────
-  describe('M-003 (DEFERRED) — keyboard listener cleanup', () => {
-    it('documents that listener cleanup audit is deferred to Sprint 8.2B', () => {
-      // This test exists to document that M-003 (keyboard listener
-      // cleanup audit) is NOT covered by smoke tests. It requires
-      // component-level integration tests that mount/unmount
-      // PreviewMode/PresentMode/LearningMediaShell and verify
-      // removeEventListener is called.
-      //
-      // See:
-      //   - KNOWN_ISSUES.md M-003
-      //   - docs/MODE_LIFECYCLE_CONTRACT.md "Bug Diketahui M-003"
-      //
-      // Target: Sprint 8.2B (Present wiring) — when we touch
-      // PresentMode, audit all useEffect cleanup functions.
-      expect(true).toBe(true); // placeholder — see deferred note
+  // ── Cold-start production behavior (P0-1 Patch-2) ─────────────────
+  // Senior Review 8.2S-2-Patch P0-1: previous implementation used lazy
+  // dynamic import which silently skipped reset on cold-start. These
+  // tests verify the PRODUCTION bootstrap path works without any
+  // test-only injection helper.
+  describe('Cold-start production behavior (P0-1 Patch-2)', () => {
+    beforeEach(() => {
+      // Reset orchestrator to UNCONFIGURED state — simulate fresh app
+      // launch before init.ts has run.
+      __resetModeOrchestratorForTest();
+      expect(isModeOrchestratorConfigured()).toBe(false);
+    });
+
+    it('throws when setAppMode called before configureModeOrchestrator', () => {
+      // Simulate: app just loaded, user somehow clicks Present before
+      // init.ts ran. The orchestrator MUST throw, not silently skip.
+      // This makes the bug visible to developers.
+      expect(() => {
+        useCanvaStore.getState().setAppMode('present');
+      }).toThrow(/configureModeOrchestrator/);
+    });
+
+    it('cold-start Edit → Present: scores reset on first mode switch', () => {
+      // Simulate production bootstrap sequence:
+      //   1. App loads (orchestrator unconfigured)
+      //   2. init.ts runs (configureModeOrchestrator called)
+      //   3. User immediately enters Preview, plays quiz, gets score
+      //   4. User switches to Present
+      //   5. Scores MUST be reset (M-001 cold-start invariant)
+
+      // Step 2: production bootstrap
+      configureModeOrchestrator({
+        interactive: useInteractiveStore.getState(),
+        learning: useLearningMediaStore.getState(),
+      });
+      expect(isModeOrchestratorConfigured()).toBe(true);
+
+      // Step 3: enter Preview, play quiz
+      useCanvaStore.getState().setAppMode('preview');
+      useInteractiveStore.getState().openPlay();
+      useInteractiveStore.getState().reportScore({
+        pageIndex: 0,
+        blockId: 'quiz-1',
+        elementId: 'quiz-1',
+        score: 80,
+        maxScore: 100,
+        completed: true,
+      });
+      expect(useInteractiveStore.getState().scores.length).toBeGreaterThan(0);
+
+      // Step 4: switch to Present (first mode switch after bootstrap)
+      useCanvaStore.getState().setAppMode('present');
+
+      // Step 5: scores MUST be reset — no silent skip
+      expect(useInteractiveStore.getState().scores).toEqual([]);
+    });
+
+    it('cold-start Edit → Learn: learnSubMode reset on first mode switch', () => {
+      // Simulate: app loads, user had a previous Learn session with
+      // learnSubMode='edit' (persisted across reloads via localStorage).
+      // User immediately enters Learn. learnSubMode MUST reset to 'play'.
+
+      // Pre-bootstrap: simulate stale learnSubMode from previous session
+      useLearningMediaStore.setState({ learnSubMode: 'edit' });
+
+      // Production bootstrap
+      configureModeOrchestrator({
+        interactive: useInteractiveStore.getState(),
+        learning: useLearningMediaStore.getState(),
+      });
+
+      // First mode switch after bootstrap
+      useCanvaStore.getState().setAppMode('learn');
+
+      // learnSubMode MUST be reset — no silent skip
+      expect(useLearningMediaStore.getState().learnSubMode).toBe('play');
+    });
+
+    it('cold-start Edit → Edit (round-trip via Preview): scores reset', () => {
+      // Edge case: user enters Preview, plays, then returns to Edit.
+      // The return-to-Edit must reset scores so they don't leak into
+      // the next Preview session.
+
+      configureModeOrchestrator({
+        interactive: useInteractiveStore.getState(),
+        learning: useLearningMediaStore.getState(),
+      });
+
+      useCanvaStore.getState().setAppMode('preview');
+      useInteractiveStore.getState().openPlay();
+      useInteractiveStore.getState().reportScore({
+        pageIndex: 0,
+        blockId: 'quiz-1',
+        elementId: 'quiz-1',
+        score: 50,
+        maxScore: 100,
+        completed: true,
+      });
+      expect(useInteractiveStore.getState().scores.length).toBeGreaterThan(0);
+
+      // Return to Edit — scores MUST reset
+      useCanvaStore.getState().setAppMode('edit');
+      expect(useInteractiveStore.getState().scores).toEqual([]);
+    });
+
+    it('configureModeOrchestrator is idempotent (calling twice is safe)', () => {
+      // Production may call configureModeOrchestrator multiple times
+      // (e.g., HMR in dev, or React strict mode double-mount). The
+      // function must handle this gracefully — last call wins.
+      configureModeOrchestrator({
+        interactive: useInteractiveStore.getState(),
+        learning: useLearningMediaStore.getState(),
+      });
+      configureModeOrchestrator({
+        interactive: useInteractiveStore.getState(),
+        learning: useLearningMediaStore.getState(),
+      });
+
+      expect(isModeOrchestratorConfigured()).toBe(true);
+      // Mode switch should still work
+      expect(() => {
+        useCanvaStore.getState().setAppMode('preview');
+      }).not.toThrow();
     });
   });
 });
