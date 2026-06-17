@@ -124,15 +124,33 @@ export interface PageStyleAdapterResult {
    */
   explicitContractId?: string;
   /**
-   * The original legacy theme id, when the page carries one (either
-   * via `templateData.schemaThemeId` or `schema.themeId` that is NOT
-   * a valid StylePresetId). Undefined for fresh projects.
+   * The original legacy theme id, when the page carries a KNOWN legacy
+   * theme id (one that has an entry in LEGACY_THEME_TO_PRESET).
+   * Undefined for fresh projects and for unrecognized theme ids.
    *
    * This is the SAME value as `contract.compatibility?.legacyThemeId`
    * — exposed as a top-level field for convenience so consumers don't
    * have to drill into the contract structure.
+   *
+   * Patch (P1-hardening — Senior Review 8.2A): separated from
+   * `unrecognizedThemeId`. Only KNOWN legacy IDs land here, so
+   * downstream consumers (Sprint 8.2B legacy renderer branch) can
+   * safely use this field without validating it.
    */
   legacyThemeId?: string;
+  /**
+   * The schemaThemeId value when it is NOT a known legacy theme id
+   * and NOT a valid StylePresetId. Diagnostic only — consumers MUST
+   * NOT feed this to a legacy renderer (it would fail to resolve).
+   *
+   * Patch (P1-hardening — Senior Review 8.2A): previously the adapter
+   * set `legacyThemeId` to the unrecognized string, which risked
+   * downstream consumers attempting to look it up in THEME_PRESETS
+   * and crashing. The unrecognized value is now isolated here for
+   * telemetry / debugging / teacher-facing "theme not recognized"
+   * warnings.
+   */
+  unrecognizedThemeId?: string;
   /**
    * The StylePresetId chosen by the adapter. Always set — defaults
    * to DEFAULT_PRESET_ID when nothing else applies.
@@ -151,7 +169,16 @@ export interface PageStyleAdapterResult {
  *
  * Schema fields are passed through verbatim; only the type field
  * is constrained to the Style Contract's PageBackgroundType union.
- * No fields are dropped.
+ *
+ * Patch (P1-2 — Senior Review 8.2A): ALL fields are copied when
+ * present, REGARDLESS of whether `imageUrl` is set. The previous
+ * implementation skipped overlay/overlayType/imageFit/imageOpacity/
+ * imageBlur when imageUrl was absent — that silently dropped data
+ * the contract promised to preserve. The contract states "no field
+ * is lost"; this function now honors that literally.
+ *
+ * Consumers that consider overlay meaningless without an image are
+ * free to ignore it — but the adapter must not drop it.
  */
 function mapSchemaBackground(
   schemaBg: ScreenSchema['background'],
@@ -171,25 +198,29 @@ function mapSchemaBackground(
     bg.color2 = schemaBg.color2;
   }
 
-  // Image — layered ON TOP of solid/gradient/radial (NOT a separate type)
+  // Image URL — layered ON TOP of solid/gradient/radial. Passed
+  // through verbatim (may be '' when not set).
   if (typeof schemaBg.imageUrl === 'string' && schemaBg.imageUrl.length > 0) {
     bg.imageUrl = schemaBg.imageUrl;
-    // Overlay only meaningful when image is present
-    if (typeof schemaBg.overlay === 'number') {
-      bg.overlay = schemaBg.overlay;
-    }
-    if (schemaBg.overlayType) {
-      bg.overlayType = schemaBg.overlayType;
-    }
-    if (schemaBg.imageFit) {
-      bg.imageFit = schemaBg.imageFit;
-    }
-    if (typeof schemaBg.imageOpacity === 'number') {
-      bg.imageOpacity = schemaBg.imageOpacity;
-    }
-    if (typeof schemaBg.imageBlur === 'number') {
-      bg.imageBlur = schemaBg.imageBlur;
-    }
+  }
+
+  // P1-2: ALL overlay/image fields copied unconditionally when present.
+  // The contract guarantees "no field loss"; the adapter must not
+  // second-guess whether a field is meaningful.
+  if (typeof schemaBg.overlay === 'number') {
+    bg.overlay = schemaBg.overlay;
+  }
+  if (schemaBg.overlayType) {
+    bg.overlayType = schemaBg.overlayType;
+  }
+  if (schemaBg.imageFit) {
+    bg.imageFit = schemaBg.imageFit;
+  }
+  if (typeof schemaBg.imageOpacity === 'number') {
+    bg.imageOpacity = schemaBg.imageOpacity;
+  }
+  if (typeof schemaBg.imageBlur === 'number') {
+    bg.imageBlur = schemaBg.imageBlur;
   }
 
   return bg;
@@ -223,14 +254,31 @@ function extractNavigationStyle(
 // ─────────────────────────────────────────────────────────────────
 
 /**
- * Extract block-level style from a schema page's first content block
- * (not cover/hero). The Style Contract block section is intentionally
- * minimal — it only carries variant + accentColor. Block-level presetId
- * (ceria/formal/...) is preserved separately by the existing block-style
- * system; we don't duplicate that mapping here.
+ * Extract block-level style from a schema page's content blocks.
  *
- * This is a best-effort extraction. When the schema has no usable
- * block hint, returns an empty BlockStyle (resolver will use defaults).
+ * Patch (P0-4 — Senior Review 8.2A): The previous implementation
+ * only copied `stylePreset` from the first block that had one, then
+ * `break`-ed out of the loop. `accentColor`, `borderColor`,
+ * `emphasis`, and per-block `variant` were silently dropped.
+ *
+ * The new implementation iterates ALL blocks and collects the first
+ * non-empty value for EACH field independently. This means:
+ *   - block.presetId       ← first block with stylePreset
+ *   - block.variant        ← first block with variant (or templateVariant fallback)
+ *   - block.accentColor    ← first block with accentColor (token key or hex)
+ *   - block.emphasis       ← first block with emphasis ('normal'|'highlight'|'strong')
+ *
+ * `borderColor` is intentionally NOT surfaced as a top-level
+ * BlockStyle field — the Style Contract models block accent via
+ * `accentColor` only. If a schema block has only `borderColor`, we
+ * treat it as an accent hint (resolveColor handles both token keys
+ * and hex strings).
+ *
+ * The Style Contract block section is a PAGE-LEVEL hint. Per-block
+ * style is the existing block-style-preset system's responsibility.
+ * This extraction is best-effort: it surfaces the first non-empty
+ * value per field so the resolver can produce non-default block
+ * tokens for pages whose blocks carry explicit styling hints.
  */
 function extractBlockStyleFromSchema(
   schema: ScreenSchema | undefined,
@@ -244,20 +292,57 @@ function extractBlockStyleFromSchema(
 
   if (!schema) return block;
 
-  // Look for the first content block that has a style preset hint.
-  // We don't iterate all blocks — the contract block section is a
-  // page-level hint, not per-block. Per-block style is the existing
-  // block-style-preset system's responsibility.
-  for (const b of schema.blocks) {
-    const maybe = b as unknown as {
+  // Iterate ALL blocks. For each field, take the first non-empty
+  // value we encounter. DO NOT break early — different blocks may
+  // carry different hints, and we want to surface every field.
+  for (const schemaBlock of schema.blocks) {
+    const maybe = schemaBlock as unknown as {
       stylePreset?: string;
       variant?: 'A' | 'B' | 'C';
       accentColor?: string;
       borderColor?: string;
       emphasis?: 'normal' | 'highlight' | 'strong';
     };
-    if (typeof maybe.stylePreset === 'string' && maybe.stylePreset.length > 0) {
+
+    if (
+      !block.presetId &&
+      typeof maybe.stylePreset === 'string' &&
+      maybe.stylePreset.length > 0
+    ) {
       block.presetId = maybe.stylePreset;
+    }
+
+    if (!block.variant && (maybe.variant === 'A' || maybe.variant === 'B' || maybe.variant === 'C')) {
+      block.variant = maybe.variant;
+    }
+
+    if (
+      !block.accentColor &&
+      typeof maybe.accentColor === 'string' &&
+      maybe.accentColor.length > 0
+    ) {
+      block.accentColor = maybe.accentColor;
+    } else if (
+      !block.accentColor &&
+      typeof maybe.borderColor === 'string' &&
+      maybe.borderColor.length > 0
+    ) {
+      // borderColor as accent hint — Style Contract models accent
+      // via accentColor only. resolveColor handles both token keys
+      // ('y','c','g',...) and hex strings.
+      block.accentColor = maybe.borderColor;
+    }
+
+    if (
+      !block.emphasis &&
+      (maybe.emphasis === 'normal' || maybe.emphasis === 'highlight' || maybe.emphasis === 'strong')
+    ) {
+      block.emphasis = maybe.emphasis;
+    }
+
+    // Continue iterating — we want the first non-empty value PER FIELD,
+    // not per block. Once all four fields are populated we can stop.
+    if (block.presetId && block.variant && block.accentColor && block.emphasis) {
       break;
     }
   }
@@ -305,9 +390,14 @@ export function createStyleContractFromPage(
   const schemaThemeId = schema?.themeId || legacySchemaThemeId;
 
   // ═══ 3. Decide presetId + source classification ═══════════════
+  // Patch (P1-hardening — Senior Review 8.2A): separate `legacyThemeId`
+  // (KNOWN legacy id, safe for downstream consumers) from
+  // `unrecognizedThemeId` (diagnostic only — must NOT be fed to a
+  // legacy renderer because it would fail to resolve).
   let presetId: StylePresetId;
   let source: PageStyleSource;
   let legacyThemeId: string | undefined;
+  let unrecognizedThemeId: string | undefined;
 
   if (explicitContractId) {
     // Priority 1: explicit contract. presetId is derived from the
@@ -319,6 +409,11 @@ export function createStyleContractFromPage(
       legacyThemeId = schemaThemeId;
     } else if (schemaThemeId && isValidPresetId(schemaThemeId)) {
       presetId = schemaThemeId as StylePresetId;
+    } else if (schemaThemeId) {
+      // Explicit contract + unrecognized theme id — keep the theme id
+      // as diagnostic only; do NOT treat it as a known legacy id.
+      presetId = DEFAULT_PRESET_ID;
+      unrecognizedThemeId = schemaThemeId;
     } else {
       presetId = DEFAULT_PRESET_ID;
     }
@@ -335,9 +430,12 @@ export function createStyleContractFromPage(
       legacyThemeId = schemaThemeId;
     } else {
       // Unknown theme id — fail-safe to default. NOT throw.
+      // The unrecognized id is kept as `unrecognizedThemeId`
+      // (diagnostic only) so downstream consumers don't try to look
+      // it up in THEME_PRESETS and crash.
       presetId = DEFAULT_PRESET_ID;
       source = 'default';
-      legacyThemeId = schemaThemeId;
+      unrecognizedThemeId = schemaThemeId;
     }
   } else {
     // No theme id at all. Could be a fresh custom page or a legacy
@@ -385,10 +483,16 @@ export function createStyleContractFromPage(
     if (legacyContract.page) {
       pageStyle = legacyContract.page;
     }
-    // Prefer the legacy adapter's compatibility.legacyThemeId when set —
-    // it's the canonical source (matches Sprint 8.1-Patch-2 P0-3).
-    if (legacyContract.compatibility?.legacyThemeId) {
-      legacyThemeId = legacyContract.compatibility.legacyThemeId;
+    // The legacy adapter sets `compatibility.legacyThemeId` whenever
+    // input.schemaThemeId is non-empty — even for unrecognized ids.
+    // We honor that setting ONLY when the id is a KNOWN legacy theme.
+    // Unrecognized ids are routed to `unrecognizedThemeId` instead
+    // (P1-hardening — Senior Review 8.2A).
+    const legacyCompatId = legacyContract.compatibility?.legacyThemeId;
+    if (legacyCompatId && legacyCompatId in LEGACY_THEME_TO_PRESET) {
+      legacyThemeId = legacyCompatId;
+    } else if (legacyCompatId) {
+      unrecognizedThemeId = legacyCompatId;
     }
   }
 
@@ -432,6 +536,7 @@ export function createStyleContractFromPage(
     source,
     explicitContractId,
     legacyThemeId,
+    unrecognizedThemeId,
     presetId,
   };
 }

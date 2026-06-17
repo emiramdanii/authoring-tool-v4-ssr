@@ -22,7 +22,24 @@ import { getScreenAdapter, getScreenConfig } from '@/core/renderer/screens';
 // helper. The legacy TokenResolver continues to be used by block
 // renderers (frozen boundary), but page-level concerns (background,
 // overlay, navbar style, page accent) now flow through ResolvedStyleTokens.
-import { resolvePageStyleTokens, type ResolvePageStyleTokensResult } from '@/core/style';
+//
+// Sprint 8.2A-Patch (Senior Review):
+//   P0-1 — applyResolvedStyleTokensToTokenResolver() bridges Style
+//          Contract values into the TokenResolver so block renderers
+//          see the chosen preset's colors / typography / spacing.
+//   P0-2 — Auto-golden fallback now gated on `source === 'legacy-theme'`
+//          AND shouldUseGoldenLegacyFallback(). Fresh new-preset
+//          projects (mission-adventure, etc.) are no longer silently
+//          overridden by Golden Pertemuan.
+//   P0-3 — Schema-page background merged from resolved tokens before
+//          passing to SchemaScreenRenderer (single authority).
+import {
+  resolvePageStyleTokens,
+  type ResolvePageStyleTokensResult,
+  applyResolvedStyleTokensToTokenResolver,
+  type PageStyleSource,
+} from '@/core/style';
+import type { ResolvedBackground } from '@/core/style';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -76,6 +93,76 @@ const frameModeMap: Record<PageRendererMode, PageFrameMode> = {
   export: 'export',
   learn: 'learn',  // Sprint 4: was 'preview' — now 'learn' so PageFrame can distinguish
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// Sprint 8.2A-Patch — Golden legacy fallback gate (P0-2)
+// ═══════════════════════════════════════════════════════════════════
+// Before the patch, PageRenderer auto-applied the 'golden-pertemuan'
+// contract to almost every pertemuan pageType. That silently overrode
+// fresh projects created with the new preset picker (e.g. a page with
+// themeId='mission-adventure' ended up rendering with Golden
+// Pertemuan's gold accent instead of mission-adventure's earth tones).
+//
+// The fix: auto-golden is now gated on three conditions:
+//   1. page.contractId is empty (explicit contract still wins)
+//   2. pageStyleTokens.source === 'legacy-theme' (fresh 'new-preset'
+//      pages are no longer auto-golden'd)
+//   3. shouldUseGoldenLegacyFallback(legacyThemeId) — only legacy
+//      themes that HISTORICALLY paired with the golden contract get
+//      the fallback. Other legacy themes (neon, glass, warm-light,
+//      colorful, ios-light, ios-warm, minimal, ocean-light) have
+//      their own visual identity mapped to non-academic-clean presets
+//      and never used the golden contract.
+//
+// The PPKn domain themes (hakikat-norma, macam-norma, etc.) all
+// mapped to academic-clean which has `_legacyContractId='golden-pertemuan'`.
+// Historically these were rendered WITH the golden contract because
+// they shared the same default visual identity. We preserve that
+// behavior for visual continuity on legacy projects.
+const GOLDEN_LEGACY_THEMES = new Set<string>([
+  'golden-presentation',
+  'default',
+  // PPKn domain themes — historically paired with golden contract
+  // via academic-clean preset bridge.
+  'hakikat-norma',
+  'macam-norma',
+  'nilai-pancasila',
+  'bhinneka-tunggal-ika',
+  'ham-hak-kewajiban',
+  'demokrasi-pancasila',
+  'globalisasi',
+]);
+
+function shouldUseGoldenLegacyFallback(legacyThemeId: string | undefined): boolean {
+  return !!legacyThemeId && GOLDEN_LEGACY_THEMES.has(legacyThemeId);
+}
+
+/**
+ * Merge a ResolvedBackground into a ScreenSchema.background shape.
+ * Used by PageRenderer to feed resolved tokens into SchemaScreenRenderer
+ * WITHOUT mutating page.schema (shallow clone).
+ *
+ * The merge is field-by-field: each resolved field overrides the
+ * schema's field when present. Schema fields are kept as fallback
+ * for any field the resolver didn't populate.
+ */
+function mergeResolvedBackgroundIntoSchema(
+  schemaBg: ScreenSchema['background'],
+  resolved: ResolvedBackground,
+): NonNullable<ScreenSchema['background']> {
+  const base = schemaBg ?? { type: 'solid' as const };
+  return {
+    type: (resolved.type || base.type) as 'solid' | 'gradient' | 'radial',
+    color1: resolved.color1 || base.color1,
+    color2: resolved.color2 || base.color2,
+    imageUrl: resolved.imageUrl || base.imageUrl,
+    overlay: typeof resolved.overlay === 'number' ? resolved.overlay : base.overlay,
+    overlayType: resolved.overlayType || base.overlayType,
+    imageFit: resolved.imageFit || base.imageFit,
+    imageOpacity: typeof resolved.imageOpacity === 'number' ? resolved.imageOpacity : base.imageOpacity,
+    imageBlur: typeof resolved.imageBlur === 'number' ? resolved.imageBlur : base.imageBlur,
+  };
+}
 
 const blockModeMap: Record<PageRendererMode, BlockRendererMode> = {
   canvas: 'canvas',
@@ -143,12 +230,6 @@ export const PageRenderer = React.memo(function PageRenderer({
     [page, pageStyleTokensProp],
   );
 
-  // FASE 3: Read theme ID from page.schema (not templateData)
-  // templateData.schemaThemeId is the legacy path — schema is now canonical
-  const schemaThemeId = page.schema?.background?.type
-    ? undefined // Schema pages use token system, not theme IDs
-    : (page.templateData?.schemaThemeId as string | undefined);
-
   // Educational display mode — controls font sizes for different viewing contexts
   const displayMode = useCanvaStore((s) => s.displayMode);
 
@@ -158,23 +239,37 @@ export const PageRenderer = React.memo(function PageRenderer({
   // load/hydration time by migrateAllPages() in persistence-slice,
   // NOT during the render cycle.
   //
-  // REMOVED: queueMicrotask writeback that caused:
-  //   - Rerender cascade (store write → re-render → write → ...)
-  //   - Stale schema references
-  //   - Layout invalidation loops
-  //   - Hydration mismatch
-  //
-  // If migration is needed, it happens at load time, not render time.
+  // Sprint 8.2A-Patch P0-3: merge resolved background into the schema
+  // (shallow clone — page.schema is NOT mutated). This makes
+  // SchemaScreenRenderer read from a SINGLE authority (the resolved
+  // Style Contract tokens) instead of from a parallel screen.background
+  // that could disagree with the chosen preset.
   const adaptedSchema = React.useMemo<ScreenSchema | null>(() => {
-    return ensurePageSchema(page);
-  }, [page.schema, page.templateData, page.pageMode, isTemplate, templateType]);
+    const base = ensurePageSchema(page);
+    if (!base) return null;
 
-  // Resolve tokens, applying palette overrides for legacy pages
-  // ═══ TEMPLATE THEME CONTRACT ENFORCEMENT ══════════════════
-  // Resolve the contract for this page and apply it to the TokenResolver.
-  // When a contract is active (e.g., golden-pertemuan), its values OVERRIDE
-  // all theme/scene/block defaults — enforcing visual consistency across ALL
-  // pages in a full pertemuan template.
+    // Merge resolved background into the schema's background.
+    // The resolver produces a fully-normalized background that
+    // already incorporates the preset's default color when the page
+    // doesn't set one. SchemaScreenRenderer will read this merged
+    // background instead of falling back to its own defaults.
+    const resolvedBg = pageStyleTokens.tokens.page.background;
+    if (!resolvedBg) return base;
+
+    return {
+      ...base,
+      background: mergeResolvedBackgroundIntoSchema(base.background, resolvedBg),
+    };
+  }, [page.schema, page.templateData, page.pageMode, isTemplate, templateType, pageStyleTokens]);
+
+  // ═══ Sprint 8.2A-Patch P0-2 — Auto-golden fallback gate ═════════
+  // Before the patch, this block auto-applied 'golden-pertemuan' to
+  // almost every pertemuan pageType — silently overriding fresh
+  // new-preset projects. Now it's gated:
+  //   1. page.contractId empty (explicit contract still wins)
+  //   2. source === 'legacy-theme' (fresh new-preset no longer overridden)
+  //   3. shouldUseGoldenLegacyFallback(legacyThemeId) (only themes that
+  //      historically paired with golden)
   //
   // Priority: TemplateThemeContract > Scene Style > Block Default
   const contractStyle = React.useMemo<ContractResolvedStyle | null>(() => {
@@ -183,55 +278,71 @@ export const PageRenderer = React.memo(function PageRenderer({
     if (cid) {
       return resolveContractStyle(cid, page.templateType || 'custom', page.templateVariant || 'A');
     }
-    // Priority 2: Auto-apply golden contract for known pertemuan page types
-    // (fallback for pages created before contractId was added)
+
+    // P0-2: Only apply golden auto-fallback for legacy-theme pages that
+    // historically used the golden contract. Fresh new-preset pages
+    // must NOT be silently overridden.
+    if (pageStyleTokens.source !== 'legacy-theme') return null;
+    if (!shouldUseGoldenLegacyFallback(pageStyleTokens.legacyThemeId)) return null;
+
     const tt = page.templateType || 'custom';
     const pertemuanPageTypes = ['cover', 'petunjuk', 'dokumen', 'tujuan', 'motivasi', 'materi', 'skenario', 'diskusi', 'kuis', 'game', 'hasil', 'refleksi', 'rangkuman', 'penutup'];
     if (!pertemuanPageTypes.includes(tt)) return null;
     return resolveContractStyle('golden-pertemuan', tt, page.templateVariant || 'A');
-  }, [page.contractId, page.templateType, page.templateVariant]);
+  }, [page.contractId, page.templateType, page.templateVariant, pageStyleTokens.source, pageStyleTokens.legacyThemeId]);
 
+  // ═══ Sprint 8.2A-Patch P0-1 — Token resolver bridge ═════════════
+  // Construct the base TokenResolver using the Style Contract's chosen
+  // presetId as the themeId (so legacy theme defaults match the
+  // resolved preset). Then bridge ResolvedStyleTokens into the
+  // resolver so block renderers see Style Contract values. Finally
+  // apply the explicit TemplateThemeContract LAST so it wins for
+  // fields it overrides.
+  //
+  // Bridge order (Senior Review P0-1):
+  //   1. base legacy TokenResolver
+  //   2. applyResolvedStyleTokensToTokenResolver(resolver, tokens)
+  //   3. resolver.applyContract(contractStyle) — explicit contract wins
   const tokens = React.useMemo(() => {
-    // If schema has a theme ID, use it (but still apply contract override)
-    if (schemaThemeId) {
-      const resolver = new TokenResolver(schemaThemeId, displayMode);
-      // ═══ CONTRACT ENFORCEMENT — contract WINS even over explicit themeId ═══
-      if (contractStyle) resolver.applyContract(contractStyle);
-      return resolver;
-    }
+    // Use the Style Contract's presetId as the themeId for the base
+    // resolver. When the page has a real legacy schemaThemeId that
+    // differs from the presetId, we prefer the legacy id so theme-
+    // specific token defaults still load (the bridge will then patch
+    // Style Contract values on top).
+    const legacyThemeId = pageStyleTokens.legacyThemeId;
+    const schemaThemeId = page.schema?.themeId || (page.templateData?.schemaThemeId as string | undefined);
+    const baseThemeId = legacyThemeId ?? schemaThemeId ?? pageStyleTokens.presetId;
 
     // For legacy pages, apply palette color overrides on top of default tokens
     const overrides = paletteToTokenOverrides(page.colorPalette);
-    if (!overrides) {
-      const resolver = new TokenResolver(undefined, displayMode);
-      // ═══ CONTRACT ENFORCEMENT — applied BEFORE first render ═══
-      // Apply contract immediately so there's no flash of wrong styles.
-      if (contractStyle) resolver.applyContract(contractStyle);
-      return resolver;
+    const resolver = new TokenResolver(baseThemeId, displayMode);
+
+    // ── P0-1 bridge: patch Style Contract values into the resolver ──
+    // This MUST happen BEFORE applyContract so the contract's overrides
+    // win for fields it patches (accent token map, page/card padding,
+    // typography scale, card shadow).
+    applyResolvedStyleTokensToTokenResolver(resolver, pageStyleTokens.tokens);
+
+    // ── Legacy palette overrides ──
+    // Applied AFTER the Style Contract bridge so palette extraction
+    // (from bg image) still works for legacy element-mode pages.
+    if (overrides) {
+      const raw = resolver.raw;
+      (raw.colors as Record<string, string>)['y'] = overrides.y || raw.colors.y;
+      (raw.colors as Record<string, string>)['c'] = overrides.c || raw.colors.c;
+      (raw.colors as Record<string, string>)['g'] = overrides.g || raw.colors.g;
+      (raw.colors as Record<string, string>)['r'] = overrides.r || raw.colors.r;
+      if (overrides.bg) (raw.colors as Record<string, string>)['bg'] = overrides.bg;
+      if (overrides.card) (raw.colors as Record<string, string>)['card'] = overrides.card;
     }
 
-    // Create TokenResolver with overridden colors
-    const resolver = new TokenResolver(undefined, displayMode);
-    // Patch the token colors with palette overrides
-    const raw = resolver.raw;
-    (raw.colors as Record<string, string>)[
-      'y'
-    ] = overrides.y || raw.colors.y;
-    (raw.colors as Record<string, string>)[
-      'c'
-    ] = overrides.c || raw.colors.c;
-    (raw.colors as Record<string, string>)[
-      'g'
-    ] = overrides.g || raw.colors.g;
-    (raw.colors as Record<string, string>)[
-      'r'
-    ] = overrides.r || raw.colors.r;
-    if (overrides.bg) (raw.colors as Record<string, string>)['bg'] = overrides.bg;
-    if (overrides.card) (raw.colors as Record<string, string>)['card'] = overrides.card;
-    // ═══ CONTRACT ENFORCEMENT — applied AFTER palette, contract WINS ═══
+    // ── Explicit TemplateThemeContract — applied LAST (wins) ──
+    // Contract enforcement: contract WINS even over Style Contract
+    // tokens for the fields it patches.
     if (contractStyle) resolver.applyContract(contractStyle);
+
     return resolver;
-  }, [schemaThemeId, page.colorPalette, displayMode, contractStyle]);
+  }, [page.schema, page.templateData, page.colorPalette, displayMode, contractStyle, pageStyleTokens]);
 
   // Decide rendering strategy — unified for ALL template pages
   const useSchemaRenderer = !!adaptedSchema;

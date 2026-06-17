@@ -528,3 +528,142 @@ Stage Summary:
 - Contract & Boundary remains FROZEN — zero frozen-boundary files touched.
 - Sprint 8.2A READY FOR INTEGRATION → Senior Review.
 - Sprint 8.2B (Present) still deferred until 8.2A PASS verdict.
+
+---
+Task ID: 8.2A-Patch
+Agent: Super Z (main)
+Task: Sprint 8.2A-Patch — Fix 4 P0 + 2 P1 Issues from Senior Review on 8.2A
+
+Work Log:
+- Senior Review on commit c02adb5 returned CHANGES REQUIRED with 4 P0 + 2 P1.
+  All issues addressed in this patch:
+- P0-1 Fix: Created src/core/style/token-resolver-bridge.ts.
+  * Pure function applyResolvedStyleTokensToTokenResolver(resolver, tokens).
+  * Patches colors (bg/card/border/text/muted + y/c/r/p/g/o accents +
+    nagama/nkesusilaan/nkesopanan/nhukum norma categories).
+  * Patches typography.fontFamily.display + .body.
+  * Patches typography.fontSize.h2 + .base (heading/body scale ×
+    fontScaleMultiplier, rem → px conversion with 3-decimal rounding).
+  * Patches radius.sm/base/md/lg/xl (derived from preset radius).
+  * Patches shadow.card.
+  * Patches spacing.xs/sm/md/lg/xl/xxl (derived from cardPadding/
+    pagePadding/blockGap).
+  * Input ResolvedStyleTokens NOT mutated (verified by test).
+  * Bridge order: base TokenResolver → bridge → applyContract (contract wins).
+- P0-1 Wire: PageRenderer.tsx tokens useMemo now:
+  * Constructs base TokenResolver with themeId from legacyThemeId ??
+    schemaThemeId ?? presetId (so legacy theme defaults load).
+  * Calls applyResolvedStyleTokensToTokenResolver(resolver, tokens).
+  * Then applies legacy palette overrides (for legacy element pages).
+  * Finally calls resolver.applyContract(contractStyle) — contract wins.
+- P0-2 Fix: Auto-golden fallback now gated.
+  * Added GOLDEN_LEGACY_THEMES set: golden-presentation, default,
+    hakikat-norma, macam-norma, nilai-pancasila, bhinneka-tunggal-ika,
+    ham-hak-kewajiban, demokrasi-pancasila, globalisasi.
+  * shouldUseGoldenLegacyFallback(legacyThemeId) — only themes that
+    historically paired with golden get the fallback.
+  * contractStyle useMemo: returns null unless source === 'legacy-theme'
+    AND shouldUseGoldenLegacyFallback returns true.
+  * Fresh new-preset projects (mission-adventure etc.) no longer
+    silently overridden by Golden Pertemuan.
+- P0-3 Legacy Fix: PageFrame.tsx background rendering rewritten.
+  * Reads from pageStyleTokens.tokens.page.background (single authority).
+  * Renders 3-layer stack: bg color → bg image (with fit/opacity/blur) →
+    overlay/scrim (driven by resolved overlay 0-80 → 0-1 alpha).
+  * Supports overlayType 'dark' (rgba(0,0,0,α)), 'light' (rgba(255,255,255,α)),
+    'gradient' (bottom-up fade).
+  * No more hardcoded alpha(modeBg.bg, 0.8) — overlay value the teacher
+    set is now respected end-to-end.
+- P0-3 Schema Fix: PageRenderer.tsx adaptedSchema useMemo.
+  * Added mergeResolvedBackgroundIntoSchema() helper.
+  * Shallow-clones page.schema with merged resolved background before
+    passing to SchemaScreenRenderer.
+  * page.schema NOT mutated (shallow clone).
+  * SchemaScreenRenderer now reads from a SINGLE authority.
+- P0-4 Fix: extractBlockStyleFromSchema rewritten.
+  * Iterates ALL blocks (no early break).
+  * Collects first non-empty value PER FIELD:
+    - presetId (from stylePreset)
+    - variant (from variant field, or templateVariant fallback)
+    - accentColor (from accentColor, or borderColor as hint)
+    - emphasis (from emphasis field)
+  * Loop only breaks when ALL four fields populated.
+  * Different blocks may contribute different fields — no silent data loss.
+- P1-1 Fix: Added page-renderer-integration.test.tsx (9 tests).
+  * Uses @testing-library/react to render PageRenderer.
+  * Mocks PageFrame, SchemaScreenRenderer, GoldenPageRenderer,
+    screen adapters, stores (canva/learning/interactive/authoring/dirty),
+    hooks (use-schema-projection, use-nav-sync).
+  * Captures actual props passed to PageFrame + SchemaScreenRenderer.
+  * Verifies:
+    - P0-1: SchemaScreenRenderer receives TokenResolver patched with
+      mission-adventure's earth-tone green / dark-elegant's neon cyan.
+    - P0-2: fresh mission-adventure page does NOT get golden contract
+      (color('g') stays #84cc16, not golden-palette value); legacy
+      macam-norma page DOES get golden fallback (color('y') = #fbbf24).
+    - P0-3: PageFrame receives pageStyleTokens prop with overlay=40/60
+      and imageUrl carried through.
+    - P0-3 schema: schema page without explicit background gets
+      preset default color via merge.
+    - P0-4: schema block with accentColor="p" surfaces in resolved
+      block.accent (#c084fc for academic-clean).
+    - Canvas/Preview parity: same page in both modes produces equal
+      pageStyleTokens (JSON.stringify equality).
+- P1-2 Fix: mapSchemaBackground rewritten.
+  * ALL fields (overlay/overlayType/imageFit/imageOpacity/imageBlur)
+    copied when present, REGARDLESS of whether imageUrl is set.
+  * New test verifies overlay=30/overlayType='light'/imageFit='contain'/
+    imageOpacity=60/imageBlur=3 are preserved even when imageUrl absent.
+- P1-hardening Fix: PageStyleAdapterResult now separates:
+  * legacyThemeId (KNOWN legacy id — safe for downstream consumers).
+  * unrecognizedThemeId (diagnostic only — must NOT be fed to a legacy
+    renderer because it would fail to resolve).
+  * Adapter routes unrecognized ids to unrecognizedThemeId; legacyThemeId
+    stays undefined for them. Compatibility field also NOT populated
+    for unrecognized ids.
+  * Tests updated to verify the split.
+- Tests added/updated:
+  * page-style-adapter.test.ts: 26 → 31 tests (+5: P1-2 field preservation,
+    P0-4 block extraction × 4 cases, P1-hardening known vs unrecognized).
+  * token-resolver-bridge.test.ts: 12 NEW tests (colors, typography,
+    radius, shadow, spacing, purity, bridge order, end-to-end).
+  * page-renderer-integration.test.tsx: 9 NEW tests (P0-1, P0-2 × 2,
+    P0-3 × 3, P0-4, Canvas/Preview parity).
+  * canvas-preview-parity.test.ts: unchanged (13 tests, kept as unit test).
+- Installed @testing-library/dom (was missing — required by
+  @testing-library/react).
+- Updated STYLE_CONTRACT_AUDIT.md with Sprint 8.2A-Patch section:
+  issue resolution table, bridge architecture, auto-golden gate,
+  background rendering, block extraction, P1-hardening split,
+  tests inventory, verification results, re-evaluated acceptance gate.
+- All verification passed:
+  * npx vitest run src/core/style → 303/303 PASS (was 277 + 26 new)
+  * npx vitest run src/core         → 427/427 PASS (was 401 + 26 new)
+  * npx tsc --noEmit                → 46 pre-existing errors (unchanged).
+    ZERO new errors in changed files.
+  * npm run build                   → Compiled successfully, 12/12
+    static pages generated.
+
+Stage Summary:
+- 2 new files in src/core/style/:
+  * token-resolver-bridge.ts (the bridge — 270 lines)
+  * __tests__/token-resolver-bridge.test.ts (12 tests)
+  * __tests__/page-renderer-integration.test.tsx (9 integration tests)
+- 4 modified files:
+  * src/core/style/page-style-adapter.ts (P1-2, P0-4, P1-hardening)
+  * src/core/style/consumer.ts (unrecognizedThemeId propagation)
+  * src/core/style/index.ts (export token-resolver-bridge)
+  * src/components/canva/page-renderer/PageRenderer.tsx (P0-1 wire,
+    P0-2 gate, P0-3 schema merge)
+  * src/components/canva/page-renderer/PageFrame.tsx (P0-3 legacy
+    background rendering)
+- 2 modified test files:
+  * __tests__/page-style-adapter.test.ts (P1-2, P0-4, P1-hardening tests)
+- 2 doc files updated:
+  * STYLE_CONTRACT_AUDIT.md (Sprint 8.2A-Patch section)
+  * worklog.md (this entry)
+- All 4 P0 + 2 P1 + 1 P1-hardening issues from Senior Review resolved.
+- 26 new tests (12 bridge + 9 integration + 5 adapter).
+- Contract & Boundary remains FROZEN — zero frozen-boundary files touched.
+- Sprint 8.2A-Patch READY FOR INTEGRATION → Senior Review.
+- Sprint 8.2B (Present) still deferred until 8.2A-Patch PASS verdict.

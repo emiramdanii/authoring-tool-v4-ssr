@@ -66,8 +66,13 @@ export interface ResolvePageStyleTokensResult {
   source: PageStyleSource;
   /** Original page.contractId when source === 'explicit-contract'. */
   explicitContractId?: string;
-  /** Original legacy theme id when the page carries one. */
+  /** Original legacy theme id when the page carries a KNOWN legacy id. */
   legacyThemeId?: string;
+  /**
+   * Unrecognized theme id (diagnostic only — must NOT be fed to a
+   * legacy renderer). Patch (P1-hardening — Senior Review 8.2A).
+   */
+  unrecognizedThemeId?: string;
   /** StylePresetId chosen by the adapter. */
   presetId: PageStyleAdapterResult['presetId'];
 }
@@ -99,6 +104,7 @@ export function resolvePageStyleTokens(
     source: adapted.source,
     explicitContractId: adapted.explicitContractId,
     legacyThemeId: adapted.legacyThemeId,
+    unrecognizedThemeId: adapted.unrecognizedThemeId,
     presetId: adapted.presetId,
   };
 }

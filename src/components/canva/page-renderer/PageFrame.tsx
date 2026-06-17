@@ -468,32 +468,86 @@ export const PageFrame = React.memo(function PageFrame({
   return (
     <>
       {/* ══ Background ════════════════════════════════════════ */}
-      {!isSchemaDriven && (
-        <>
-          {/* Sprint 8.2A — Background color now sourced from the
-              shared Style Contract helper when page.bgColor is empty.
-              This keeps legacy element-mode pages consistent with the
-              preset's background color (e.g. academic-clean's navy)
-              instead of falling back to modeBg only. */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                page.bgColor ||
-                pageStyleTokens?.tokens.page.background.color1 ||
-                pageStyleTokens?.tokens.colors.background ||
-                modeBg.bg,
-            }}
-          />
-          {page.bgDataUrl && (
-            <img src={page.bgDataUrl} alt="" role="presentation" className="absolute inset-0 w-full h-full object-cover" />
-          )}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: `${alpha(modeBg.bg, 0.8)}` }}
-          />
-        </>
-      )}
+      {!isSchemaDriven && (() => {
+        // Sprint 8.2A-Patch P0-3: Render legacy element-page background
+        // from a SINGLE authority — the resolved Style Contract tokens.
+        //
+        // Before the patch, this block used `page.bgColor`, `page.bgDataUrl`,
+        // and a HARDCODED `alpha(modeBg.bg, 0.8)` overlay — ignoring the
+        // overlay value the teacher actually set. Now we read from
+        // `pageStyleTokens.tokens.page.background` which carries:
+        //   color1, color2, imageUrl, overlay, overlayType,
+        //   imageFit, imageOpacity, imageBlur
+        //
+        // Page-level fields (page.bgColor, page.bgDataUrl, page.overlay)
+        // are still honored as the source the adapter read FROM — but
+        // the rendered values come from the resolved tokens so the
+        // overlay = 40 invariant is preserved end-to-end.
+        //
+        // Field priority: resolved token > legacy page field > modeBg.
+        const resolvedBg = pageStyleTokens?.tokens.page.background;
+        const bgColor =
+          page.bgColor ||
+          resolvedBg?.color1 ||
+          pageStyleTokens?.tokens.colors.background ||
+          modeBg.bg;
+        const bgImage =
+          page.bgDataUrl ||
+          resolvedBg?.imageUrl ||
+          '';
+        const overlayPct =
+          typeof resolvedBg?.overlay === 'number'
+            ? resolvedBg.overlay
+            : typeof page.overlay === 'number'
+              ? page.overlay
+              : 80; // schema default max — was previously hardcoded 0.8 alpha
+        const overlayType = resolvedBg?.overlayType || 'dark';
+        const imageFit = resolvedBg?.imageFit || 'cover';
+        const imageOpacity =
+          typeof resolvedBg?.imageOpacity === 'number' ? resolvedBg.imageOpacity : 100;
+        const imageBlur =
+          typeof resolvedBg?.imageBlur === 'number' ? resolvedBg.imageBlur : 0;
+        // Convert 0-80 schema overlay scale → 0-1 alpha for CSS.
+        const overlayAlpha = Math.max(0, Math.min(1, overlayPct / 100));
+
+        return (
+          <>
+            {/* Layer 1: background color (solid/gradient/radial) */}
+            <div className="absolute inset-0" style={{ background: bgColor }} />
+            {/* Layer 2: background image (with fit/opacity/blur) */}
+            {bgImage && (
+              <img
+                src={bgImage}
+                alt=""
+                role="presentation"
+                className="absolute inset-0 w-full h-full"
+                style={{
+                  objectFit: imageFit,
+                  opacity: imageOpacity / 100,
+                  filter: imageBlur > 0 ? `blur(${imageBlur}px)` : undefined,
+                }}
+              />
+            )}
+            {/* Layer 3: overlay/scrim — driven by resolved overlay token.
+                'dark'      → rgba(0,0,0,α)
+                'light'     → rgba(255,255,255,α)
+                'gradient'  → bottom-up gradient fade */}
+            {bgImage && overlayAlpha > 0 && (
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    overlayType === 'light'
+                      ? `rgba(255,255,255,${overlayAlpha})`
+                      : overlayType === 'gradient'
+                        ? `linear-gradient(to top, rgba(0,0,0,${overlayAlpha}), rgba(0,0,0,${overlayAlpha * 0.3}) 40%, transparent 70%)`
+                        : `rgba(0,0,0,${overlayAlpha})`,
+                }}
+              />
+            )}
+          </>
+        );
+      })()}
       {isSchemaDriven && (() => {
         // Sprint 1G: PageFrame only renders the canvas base for schema pages.
         // All background layers (color, image, overlay) are handled by

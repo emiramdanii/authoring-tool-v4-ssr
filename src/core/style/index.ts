@@ -20,3 +20,7 @@ export * from './consumer';
 // Sprint 8.2A — Explicit Canvas/Preview entry points for the parity
 // test. Both delegate to resolvePageStyleTokens() with no extra logic.
 export * from './consumer-entry-points';
+// Sprint 8.2A-Patch — Bridge ResolvedStyleTokens → TokenResolver so
+// the Style Contract's values reach block renderers without replacing
+// the legacy TokenResolver class (frozen boundary).
+export * from './token-resolver-bridge';

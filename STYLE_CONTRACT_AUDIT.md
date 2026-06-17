@@ -1,13 +1,231 @@
 # STYLE_CONTRACT_AUDIT.md
 
-**Sprint:** 8.2A — Style Consumer Wiring: Canvas + Preview
-**Status:** Ready for Senior Review (Sprint 8.2A — Canvas + Preview wiring complete)
+**Sprint:** 8.2A-Patch — Style Consumer Wiring Patch (Senior Review CHANGES REQUIRED)
+**Status:** Ready for Senior Review (8.2A-Patch — addresses 4 P0 + 2 P1 from Senior Review)
 **Date:** 2026-06-17
-**Sprint 8.2A commit:** (pending push)
+**Sprint 8.2A-Patch commit:** (pending push)
 **Predecessors:**
   - Sprint 8.1     commit `b79df6b` (returned CHANGES REQUIRED → 4 P0 + 2 P1)
   - Sprint 8.1-Patch commit `e2178e4` (returned CHANGES REQUIRED → 3 P0 + 2 P1)
   - Sprint 8.1-Patch-2 commit `50af012` (returned PASS — closed Sprint 8.1)
+  - Sprint 8.2A   commit `c02adb5` (returned CHANGES REQUIRED → 4 P0 + 2 P1)
+
+## Sprint 8.2A-Patch Summary
+
+This patch addresses all 4 P0 + 2 P1 issues from the Senior Review
+verdict on commit `c02adb5` (Sprint 8.2A). All changes are confined
+to the same boundary as 8.2A:
+
+  - `src/core/style/` (new: `token-resolver-bridge.ts`; modified:
+    `page-style-adapter.ts`, `consumer.ts`, `index.ts`)
+  - `src/components/canva/page-renderer/` (PageRenderer + PageFrame)
+  - test files under `src/core/style/__tests__/`
+  - this document + `worklog.md`
+
+No frozen boundary was touched.
+
+## Senior Review Issues — Resolution
+
+| Issue | Severity | Resolution |
+|---|---|---|
+| P0-1 — Resolved Style Tokens belum masuk ke Schema renderer | P0 | NEW `token-resolver-bridge.ts` exports `applyResolvedStyleTokensToTokenResolver(resolver, tokens)`. PageRenderer calls it between base TokenResolver construction and `resolver.applyContract()` — bridge order: base → bridge → contract wins. |
+| P0-2 — Auto-golden contract menimpa preset baru | P0 | Auto-golden now gated on `source === 'legacy-theme'` AND `shouldUseGoldenLegacyFallback(legacyThemeId)`. Fresh `new-preset` projects no longer silently overridden. |
+| P0-3 — Background image dan overlay token belum dikonsumsi | P0 | Legacy path: PageFrame renders ALL fields from `pageStyleTokens.tokens.page.background` (color1/color2/imageUrl/overlay/overlayType/imageFit/imageOpacity/imageBlur). Schema path: `adaptedSchema` shallow-clones with merged resolved background before passing to SchemaScreenRenderer. |
+| P0-4 — Block style extraction belum memenuhi kontrak | P0 | `extractBlockStyleFromSchema` now iterates ALL blocks, collects first non-empty value PER FIELD (presetId, variant, accentColor, borderColor→accentColor, emphasis). No early break. |
+| P1-1 — Test parity masih menguji wrapper, bukan consumer aktual | P1 | NEW `page-renderer-integration.test.tsx` (9 tests) renders PageRenderer with mocked PageFrame + SchemaScreenRenderer, captures actual props, verifies token bridge + auto-golden gating + background merge + block extraction + Canvas/Preview parity at the PageRenderer level. |
+| P1-2 — Adapter "no field loss" belum sepenuhnya benar | P1 | `mapSchemaBackground` now copies ALL fields (overlay/overlayType/imageFit/imageOpacity/imageBlur) when present, REGARDLESS of whether imageUrl is set. New test asserts the invariant. |
+| P1-hardening — Invalid legacy ID handling | P1 | `PageStyleAdapterResult` now separates `legacyThemeId` (KNOWN legacy id, safe for downstream consumers) from `unrecognizedThemeId` (diagnostic only — must NOT be fed to a legacy renderer). |
+
+## Architecture — Token Resolver Bridge (P0-1)
+
+The bridge is the key new abstraction. It patches ResolvedStyleTokens
+values onto a legacy TokenResolver instance so block renderers (which
+read `tokens.color('y')`, `tokens.raw.spacing.lg`, etc.) see the
+Style Contract's chosen preset values without replacing the
+TokenResolver class (frozen boundary — 30+ block renderers depend on
+its API).
+
+### Bridge order (Senior Review P0-1 requirement)
+
+```text
+1. base legacy TokenResolver (constructed with the right themeId)
+2. applyResolvedStyleTokensToTokenResolver(resolver, tokens)
+   — patches colors / typography / shape / spacing / semantic palette
+3. resolver.applyContract(contractStyle) — explicit contract wins
+```
+
+### Patched fields
+
+- `colors.bg / .card / .border / .text / .muted`
+- `colors.y / .c / .r / .p / .g / .o` (6 accent colors from semantic.accents)
+- `colors.nagama / .nkesusilaan / .nkesopanan / .nhukum` (macam-norma categories)
+- `typography.fontFamily.display / .body`
+- `typography.fontSize.h2 / .base` (heading/body scale × fontScaleMultiplier, rem → px)
+- `radius.sm / .base / .md / .lg / .xl` (derived from preset radius)
+- `shadow.card`
+- `spacing.xs / .sm / .md / .lg / .xl / .xxl` (derived from cardPadding/pagePadding/blockGap)
+
+### Not patched
+
+- `colors.bg2` — no equivalent in ResolvedStyleTokens
+- `animation` — no equivalent
+- `typography.fontWeight` — no equivalent
+
+## Architecture — Auto-Golden Gate (P0-2)
+
+Before the patch, PageRenderer auto-applied `'golden-pertemuan'` to
+almost every pertemuan pageType. This silently overrode fresh projects
+created with the new preset picker.
+
+### New gate
+
+```text
+auto-golden applies when ALL of:
+  1. page.contractId is empty (explicit contract still wins)
+  2. pageStyleTokens.source === 'legacy-theme'
+     (fresh 'new-preset' pages are no longer auto-golden'd)
+  3. shouldUseGoldenLegacyFallback(legacyThemeId) returns true
+     (only themes that HISTORICALLY paired with golden)
+```
+
+### Golden legacy themes
+
+```text
+golden-presentation, default,
+hakikat-norma, macam-norma, nilai-pancasila,
+bhinneka-tunggal-ika, ham-hak-kewajiban,
+demokrasi-pancasila, globalisasi
+```
+
+Other legacy themes (neon, glass, warm-light, colorful, ios-light,
+ios-warm, minimal, ocean-light) have their own visual identity mapped
+to non-academic-clean presets and never used the golden contract.
+
+## Architecture — Background Rendering (P0-3)
+
+### Legacy element page (`!isSchemaDriven`)
+
+PageFrame now renders background from a SINGLE authority: the resolved
+Style Contract tokens. Reads ALL fields:
+
+```text
+color1, color2, imageUrl, overlay, overlayType,
+imageFit, imageOpacity, imageBlur
+```
+
+Layer stack:
+1. Background color (solid/gradient/radial)
+2. Background image (with fit/opacity/blur)
+3. Overlay/scrim — driven by resolved overlay token (0-80 → 0-1 alpha)
+   - 'dark'     → rgba(0,0,0,α)
+   - 'light'    → rgba(255,255,255,α)
+   - 'gradient' → bottom-up gradient fade
+
+### Schema page (`isSchemaDriven`)
+
+`adaptedSchema` now shallow-clones `page.schema` with the resolved
+background merged in. SchemaScreenRenderer reads from a SINGLE
+authority — no more parallel `screen.background` that could disagree
+with the chosen preset.
+
+```ts
+const adaptedSchema = {
+  ...base,
+  background: mergeResolvedBackgroundIntoSchema(base.background, resolvedBg),
+};
+```
+
+`page.schema` is NOT mutated (shallow clone).
+
+## Architecture — Block Style Extraction (P0-4)
+
+`extractBlockStyleFromSchema` now iterates ALL blocks and collects
+the first non-empty value PER FIELD:
+
+```text
+block.presetId     ← first block with stylePreset
+block.variant      ← first block with variant (or templateVariant fallback)
+block.accentColor  ← first block with accentColor (or borderColor as hint)
+block.emphasis     ← first block with emphasis
+```
+
+Loop only breaks when ALL four fields are populated. Different blocks
+may contribute different fields — no silent data loss.
+
+## Architecture — P1-Hardening: legacyThemeId vs unrecognizedThemeId
+
+```ts
+interface PageStyleAdapterResult {
+  // ... other fields ...
+  legacyThemeId?: string;        // KNOWN legacy id (in LEGACY_THEME_TO_PRESET)
+  unrecognizedThemeId?: string;  // diagnostic only — NOT for downstream lookups
+}
+```
+
+Before: unrecognized ids were stuffed into `legacyThemeId`, risking
+downstream consumers (Sprint 8.2B legacy renderer branch) attempting
+to look them up in THEME_PRESETS and crashing.
+
+After: only KNOWN ids land in `legacyThemeId`. Unrecognized ids are
+isolated to `unrecognizedThemeId` for telemetry / debugging /
+teacher-facing "theme not recognized" warnings.
+
+## Tests
+
+| File | Tests | Purpose |
+|---|---|---|
+| `page-style-adapter.test.ts` | 31 | 8 mandatory + 6 fixtures + P1-2 + P0-4 + P1-hardening + edge cases |
+| `canvas-preview-parity.test.ts` | 13 | Wrapper parity (kept as unit test) |
+| `token-resolver-bridge.test.ts` | 12 (NEW) | P0-1 bridge — colors/typography/radius/shadow/spacing/purity/order/e2e |
+| `page-renderer-integration.test.tsx` | 9 (NEW) | P1-1 integration — captures actual PageFrame + SchemaScreenRenderer props |
+
+## Verification
+
+```bash
+npx vitest run src/core/style       # 303/303 PASS (was 277 + 26 new)
+npx vitest run src/core             # 427/427 PASS (was 401 + 26 new)
+npx tsc --noEmit                    # 46 pre-existing errors (unchanged). ZERO new errors in changed files.
+npm run build                       # Compiled successfully, 12/12 static pages.
+```
+
+## Acceptance Gate (re-evaluated)
+
+| # | Criterion | Status |
+|---|---|---|
+| 1 | Adapter tersedia dan pure | ✅ PASS |
+| 2 | `contractId` eksplisit dipertahankan | ✅ PASS |
+| 3 | Legacy identity dipertahankan | ✅ PASS |
+| 4 | Shared helper tersedia | ✅ PASS |
+| 5 | Canvas memakai resolved token sebagai visual authority | ✅ PASS (P0-1 bridge + integration test) |
+| 6 | Preview memakai resolved token sebagai visual authority | ✅ PASS (P0-1 bridge + integration test) |
+| 7 | Background/overlay token benar-benar dirender | ✅ PASS (P0-3 legacy + schema path) |
+| 8 | Block style dipetakan lengkap | ✅ PASS (P0-4 — presetId/variant/accentColor/emphasis) |
+| 9 | Token parity helper | ✅ PASS |
+| 10 | Visual consumer parity aktual | ✅ PASS (P1-1 integration test) |
+| 11 | Frozen boundary aman | ✅ PASS |
+| 12 | CI exact SHA | ❌ Tidak ada (sama seperti 8.2A — lokal verified) |
+
+## Deferred items
+
+```text
+Sprint 8.2B — Present wiring
+Sprint 8.2C — Export HTML wiring
+Sprint 8.2D — Teacher style picker
+Sprint 8.3  — Base Template Visual
+Sprint 8.4  — Browser visual parity & overflow
+Sprint 9    — Flow Guru
+```
+
+---
+
+## Sprint 8.2A (Historical — superseded by 8.2A-Patch)
+
+**Sprint 8.2A commit:** `c02adb5b85517e9e26f89ffb8942e0cb51f263e2`
+**Verdict:** CHANGES REQUIRED (4 P0 + 2 P1) — see resolution above.
+
+The 8.2A-Patch supersedes 8.2A. All 8.2A modules remain in place;
+the patch adds the bridge, fixes the gate, completes the wiring, and
+adds integration tests.
 
 ## Sprint 8.2A Summary
 

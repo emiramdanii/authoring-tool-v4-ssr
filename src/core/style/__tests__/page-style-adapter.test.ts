@@ -130,14 +130,23 @@ describe('Sprint 8.2A — Page Style Adapter (8 mandatory tests)', () => {
       expect(bg.overlay).toBe(40);
     });
 
-    it('drops no overlay-related fields when image is absent', () => {
-      // No imageUrl → overlay/imageFit/etc. are meaningless.
-      // Adapter still passes type + colors through verbatim.
+    it('P1-2: preserves overlay/imageFit/opacity/blur even when imageUrl is absent', () => {
+      // Senior Review P1-2: the previous implementation dropped
+      // overlay/overlayType/imageFit/imageOpacity/imageBlur whenever
+      // imageUrl was missing. The contract says "no field loss" —
+      // the adapter now copies ALL fields when present, regardless
+      // of whether imageUrl is set.
       const page = makeSchemaPage({
         background: {
           type: 'radial',
           color1: '#fef3c7',
           color2: '#fde68a',
+          // imageUrl intentionally absent
+          overlay: 30,
+          overlayType: 'light',
+          imageFit: 'contain',
+          imageOpacity: 60,
+          imageBlur: 3,
         },
       });
       const result = createStyleContractFromPage({ page });
@@ -146,6 +155,12 @@ describe('Sprint 8.2A — Page Style Adapter (8 mandatory tests)', () => {
       expect(bg.color1).toBe('#fef3c7');
       expect(bg.color2).toBe('#fde68a');
       expect(bg.imageUrl).toBeUndefined();
+      // P1-2 invariant: these fields MUST be preserved even without imageUrl.
+      expect(bg.overlay).toBe(30);
+      expect(bg.overlayType).toBe('light');
+      expect(bg.imageFit).toBe('contain');
+      expect(bg.imageOpacity).toBe(60);
+      expect(bg.imageBlur).toBe(3);
     });
   });
 
@@ -306,8 +321,15 @@ describe('Sprint 8.2A — Page Style Adapter (8 mandatory tests)', () => {
 
       expect(result.source).toBe('default');
       expect(result.presetId).toBe(DEFAULT_PRESET_ID);
-      // legacyThemeId still preserved for debugging/Sprint 8.2B branch.
-      expect(result.legacyThemeId).toBe('completely-unknown-theme');
+      // P1-hardening: unrecognized theme ids are isolated to
+      // `unrecognizedThemeId` (diagnostic only). `legacyThemeId`
+      // remains undefined so downstream consumers don't try to look
+      // up the unknown id in THEME_PRESETS and crash.
+      expect(result.legacyThemeId).toBeUndefined();
+      expect(result.unrecognizedThemeId).toBe('completely-unknown-theme');
+      // The compatibility field is NOT populated for unrecognized ids
+      // — the resolver will fall back to preset._legacyThemeId or undefined.
+      expect(result.contract.compatibility?.legacyThemeId).toBeUndefined();
     });
 
     it('page with no schema, no templateData, no contractId → default', () => {
@@ -316,6 +338,7 @@ describe('Sprint 8.2A — Page Style Adapter (8 mandatory tests)', () => {
       expect(result.source).toBe('default');
       expect(result.presetId).toBe(DEFAULT_PRESET_ID);
       expect(result.legacyThemeId).toBeUndefined();
+      expect(result.unrecognizedThemeId).toBeUndefined();
       expect(result.explicitContractId).toBeUndefined();
     });
 
@@ -324,6 +347,19 @@ describe('Sprint 8.2A — Page Style Adapter (8 mandatory tests)', () => {
         templateData: { schemaThemeId: '' },
       });
       expect(() => createStyleContractFromPage({ page })).not.toThrow();
+    });
+
+    it('P1-hardening: KNOWN legacy id populates legacyThemeId, NOT unrecognizedThemeId', () => {
+      // Sanity check — known legacy ids still land in legacyThemeId
+      // so the P1-hardening split doesn't break the happy path.
+      const page = makeBasePage({
+        templateData: { schemaThemeId: 'macam-norma' },
+      });
+      const result = createStyleContractFromPage({ page });
+      expect(result.source).toBe('legacy-theme');
+      expect(result.legacyThemeId).toBe('macam-norma');
+      expect(result.unrecognizedThemeId).toBeUndefined();
+      expect(result.contract.compatibility?.legacyThemeId).toBe('macam-norma');
     });
   });
 
@@ -387,6 +423,109 @@ describe('Sprint 8.2A — Page Style Adapter (8 mandatory tests)', () => {
       const a = createStyleContractFromPage({ page });
       const b = createStyleContractFromPage({ page });
       expect(a).toEqual(b);
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────
+  // 9. Block style extraction — P0-4 (Senior Review)
+  // ───────────────────────────────────────────────────────────────
+  describe('9. Block style extraction — P0-4 (all fields collected, no early break)', () => {
+    it('extracts accentColor + emphasis when first block has them', () => {
+      const page = makeSchemaPage({
+        blocks: [
+          {
+            id: 'b1',
+            type: 'def-box',
+            // Minimal def-box shape — the adapter uses a permissive cast
+            accentColor: 'p',
+            emphasis: 'strong',
+            variant: 'B',
+          } as unknown as ScreenSchema['blocks'][number],
+        ],
+      });
+      const result = createStyleContractFromPage({ page });
+      const block = result.contract.block;
+      expect(block).toBeDefined();
+      expect(block!.accentColor).toBe('p');
+      expect(block!.emphasis).toBe('strong');
+      expect(block!.variant).toBe('B');
+    });
+
+    it('collects fields from DIFFERENT blocks when no single block has all fields', () => {
+      // P0-4 invariant: the previous implementation broke after finding
+      // the first stylePreset — silently dropping accentColor/emphasis
+      // from later blocks. The fix iterates ALL blocks and takes the
+      // first non-empty value PER FIELD.
+      const page = makeSchemaPage({
+        blocks: [
+          {
+            id: 'b1',
+            type: 'def-box',
+            stylePreset: 'ceria',
+            // No accentColor / emphasis on this block.
+          } as unknown as ScreenSchema['blocks'][number],
+          {
+            id: 'b2',
+            type: 'materi-section',
+            accentColor: 'c',
+            emphasis: 'highlight',
+            variant: 'C',
+            // No stylePreset on this block.
+          } as unknown as ScreenSchema['blocks'][number],
+        ],
+      });
+      const result = createStyleContractFromPage({ page });
+      const block = result.contract.block!;
+      // presetId from block 1.
+      expect(block.presetId).toBe('ceria');
+      // accentColor + emphasis + variant from block 2 (the previous
+      // implementation would have DROPPED these — P0-4 fixes that).
+      expect(block.accentColor).toBe('c');
+      expect(block.emphasis).toBe('highlight');
+      expect(block.variant).toBe('C');
+    });
+
+    it('borderColor used as accentColor hint when accentColor is absent', () => {
+      // The Style Contract models block accent via `accentColor` only.
+      // When a block has only `borderColor`, the adapter treats it as
+      // an accent hint (resolveColor handles both token keys and hex).
+      const page = makeSchemaPage({
+        blocks: [
+          {
+            id: 'b1',
+            type: 'def-box',
+            borderColor: '#ff8800',
+          } as unknown as ScreenSchema['blocks'][number],
+        ],
+      });
+      const result = createStyleContractFromPage({ page });
+      expect(result.contract.block!.accentColor).toBe('#ff8800');
+    });
+
+    it('does NOT break early when first block has stylePreset only', () => {
+      // Explicit regression test for the P0-4 bug: the old loop did
+      // `break` as soon as it found a stylePreset, dropping fields
+      // from subsequent blocks.
+      const page = makeSchemaPage({
+        blocks: [
+          {
+            id: 'b1',
+            type: 'def-box',
+            stylePreset: 'ceria',
+          } as unknown as ScreenSchema['blocks'][number],
+          {
+            id: 'b2',
+            type: 'materi-section',
+            accentColor: 'r',
+            emphasis: 'strong',
+          } as unknown as ScreenSchema['blocks'][number],
+        ],
+      });
+      const result = createStyleContractFromPage({ page });
+      const block = result.contract.block!;
+      expect(block.presetId).toBe('ceria');
+      expect(block.accentColor).toBe('r');
+      expect(block.emphasis).toBe('strong');
     });
   });
 });
@@ -475,7 +614,11 @@ describe('Sprint 8.2A — Regression fixtures (6 cases)', () => {
 
     expect(result.source).toBe('default');
     expect(result.presetId).toBe(DEFAULT_PRESET_ID);
-    // Original theme id still preserved as metadata.
-    expect(result.legacyThemeId).toBe('theme-tidak-ada');
+    // P1-hardening: unrecognized id is routed to `unrecognizedThemeId`
+    // (diagnostic only), NOT `legacyThemeId`. This prevents downstream
+    // consumers (Sprint 8.2B legacy renderer branch) from attempting
+    // to look up the unknown id in THEME_PRESETS and crashing.
+    expect(result.legacyThemeId).toBeUndefined();
+    expect(result.unrecognizedThemeId).toBe('theme-tidak-ada');
   });
 });
