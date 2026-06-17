@@ -704,3 +704,110 @@ Stage Summary:
 - Contract & Boundary remains FROZEN.
 - Sprint 8.2A: ✅ CLOSED / PASS.
 - Sprint 8.2B (Present wiring): ▶️ UNBLOCKED.
+
+---
+Task ID: 8.2S-1
+Agent: Super Z (main)
+Task: Sprint 8.2S-1 — Foundation Checkpoint (documents + fixture corpus + design docs)
+
+Work Log:
+- Senior Review on Sprint 8.2A-Patch (commit 262dd1b) returned PASS.
+  Before melanjutkan ke Sprint 8.2B (Present), user minta foundation
+  checkpoint: closure matrix + fixture corpus + CI + mode lifecycle
+  smoke + known-issues ledger. Schema migration, export contract,
+  security, accessibility minimal DESIGN sekarang, gate lengkap
+  sebelum release.
+- Tahap 1 — Audit data aktual:
+  * 46 pre-existing TS errors dikategorikan per file (14 shadcn/ui,
+    3 import panel, 6 schema, 4 template, 3 SortableCanvas, 3 db.ts,
+    2 ppkn schema, 4 store).
+  * Mode lifecycle: setAppMode hanya clearAllSelections untuk
+    preview/present, TIDAK reset interactive scores / learnSubMode
+    (bug M-001, M-002 dikonfirmasi).
+  * Tidak ada .github/workflows/ — CI-001 confirmed.
+  * package-lock.json sengaja di-gitignore (CI-002 by design).
+  * build copy issue (BUILD-001) — pre-existing, tidak blocker.
+- Tahap 2 — Buat SYSTEM_CLOSURE_MATRIX.md:
+  * Matriks 12 Area × 8 Operasi (Create/Edit/Save/Reload/Preview/
+    Present/Export/Legacy).
+  * Status: PASS / PARTIAL / NOT TESTED / BLOCKED / N/A.
+  * Present dan Export kolom hampir semua NOT TESTED — ini lubang
+    terbesar sebelum Sprint 8.2B/8.2C.
+  * Penjelasan per area + lubang terbesar sebelum Present dan
+    sebelum Release.
+- Tahap 3 — Buat KNOWN_ISSUES.md:
+  * Format entry: ID, Title, Severity, Area, Reproduction,
+    Workaround, Owner, Target, Closure.
+  * 17 entry terdaftar: CI-001/002, BUILD-001/002/003, PERSIST-001/002,
+    BLOCK-001, QUIZ-001, M-001/002/003, RECOV-001/002, SEC-001/002/003,
+    A11Y-001, PERF-001, SCHEMA-001, EXPORT-001.
+  * Severity: 1 P0 (SEC-001 PAT revoke), beberapa P1 (CI-001, PERSIST-002,
+    M-001, RECOV-001, SEC-002, A11Y-001, SCHEMA-001, EXPORT-001),
+    mayoritas P2 hygiene.
+- Tahap 4 — Buat STYLE_AND_DATA_AUTHORITY.md:
+  * Source-of-truth per field: Page Content, Theme Identity, Explicit
+    Contract, Background, Navigation, Block Style, Runtime Score,
+    Persistence State, Display Mode, App Mode, Schema Versioning
+    (design), Export Output (design).
+  * Aturan baca: selalu via adapter (resolvePageStyleTokens),
+    JANGAN baca field legacy langsung di consumer baru.
+  * Aturan tulis: kode baru tulis ke authority baru (page.schema,
+    bukan templateData.schemaThemeId).
+- Tahap 5 — Buat docs/SCHEMA_VERSIONING_DESIGN.md:
+  * Proposal: schemaVersion field (number) di ProjectDocument.
+  * Versi: v1 (legacy elements), v2 (schema pages), v3 (style
+    contract), v4 (future teacher flow).
+  * API: migrateProjectDocument(doc) pure/idempotent,
+    validateProjectDocument(doc) fail-closed.
+  * Acceptance gate: idempotent, fail-closed, backup sebelum
+    destruktif, dokumen versi lebih baru tidak dirusak.
+  * Implementasi target: Sprint 8.2S-3.
+- Tahap 6 — Buat docs/EXPORT_CONTRACT_DESIGN.md:
+  * Keputusan kontrak: STANDALONE HTML, font embedded, gambar data
+    URL (<2MB) / external (>2MB), NO CDN, audio data URL (<5MB),
+    video external, max 50MB warning / 100MB hard limit, browser
+    target Chrome/Edge/Firefox 100+ Safari 15+, NO service worker
+    untuk single-file.
+  * Format output: Single HTML (default), SCORM 1.2 (opsional),
+    PDF (future).
+  * Gate offline: tanpa internet, buka file HTML, semua berjalan,
+    tidak ada request eksternal wajib.
+  * Pertanyaan terbuka: React runtime inline vs vanilla rewrite.
+  * Implementasi target: Sprint 8.2C.
+- Tahap 7 — Buat docs/MODE_LIFECYCLE_CONTRACT.md:
+  * 5 mode: edit, preview, present, export, learn.
+  * Tabel transisi sah: 11 transisi Dari→Ke dengan state
+    DIPERTAHANKAN vs DI-RESET.
+  * Invariant per mode: apa yang boleh dan tidak boleh terisi.
+  * Bug diketahui: M-001 (score bocor), M-002 (learnSubMode bocor),
+    M-003 (listener cleanup belum diaudit).
+  * Test plan: 11 smoke test untuk invariant + round-trip + edge
+    case + cleanup.
+  * Implementasi target: Sprint 8.2S-2 (smoke test + fix).
+- Tahap 8 — Buat fixtures/projects/ corpus:
+  * README.md dengan aturan pakai + daftar fixture + yang belum ada.
+  * 6 fixture awal:
+    - golden-pertemuan.json (3 page, explicit contract)
+    - macam-norma-legacy.json (1 page legacy elements + PPKn theme)
+    - fresh-mission-adventure.json (1 page new preset, no contract)
+    - mixed-elements-schema.json (2 page: 1 elements + 1 schema)
+    - image-background-large.json (1 page bg image + overlay 40)
+    - malformed-project.json (invalid shape untuk fail-closed test)
+  * Setiap fixture punya _fixture metadata: name, description,
+    schemaVersion, skenario.
+- Tidak mengubah source code apa pun — pure documentation + fixtures.
+
+Stage Summary:
+- 4 dokumen baru di root:
+  * SYSTEM_CLOSURE_MATRIX.md (closure matrix + gap analysis)
+  * KNOWN_ISSUES.md (17 issue terdaftar dengan format standar)
+  * STYLE_AND_DATA_AUTHORITY.md (source-of-truth per field)
+- 3 design doc baru di docs/:
+  * SCHEMA_VERSIONING_DESIGN.md
+  * EXPORT_CONTRACT_DESIGN.md
+  * MODE_LIFECYCLE_CONTRACT.md
+- 7 file baru di fixtures/projects/:
+  * README.md + 6 fixture JSON
+- Contract & Boundary remains FROZEN.
+- Sprint 8.2S-1 READY — lanjut ke 8.2S-2 (CI + mode lifecycle smoke).
+- Sprint 8.2B (Present) tetap BLOCKED sampai 8.2S-2 selesai.

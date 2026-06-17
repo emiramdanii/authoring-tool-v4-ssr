@@ -1,0 +1,13 @@
+{
+  "_fixture": {
+    "name": "malformed-project",
+    "description": "JSON valid secara sintaks tetapi shape tidak sesuai ProjectDocument. Test: validateProjectDocument fail-closed, tidak crash, return issues list.",
+    "schemaVersion": null,
+    "skenario": "malformed-shape + fail-closed-validation"
+  },
+  "thisIsNot": "a valid ProjectDocument",
+  "missingRequiredFields": true,
+  "canvaState": "should be an object but is a string",
+  "meta": null,
+  "id": null
+}

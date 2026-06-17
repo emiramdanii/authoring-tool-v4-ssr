@@ -1,0 +1,67 @@
+{
+  "_fixture": {
+    "name": "macam-norma-legacy",
+    "description": "Legacy project dengan schemaThemeId='macam-norma' (PPKn domain theme). Tidak ada page.schema — hanya elements[]. pageMode='elements'. Test: legacy adapter preserve identity, auto-golden fallback aktif.",
+    "schemaVersion": 1,
+    "skenario": "legacy-theme + elements-mode + auto-golden-fallback"
+  },
+  "id": "fixture-macam-norma-legacy",
+  "meta": {
+    "judulPertemuan": "Macam-Macam Norma",
+    "namaBab": "Bab 2",
+    "mapel": "PPKn",
+    "kelas": "7",
+    "semester": "1"
+  },
+  "canvaState": {
+    "currentPageIndex": 0,
+    "ratioId": "16:9",
+    "displayMode": "classroom",
+    "pages": [
+      {
+        "id": "page-legacy-1",
+        "label": "Halaman 1",
+        "bgDataUrl": null,
+        "bgColor": "#0f172a",
+        "overlay": 0,
+        "elements": [
+          {
+            "id": "el-text-1",
+            "type": "teks",
+            "x": 10,
+            "y": 10,
+            "w": 80,
+            "h": 10,
+            "opacity": 1,
+            "text": "Macam-Macam Norma",
+            "fontSize": 32,
+            "fontWeight": 800,
+            "textAlign": "center"
+          },
+          {
+            "id": "el-materi-1",
+            "type": "materi",
+            "x": 5,
+            "y": 25,
+            "w": 90,
+            "h": 60,
+            "opacity": 1,
+            "moduleId": "mod-norma-1"
+          }
+        ],
+        "templateType": "materi",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "minimal"
+        },
+        "templateData": { "schemaThemeId": "macam-norma" },
+        "templateVariant": "A",
+        "pageMode": "elements"
+      }
+    ]
+  }
+}

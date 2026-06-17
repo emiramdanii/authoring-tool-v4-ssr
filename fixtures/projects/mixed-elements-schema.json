@@ -1,0 +1,90 @@
+{
+  "_fixture": {
+    "name": "mixed-elements-schema",
+    "description": "Project campuran: page 1 pageMode='elements' (legacy), page 2 pageMode='schema' (new). Test migrasi parsial, ensurePageSchema lazy promotion, dual-render guard.",
+    "schemaVersion": 2,
+    "skenario": "mixed-mode + partial-migration + dual-render-guard"
+  },
+  "id": "fixture-mixed-elements-schema",
+  "meta": {
+    "judulPertemuan": "Project Campuran",
+    "namaBab": "Bab 4",
+    "mapel": "IPS",
+    "kelas": "8",
+    "semester": "2"
+  },
+  "canvaState": {
+    "currentPageIndex": 0,
+    "ratioId": "16:9",
+    "displayMode": "classroom",
+    "pages": [
+      {
+        "id": "page-legacy",
+        "label": "Halaman Legacy",
+        "bgDataUrl": null,
+        "bgColor": "#0f172a",
+        "overlay": 0,
+        "elements": [
+          {
+            "id": "el-1",
+            "type": "teks",
+            "x": 10,
+            "y": 10,
+            "w": 80,
+            "h": 10,
+            "opacity": 1,
+            "text": "Halaman Lama",
+            "fontSize": 24,
+            "textAlign": "center"
+          }
+        ],
+        "templateType": "custom",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "colorful"
+        },
+        "templateData": { "schemaThemeId": "default" },
+        "templateVariant": "A",
+        "pageMode": "elements"
+      },
+      {
+        "id": "page-schema",
+        "label": "Halaman Schema",
+        "bgDataUrl": null,
+        "bgColor": "#0f172a",
+        "overlay": 0,
+        "elements": [],
+        "templateType": "materi",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "colorful"
+        },
+        "templateData": {},
+        "templateVariant": "A",
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-page-2",
+          "templateType": "materi",
+          "themeId": "academic-clean",
+          "blocks": [
+            {
+              "id": "block-1",
+              "type": "materi-section",
+              "judul": "Halaman Baru",
+              "konten": "Halaman ini sudah menggunakan schema."
+            }
+          ],
+          "background": { "type": "solid", "color1": "#0f172a" }
+        }
+      }
+    ]
+  }
+}

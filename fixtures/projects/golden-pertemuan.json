@@ -1,0 +1,128 @@
+{
+  "_fixture": {
+    "name": "golden-pertemuan",
+    "description": "Project lengkap dengan 3 page pertemuan (cover, materi, penutup) dan contractId eksplisit 'golden-pertemuan'.",
+    "schemaVersion": 3,
+    "skenario": "explicit-contract + legacy-theme + schema-pages"
+  },
+  "id": "fixture-golden-pertemuan",
+  "meta": {
+    "judulPertemuan": "Pertemuan 1: Pancasila sebagai Dasar Negara",
+    "namaBab": "Bab 1",
+    "mapel": "PPKn",
+    "kelas": "7",
+    " semester": "1"
+  },
+  "canvaState": {
+    "currentPageIndex": 0,
+    "ratioId": "16:9",
+    "displayMode": "classroom",
+    "pages": [
+      {
+        "id": "page-cover",
+        "label": "Cover",
+        "bgDataUrl": null,
+        "bgColor": "#0f172a",
+        "overlay": 0,
+        "elements": [],
+        "templateType": "cover",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "colorful"
+        },
+        "templateData": { "schemaThemeId": "golden-presentation" },
+        "templateVariant": "A",
+        "contractId": "golden-pertemuan",
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-cover",
+          "templateType": "cover",
+          "themeId": "golden-presentation",
+          "blocks": [
+            {
+              "id": "cover-1",
+              "type": "cover",
+              "judul": "Pancasila sebagai Dasar Negara",
+              "subjudul": "Pertemuan 1 — PPKn Kelas 7"
+            }
+          ],
+          "background": { "type": "solid", "color1": "#0f172a" }
+        }
+      },
+      {
+        "id": "page-materi",
+        "label": "Materi",
+        "bgDataUrl": null,
+        "bgColor": "#0f172a",
+        "overlay": 0,
+        "elements": [],
+        "templateType": "materi",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "colorful"
+        },
+        "templateData": { "schemaThemeId": "golden-presentation" },
+        "templateVariant": "A",
+        "contractId": "golden-pertemuan",
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-materi",
+          "templateType": "materi",
+          "themeId": "golden-presentation",
+          "blocks": [
+            {
+              "id": "materi-1",
+              "type": "materi-section",
+              "judul": "Sila Pertama: Ketuhanan Yang Maha Esa",
+              "konten": "Pancasila sebagai dasar negara Indonesia terdiri dari lima sila..."
+            }
+          ],
+          "background": { "type": "solid", "color1": "#0f172a" }
+        }
+      },
+      {
+        "id": "page-penutup",
+        "label": "Penutup",
+        "bgDataUrl": null,
+        "bgColor": "#0f172a",
+        "overlay": 0,
+        "elements": [],
+        "templateType": "penutup",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "colorful"
+        },
+        "templateData": { "schemaThemeId": "golden-presentation" },
+        "templateVariant": "A",
+        "contractId": "golden-pertemuan",
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-penutup",
+          "templateType": "penutup",
+          "themeId": "golden-presentation",
+          "blocks": [
+            {
+              "id": "penutup-1",
+              "type": "penutup",
+              "judul": "Penutup",
+              "konten": "Terima kasih telah mengikuti pertemuan ini."
+            }
+          ],
+          "background": { "type": "solid", "color1": "#0f172a" }
+        }
+      }
+    ]
+  }
+}

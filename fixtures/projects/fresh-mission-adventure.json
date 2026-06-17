@@ -1,0 +1,57 @@
+{
+  "_fixture": {
+    "name": "fresh-mission-adventure",
+    "description": "Project baru dengan preset mission-adventure. Tidak ada contractId, tidak ada schemaThemeId legacy. Test: P0-2 — fresh new-preset TIDAK boleh tertimpa auto-golden.",
+    "schemaVersion": 3,
+    "skenario": "new-preset + no-contract + no-legacy"
+  },
+  "id": "fixture-fresh-mission-adventure",
+  "meta": {
+    "judulPertemuan": "Misi Petualangan: Menjelajah Hutan",
+    "namaBab": "Bab 3",
+    "mapel": "IPA",
+    "kelas": "5",
+    "semester": "1"
+  },
+  "canvaState": {
+    "currentPageIndex": 0,
+    "ratioId": "16:9",
+    "displayMode": "classroom",
+    "pages": [
+      {
+        "id": "page-misi-1",
+        "label": "Misi 1",
+        "bgDataUrl": null,
+        "bgColor": "#1c1917",
+        "overlay": 0,
+        "elements": [],
+        "templateType": "materi",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "minimal"
+        },
+        "templateData": {},
+        "templateVariant": "A",
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-misi-1",
+          "templateType": "materi",
+          "themeId": "mission-adventure",
+          "blocks": [
+            {
+              "id": "misi-1-intro",
+              "type": "materi-section",
+              "judul": "Misi 1: Masuk ke Hutan",
+              "konten": "Kamu adalah penjelajah muda. Hari ini kamu akan masuk ke hutan tropis..."
+            }
+          ],
+          "background": { "type": "solid", "color1": "#1c1917" }
+        }
+      }
+    ]
+  }
+}

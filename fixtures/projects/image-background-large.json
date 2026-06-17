@@ -1,0 +1,66 @@
+{
+  "_fixture": {
+    "name": "image-background-large",
+    "description": "Page dengan background image base64 (~600 bytes placeholder — bukan 500KB real image, untuk menjaga repo ringan). Overlay=40 (Patch-2 invariant test). Test: PageFrame render overlay dari resolved token, bukan hardcoded 0.8.",
+    "schemaVersion": 3,
+    "skenario": "bg-image + overlay-40 + schema-page"
+  },
+  "id": "fixture-image-background-large",
+  "meta": {
+    "judulPertemuan": "Halaman dengan Background Image",
+    "namaBab": "Bab 5",
+    "mapel": "Seni Budaya",
+    "kelas": "9",
+    "semester": "1"
+  },
+  "canvaState": {
+    "currentPageIndex": 0,
+    "ratioId": "16:9",
+    "displayMode": "classroom",
+    "pages": [
+      {
+        "id": "page-bg-image",
+        "label": "Halaman BG Image",
+        "bgDataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+        "bgColor": "#0f172a",
+        "overlay": 40,
+        "elements": [],
+        "templateType": "materi",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "glass"
+        },
+        "templateData": {},
+        "templateVariant": "A",
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-bg-image",
+          "templateType": "materi",
+          "themeId": "academic-clean",
+          "blocks": [
+            {
+              "id": "block-bg-image-1",
+              "type": "materi-section",
+              "judul": "Seni Budaya Tradisional",
+              "konten": "Indonesia memiliki kekayaan seni budaya yang beragam..."
+            }
+          ],
+          "background": {
+            "type": "solid",
+            "color1": "#0f172a",
+            "imageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+            "overlay": 40,
+            "overlayType": "dark",
+            "imageFit": "cover",
+            "imageOpacity": 100,
+            "imageBlur": 0
+          }
+        }
+      }
+    ]
+  }
+}
