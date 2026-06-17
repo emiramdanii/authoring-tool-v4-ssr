@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════
-// STYLE CONTRACT — Type Definitions  (Sprint 8.1-Patch)
+// STYLE CONTRACT — Type Definitions  (Sprint 8.1-Patch-2)
 // ═══════════════════════════════════════════════════════════════════
 // Sprint 8.1 — Style Contract Audit & Consolidation
-// Patch: Senior Review CHANGES REQUIRED — P0-1/P0-2/P0-3/P0-4 + P1.
+// Patch:    Senior Review CHANGES REQUIRED — P0-1/P0-2/P0-3/P0-4 + P1.
+// Patch-2:  Senior Review CHANGES REQUIRED — P0-1/P0-2/P0-3 + P1-1/P1-2.
 //
 // This module defines the SINGLE source of truth for style types:
 //   - DocumentStyle   → persisted, affects whole media/project
@@ -18,7 +19,18 @@
 //         → ResolvedStyleTokens  (FULLY resolved — no second resolver)
 //           → Canvas / Preview / Present / Export HTML
 //
-// Patch changes vs Sprint 8.1:
+// Patch-2 changes vs Patch-1:
+//   - PageStyle.navigation added — legacy navbarStyle now carries through
+//     instead of being silently dropped (P0-2).
+//   - StyleContract.compatibility.legacyThemeId added — original legacy
+//     theme identity preserved so Sprint 8.2 can still select the legacy
+//     pipeline for visual fidelity (P0-3).
+//   - ResolvedStyleTokens._legacyThemeId made optional — presets with no
+//     real 1:1 legacy bridge (mission-adventure) no longer emit a fake
+//     bridge ID (P0-3).
+//   - NavigationStyle type formally modeled ('colorful'|'minimal'|'glass').
+//
+// Patch-1 changes (kept for context):
 //   - PageBackgroundStyle aligned with ScreenSchema.background
 //     (radial, color1/color2, imageFit, imageOpacity, imageBlur, overlay 0-80)
 //   - ResolvedStyleTokens extended with page + block sections so every
@@ -92,6 +104,18 @@ export type CompositionIntent = 'default' | 'focus' | 'immersive';
  *   - strong     → filled accent background, contrasting text
  */
 export type BlockEmphasis = 'normal' | 'highlight' | 'strong';
+
+/**
+ * Navigation / navbar style. ALIGNED with legacy `NavConfig.navbarStyle`.
+ * Patch-2 (P0-2): previously the resolver silently dropped legacy
+ * `navbarStyle` after removing the `_legacyNavbarStyle` side-channel.
+ * It is now formally modeled as a PageStyle override so legacy projects
+ * that chose 'minimal' or 'glass' keep that choice after migration.
+ *   - colorful → bold colored navbar (default for academic-clean)
+ *   - minimal  → thin, unobtrusive navbar
+ *   - glass    → translucent / glassmorphism navbar
+ */
+export type NavigationStyle = 'colorful' | 'minimal' | 'glass';
 
 /**
  * Image fit mode — ALIGNED with ScreenSchema.background.imageFit.
@@ -176,12 +200,21 @@ export interface DocumentStyle {
 /**
  * Page-level style. Persisted in schema at the page level.
  * All fields optional — when omitted, document-level defaults apply.
+ *
+ * Patch-2 (P0-2): `navigation` added so legacy `navbarStyle` is no
+ * longer silently dropped. Teachers can override the preset's default
+ * navbar style per page.
  */
 export interface PageStyle {
   /** Page background. Aligned with ScreenSchema.background. */
   background?: PageBackgroundStyle;
   surface?: SurfaceTreatment;
   composition?: CompositionIntent;
+  /** Page-level navigation override (Patch-2 P0-2). */
+  navigation?: {
+    /** Navbar style override. Falls back to preset default when omitted. */
+    style?: NavigationStyle;
+  };
 }
 
 /**
@@ -202,12 +235,39 @@ export interface BlockStyle {
 }
 
 /**
+ * Compatibility metadata — used during the migration period to preserve
+ * identity that the curated-preset mapping cannot express losslessly.
+ *
+ * Patch-2 (P0-3): The 17-entry LEGACY_THEME_TO_PRESET table is lossy
+ * (many-to-one: 7 PPKn domain themes all map to academic-clean). Without
+ * this field, the resolver would emit `preset._legacyThemeId` (e.g.
+ * 'golden-presentation') even when the source legacy theme was
+ * 'macam-norma' — Sprint 8.2 would then be unable to select the legacy
+ * pipeline to preserve exact visual fidelity.
+ *
+ * `compatibility.legacyThemeId` carries the ORIGINAL legacy theme ID
+ * forward so consumers in Sprint 8.2 can branch on it.
+ */
+export interface StyleCompatibility {
+  /**
+   * Original legacy `schemaThemeId` (e.g. 'macam-norma', 'golden-presentation').
+   * Populated by `resolveLegacyStyle()` from `input.schemaThemeId`.
+   * Undefined for fresh projects created directly with the new preset IDs.
+   */
+  legacyThemeId?: string;
+}
+
+/**
  * Combined style contract — the resolver's input.
+ *
+ * Patch-2 (P0-3): `compatibility` added so the original legacy theme
+ * identity is preserved end-to-end. See StyleCompatibility docstring.
  */
 export interface StyleContract {
   document: DocumentStyle;
   page?: PageStyle;
   block?: BlockStyle;
+  compatibility?: StyleCompatibility;
 }
 
 /**
@@ -340,16 +400,29 @@ export interface ResolvedStyleTokens {
     /** Navbar style: 'colorful' | 'minimal' | 'glass'. */
     style: string;
   };
-  /** Page-level resolved tokens. Always present (P0-1 patch). */
+  /**
+   * Page-level resolved tokens. Always present (P0-1 patch).
+   */
   page: ResolvedPageTokens;
-  /** Block-level resolved tokens. Always present (P0-1 patch). */
+  /**
+   * Block-level resolved tokens. Always present (P0-1 patch).
+   */
   block: ResolvedBlockTokens;
   /**
    * Legacy themeId this contract maps to. Used by consumers during
    * migration to look up the existing THEME_PRESETS resolver.
+   *
+   * Patch-2 (P0-3): Now optional. Source priority:
+   *   1. `StyleContract.compatibility.legacyThemeId` (original legacy ID
+   *      preserved by `resolveLegacyStyle()`)
+   *   2. `StylePresetDefinition._legacyThemeId` (1:1 bridge for presets
+   *      that have one — undefined for `mission-adventure` which has no
+   *      real legacy counterpart)
+   *   3. undefined
+   *
    * Sprint 8.4 will remove this field.
    */
-  _legacyThemeId: string;
+  _legacyThemeId?: string;
   /**
    * Legacy template contractId this preset maps to, if any.
    */
@@ -368,6 +441,7 @@ export type TeacherStyleControl =
   | { kind: 'pageBackground'; value: PageBackgroundStyle }
   | { kind: 'surface'; value: SurfaceTreatment }
   | { kind: 'composition'; value: CompositionIntent }
+  | { kind: 'pageNavigation'; value: NavigationStyle }
   | { kind: 'blockPreset'; value: string }
   | { kind: 'blockVariant'; value: 'A' | 'B' | 'C' }
   | { kind: 'blockEmphasis'; value: BlockEmphasis };

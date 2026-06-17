@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════
-// STYLE CONTRACT — Resolver Tests  (Sprint 8.1-Patch)
+// STYLE CONTRACT — Resolver Tests  (Sprint 8.1-Patch-2)
 // ═══════════════════════════════════════════════════════════════════
-// Patch: P0-1 — every teacher control now has a behavioral test that
+// Patch:    P0-1 — every teacher control now has a behavioral test that
 //               asserts the output ACTUALLY changes (no more not.toThrow
 //               substitutes). Page surface/composition/background and
 //               block presetId/variant/emphasis all asserted.
@@ -10,6 +10,20 @@
 //               (radial, color2, imageFit/Opacity/Blur, overlay 0-80).
 //        P1   — token keys ('y','c','g',...) must resolve to CSS hex,
 //               not pass through verbatim.
+// Patch-2:  P0-1 — overlay conversion preserves percentage (no rescale);
+//               tests assert Canva 40 === DB 0.4 === Schema 40 === 40.
+//        P0-2 — PageStyle.navigation.style override now changes output;
+//               tests assert different navbarStyle values produce
+//               different tokens.navigation.style.
+//        P0-3 — `_legacyThemeId` is now optional; tests accept undefined
+//               for mission-adventure (no fake 'glass' bridge).
+//               `compatibility.legacyThemeId` propagates to resolved
+//               `_legacyThemeId` (macam-norma round-trip preserved).
+//        P1-1 — Semantic output is deep-cloned; mutation tests verify
+//               two resolver calls produce fully isolated objects.
+//        P1-2 — Single source of truth: semantic.primary ===
+//               colors.accent, semantic.success === colors.success,
+//               semantic.error === colors.error.
 //
 // Covers:
 //   - Resolver is pure & deterministic
@@ -17,13 +31,14 @@
 //   - Invalid preset ID falls back to default
 //   - Empty input still returns tokens (no throw)
 //   - Document-level overrides (accentColor, fontScale, density) work
-//   - Page-level overrides (surface/composition/background) CHANGE output (P0-1)
+//   - Page-level overrides (surface/composition/background/navigation) CHANGE output (P0-1, P0-2)
 //   - Block-level overrides (presetId/variant/emphasis/accent) CHANGE output (P0-1)
 //   - Token keys resolve to concrete CSS hex (P1)
-//   - Semantic palette present and complete (P0-3)
+//   - Semantic palette present, complete, deep-cloned, single-source (P0-3, P1-1, P1-2)
 //   - macam-norma categories preserved on academic-clean
 //   - Background contract matches ScreenSchema (radial, color2, image fields) (P0-4)
-//   - Overlay clamped to 0-80 (P0-4)
+//   - Overlay percentage preserved across all three sources (Patch-2 P0-1)
+//   - Original legacy theme identity preserved via compatibility (Patch-2 P0-3)
 //   - Runtime/UI state NEVER enters the contract
 //   - Legacy fields (colorPalette etc.) do NOT leak into tokens
 // ═══════════════════════════════════════════════════════════════════
@@ -32,6 +47,8 @@ import { describe, it, expect } from 'vitest';
 import {
   DEFAULT_PRESET_ID,
   MAX_OVERLAY_OPACITY,
+  PRESET_TO_LEGACY_THEME,
+  resolveLegacyStyle,
   resolvePresetTokens,
   resolveStyleContract,
   STYLE_PRESETS,
@@ -98,6 +115,32 @@ describe('Style Contract — Resolver', () => {
       expect(a.typography).not.toBe(b.typography);
       expect(a.page).not.toBe(b.page);
       expect(a.block).not.toBe(b.block);
+      // Patch-2 P1-1: semantic tree must also be fully isolated.
+      expect(a.semantic).not.toBe(b.semantic);
+      expect(a.semantic.accents).not.toBe(b.semantic.accents);
+      expect(a.semantic.categories).not.toBe(b.semantic.categories);
+    });
+
+    // ── Patch-2 P1-1: Semantic deep-clone mutation test ──────────
+    it('mutating semantic on one resolved output does not poison the next call (P1-1)', () => {
+      const contract = makeContract('academic-clean');
+      const a = resolveStyleContract(contract);
+      // Mutate the deep-cloned semantic tree on `a`
+      a.semantic.categories.agama = '#000000';
+      a.semantic.accents.yellow = '#ffffff';
+      a.semantic.primary = '#deadbe';
+
+      // Resolve again — should be unaffected by the mutations above
+      const b = resolveStyleContract(contract);
+      expect(b.semantic.categories.agama).not.toBe('#000000');
+      expect(b.semantic.accents.yellow).not.toBe('#ffffff');
+      expect(b.semantic.primary).not.toBe('#deadbe');
+
+      // Verify the preset registry itself wasn't poisoned either.
+      // Re-resolve one more time and check the preset's yellow accent
+      // is still its original value.
+      const presetYellow = STYLE_PRESETS['academic-clean'].semantic.accents.yellow;
+      expect(b.semantic.accents.yellow).toBe(presetYellow);
     });
   });
 
@@ -125,11 +168,23 @@ describe('Style Contract — Resolver', () => {
       expect(unique.size).toBe(ALL_PRESET_IDS.length);
     });
 
-    it('each preset exposes a stable _legacyThemeId for migration', () => {
+    it('presets with a real 1:1 legacy bridge expose _legacyThemeId; mission-adventure has none (Patch-2 P0-3)', () => {
+      // Patch-2 P0-3: `_legacyThemeId` is now optional. Presets with no
+      // real 1:1 legacy counterpart (mission-adventure — 'petualangan'
+      // is a block preset, not a theme) leave it undefined. The previous
+      // fake bridge to 'glass' caused an unstable round-trip
+      // (mission-adventure → 'glass' → dark-elegant) and is now removed.
       for (const id of ALL_PRESET_IDS) {
+        const preset = STYLE_PRESETS[id];
         const tokens = resolvePresetTokens(id);
-        expect(typeof tokens._legacyThemeId).toBe('string');
-        expect(tokens._legacyThemeId.length).toBeGreaterThan(0);
+        if (preset._legacyThemeId) {
+          expect(tokens._legacyThemeId).toBe(preset._legacyThemeId);
+          expect(typeof tokens._legacyThemeId).toBe('string');
+          expect(tokens._legacyThemeId!.length).toBeGreaterThan(0);
+        } else {
+          // mission-adventure: no real bridge — _legacyThemeId undefined
+          expect(tokens._legacyThemeId).toBeUndefined();
+        }
       }
     });
 
@@ -199,24 +254,45 @@ describe('Style Contract — Resolver', () => {
       }
     });
 
-    it('semantic.success === colors.success (consistency)', () => {
+    it('semantic.success === colors.success (single source of truth — Patch-2 P1-2)', () => {
+      // Patch-2 P1-2: semantic.success is now sourced FROM colors.success.
+      // Previously semantic.success was sourced from accents.green and
+      // could diverge from colors.success (e.g. mission-adventure had
+      // accents.green=#84cc16 but colors.success=#22c55e). This opened
+      // a parity risk where Canvas reads colors.success while Export
+      // reads semantic.success and they accidentally disagree.
       for (const id of ALL_PRESET_IDS) {
         const tokens = resolvePresetTokens(id);
-        // semantic.success is sourced from the preset's accents.green
- // in buildSemanticPalette; colors.success is a separate field.
-        // They MAY differ for presets that override one but not the other.
-        // We assert that BOTH are valid CSS hex strings.
+        expect(tokens.semantic.success).toBe(tokens.colors.success);
         expect(tokens.semantic.success).toMatch(/^#/);
-        expect(tokens.colors.success).toMatch(/^#/);
       }
     });
 
-    it('semantic.error === colors.error (consistency)', () => {
+    it('semantic.error === colors.error (single source of truth — Patch-2 P1-2)', () => {
       for (const id of ALL_PRESET_IDS) {
         const tokens = resolvePresetTokens(id);
+        expect(tokens.semantic.error).toBe(tokens.colors.error);
         expect(tokens.semantic.error).toMatch(/^#/);
-        expect(tokens.colors.error).toMatch(/^#/);
       }
+    });
+
+    it('semantic.primary === colors.accent (single source of truth — Patch-2 P1-2)', () => {
+      // Without an override, semantic.primary mirrors the preset accent.
+      for (const id of ALL_PRESET_IDS) {
+        const tokens = resolvePresetTokens(id);
+        expect(tokens.semantic.primary).toBe(tokens.colors.accent);
+      }
+    });
+
+    it('document accentColor override propagates to semantic.primary (Patch-2 P1-2)', () => {
+      // Previously the document accent override only changed colors.accent;
+      // semantic.primary stayed pinned to the preset's yellow accent.
+      // Patch-2 makes them aliased — overriding one overrides the other.
+      const tokens = resolveStyleContract(
+        makeContract('academic-clean', { accentColor: '#ff0000' }),
+      );
+      expect(tokens.colors.accent).toBe('#ff0000');
+      expect(tokens.semantic.primary).toBe('#ff0000');
     });
   });
 
@@ -586,6 +662,62 @@ describe('Style Contract — Resolver', () => {
     });
   });
 
+  // ── Page-level navigation override — Patch-2 P0-2 ───────────
+  describe('page-level navigation override (Patch-2 P0-2)', () => {
+    it('PageStyle.navigation.style override changes tokens.navigation.style', () => {
+      const base = resolveStyleContract({
+        document: { presetId: 'academic-clean' },
+      });
+      const minimal = resolveStyleContract({
+        document: { presetId: 'academic-clean' },
+        page: { navigation: { style: 'minimal' } },
+      });
+      const glass = resolveStyleContract({
+        document: { presetId: 'academic-clean' },
+        page: { navigation: { style: 'glass' } },
+      });
+      // Base uses preset default ('colorful' for academic-clean)
+      expect(base.navigation.style).toBe('colorful');
+      // Overrides take effect
+      expect(minimal.navigation.style).toBe('minimal');
+      expect(glass.navigation.style).toBe('glass');
+      // All three are distinct
+      expect(
+        new Set([base.navigation.style, minimal.navigation.style, glass.navigation.style]).size,
+      ).toBe(3);
+    });
+
+    it('invalid navigation style falls back to preset default', () => {
+      const tokens = resolveStyleContract({
+        document: { presetId: 'academic-clean' },
+        page: { navigation: { style: 'bogus' as unknown as 'minimal' } },
+      });
+      expect(tokens.navigation.style).toBe(
+        STYLE_PRESETS['academic-clean'].navigation.style,
+      );
+    });
+
+    it('omitting PageStyle.navigation uses preset default', () => {
+      const tokens = resolveStyleContract({
+        document: { presetId: 'academic-clean' },
+        page: {},
+      });
+      expect(tokens.navigation.style).toBe(
+        STYLE_PRESETS['academic-clean'].navigation.style,
+      );
+    });
+
+    it('each preset has a distinct default navigation style assertion', () => {
+      // Sanity: at least one preset uses each of the three styles
+      const allStyles = ALL_PRESET_IDS.map(
+        (id) => STYLE_PRESETS[id].navigation.style,
+      );
+      expect(allStyles).toContain('colorful');
+      expect(allStyles).toContain('minimal');
+      expect(allStyles).toContain('glass');
+    });
+  });
+
   // ── Block-level overrides — P0-1: ACTUALLY CHANGE OUTPUT ────
   describe('block-level overrides produce visible changes (P0-1)', () => {
     it('block.presetId carries through to resolved tokens', () => {
@@ -849,9 +981,89 @@ describe('Style Contract — Resolver', () => {
       expect(tokens.block).toHaveProperty('border');
     });
 
-    it('_legacyThemeId is present and non-empty', () => {
+    it('_legacyThemeId is present and non-empty for academic-clean (1:1 bridge)', () => {
+      // Patch-2 P0-3: _legacyThemeId is now optional overall, but
+      // academic-clean still has a real 1:1 bridge to 'golden-presentation'.
       expect(typeof tokens._legacyThemeId).toBe('string');
-      expect(tokens._legacyThemeId.length).toBeGreaterThan(0);
+      expect(tokens._legacyThemeId!.length).toBeGreaterThan(0);
+      expect(tokens._legacyThemeId).toBe('golden-presentation');
+    });
+  });
+
+  // ── Patch-2 P0-3: Legacy theme identity preservation ─────────
+  describe('legacy theme identity preservation (Patch-2 P0-3)', () => {
+    it('StyleContract.compatibility.legacyThemeId propagates to resolved _legacyThemeId', () => {
+      const tokens = resolveStyleContract({
+        document: { presetId: 'academic-clean' },
+        compatibility: { legacyThemeId: 'macam-norma' },
+      });
+      // The resolver MUST prefer compatibility.legacyThemeId over
+      // preset._legacyThemeId — otherwise the original legacy identity
+      // is lost (macam-norma would have shown up as 'golden-presentation').
+      expect(tokens._legacyThemeId).toBe('macam-norma');
+    });
+
+    it('without compatibility, preset._legacyThemeId is used (academic-clean)', () => {
+      const tokens = resolveStyleContract({
+        document: { presetId: 'academic-clean' },
+      });
+      expect(tokens._legacyThemeId).toBe('golden-presentation');
+    });
+
+    it('mission-adventure has no preset._legacyThemeId and no fake bridge (P0-3)', () => {
+      // Patch-2 P0-3: removed the fake 'mission-adventure → glass' bridge.
+      // Fresh projects picking mission-adventure get _legacyThemeId: undefined.
+      const tokens = resolveStyleContract({
+        document: { presetId: 'mission-adventure' },
+      });
+      expect(tokens._legacyThemeId).toBeUndefined();
+    });
+
+    it('mission-adventure with compatibility.legacyThemeId still propagates original ID', () => {
+      // Even though mission-adventure has no preset._legacyThemeId, a
+      // legacy project migrating through mission-adventure can still
+      // preserve its original identity via compatibility.
+      const tokens = resolveStyleContract({
+        document: { presetId: 'mission-adventure' },
+        compatibility: { legacyThemeId: 'warm-light' },
+      });
+      expect(tokens._legacyThemeId).toBe('warm-light');
+    });
+
+    it('compatibility.legacyThemeId takes precedence over preset._legacyThemeId', () => {
+      // academic-clean has preset._legacyThemeId = 'golden-presentation'.
+      // A legacy project with schemaThemeId='nilai-pancasila' (which
+      // maps to academic-clean) should resolve to 'nilai-pancasila',
+      // NOT 'golden-presentation'.
+      const tokens = resolveStyleContract({
+        document: { presetId: 'academic-clean' },
+        compatibility: { legacyThemeId: 'nilai-pancasila' },
+      });
+      expect(tokens._legacyThemeId).toBe('nilai-pancasila');
+      expect(tokens._legacyThemeId).not.toBe('golden-presentation');
+    });
+
+    it('macam-norma round-trip via legacy adapter preserves identity', () => {
+      // End-to-end: legacy 'macam-norma' input → contract → tokens.
+      // Before Patch-2 the resolver emitted 'golden-presentation'
+      // (the preset's bridge ID), losing the original 'macam-norma'.
+      // After Patch-2 the resolver emits 'macam-norma' verbatim.
+      const contract = resolveLegacyStyle({ schemaThemeId: 'macam-norma' });
+      expect(contract.compatibility?.legacyThemeId).toBe('macam-norma');
+      const tokens = resolveStyleContract(contract);
+      expect(tokens._legacyThemeId).toBe('macam-norma');
+    });
+
+    it('PRESET_TO_LEGACY_THEME no longer contains mission-adventure (fake bridge removed)', () => {
+      // The reverse mapping was made Partial in Patch-2 P0-3.
+      // mission-adventure must NOT appear — it has no real 1:1 bridge.
+      expect(PRESET_TO_LEGACY_THEME).not.toHaveProperty('mission-adventure');
+      // But the 5 real bridges are still there
+      expect(PRESET_TO_LEGACY_THEME).toHaveProperty('academic-clean');
+      expect(PRESET_TO_LEGACY_THEME).toHaveProperty('school-cheerful');
+      expect(PRESET_TO_LEGACY_THEME).toHaveProperty('dark-elegant');
+      expect(PRESET_TO_LEGACY_THEME).toHaveProperty('nusantara-nature');
+      expect(PRESET_TO_LEGACY_THEME).toHaveProperty('modern-interactive');
     });
   });
 

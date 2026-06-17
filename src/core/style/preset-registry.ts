@@ -1,10 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════
-// STYLE CONTRACT — Preset Registry  (Sprint 8.1-Patch)
+// STYLE CONTRACT — Preset Registry  (Sprint 8.1-Patch-2)
 // ═══════════════════════════════════════════════════════════════════
 // Sprint 8.1 — Style Contract Audit & Consolidation
-// Patch: P0-3 — semantic palette added to every preset definition.
-//        P0-2 — preset → legacy themeId mappings verified against
-//               the actual THEME_PRESETS registry (17 themes).
+// Patch:    P0-3 — semantic palette added to every preset definition.
+//           P0-2 — preset → legacy themeId mappings verified against
+//                  the actual THEME_PRESETS registry (17 themes).
+// Patch-2:  P0-3 — `_legacyThemeId` made optional on
+//                  StylePresetDefinition. `mission-adventure` no longer
+//                  fabricates a fake bridge to 'glass' — it has no 1:1
+//                  legacy theme counterpart.
 //
 // Six stable preset IDs. Each preset defines its visual DNA inline
 // INCLUDING the full semantic palette (6 accent colors + categories).
@@ -14,7 +18,8 @@
 // Constraints honored:
 //   - Fonts use only families already loaded by the app (no new deps).
 //   - Colors are self-contained — no runtime lookup into THEME_PRESETS.
-//   - _legacyThemeId is metadata for the migration period only.
+//   - _legacyThemeId is metadata for the migration period only — and
+//     only present when a real 1:1 legacy bridge exists.
 //   - Semantic palette colors mirror the legacy THEME_PRESETS values
 //     where a direct mapping exists, so old projects render the same.
 // ═══════════════════════════════════════════════════════════════════
@@ -92,8 +97,18 @@ export interface StylePresetDefinition {
    * Legacy themeId this preset maps to. Consumers MAY use this during
    * the migration period (Sprint 8.1–8.4) to bridge to the existing
    * THEME_PRESETS / TokenResolver system. Sprint 8.4 will remove it.
+   *
+   * Patch-2 (P0-3): Now optional. Presets with no real 1:1 legacy theme
+   * counterpart (e.g. `mission-adventure`, whose namesake `petualangan`
+   * is a BLOCK preset, not a theme) MUST leave this undefined rather
+   * than fabricate a fake bridge. Fake bridges cause unstable
+   * round-trips (e.g. mission-adventure → 'glass' → dark-elegant).
+   *
+   * When undefined, the resolver will only emit a non-empty
+   * `ResolvedStyleTokens._legacyThemeId` if the input contract carries
+   * `compatibility.legacyThemeId` (i.e. the source is a legacy project).
    */
-  _legacyThemeId: string;
+  _legacyThemeId?: string;
 
   /**
    * Legacy template contractId this preset maps to, if any.
@@ -265,9 +280,15 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
   // ─────────────────────────────────────────────────────────────
   // mission-adventure
   // Earthy, expedition-style. For thematic / scenario-based learning.
-  // NOTE: 'petualangan' is a BLOCK style preset (not a theme preset),
-  // so this preset has no direct legacy themeId mapping. We use
-  // 'glass' (earth-toned dark) as the closest legacy bridge.
+  // Patch-2 (P0-3): 'petualangan' is a BLOCK style preset (not a theme
+  // preset), so this preset has NO 1:1 legacy themeId counterpart.
+  // Previously Sprint 8.1 fabricated a fake bridge to 'glass' which
+  // caused an unstable round-trip (mission-adventure → 'glass' →
+  // dark-elegant). The bridge is now removed; `_legacyThemeId` is left
+  // undefined. Legacy projects with schemaThemeId='petualangan' will
+  // fall through the LEGACY_THEME_TO_PRESET table to DEFAULT_PRESET_ID
+  // (academic-clean) — which is acceptable since 'petualangan' was a
+  // block preset and never a document-level theme in any real project.
   // ─────────────────────────────────────────────────────────────
   'mission-adventure': {
     id: 'mission-adventure',
@@ -311,9 +332,7 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
     navigation: {
       style: 'minimal',
     },
-    // No direct legacy themeId — 'petualangan' is a block preset.
-    // Default to glass as the closest earth-toned dark legacy theme.
-    _legacyThemeId: 'glass',
+    // No _legacyThemeId — see preset header comment above (P0-3 patch-2).
   },
 
   // ─────────────────────────────────────────────────────────────

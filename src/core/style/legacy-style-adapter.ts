@@ -1,18 +1,36 @@
 // ═══════════════════════════════════════════════════════════════════
-// STYLE CONTRACT — Legacy Adapter  (Sprint 8.1-Patch)
+// STYLE CONTRACT — Legacy Adapter  (Sprint 8.1-Patch-2)
 // ═══════════════════════════════════════════════════════════════════
 // Sprint 8.1 — Style Contract Audit & Consolidation
-// Patch: P0-2 — exhaustive mapping from actual THEME_PRESETS registry
-//               (17 themes), explicit decisions for each, no silent
-//               fallbacks for domain themes (hakikat-norma, macam-norma,
-//               nilai-pancasila, bhinneka-tunggal-ika, ham-hak-kewajiban,
-//               demokrasi-pancasila, globalisasi).
-//        P0-4 — overlay adapters split by source (Canva 0-100, DB 0-1,
-//               Schema 0-80). Removed the ambiguous "<=1 → fraction"
-//               heuristic.
-//        P1   — removed _legacyNavbarStyle side-channel. The resolver
-//               no longer accepts hidden fields; navbar style is
-//               derived from the preset.
+// Patch:    P0-2 — exhaustive mapping from actual THEME_PRESETS registry
+//                  (17 themes), explicit decisions for each, no silent
+//                  fallbacks for domain themes (hakikat-norma, macam-norma,
+//                  nilai-pancasila, bhinneka-tunggal-ika, ham-hak-kewajiban,
+//                  demokrasi-pancasila, globalisasi).
+//           P0-4 — overlay adapters split by source (Canva 0-100, DB 0-1,
+//                  Schema 0-80). Removed the ambiguous "<=1 → fraction"
+//                  heuristic.
+//           P1   — removed _legacyNavbarStyle side-channel. The resolver
+//                  no longer accepts hidden fields; navbar style is
+//                  derived from the preset.
+// Patch-2:  P0-1 — overlay conversions now PRESERVE opacity percentage
+//                  instead of rescaling. Canva 40 = DB 0.4 = Schema 40
+//                  = 40 (all clamped to 0-80 max). Previously Canva 40
+//                  silently became 32 — visual meaning was lost.
+//           P0-2 — legacy navbarStyle now properly carries through to
+//                  PageStyle.navigation.style (no more `void` discard).
+//                  Side-channel still gone — the value lives in the
+//                  contract, not in a hidden field.
+//           P0-3 — original legacy schemaThemeId preserved on the
+//                  StyleContract as `compatibility.legacyThemeId`. The
+//                  resolver will emit this verbatim (instead of the
+//                  preset's bridge ID) so Sprint 8.2 can still branch
+//                  on the original legacy theme to preserve exact
+//                  visual fidelity.
+//                  `PRESET_TO_LEGACY_THEME` made Partial — the fake
+//                  `mission-adventure → 'glass'` bridge is removed
+//                  (it caused an unstable round-trip:
+//                  mission-adventure → 'glass' → dark-elegant).
 //
 // `resolveLegacyStyle()` converts a legacy project's scattered style
 // fields into a normalized `StyleContract` that can be fed to
@@ -24,6 +42,7 @@
 //   - The adapter is pure and deterministic.
 //   - Each legacy themeId has an explicit decision.
 //   - colorPalette is intentionally NOT mapped (preset owns color).
+//   - Original legacy themeId is preserved for Sprint 8.2 fidelity.
 // ═══════════════════════════════════════════════════════════════════
 
 import {
@@ -35,8 +54,10 @@ import { isValidPresetId } from './preset-registry';
 import type {
   BlockStyle,
   DocumentStyle,
+  NavigationStyle,
   PageBackgroundStyle,
   PageStyle,
+  StyleCompatibility,
   StyleContract,
   StylePresetId,
 } from './types';
@@ -79,11 +100,24 @@ export interface LegacyStyleInput {
  * Source of the overlay value — determines the scale and how it is
  * converted to the schema-aligned 0-80 range.
  *
- *   'canva'  → 0-100 integer (CanvaPage.overlay) — divide by 1.25
- *   'db'     → 0-1 float (Page.bgOverlay DB column) — multiply by 80
- *   'schema' → 0-80 integer (ScreenSchema.background.overlay) — pass through
+ * Patch-2 (P0-1): All three sources now PRESERVE the opacity percentage
+ * rather than rescale to a 0-80 fraction. The schema max is 80; values
+ * above 80 are clamped, not rescaled.
  *
- * Default: 'canva' (most legacy callers pass CanvaPage.overlay directly).
+ *   'canva'  → 0-100 integer (CanvaPage.overlay) — clamp to 0-80.
+ *              Canva 40 → 40 (was 32 in Patch-1; the old ×0.8 rescale
+ *              silently changed the visual meaning).
+ *   'db'     → 0-1 float (Page.bgOverlay DB column) — multiply by 100
+ *              and clamp to 0-80. DB 0.4 → 40 (was 32 in Patch-1).
+ *   'schema' → 0-80 integer (ScreenSchema.background.overlay) — pass
+ *              through with clamp only. Schema 40 → 40.
+ *
+ * Semantic equality (Patch-2 invariant):
+ *   Canva 40 === DB 0.4 === Schema 40 === 40
+ *   Canva 100 === DB 1.0 === Schema 80 === 80
+ *
+ * Default source: 'canva' (most legacy callers pass CanvaPage.overlay
+ * directly).
  */
 export type OverlaySource = 'canva' | 'db' | 'schema';
 
@@ -159,11 +193,20 @@ export const LEGACY_THEME_TO_PRESET: Record<string, StylePresetId> = {
 
 /**
  * Reverse mapping for the migration period.
+ *
+ * Patch-2 (P0-3): Made Partial. `mission-adventure` is intentionally
+ * absent — it has no real 1:1 legacy theme counterpart ('petualangan'
+ * is a block preset, not a theme). The previous fake bridge to 'glass'
+ * caused an unstable round-trip:
+ *   mission-adventure → 'glass' → dark-elegant
+ * Fresh projects that pick `mission-adventure` will get
+ * `_legacyThemeId: undefined` from the resolver — Sprint 8.2 then
+ * knows there is no legacy renderer to fall back to.
  */
-export const PRESET_TO_LEGACY_THEME: Record<StylePresetId, string> = {
+export const PRESET_TO_LEGACY_THEME: Partial<Record<StylePresetId, string>> = {
   'academic-clean': 'golden-presentation',
   'school-cheerful': 'colorful',
-  'mission-adventure': 'glass',
+  // 'mission-adventure' intentionally omitted (P0-3 patch-2).
   'dark-elegant': 'neon',
   'nusantara-nature': 'warm-light',
   'modern-interactive': 'ios-light',
@@ -203,47 +246,89 @@ function normalizeBlockVariant(
   return undefined;
 }
 
+/**
+ * Normalize legacy `navbarStyle` ('colorful' | 'minimal' | 'glass').
+ * Patch-2 (P0-2): The previous patch removed the `_legacyNavbarStyle`
+ * side-channel AND silently dropped the value. This helper restores
+ * the carry-through via the proper `PageStyle.navigation.style`
+ * contract field — the side-channel stays removed.
+ *
+ * Invalid values (null, undefined, unknown strings) return undefined,
+ * causing the resolver to fall back to the preset's default nav style.
+ */
+function normalizeNavbarStyle(
+  value: string | null | undefined,
+): NavigationStyle | undefined {
+  if (value === 'colorful' || value === 'minimal' || value === 'glass') {
+    return value;
+  }
+  return undefined;
+}
+
 // ─────────────────────────────────────────────────────────────────
-// Source-aware overlay resolvers (P0-4)
+// Source-aware overlay resolvers (P0-4 / Patch-2 P0-1)
 // ─────────────────────────────────────────────────────────────────
 // Removed the ambiguous "<=1 → fraction" heuristic from Sprint 8.1.
 // Each source has its own resolver with explicit scale conversion.
-// The schema-aligned output range is 0-80 (matches ScreenSchema).
+//
+// Patch-2 (P0-1): Conversion now PRESERVES the opacity percentage
+// instead of rescaling to a 0-80 fraction. The schema max is 80;
+// values above 80 are clamped, not rescaled.
+//
+// Semantic equality invariant:
+//   resolveCanvaOverlay(40) === resolveDbOverlay(0.4) === resolveSchemaOverlay(40) === 40
+//   resolveCanvaOverlay(100) === resolveDbOverlay(1.0) === resolveSchemaOverlay(80) === 80
 // ─────────────────────────────────────────────────────────────────
 
 /**
  * Resolve overlay from CanvaPage.overlay (0-100 integer).
- * Output: 0-80 schema-aligned scale (multiply by 0.8).
+ *
+ * Patch-2 (P0-1): The value is treated as a percentage and CLAMPED to
+ * the schema's 0-80 max. Previously Patch-1 multiplied by 0.8 — Canva 40
+ * silently became 32, losing the visual meaning the teacher intended.
+ *
+ *   resolveCanvaOverlay(40)  → 40   (was 32 in Patch-1)
+ *   resolveCanvaOverlay(80)  → 80
+ *   resolveCanvaOverlay(100) → 80   (clamped)
  */
 export function resolveCanvaOverlay(value: number | null | undefined): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return DEFAULT_OVERLAY_OPACITY;
   }
-  // 0-100 → 0-80
-  const scaled = value * 0.8;
-  if (scaled < 0) return 0;
-  if (scaled > MAX_OVERLAY_OPACITY) return MAX_OVERLAY_OPACITY;
-  return Math.round(scaled);
+  const rounded = Math.round(value);
+  if (rounded < 0) return 0;
+  if (rounded > MAX_OVERLAY_OPACITY) return MAX_OVERLAY_OPACITY;
+  return rounded;
 }
 
 /**
  * Resolve overlay from Page.bgOverlay DB column (0-1 float).
- * Output: 0-80 schema-aligned scale (multiply by 80).
+ *
+ * Patch-2 (P0-1): The 0-1 fraction is converted to a 0-100 percentage
+ * and then clamped to the schema's 0-80 max. Previously Patch-1
+ * multiplied by 80 — DB 0.4 silently became 32 instead of 40.
+ *
+ *   resolveDbOverlay(0.4) → 40   (was 32 in Patch-1)
+ *   resolveDbOverlay(0.8) → 80
+ *   resolveDbOverlay(1.0) → 80   (clamped)
  */
 export function resolveDbOverlay(value: number | null | undefined): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return DEFAULT_OVERLAY_OPACITY;
   }
-  // 0-1 → 0-80
-  const scaled = value * 80;
+  const scaled = Math.round(value * 100);
   if (scaled < 0) return 0;
   if (scaled > MAX_OVERLAY_OPACITY) return MAX_OVERLAY_OPACITY;
-  return Math.round(scaled);
+  return scaled;
 }
 
 /**
  * Resolve overlay from ScreenSchema.background.overlay (0-80 integer).
- * Output: 0-80 schema-aligned scale (pass through, clamp only).
+ * Output: 0-80 schema-aligned scale (clamp only, no conversion).
+ *
+ *   resolveSchemaOverlay(40) → 40
+ *   resolveSchemaOverlay(80) → 80
+ *   resolveSchemaOverlay(120) → 80   (clamped)
  */
 export function resolveSchemaOverlay(
   value: number | null | undefined,
@@ -251,9 +336,10 @@ export function resolveSchemaOverlay(
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return DEFAULT_OVERLAY_OPACITY;
   }
-  if (value < 0) return 0;
-  if (value > MAX_OVERLAY_OPACITY) return MAX_OVERLAY_OPACITY;
-  return value;
+  const rounded = Math.round(value);
+  if (rounded < 0) return 0;
+  if (rounded > MAX_OVERLAY_OPACITY) return MAX_OVERLAY_OPACITY;
+  return rounded;
 }
 
 /**
@@ -325,12 +411,19 @@ export function resolveLegacyStyle(input: LegacyStyleInput): StyleContract {
   }
   // If neither is present, leave page.background undefined.
 
-  // navbarStyle: P1 patch — no longer stored as side-channel.
-  // The resolver derives navbar style from the preset; legacy
-  // navbarStyle is intentionally dropped. Sprint 8.2+ may add a
-  // proper PageStyle.navigation field if teachers need per-page nav
-  // override. For now, we don't accept hidden fields.
-  void input.navbarStyle;
+  // navbarStyle: Patch-2 (P0-2). The P1 patch correctly removed the
+  // `_legacyNavbarStyle` side-channel, but went too far and silently
+  // discarded the legacy value via `void input.navbarStyle`. That
+  // caused projects with `navbarStyle: 'minimal'` or `'glass'` to lose
+  // their chrome choice on migration.
+  //
+  // We now carry it through via the proper `PageStyle.navigation.style`
+  // contract field. The side-channel stays removed — the value lives
+  // in the contract, in a typed field, where it belongs.
+  const navbarStyle = normalizeNavbarStyle(input.navbarStyle);
+  if (navbarStyle) {
+    page.navigation = { style: navbarStyle };
+  }
 
   // ── 3. Block-level: carry through variant + preset + accent ─────
   const block: BlockStyle = {};
@@ -374,6 +467,29 @@ export function resolveLegacyStyle(input: LegacyStyleInput): StyleContract {
   }
   if (Object.keys(block).length > 0) {
     contract.block = block;
+  }
+
+  // ── Patch-2 P0-3: Preserve original legacy theme identity ──────
+  // The LEGACY_THEME_TO_PRESET table is intentionally many-to-one
+  // (7 PPKn domain themes all map to academic-clean). Without this
+  // compatibility field, the resolver would emit the preset's bridge
+  // `_legacyThemeId` (e.g. 'golden-presentation') even when the source
+  // legacy theme was 'macam-norma' — Sprint 8.2 would then be unable
+  // to select the legacy pipeline for exact visual fidelity.
+  //
+  // We only set `compatibility.legacyThemeId` when the source is a
+  // real legacy project (input.schemaThemeId is a non-empty string).
+  // Fresh projects created directly with new preset IDs have no
+  // `compatibility` field — the resolver then falls back to
+  // `preset._legacyThemeId` (or undefined for `mission-adventure`).
+  if (
+    typeof input.schemaThemeId === 'string' &&
+    input.schemaThemeId.length > 0
+  ) {
+    const compatibility: StyleCompatibility = {
+      legacyThemeId: input.schemaThemeId,
+    };
+    contract.compatibility = compatibility;
   }
 
   return contract;

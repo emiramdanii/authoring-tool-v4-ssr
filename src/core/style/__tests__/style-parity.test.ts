@@ -298,13 +298,17 @@ describe('Style Resolver Consistency Contract (Sprint 8.1 — READY FOR INTEGRAT
       }
     });
 
-    it('legacy macam-norma project produces academic-clean tokens across all modes (P0-2)', () => {
+    it('legacy macam-norma project produces academic-clean tokens across all modes (Patch-2 P0-3)', () => {
       const contract = resolveLegacyStyle({ schemaThemeId: 'macam-norma' });
       const tokens = ALL_MODES.map((m) => m.fn(contract));
       for (let i = 1; i < tokens.length; i++) {
         expect(tokens[i]).toEqual(tokens[0]);
       }
-      expect(tokens[0]._legacyThemeId).toBe('golden-presentation');
+      // Patch-2 P0-3: original legacy theme identity is now preserved
+      // via compatibility.legacyThemeId. The resolver emits the
+      // ORIGINAL 'macam-norma' (not 'golden-presentation' which is
+      // just academic-clean's preset bridge ID).
+      expect(tokens[0]._legacyThemeId).toBe('macam-norma');
       expect(tokens[0].semantic.categories.agama).toBeTruthy();
     });
   });

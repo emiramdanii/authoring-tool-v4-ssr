@@ -1,10 +1,18 @@
 // ═══════════════════════════════════════════════════════════════════
-// STYLE CONTRACT — Cross-Registry Consistency Tests  (Sprint 8.1-Patch)
+// STYLE CONTRACT — Cross-Registry Consistency Tests  (Sprint 8.1-Patch-2)
 // ═══════════════════════════════════════════════════════════════════
 // Patch: Senior Review requested tests that verify the new contract
 // against the ACTUAL legacy registries (THEME_PRESETS, DesignTokens,
 // block-style-presets) — not just self-referential tests against the
 // new module's own definitions.
+//
+// Patch-2 (P0-3): `_legacyThemeId` is now optional on
+// StylePresetDefinition. The cross-registry test that previously
+// asserted "all 6 presets have a _legacyThemeId in THEME_PRESETS" is
+// split into:
+//   (a) "presets that DO have _legacyThemeId point to real entries"
+//   (b) "mission-adventure has NO _legacyThemeId (fake bridge removed)"
+//   (c) "5 of 6 presets have a real 1:1 bridge"
 //
 // This suite imports the real legacy registries and verifies:
 //   1. Every theme ID in THEME_PRESETS has a mapping in
@@ -18,6 +26,8 @@
 //      presets, NOT theme presets).
 //   5. ScreenSchema.background field names match PageBackgroundStyle
 //      field names (P0-4).
+//   6. Presets with _legacyThemeId point to real THEME_PRESETS entries
+//      (Patch-2 P0-3 — mission-adventure intentionally has no bridge).
 // ═══════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from 'vitest';
@@ -293,17 +303,38 @@ describe('Cross-Registry Consistency (vs actual legacy source)', () => {
     });
   });
 
-  // ── Cross-registry: every new preset maps back to a real theme ─
-  describe('every new preset _legacyThemeId exists in THEME_PRESETS', () => {
-    it('all 6 presets have a _legacyThemeId that exists in THEME_PRESETS', () => {
+  // ── Cross-registry: presets with _legacyThemeId map back to a real theme
+  describe('presets with _legacyThemeId point to real THEME_PRESETS (Patch-2 P0-3)', () => {
+    it('presets with a real 1:1 bridge point to existing THEME_PRESETS entries', () => {
+      // Patch-2 P0-3: _legacyThemeId is now optional on
+      // StylePresetDefinition. Presets without a 1:1 legacy counterpart
+      // (mission-adventure — 'petualangan' is a block preset, not a
+      // theme) leave it undefined rather than fabricating a fake bridge.
       const themeIds = new Set(THEME_PRESETS.map((t) => t.id));
       for (const presetId of PRESET_ID_ORDER) {
         const preset = STYLE_PRESETS[presetId];
-        expect(
-          themeIds.has(preset._legacyThemeId),
-          `Preset '${presetId}' has _legacyThemeId '${preset._legacyThemeId}' which is not in THEME_PRESETS`,
-        ).toBe(true);
+        if (preset._legacyThemeId) {
+          expect(
+            themeIds.has(preset._legacyThemeId),
+            `Preset '${presetId}' has _legacyThemeId '${preset._legacyThemeId}' which is not in THEME_PRESETS`,
+          ).toBe(true);
+        }
       }
+    });
+
+    it('mission-adventure has no _legacyThemeId (no fake bridge — Patch-2 P0-3)', () => {
+      // The fake 'mission-adventure → glass' bridge caused an unstable
+      // round-trip: mission-adventure → 'glass' → dark-elegant. Removed.
+      const preset = STYLE_PRESETS['mission-adventure'];
+      expect(preset._legacyThemeId).toBeUndefined();
+    });
+
+    it('5 of 6 presets have a real 1:1 legacy bridge', () => {
+      const withBridge = PRESET_ID_ORDER.filter(
+        (id) => STYLE_PRESETS[id]._legacyThemeId,
+      );
+      expect(withBridge.length).toBe(5);
+      expect(withBridge).not.toContain('mission-adventure');
     });
   });
 });

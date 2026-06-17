@@ -345,3 +345,78 @@ Stage Summary:
 - Resolver is now fully consumer-ready (token keys → CSS hex)
 - Parity gate honestly marked READY FOR INTEGRATION (not PASS)
 - Ready for Senior Review re-evaluation
+
+---
+Task ID: 8.1-Patch-2
+Agent: Super Z (main)
+Task: Sprint 8.1-Patch-2 — Fix 3 P0 + 2 P1 Issues from Senior Review on Patch-1
+
+Work Log:
+- P0-1 Fix: Overlay conversion now preserves opacity percentage instead of rescaling.
+  - resolveCanvaOverlay(40) === 40 (was 32 in Patch-1, ×0.8 rescale)
+  - resolveDbOverlay(0.4) === 40 (was 32 in Patch-1, ×80 rescale)
+  - resolveSchemaOverlay(40) === 40 (was 40 in Patch-1, pass-through)
+  - Semantic equality invariant: Canva 40 === DB 0.4 === Schema 40 === 40
+  - All values clamped to schema max of 80 (not rescaled)
+- P0-2 Fix: PageStyle.navigation field added to formally model navbarStyle.
+  - NavigationStyle type = 'colorful' | 'minimal' | 'glass' (mirrors NavConfig.navbarStyle)
+  - PageStyle.navigation = { style?: NavigationStyle }
+  - Legacy adapter: normalizeNavbarStyle() carries navbarStyle through
+    via page.navigation.style (no more `void input.navbarStyle` discard)
+  - Resolver: resolveNavigationStyle() applies override or falls back to preset default
+  - Side-channel (_legacyNavbarStyle) still gone — value lives in proper typed field
+- P0-3 Fix: Original legacy theme identity preserved via compatibility.legacyThemeId.
+  - StyleCompatibility interface = { legacyThemeId?: string }
+  - StyleContract.compatibility field added
+  - Legacy adapter populates compatibility.legacyThemeId = input.schemaThemeId
+  - Resolver sources _legacyThemeId from:
+      1. input.compatibility.legacyThemeId (original legacy ID — preserved)
+      2. preset._legacyThemeId (1:1 bridge — undefined for mission-adventure)
+      3. undefined
+  - macam-norma round-trip now resolves to 'macam-norma' (was 'golden-presentation')
+  - 7 PPKn domain themes all preserve their original IDs end-to-end
+  - PRESET_TO_LEGACY_THEME made Partial — fake 'mission-adventure → glass'
+    bridge removed (caused unstable round-trip: mission-adventure → glass → dark-elegant)
+  - StylePresetDefinition._legacyThemeId made optional
+  - ResolvedStyleTokens._legacyThemeId made optional
+- P1-1 Fix: Semantic output deep-cloned.
+  - Resolver returns: { ...preset.semantic, accents: {...}, categories: {...} }
+  - Mutation of tokens.semantic.categories.X on one resolved output
+    no longer poisons the preset registry or future resolver calls
+  - Two resolver calls produce fully isolated semantic objects
+- P1-2 Fix: Single source of truth for semantic aliases.
+  - semantic.primary = accent (the resolved accent, including document override)
+  - semantic.success = preset.colors.success (always equal to colors.success)
+  - semantic.error = preset.colors.error (always equal to colors.error)
+  - Document accentColor override now propagates to semantic.primary
+    (was previously only changing colors.accent, leaving semantic.primary behind)
+- Added 10-test patch-2-regression.test.ts covering all 5 Patch-2 fixes
+  plus end-to-end realistic-project test
+- Updated existing tests to match new behavior:
+  - 14 tests in style-contract.test.ts updated/added for Patch-2
+  - 19 tests in legacy-style-adapter.test.ts updated/added for Patch-2
+  - 2 tests in cross-registry-consistency.test.ts updated for Patch-2
+  - 1 test in style-parity.test.ts updated (macam-norma assertion)
+- Updated STYLE_CONTRACT_AUDIT.md with Patch-2 summary, component status,
+  test inventory, gate verification, architectural changes, and
+  compatibility notes (especially the visible overlay change: 40 > 32)
+- All 238 style tests pass; 362 core tests pass; 62 pre-existing TS errors
+  unchanged (none in src/core/style/)
+- No frozen boundary touched — diff confined to src/core/style/ + tests + audit
+
+Stage Summary:
+- 8 files changed: types.ts, preset-registry.ts, resolve-style-contract.ts,
+  legacy-style-adapter.ts + 5 test files (4 existing + 1 new patch-2-regression.test.ts)
+- All 3 P0 + 2 P1 issues from Senior Review on Patch-1 fully resolved
+- 238/238 style tests passing (45 new tests added)
+- Key new types: NavigationStyle, StyleCompatibility, PageStyle.navigation
+- Key new contract field: StyleContract.compatibility.legacyThemeId
+- Key behavioral changes:
+  * Overlay: percentage preserved (Canva 40 = DB 0.4 = Schema 40 = 40)
+  * Navbar: legacy navbarStyle carries through to tokens.navigation.style
+  * Identity: macam-norma resolves to 'macam-norma' (not 'golden-presentation')
+  * Isolation: semantic deep-cloned — mutation-safe
+  * Single-source: semantic.{primary,success,error} === colors.{accent,success,error}
+- Contract & Boundary remains FROZEN
+- Sprint 8.1 now READY FOR INTEGRATION (gate unchanged from Patch-1)
+- Sprint 8.2 still BLOCKED on Patch-2 PASS verdict
