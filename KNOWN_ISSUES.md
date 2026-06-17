@@ -157,7 +157,34 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Workaround**: Tidak ada. Perlu audit manual + integration test.
 - **Owner**: Sprint 8.2S-2
 - **Target**: Sprint 8.2S-2
-- **Closure**: OPEN
+- **Closure**: OPEN (smoke test placeholder; full audit deferred to 8.2B)
+
+### M-004 — `setAppMode('learn')` tidak clearAllSelections (DITEMUKAN 8.2S-2)
+- **Severity**: P1
+- **Area**: mode-lifecycle
+- **Reproduction**: Edit mode → select block → `setAppMode('learn')`. Selection (`selectedBlockId`, `editingBlockId`) LEAKS into Learn mode. Implementasi `setAppMode` di `src/store/canva/session-slice.ts` line 209 hanya `clearAllSelections()` untuk `preview`/`present`, TIDAK untuk `learn`/`export`.
+- **Workaround**: Tidak ada. Bug dikonfirmasi via smoke test `mode-lifecycle-smoke.test.ts`.
+- **Owner**: Sprint 8.2B (saat wiring Present, perbaiki juga Learn)
+- **Target**: Sprint 8.2B
+- **Closure**: OPEN — smoke test documents current buggy behavior
+
+### M-005 — `setAppMode('export')` tidak clearAllSelections (DITEMUKAN 8.2S-2)
+- **Severity**: P1
+- **Area**: mode-lifecycle
+- **Reproduction**: Edit mode → select block → `setAppMode('export')`. Selection LEAKS into Export mode. Sama dengan M-004 — `setAppMode` hanya clear untuk preview/present.
+- **Workaround**: Tidak ada. Bug dikonfirmasi via smoke test.
+- **Owner**: Sprint 8.2C (saat wiring Export, perbaiki juga)
+- **Target**: Sprint 8.2C
+- **Closure**: OPEN — smoke test documents current buggy behavior
+
+### M-006 — `clearAllSelections()` tidak clear `hoveredBlockId` (DITEMUKAN 8.2S-2)
+- **Severity**: P3
+- **Area**: mode-lifecycle
+- **Reproduction**: Edit mode → hover block → `setAppMode('preview')`. `hoveredBlockId` masih terisi setelah mode switch. Implementasi `clearAllSelections()` di `src/store/canva/session-slice.ts` line 59-69 tidak include `hoveredBlockId` di returned object.
+- **Workaround**: Tidak ada efek fatal. Hanya visual hint yang bocor.
+- **Owner**: unassigned
+- **Target**: Sprint 8.2B (saat touch session-slice untuk M-004/M-005)
+- **Closure**: OPEN — smoke test documents current behavior
 
 ---
 
