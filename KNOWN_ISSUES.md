@@ -33,20 +33,32 @@ Closure:      <commit SHA + tanggal | OPEN>
 ### CI-001 — Tidak ada CI workflow
 - **Severity**: P1
 - **Area**: ci
-- **Reproduction**: `ls .github/workflows/` returns "No such file or directory" di remote. Workflow file `ci.yml` sudah dibuat lokal di Sprint 8.2S-2 tetapi **TIDAK BISA di-push** karena PAT yang tersedia tidak punya `workflow` scope (GitHub menolak: "refusing to allow a Personal Access Token to create or update workflow without `workflow` scope").
-- **Workaround**: Verifikasi lokal manual sebelum push (`npx vitest run src/core && npx tsc --noEmit && npm run build`). File `ci.yml` tersimpan di stash lokal (`git stash list`).
+- **Reproduction**: `ls .github/workflows/` returns "No such file or directory" di remote. Workflow file `ci.yml` sudah dibuat lokal di Sprint 8.2S-2 dan direvisi di Sprint 8.2S-2-Patch, tetapi **TIDAK BISA di-push** karena PAT yang tersedia tidak punya `workflow` scope (GitHub menolak: "refusing to allow a Personal Access Token to create or update workflow without `workflow` scope"). Percobaan push commit `cfdb1eb` ditolak; commit di-reset dan perubahan di-stash (`git stash list` → "WIP on main: 52a42c9").
+- **Workaround**: Verifikasi lokal manual sebelum push (`npx vitest run src/core && npx tsc --noEmit && npm run build`). File `ci.yml` + `package-lock.json` + `.gitignore` update tersimpan di stash lokal.
 - **Owner**: User (perlu push manual dengan PAT yang punya `workflow` scope, atau push via GitHub Web UI)
 - **Target**: Immediate — user action required
 - **Closure**: OPEN — blocked on PAT workflow scope
+- **User action**:
+  1. Buat PAT baru di https://github.com/settings/tokens dengan scope `repo` + `workflow` (PASTIKAN tidak menempelkan token ke chat/log).
+  2. Di lokal repo: `git stash pop` untuk restore perubahan CI workflow + lockfile + .gitignore.
+  3. `git add .gitignore .github/workflows/ci.yml package-lock.json`
+  4. `git commit -m "ci(reproducible): track package-lock.json + push CI workflow"`
+  5. `git push origin main` (pakai PAT baru dengan workflow scope).
+  6. Atau: push file `.github/workflows/ci.yml` + `package-lock.json` + `.gitignore` manual via GitHub Web UI.
+- **CI workflow design (revised in 8.2S-2-Patch)**:
+  - `npm ci` (reproducible install, bukan `npm install`)
+  - `tsc --noEmit` dengan baseline SET diff via `comm -23` (bukan toleransi count 46±2)
+  - Build via exit code + artifact verification (`.next/standalone` existence)
+  - Tidak ada grep "Compiled successfully", tidak ada toleransi error
 
-### CI-002 — `package-lock.json` di-gitignore
+### CI-002 — `package-lock.json` di-gitignore (POLICY REVERSED — pending push)
 - **Severity**: P2
 - **Area**: ci
-- **Reproduction**: `.gitignore` baris `package-lock.json`. Lockfile lokal tidak pernah ter-commit.
-- **Workaround**: Konfigurasi `.gitignore` sengaja (maintainer choice untuk flexible patch versions). CI yang akan datang harus pakai `npm install` (bukan `npm ci`) atau un-ignore lockfile.
-- **Owner**: Sprint 8.2S-2
-- **Target**: Sprint 8.2S-2 (decision: un-ignore atau tetap ignored + dokumentasi)
-- **Closure**: OPEN
+- **Reproduction**: `.gitignore` baris `package-lock.json`. Lockfile lokal tidak pernah ter-commit. Sprint 8.2S-2-Patch membalik kebijakan ini: lockfile WAJIB di-commit untuk `npm ci` reproducible install. Update `.gitignore` (hapus `package-lock.json`) + `package-lock.json` itself sudah di-stash lokal, menunggu push bersama CI workflow (CI-001).
+- **Workaround**: Konfigurasi `.gitignore` lama (lockfile ignored) masih aktif di remote sampai stash di-push. CI yang akan datang harus pakai `npm install` (bukan `npm ci`) sampai lockfile ter-commit.
+- **Owner**: User (push stash dengan PAT workflow scope)
+- **Target**: Immediate — bersama CI-001
+- **Closure**: OPEN — stash siap push, blocked on PAT workflow scope
 
 ### BUILD-001 — `cp: cannot create directory '.next/standalone/.next/static'`
 - **Severity**: P2
