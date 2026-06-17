@@ -33,11 +33,11 @@ Closure:      <commit SHA + tanggal | OPEN>
 ### CI-001 — Tidak ada CI workflow
 - **Severity**: P1
 - **Area**: ci
-- **Reproduction**: `ls .github/workflows/` returns "No such file or directory"
-- **Workaround**: Verifikasi lokal manual sebelum push (`npx vitest run src/core && npx tsc --noEmit && npm run build`)
-- **Owner**: Sprint 8.2S-2
-- **Target**: Sprint 8.2S-2
-- **Closure**: OPEN
+- **Reproduction**: `ls .github/workflows/` returns "No such file or directory" di remote. Workflow file `ci.yml` sudah dibuat lokal di Sprint 8.2S-2 tetapi **TIDAK BISA di-push** karena PAT yang tersedia tidak punya `workflow` scope (GitHub menolak: "refusing to allow a Personal Access Token to create or update workflow without `workflow` scope").
+- **Workaround**: Verifikasi lokal manual sebelum push (`npx vitest run src/core && npx tsc --noEmit && npm run build`). File `ci.yml` tersimpan di stash lokal (`git stash list`).
+- **Owner**: User (perlu push manual dengan PAT yang punya `workflow` scope, atau push via GitHub Web UI)
+- **Target**: Immediate — user action required
+- **Closure**: OPEN — blocked on PAT workflow scope
 
 ### CI-002 — `package-lock.json` di-gitignore
 - **Severity**: P2

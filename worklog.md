@@ -870,17 +870,33 @@ Work Log:
     → 443/443 PASS (was 427 + 16 new)
 
 Stage Summary:
-- 1 file baru: .github/workflows/ci.yml (CI workflow dengan 3 jobs)
+- 1 file baru: .github/workflows/ci.yml (CI workflow dengan 3 jobs) — **TIDAK TER-PUSH**, lihat catatan di bawah
 - 1 file baru: src/__tests__/mode-lifecycle-smoke.test.ts (16 smoke tests)
-- 1 file modified: KNOWN_ISSUES.md (update M-003, add M-004/M-005/M-006)
+- 1 file modified: KNOWN_ISSUES.md (update M-003, add M-004/M-005/M-006, update CI-001)
 - 1 file modified: worklog.md (this entry)
 - 3 bug baru terdokumentasi (M-004, M-005, M-006) — semua punya target
   sprint dan tidak blocker untuk 8.2B.
 - Contract & Boundary remains FROZEN.
-- Sprint 8.2S-2 READY — CI akan trigger pada push berikutnya.
+- Sprint 8.2S-2 READY — CI workflow MENUNGGU user push dengan PAT workflow scope.
 - Sprint 8.2B (Present) UNBLOCKED — baseline hijau:
   1. closure matrix ✅ (8.2S-1)
   2. fixture corpus ✅ (8.2S-1)
-  3. CI + reproducible install ✅ (8.2S-2)
+  3. CI + reproducible install ⚠️ (8.2S-2 — workflow file ada di stash, butuh PAT workflow scope untuk push)
   4. mode lifecycle smoke ✅ (8.2S-2)
   5. known-issues ledger ✅ (8.2S-1 + 8.2S-2)
+
+Catatan Penting — CI Workflow Push Blocked:
+- Commit 855a5c9 (yang berisi .github/workflows/ci.yml + .gitignore
+  update) DITOLAK oleh GitHub dengan error:
+  "refusing to allow a Personal Access Token to create or update
+  workflow `.github/workflows/ci.yml` without `workflow` scope"
+- PAT yang tersedia tidak punya `workflow` scope.
+- Solusi: commit 855a5c9 di-reset (soft) dan perubahan di-stash
+  (`git stash list` → "WIP on main: a701eb4").
+- User perlu:
+  1. Buat PAT baru dengan scope `workflow` (selain `repo`).
+  2. Atau push manual via GitHub Web UI setelah unstash.
+  3. Atau minta repo owner push file ci.yml.
+- Setelah ci.yml ter-push, CI akan trigger otomatis pada push berikutnya.
+- Smoke tests (16 tests) sudah ter-push via commit a701eb4 dan jalan
+  lokal. CI job `test` akan menjalankannya begitu workflow aktif.
