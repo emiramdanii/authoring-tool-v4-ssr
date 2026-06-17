@@ -13,6 +13,14 @@ import { useNavSync } from '@/hooks/use-nav-sync';
 import { ScoreDisplay } from './ScoreDisplay';
 import { computeSafeArea } from '@/core/scene/SceneLayoutEngine';
 import { EDU_MODE_BG } from '@/core/edu/education-colors';
+// Sprint 8.2A — Page Style Tokens (Canvas + Preview parity)
+// PageFrame reads page-level tokens from the shared Style Contract
+// helper. The legacy TokenResolver continues to drive block-level
+// concerns; PageFrame uses ResolvedStyleTokens for:
+//   - Background color / image / overlay (schema-aligned 0-80 scale)
+//   - Navbar style fallback (when page.navConfig.navbarStyle is invalid)
+//   - Page accent (for title color when contract is not active)
+import type { ResolvePageStyleTokensResult } from '@/core/style';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE FRAME — Unified page shell shared by Canvas, Preview, Export
@@ -51,6 +59,20 @@ export interface PageFrameProps {
   style?: React.CSSProperties;
   /** Shared TokenResolver — passed from PageRenderer to ensure consistency */
   tokens?: TokenResolver;
+  /**
+   * Sprint 8.2A — Page-level resolved style tokens.
+   *
+   * When present, PageFrame reads background image / overlay / navbar
+   * style fallback from these tokens INSTEAD of from the legacy
+   * page.bgColor / page.bgDataUrl / page.overlay fields. This aligns
+   * Canvas + Preview with the Style Contract system without breaking
+   * the existing block renderer pipeline (which still uses
+   * TokenResolver).
+   *
+   * The legacy page fields continue to be read for non-schema
+   * (element-mode) pages — they are the source of truth there.
+   */
+  pageStyleTokens?: ResolvePageStyleTokensResult;
   /** Currently selected schema block ID (canvas mode only) */
   selectedBlockId?: string | null;
   /** Callback when a schema block is clicked (canvas mode only) */
@@ -337,6 +359,7 @@ export const PageFrame = React.memo(function PageFrame({
   className,
   style,
   tokens: externalTokens,
+  pageStyleTokens,
   selectedBlockId,
   onBlockSelect,
 }: PageFrameProps) {
@@ -346,7 +369,23 @@ export const PageFrame = React.memo(function PageFrame({
   // the user toggles checkboxes or switches navbar style in the right panel.
   const storeNavConfig = useCanvaStore(s => s.pages[currentPageIndex]?.navConfig);
   const navConfig = storeNavConfig || getNavConfig(page);
-  const navbarStyle = navConfig.navbarStyle || 'colorful';
+  // Sprint 8.2A — Navbar style fallback chain.
+  //   1. page.navConfig.navbarStyle (when valid: 'colorful'|'minimal'|'glass')
+  //   2. ResolvedStyleTokens.navigation.style (from Style Contract helper)
+  //   3. 'colorful' (terminal default)
+  //
+  // This guarantees that invalid navbarStyle values fall back to the
+  // Style Contract's choice (which itself falls back to the preset's
+  // default) rather than silently snapping to 'colorful'. Canvas and
+  // Preview share the same fallback because both read from the same
+  // pageStyleTokens helper.
+  const validNavbarStyle = (v: string | undefined): v is 'colorful' | 'minimal' | 'glass' =>
+    v === 'colorful' || v === 'minimal' || v === 'glass';
+  const navbarStyle = validNavbarStyle(navConfig.navbarStyle)
+    ? navConfig.navbarStyle
+    : validNavbarStyle(pageStyleTokens?.tokens.navigation.style)
+      ? pageStyleTokens!.tokens.navigation.style
+      : 'colorful';
   const theme = NAV_THEMES[navbarStyle] || NAV_THEMES.colorful;
   const showNavbar = navConfig.showNavbar !== false;
   const showScore = navConfig.showScore !== false;
@@ -431,7 +470,21 @@ export const PageFrame = React.memo(function PageFrame({
       {/* ══ Background ════════════════════════════════════════ */}
       {!isSchemaDriven && (
         <>
-          <div className="absolute inset-0" style={{ background: page.bgColor || modeBg.bg }} />
+          {/* Sprint 8.2A — Background color now sourced from the
+              shared Style Contract helper when page.bgColor is empty.
+              This keeps legacy element-mode pages consistent with the
+              preset's background color (e.g. academic-clean's navy)
+              instead of falling back to modeBg only. */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                page.bgColor ||
+                pageStyleTokens?.tokens.page.background.color1 ||
+                pageStyleTokens?.tokens.colors.background ||
+                modeBg.bg,
+            }}
+          />
           {page.bgDataUrl && (
             <img src={page.bgDataUrl} alt="" role="presentation" className="absolute inset-0 w-full h-full object-cover" />
           )}

@@ -1,19 +1,130 @@
 # STYLE_CONTRACT_AUDIT.md
 
-**Sprint:** 8.1 — Style Contract Audit & Consolidation (Patch-2)
-**Status:** Ready for Senior Review (Patch-2 — addresses CHANGES REQUIRED verdict on Patch-1)
+**Sprint:** 8.2A — Style Consumer Wiring: Canvas + Preview
+**Status:** Ready for Senior Review (Sprint 8.2A — Canvas + Preview wiring complete)
 **Date:** 2026-06-17
-**Patch-2 commit:** (pending push)
+**Sprint 8.2A commit:** (pending push)
+**Predecessors:**
+  - Sprint 8.1     commit `b79df6b` (returned CHANGES REQUIRED → 4 P0 + 2 P1)
+  - Sprint 8.1-Patch commit `e2178e4` (returned CHANGES REQUIRED → 3 P0 + 2 P1)
+  - Sprint 8.1-Patch-2 commit `50af012` (returned PASS — closed Sprint 8.1)
+
+## Sprint 8.2A Summary
+
+This sprint wires the actual Canvas and Preview consumers to the
+Style Contract system established in Sprint 8.1-Patch-2. All changes
+are confined to:
+
+  - `src/core/style/` (new: `page-style-adapter.ts`, `consumer.ts`,
+    `consumer-entry-points.ts`; tests for each)
+  - `src/components/canva/page-renderer/` (PageRenderer + PageFrame)
+  - `src/components/authoring/live-preview/` (no source changes —
+    LivePreview already routes through PageRenderer, so it inherits
+    the new wiring automatically)
+  - test files under `src/core/style/__tests__/`
+  - this document + `worklog.md`
+
+No frozen boundary was touched:
+  - dirty-store, save-utils, autosave, project manager, persistence-slice
+  - database contract, hydration, TemplateAdapter utama
+  - export pipeline, Present/PlayOverlay, teacher picker UI — all UNCHANGED.
+
+## Sprint 8.2A — Adapter & Helper Architecture
+
+### New modules
+
+| Module | Role |
+|---|---|
+| `src/core/style/page-style-adapter.ts` | `createStyleContractFromPage(page)` — pure adapter CanvaPage → StyleContract. Source priority: `page.contractId` → `compatibility.legacyThemeId` → preset bridge → default. |
+| `src/core/style/consumer.ts` | `resolvePageStyleTokens(page)` — shared helper Canvas + Preview both call. Returns `ResolvedStyleTokens` + source metadata. |
+| `src/core/style/consumer-entry-points.ts` | `resolveCanvasConsumerTokens()` + `resolvePreviewConsumerTokens()` — thin wrappers (zero logic) so the parity test has explicit entry points. |
+
+### Source priority (matches Sprint 8.1-Patch-2 integration guard)
+
+```text
+1. page.contractId eksplisit          → source: 'explicit-contract'
+2. compatibility.legacyThemeId /       → source: 'legacy-theme'
+   schemaThemeId lama
+3. preset._legacyContractId sebagai    → source: 'new-preset'
+   bridge (preset-driven)
+4. default style contract              → source: 'default'
+```
+
+`page.contractId` is NEVER overwritten by `preset._legacyContractId`.
+The contract id remains a page-level persistent field with its own
+authority — see `TemplateThemeContract` for the legacy enforcement
+pipeline (Sprint 8.2B will wire Present/Export through the same path).
+
+### Canvas wiring (PageRenderer + PageFrame)
+
+- `PageRenderer` resolves `pageStyleTokens` via the shared helper and
+  passes them as a new prop to `PageFrame`.
+- `PageFrame` reads:
+  - Background color fallback: `page.bgColor || tokens.page.background.color1 || tokens.colors.background || modeBg.bg`
+  - Navbar style fallback chain: `navConfig.navbarStyle` (when valid) → `tokens.navigation.style` → `'colorful'`
+- The legacy `TokenResolver` continues to drive block-level concerns
+  (frozen boundary — 30+ block renderers depend on its API).
+
+### Preview wiring
+
+`LivePreview.tsx` already routes through `PageRenderer mode="preview"`,
+so it inherits the new wiring automatically. `SchemaPlayer.tsx` is
+untouched in this sprint — it operates on `LessonSchema` (multi-screen)
+which is out of scope for 8.2A; Sprint 8.2B may wire it through the
+same helper.
+
+### Tests
+
+| File | Tests | Purpose |
+|---|---|---|
+| `page-style-adapter.test.ts` | 26 | 8 mandatory adapter tests + 6 regression fixtures + edge cases |
+| `canvas-preview-parity.test.ts` | 13 | Canvas/Preview token parity (6 fixtures + edge cases + wrapper identity) |
+
+## Verification
+
+```bash
+npx vitest run src/core/style       # 277/277 PASS (was 238 + 39 new)
+npx vitest run src/core             # 401/401 PASS (was 362 + 39 new)
+npx tsc --noEmit                    # 46 pre-existing errors (down from 62 due to dependency upgrade). ZERO new errors in changed files.
+npm run build                       # Compiled successfully in 10.6s, 12/12 static pages.
+```
+
+## Acceptance Gate
+
+| # | Criterion | Status |
+|---|---|---|
+| 1 | Adapter page/schema → StyleContract tersedia | ✅ PASS |
+| 2 | Adapter pure dan tidak memutasi input | ✅ PASS (test 8) |
+| 3 | page.contractId tetap prioritas tertinggi | ✅ PASS (test 6) |
+| 4 | Original legacyThemeId tetap tersedia | ✅ PASS (test 4) |
+| 5 | Canvas memakai resolved style tokens | ✅ PASS (PageRenderer wired) |
+| 6 | Preview memakai helper/token yang sama | ✅ PASS (PageRenderer mode="preview") |
+| 7 | Canvas dan Preview menghasilkan token identik | ✅ PASS (parity tests) |
+| 8 | Legacy project tidak kehilangan tema/background/overlay/navbar | ✅ PASS (regression fixtures F1–F6) |
+| 9 | Persistence boundary tidak berubah | ✅ PASS (zero frozen-boundary files touched) |
+| 10 | Present dan Export belum disentuh | ✅ PASS (deferred to 8.2B / 8.2C) |
+| 11 | Teacher picker belum ditambahkan | ✅ PASS (deferred to 8.2D) |
+| 12 | Seluruh test baru lulus dan failure lama tidak bertambah | ✅ PASS (277 style + 401 core; zero new TS errors in changed files) |
+
+## Deferred items
+
+```text
+Sprint 8.2B — Present wiring
+Sprint 8.2C — Export HTML wiring
+Sprint 8.2D — Teacher style picker
+Sprint 8.3  — Base Template Visual
+Sprint 8.4  — Browser visual parity & overflow
+Sprint 9    — Flow Guru
+```
+
+---
+
+## Sprint 8.1-Patch-2 (Historical — closed)
+
+**Patch-2 commit:** `50af012a242c6258a93af018ff65b61b91e3ebbc`
 **Predecessors:**
   - Sprint 8.1 commit `b79df6b` (returned CHANGES REQUIRED → 4 P0 + 2 P1)
   - Patch-1   commit `e2178e4` (returned CHANGES REQUIRED → 3 P0 + 2 P1)
-
-## Patch-2 Summary
-
-This patch addresses all 3 P0 and 2 P1 issues from the Senior Review
-verdict on commit `e2178e4` (Patch-1). All changes are confined to
-`src/core/style/`, its tests, and this document. No frozen boundary
-(persistence, renderer, export, TemplateAdapter) was modified.
 
 | Issue | Severity | Resolution |
 |---|---|---|

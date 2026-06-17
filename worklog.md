@@ -420,3 +420,111 @@ Stage Summary:
 - Contract & Boundary remains FROZEN
 - Sprint 8.1 now READY FOR INTEGRATION (gate unchanged from Patch-1)
 - Sprint 8.2 still BLOCKED on Patch-2 PASS verdict
+
+---
+Task ID: 8.2A
+Agent: Super Z (main)
+Task: Sprint 8.2A — Style Consumer Wiring: Canvas + Preview
+
+Work Log:
+- Tahap 1 — Audit consumer aktual:
+  * Canvas entry point: src/components/canva/page-renderer/PageRenderer.tsx
+    (serves mode='canvas' | 'preview' | 'export' | 'learn')
+  * Preview entry point: src/components/canva/PreviewMode.tsx and
+    PresentMode.tsx and PlayOverlay.tsx ALL route through PageRenderer
+    with mode='preview' — single shared pipeline.
+  * LivePreview.tsx builds preview via PageRenderer mode='preview'
+    (no separate rendering path; parity guaranteed structurally).
+  * SchemaPlayer.tsx operates on LessonSchema (multi-screen), out of
+    scope for 8.2A; deferred to 8.2B.
+  * Schema-driven page → page.schema: ScreenSchema (with .background,
+    .themeId, .blocks[]).
+  * Legacy element page → page.bgColor / page.bgDataUrl / page.overlay
+    (Canva 0-100 scale) / page.navConfig.navbarStyle.
+  * contractId: page.contractId (string, optional, persistent field).
+  * schemaThemeId: page.schema.themeId (canonical) OR
+    page.templateData.schemaThemeId (legacy bridge).
+  * navConfig: page.navConfig.navbarStyle ('colorful'|'minimal'|'glass').
+  * Block style: per-block stylePreset/variant/accentColor (extracted
+    from schema.blocks[], not duplicated at page level).
+- Tahap 2 — Created src/core/style/page-style-adapter.ts:
+  * Pure function createStyleContractFromPage({page}) → {contract, source,
+    explicitContractId, legacyThemeId, presetId}.
+  * Source priority: page.contractId → legacyThemeId → preset bridge →
+    default. page.contractId NEVER overwritten by preset._legacyContractId.
+  * Schema background mapped verbatim (no field loss); overlay passed
+    through 0-80 scale (no heuristic conversion).
+  * Legacy page delegated to resolveLegacyStyle() with overlaySource='canva'
+    (Patch-2 invariant: Canva 40 → 40, NOT 32).
+  * navbarStyle carried through via PageStyle.navigation.style; invalid
+    values fall back to undefined (resolver picks preset default).
+  * Fail-safe: invalid theme/preset → DEFAULT_PRESET_ID, never throws.
+  * Pure: does not mutate input page (verified by test 8).
+- Tahap 3 — Created src/core/style/consumer.ts:
+  * resolvePageStyleTokens(page) → {tokens, source, explicitContractId,
+    legacyThemeId, presetId}.
+  * Single shared helper — Canvas and Preview MUST both call this.
+  * Plus batch helper resolvePageStyleTokensBatch(pages) for future use.
+- Tahap 3b — Created src/core/style/consumer-entry-points.ts:
+  * resolveCanvasConsumerTokens(page) and resolvePreviewConsumerTokens(page)
+    — thin wrappers with ZERO logic, both delegate to resolvePageStyleTokens().
+  * Exists so the parity test has explicit entry points to call. Spec
+    forbids divergent logic; these wrappers comply.
+- Tahap 4 — Wired Canvas (PageRenderer + PageFrame):
+  * PageRenderer.tsx: added pageStyleTokens prop + useMemo resolution
+    via resolvePageStyleTokens(page). Passed to PageFrame.
+  * PageFrame.tsx: added pageStyleTokens prop. Updated:
+    - Background color fallback chain: page.bgColor || tokens.page.background.color1
+      || tokens.colors.background || modeBg.bg.
+    - Navbar style fallback chain: navConfig.navbarStyle (when valid)
+      → tokens.navigation.style → 'colorful'.
+  * Legacy TokenResolver UNCHANGED — frozen boundary; 30+ block
+    renderers depend on its API.
+- Tahap 5 — Wired Preview:
+  * No source changes needed — PreviewMode.tsx, PresentMode.tsx, and
+    PlayOverlay.tsx all route through PageRenderer mode='preview',
+    so they inherit the new wiring automatically.
+  * This is the cleanest possible parity guarantee: literally the
+    same code path for both consumers.
+- Tahap 6 — Tests:
+  * page-style-adapter.test.ts (26 tests):
+    - 8 mandatory adapter tests (schema bg mapping, legacy overlay 40,
+      navbar carry-through, macam-norma identity, mission-adventure
+      no-fake-bridge, contractId priority, invalid theme fail-safe,
+      input non-mutation).
+    - 6 regression fixtures (F1–F6 from spec).
+    - Edge cases + determinism.
+  * canvas-preview-parity.test.ts (13 tests):
+    - Both wrappers reference SAME underlying helper.
+    - 6 fixtures × identical tokens across consumers.
+    - Edge cases + 6-preset sweep.
+    - Wrapper identity guard.
+- Updated barrel index.ts to export new modules.
+- Updated STYLE_CONTRACT_AUDIT.md with Sprint 8.2A section (acceptance
+  gate, source priority, wiring summary, verification results).
+- All verification passed:
+  * npx vitest run src/core/style → 277/277 PASS (was 238 + 39 new)
+  * npx vitest run src/core         → 401/401 PASS (was 362 + 39 new)
+  * npx tsc --noEmit                → 46 pre-existing errors (down from
+    62 due to dependency upgrade). ZERO new errors in changed files.
+  * npm run build                   → Compiled successfully in 10.6s,
+    12/12 static pages generated.
+
+Stage Summary:
+- 5 new files in src/core/style/:
+  * page-style-adapter.ts (the adapter — 266 lines)
+  * consumer.ts (shared helper — 105 lines)
+  * consumer-entry-points.ts (Canvas/Preview wrappers — 47 lines)
+  * __tests__/page-style-adapter.test.ts (26 tests)
+  * __tests__/canvas-preview-parity.test.ts (13 tests)
+- 3 modified files:
+  * src/core/style/index.ts (barrel exports)
+  * src/components/canva/page-renderer/PageRenderer.tsx (new prop)
+  * src/components/canva/page-renderer/PageFrame.tsx (new prop + fallbacks)
+- 2 doc files updated:
+  * STYLE_CONTRACT_AUDIT.md (Sprint 8.2A section added)
+  * worklog.md (this entry)
+- All 12 acceptance gate criteria PASS.
+- Contract & Boundary remains FROZEN — zero frozen-boundary files touched.
+- Sprint 8.2A READY FOR INTEGRATION → Senior Review.
+- Sprint 8.2B (Present) still deferred until 8.2A PASS verdict.

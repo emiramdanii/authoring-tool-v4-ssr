@@ -17,6 +17,12 @@ import { isFullPageBlockType } from '@/core/schema/capability-registry';
 import { resolveContractStyle, type ContractResolvedStyle } from '@/core/template/contract';
 import { GoldenPageRenderer } from '@/core/renderer/GoldenPageRenderer';
 import { getScreenAdapter, getScreenConfig } from '@/core/renderer/screens';
+// Sprint 8.2A — Style Consumer Wiring
+// Canvas resolves page-level tokens through the shared Style Contract
+// helper. The legacy TokenResolver continues to be used by block
+// renderers (frozen boundary), but page-level concerns (background,
+// overlay, navbar style, page accent) now flow through ResolvedStyleTokens.
+import { resolvePageStyleTokens, type ResolvePageStyleTokensResult } from '@/core/style';
 
 // ═══════════════════════════════════════════════════════════════
 // PAGE RENDERER — Unified page renderer for all contexts
@@ -48,6 +54,19 @@ export interface PageRendererProps {
   editable?: boolean;
   /** Learning edit context value for providing to screen adapters */
   editContext?: import('@/components/canva/LearningEditContext').LearningEditContextValue | null;
+  /**
+   * Sprint 8.2A — Optional pre-resolved page style tokens.
+   *
+   * When omitted, PageRenderer resolves them itself via
+   * `resolvePageStyleTokens(page)`. Callers that already have the
+   * resolved tokens (e.g. parity tests, future Present/Export wiring)
+   * may pass them in to avoid double resolution.
+   *
+   * Canvas and Preview both produce these tokens through the SAME
+   * helper — see `src/core/style/consumer.ts`. This guarantees
+   * token parity between the two consumers.
+   */
+  pageStyleTokens?: ResolvePageStyleTokensResult;
 }
 
 // Map PageRendererMode to the sub-component modes
@@ -73,6 +92,7 @@ export const PageRenderer = React.memo(function PageRenderer({
   isTemplateSelected = false,
   editable = false,
   editContext = null,
+  pageStyleTokens: pageStyleTokensProp,
 }: PageRendererProps) {
   // ═══ DUAL-RENDER INVARIANT (dev mode) ════════════════════════
   // Catch dual-data bug early in development.
@@ -96,6 +116,32 @@ export const PageRenderer = React.memo(function PageRenderer({
   // Priority: page.schema > templateData.schemaScreen > TemplateAdapter
   // ensurePageSchema() handles lazy migration automatically.
   // After migration, page.schema is the single source of truth.
+
+  // ═══ Sprint 8.2A — Page Style Tokens (Canvas + Preview parity) ═══
+  // Resolve page-level style tokens through the shared helper. Both
+  // Canvas and Preview call resolvePageStyleTokens() — the parity
+  // test enforces that no consumer implements its own resolution.
+  //
+  // These tokens carry:
+  //   - colors (background, surface, text, accent, border, ...)
+  //   - typography (heading/body family + scale)
+  //   - shape (radius, borderWidth, shadow)
+  //   - spacing (density → pagePadding/cardPadding/blockGap)
+  //   - navigation.style ('colorful'|'minimal'|'glass')
+  //   - page.background (color1/color2/imageUrl/overlay/overlayType/...)
+  //   - block (presetId/variant/emphasis/accent)
+  //   - _legacyThemeId (for Sprint 8.2B branch on original identity)
+  //
+  // Priority: page.contractId (authority) → legacyThemeId → preset.
+  // When page.contractId is set, the TemplateThemeContract pipeline
+  // (contractStyle below) REMAINS the authority for visual enforcement.
+  // The ResolvedStyleTokens are still consulted for background image
+  // layer, overlay, and navbar style — fields the contract doesn't
+  // override.
+  const pageStyleTokens = React.useMemo<ResolvePageStyleTokensResult>(
+    () => pageStyleTokensProp ?? resolvePageStyleTokens(page),
+    [page, pageStyleTokensProp],
+  );
 
   // FASE 3: Read theme ID from page.schema (not templateData)
   // templateData.schemaThemeId is the legacy path — schema is now canonical
@@ -453,6 +499,7 @@ export const PageRenderer = React.memo(function PageRenderer({
       isSchemaDriven={useSchemaRenderer}
       extraElements={extraElements}
       tokens={tokens}
+      pageStyleTokens={pageStyleTokens}
     >
       {content}
     </PageFrame>
