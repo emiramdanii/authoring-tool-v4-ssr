@@ -76,6 +76,14 @@ vi.mock('@/store/authoring-store', () => {
 const { useCanvaStore } = await import('@/store/canva-store');
 const { useInteractiveStore, setCanvaStoreRef } = await import('@/store/interactive-store');
 const { useLearningMediaStore } = await import('@/store/learning-media-store');
+// Sprint 8.2S-2-Patch: import orchestrator test helpers so we can
+// wire the cross-store reset synchronously (the production code
+// lazy-loads the stores via dynamic import, which is async and would
+// require `await` before every setAppMode call in tests).
+const {
+  __setOrchestratorStoreRefsForTest,
+  __resetOrchestratorStoreRefsForTest,
+} = await import('@/store/canva/mode-orchestrator');
 
 // Wire interactive-store ↔ canva-store ref. In production this is
 // done by init.ts; in tests we do it explicitly.
@@ -135,6 +143,14 @@ function resetAllStores(): void {
   useLearningMediaStore.setState({
     learnSubMode: 'play',
   });
+
+  // Sprint 8.2S-2-Patch: wire orchestrator store refs synchronously
+  // so setAppMode can call resetCrossStoreStateForMode without `await`.
+  // The orchestrator reads these refs at call time.
+  __setOrchestratorStoreRefsForTest(
+    useInteractiveStore.getState(),
+    useLearningMediaStore.getState(),
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -161,7 +177,7 @@ describe('Sprint 8.2S-2 — Mode Lifecycle Smoke (invariants from MODE_LIFECYCLE
 
   // ── Edit → Preview: selection cleared ─────────────────────────────
   describe('Edit → Preview transition', () => {
-    it('selection is cleared when entering Preview', () => {
+    it('selection is cleared when entering Preview (including hoveredBlockId)', () => {
       // Setup: selection in Edit mode
       useCanvaStore.getState().selectBlock('block-1', 'materi-section');
       useCanvaStore.setState({ editingBlockId: 'block-1' });
@@ -171,17 +187,15 @@ describe('Sprint 8.2S-2 — Mode Lifecycle Smoke (invariants from MODE_LIFECYCLE
       // Action: switch to Preview
       useCanvaStore.getState().setAppMode('preview');
 
-      // Assert: most selection state cleared
-      // (NOTE: hoveredBlockId is NOT cleared by clearAllSelections —
-      // see KNOWN_ISSUES.md M-006. That's a separate minor bug.)
+      // Assert: ALL selection state cleared (including hoveredBlockId —
+      // Sprint 8.2S-2-Patch M-006 fix).
       const state = useCanvaStore.getState();
       expect(state.appMode).toBe('preview');
       expect(state.selectedBlockId).toBeNull();
       expect(state.selectedBlockIds).toEqual([]);
       expect(state.editingBlockId).toBeNull();
+      expect(state.hoveredBlockId).toBeNull();
       expect(state.selectedElId).toBeNull();
-      // hoveredBlockId is NOT cleared (bug M-006)
-      // expect(state.hoveredBlockId).toBeNull(); // uncomment when M-006 fixed
     });
 
     it('page index is preserved when entering Preview', () => {
@@ -206,9 +220,9 @@ describe('Sprint 8.2S-2 — Mode Lifecycle Smoke (invariants from MODE_LIFECYCLE
     });
   });
 
-  // ── Edit → Learn: selection NOT cleared (BUG M-004) ───────────────
-  describe('Edit → Learn transition (BUG M-004)', () => {
-    it('documents current behavior: selection LEAKS into Learn (should be cleared)', () => {
+  // ── Edit → Learn: selection cleared (M-004 FIXED) ────────────────
+  describe('Edit → Learn transition (M-004 FIXED)', () => {
+    it('selection is cleared when entering Learn', () => {
       // Setup: selection in Edit mode
       useCanvaStore.getState().selectBlock('block-1', 'materi-section');
       useCanvaStore.setState({ editingBlockId: 'block-1' });
@@ -216,36 +230,36 @@ describe('Sprint 8.2S-2 — Mode Lifecycle Smoke (invariants from MODE_LIFECYCLE
       // Action: switch to Learn
       useCanvaStore.getState().setAppMode('learn');
 
+      // Assert: ALL selection state cleared (M-004 fix in 8.2S-2-Patch).
       const state = useCanvaStore.getState();
       expect(state.appMode).toBe('learn');
-      // BUG M-004: setAppMode('learn') does NOT clearAllSelections.
-      // The current implementation only clears for preview/present.
-      // This is a known issue — see KNOWN_ISSUES.md M-004.
-      //
-      // WHEN M-004 IS FIXED, this assertion should flip to:
-      //   expect(state.selectedBlockId).toBeNull();
-      //   expect(state.editingBlockId).toBeNull();
-      expect(state.selectedBlockId).toBe('block-1');
-      expect(state.editingBlockId).toBe('block-1');
+      expect(state.selectedBlockId).toBeNull();
+      expect(state.editingBlockId).toBeNull();
+    });
+
+    it('learnSubMode is reset to "play" when entering Learn (M-002 FIXED)', () => {
+      // Setup: previous Learn session left learnSubMode = 'edit'
+      useLearningMediaStore.setState({ learnSubMode: 'edit' });
+
+      // Action: switch to Learn (fresh entry)
+      useCanvaStore.getState().setAppMode('learn');
+
+      // Assert: learnSubMode reset to 'play' (M-002 fix in 8.2S-2-Patch).
+      expect(useLearningMediaStore.getState().learnSubMode).toBe('play');
     });
   });
 
-  // ── Edit → Export: selection NOT cleared (BUG M-005) ──────────────
-  describe('Edit → Export transition (BUG M-005)', () => {
-    it('documents current behavior: selection LEAKS into Export (should be cleared)', () => {
+  // ── Edit → Export: selection cleared (M-005 FIXED) ───────────────
+  describe('Edit → Export transition (M-005 FIXED)', () => {
+    it('selection is cleared when entering Export', () => {
       useCanvaStore.getState().selectBlock('block-1', 'materi-section');
 
       useCanvaStore.getState().setAppMode('export');
 
       const state = useCanvaStore.getState();
       expect(state.appMode).toBe('export');
-      // BUG M-005: setAppMode('export') does NOT clearAllSelections.
-      // The current implementation only clears for preview/present.
-      // This is a known issue — see KNOWN_ISSUES.md M-005.
-      //
-      // WHEN M-005 IS FIXED, this assertion should flip to:
-      //   expect(state.selectedBlockId).toBeNull();
-      expect(state.selectedBlockId).toBe('block-1');
+      // M-005 fix in 8.2S-2-Patch: Export now clears selection.
+      expect(state.selectedBlockId).toBeNull();
     });
   });
 
@@ -263,12 +277,9 @@ describe('Sprint 8.2S-2 — Mode Lifecycle Smoke (invariants from MODE_LIFECYCLE
     });
   });
 
-  // ── Bug M-001: setAppMode doesn't reset interactive scores ────────
-  // This test documents the KNOWN BUG. When M-001 is fixed, this test
-  // will need to assert that scores ARE reset. For now, it asserts the
-  // current (buggy) behavior so we know if anything changes.
-  describe('M-001 (KNOWN BUG) — score leak across mode switch', () => {
-    it('documents current behavior: scores leak from Preview to Edit', () => {
+  // ── M-001 FIXED: scores reset on Edit/Export/Present entry ────────
+  describe('M-001 (FIXED) — scores reset on mode switch to non-interactive', () => {
+    it('scores are cleared when switching Preview → Edit', () => {
       // Setup: enter Preview, play a quiz, get a score
       useCanvaStore.getState().setAppMode('preview');
       useInteractiveStore.getState().openPlay();
@@ -287,22 +298,48 @@ describe('Sprint 8.2S-2 — Mode Lifecycle Smoke (invariants from MODE_LIFECYCLE
       // Action: switch back to Edit
       useCanvaStore.getState().setAppMode('edit');
 
-      // Assert (CURRENT BUGGY BEHAVIOR — to be fixed):
-      // Scores are NOT cleared. This is M-001.
-      //
-      // WHEN M-001 IS FIXED, this assertion should flip to:
-      //   expect(useInteractiveStore.getState().scores).toEqual([])
+      // Assert: M-001 fix in 8.2S-2-Patch — scores ARE cleared.
+      expect(useInteractiveStore.getState().scores).toEqual([]);
+    });
+
+    it('scores are cleared when switching to Export', () => {
+      useCanvaStore.getState().setAppMode('preview');
+      useInteractiveStore.getState().openPlay();
+      useInteractiveStore.getState().reportScore({
+        pageIndex: 0,
+        blockId: 'quiz-1',
+        elementId: 'quiz-1',
+        score: 50,
+        maxScore: 100,
+        completed: true,
+      });
       expect(useInteractiveStore.getState().scores.length).toBeGreaterThan(0);
 
-      // Document the bug for the fix in Sprint 8.2S-2 (or later):
-      // setAppMode should call useInteractiveStore.getState().resetAllScores()
-      // when switching to a non-interactive mode (edit/export).
+      useCanvaStore.getState().setAppMode('export');
+      expect(useInteractiveStore.getState().scores).toEqual([]);
+    });
+
+    it('scores are cleared when switching to Present (fresh playback)', () => {
+      useCanvaStore.getState().setAppMode('preview');
+      useInteractiveStore.getState().openPlay();
+      useInteractiveStore.getState().reportScore({
+        pageIndex: 0,
+        blockId: 'quiz-1',
+        elementId: 'quiz-1',
+        score: 50,
+        maxScore: 100,
+        completed: true,
+      });
+      expect(useInteractiveStore.getState().scores.length).toBeGreaterThan(0);
+
+      useCanvaStore.getState().setAppMode('present');
+      expect(useInteractiveStore.getState().scores).toEqual([]);
     });
   });
 
-  // ── Bug M-002: setAppMode doesn't reset learnSubMode ──────────────
-  describe('M-002 (KNOWN BUG) — learnSubMode leak across mode switch', () => {
-    it('documents current behavior: learnSubMode leaks from Learn to Edit', () => {
+  // ── M-002 FIXED: learnSubMode reset on Learn entry ────────────────
+  describe('M-002 (FIXED) — learnSubMode reset on Learn entry', () => {
+    it('learnSubMode is reset to "play" when re-entering Learn', () => {
       // Setup: enter Learn, switch to edit sub-mode
       useCanvaStore.getState().setAppMode('learn');
       useLearningMediaStore.getState().setLearnSubMode('edit');
@@ -314,16 +351,8 @@ describe('Sprint 8.2S-2 — Mode Lifecycle Smoke (invariants from MODE_LIFECYCLE
       useCanvaStore.getState().setAppMode('edit');
       useCanvaStore.getState().setAppMode('learn');
 
-      // Assert (CURRENT BUGGY BEHAVIOR — to be fixed):
-      // learnSubMode is NOT reset to 'play' on re-entry to Learn.
-      //
-      // WHEN M-002 IS FIXED, this assertion should flip to:
-      //   expect(useLearningMediaStore.getState().learnSubMode).toBe('play')
-      expect(useLearningMediaStore.getState().learnSubMode).toBe('edit');
-
-      // Document the bug for the fix:
-      // setAppMode('learn') should reset learnSubMode to 'play' unless
-      // the user has explicitly set it during this Learn session.
+      // Assert: M-002 fix in 8.2S-2-Patch — learnSubMode reset to 'play'.
+      expect(useLearningMediaStore.getState().learnSubMode).toBe('play');
     });
   });
 

@@ -26,6 +26,11 @@ import type { CanvaState } from './types';
 import type { AppMode } from '@/components/canva/types';
 import type { EduDisplayMode } from '@/core/edu/education-typography';
 import { editBus } from '@/core/editor/edit-bus';
+// Sprint 8.2S-2-Patch — cross-store orchestrator for mode lifecycle.
+// Fixes M-001 (score leak), M-002 (learnSubMode leak), M-004 (selection
+// leak into Learn), M-005 (selection leak into Export). See
+// docs/MODE_LIFECYCLE_CONTRACT.md.
+import { resetCrossStoreStateForMode } from './mode-orchestrator';
 
 // ── Slice Type ──────────────────────────────────────────────────
 
@@ -53,8 +58,14 @@ export type SessionSlice = Pick<
 >;
 
 // ── Helper: Clear all selections ────────────────────────────────
-// Used when switching modes (preview/present) or toggling preview.
-// Returns a partial state object that clears all selection state.
+// Used when switching modes (preview/present/learn/export) or toggling
+// preview. Returns a partial state object that clears all selection
+// state.
+//
+// Sprint 8.2S-2-Patch (M-006 fix): previously `hoveredBlockId` was
+// NOT included in the returned object, causing it to leak across
+// mode switches. Now it's cleared alongside the other selection
+// fields. See KNOWN_ISSUES.md M-006.
 
 function clearAllSelections() {
   return {
@@ -62,6 +73,7 @@ function clearAllSelections() {
     selectedBlockType: null as string | null,
     editingBlockId: null as string | null,
     selectedBlockIds: [] as string[],
+    hoveredBlockId: null as string | null,
     selectedElId: null as string | null,
     selectedElIds: [] as string[],
     activeTabId: null as string | null,
@@ -192,11 +204,17 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
   })),
 
   // ── App Mode (4-mode architecture) ──────────────────────────
-  // Controls the overall application mode: edit, preview, present, export.
-  // When switching to preview/present, all selections are cleared
-  // to prevent editing state from leaking into non-edit modes.
-  // The existing canvasPreview toggle remains for backward compat —
-  // setAppMode('preview') is the canonical way going forward.
+  // Controls the overall application mode: edit, preview, present, export, learn.
+  //
+  // Sprint 8.2S-2-Patch (Senior Review fixes):
+  //   - clearAllSelections() now called for ALL non-edit modes
+  //     (preview/present/learn/export). Previously only preview/present
+  //     cleared — fixes M-004 (Learn leak) and M-005 (Export leak).
+  //   - resetCrossStoreStateForMode(nextMode) called after selection
+  //     clear — coordinates cross-store resets:
+  //       Edit/Export/Present → reset interactive scores (fixes M-001)
+  //       Learn → reset learnSubMode to 'play' (fixes M-002)
+  //   - See docs/MODE_LIFECYCLE_CONTRACT.md for the full transition table.
   setAppMode: (mode) => {
     // ── Save pending inline edit before mode switch ──
     // Same fix as goPage: blur the active contentEditable element
@@ -206,13 +224,20 @@ export const createSessionSlice: StateCreator<CanvaState, [], [], SessionSlice> 
       (activeEl as HTMLElement).blur();
     }
 
-    if (mode === 'preview' || mode === 'present') {
+    if (mode === 'edit') {
+      // Entering Edit — no selection clear (edit mode allows selection).
+      // But DO reset interactive runtime so old scores don't leak.
+      set({ appMode: mode });
+      resetCrossStoreStateForMode(mode);
+    } else {
+      // Entering any non-edit mode — clear all selection state.
+      // This includes Preview, Present, Learn, Export.
       set({
         appMode: mode,
         ...clearAllSelections(),
       });
-    } else {
-      set({ appMode: mode });
+      // Coordinate cross-store resets (scores, learnSubMode, etc).
+      resetCrossStoreStateForMode(mode);
     }
   },
 

@@ -132,59 +132,59 @@ Closure:      <commit SHA + tanggal | OPEN>
 
 ## Mode Lifecycle
 
-### M-001 — `setAppMode` tidak reset interactive store scores
+### M-001 — `setAppMode` tidak reset interactive store scores (FIXED)
 - **Severity**: P1
 - **Area**: mode-lifecycle
 - **Reproduction**: Buka project → main kuis → `interactive-store.scores` terisi → switch ke preview → balik ke edit → buka kuis lagi. Scores lama mungkin masih terlihat sesaat sebelum `openPlay` mereset.
-- **Workaround**: `interactive-store.openPlay` selalu reset `scores: []`. Tapi state "design mode" setelah closePlay tidak membersihkan scores — bisa terlihat di tab "Skor" bila ada.
-- **Owner**: Sprint 8.2S-2 (mode lifecycle smoke)
-- **Target**: Sprint 8.2S-2
-- **Closure**: OPEN
+- **Workaround**: Tidak ada (pre-fix).
+- **Owner**: Sprint 8.2S-2-Patch
+- **Target**: Sprint 8.2S-2-Patch
+- **Closure**: FIXED in 8.2S-2-Patch — `resetCrossStoreStateForMode()` in `src/store/canva/mode-orchestrator.ts` calls `useInteractiveStore.resetAllScores()` on Edit/Export/Present entry. Verified by `src/__tests__/mode-lifecycle-smoke.test.ts` M-001 (FIXED) tests.
 
-### M-002 — `setAppMode` tidak reset `learning-media-store.learnSubMode`
+### M-002 — `setAppMode` tidak reset `learning-media-store.learnSubMode` (FIXED)
 - **Severity**: P2
 - **Area**: mode-lifecycle
 - **Reproduction**: Masuk learn → set sub-mode 'edit' → balik ke edit mode → masuk learn lagi. Sub-mode mungkin masih 'edit' (bukan 'play' default).
-- **Workaround**: Tidak ada efek fatal. User bisa toggle manual.
-- **Owner**: Sprint 8.2S-2
-- **Target**: Sprint 8.2S-2
-- **Closure**: OPEN
+- **Workaround**: Tidak ada (pre-fix).
+- **Owner**: Sprint 8.2S-2-Patch
+- **Target**: Sprint 8.2S-2-Patch
+- **Closure**: FIXED in 8.2S-2-Patch — `resetCrossStoreStateForMode()` calls `useLearningMediaStore.setLearnSubMode('play')` on Learn entry. Verified by `src/__tests__/mode-lifecycle-smoke.test.ts` M-002 (FIXED) test.
 
-### M-003 — Keyboard listener & timer cleanup belum diaudit
+### M-003 — Keyboard listener & timer cleanup (FIXED via integration test)
 - **Severity**: P2
 - **Area**: mode-lifecycle
-- **Reproduction**: Belum ada audit apakah semua `useEffect` yang nge-register `window.addEventListener('keydown', ...)` di PreviewMode/PresentMode/LearningMediaShell dibersihkan saat unmount. Kebocoran listener dapat menyebabkan double-trigger setelah mode switch cepat.
-- **Workaround**: Tidak ada. Perlu audit manual + integration test.
-- **Owner**: Sprint 8.2S-2
-- **Target**: Sprint 8.2S-2
-- **Closure**: OPEN (smoke test placeholder; full audit deferred to 8.2B)
+- **Reproduction**: Belum ada audit apakah semua `useEffect` yang nge-register `window.addEventListener('keydown', ...)` di PreviewMode/PresentMode/LearningMediaShell dibersihkan saat unmount.
+- **Workaround**: Tidak ada (pre-fix).
+- **Owner**: Sprint 8.2S-2-Patch
+- **Target**: Sprint 8.2S-2-Patch
+- **Closure**: FIXED in 8.2S-2-Patch — `src/__tests__/listener-cleanup-integration.test.tsx` (6 tests) verifies PreviewMode, PresentMode, PlayOverlay all pass net-delta-0 after unmount + rapid render/unmount (5x) + single keypress → single action. Listener cleanup is now acceptance-tested.
 
-### M-004 — `setAppMode('learn')` tidak clearAllSelections (DITEMUKAN 8.2S-2)
+### M-004 — `setAppMode('learn')` tidak clearAllSelections (FIXED)
 - **Severity**: P1
 - **Area**: mode-lifecycle
-- **Reproduction**: Edit mode → select block → `setAppMode('learn')`. Selection (`selectedBlockId`, `editingBlockId`) LEAKS into Learn mode. Implementasi `setAppMode` di `src/store/canva/session-slice.ts` line 209 hanya `clearAllSelections()` untuk `preview`/`present`, TIDAK untuk `learn`/`export`.
-- **Workaround**: Tidak ada. Bug dikonfirmasi via smoke test `mode-lifecycle-smoke.test.ts`.
-- **Owner**: Sprint 8.2B (saat wiring Present, perbaiki juga Learn)
-- **Target**: Sprint 8.2B
-- **Closure**: OPEN — smoke test documents current buggy behavior
+- **Reproduction**: Edit mode → select block → `setAppMode('learn')`. Selection (`selectedBlockId`, `editingBlockId`) LEAKS into Learn mode.
+- **Workaround**: Tidak ada (pre-fix).
+- **Owner**: Sprint 8.2S-2-Patch
+- **Target**: Sprint 8.2S-2-Patch
+- **Closure**: FIXED in 8.2S-2-Patch — `setAppMode` in `src/store/canva/session-slice.ts` now calls `clearAllSelections()` for ALL non-edit modes (preview/present/learn/export). Verified by `src/__tests__/mode-lifecycle-smoke.test.ts` M-004 (FIXED) test.
 
-### M-005 — `setAppMode('export')` tidak clearAllSelections (DITEMUKAN 8.2S-2)
+### M-005 — `setAppMode('export')` tidak clearAllSelections (FIXED)
 - **Severity**: P1
 - **Area**: mode-lifecycle
-- **Reproduction**: Edit mode → select block → `setAppMode('export')`. Selection LEAKS into Export mode. Sama dengan M-004 — `setAppMode` hanya clear untuk preview/present.
-- **Workaround**: Tidak ada. Bug dikonfirmasi via smoke test.
-- **Owner**: Sprint 8.2C (saat wiring Export, perbaiki juga)
-- **Target**: Sprint 8.2C
-- **Closure**: OPEN — smoke test documents current buggy behavior
+- **Reproduction**: Edit mode → select block → `setAppMode('export')`. Selection LEAKS into Export mode.
+- **Workaround**: Tidak ada (pre-fix).
+- **Owner**: Sprint 8.2S-2-Patch
+- **Target**: Sprint 8.2S-2-Patch
+- **Closure**: FIXED in 8.2S-2-Patch — same fix as M-004 (clearAllSelections for all non-edit modes). Verified by `src/__tests__/mode-lifecycle-smoke.test.ts` M-005 (FIXED) test.
 
-### M-006 — `clearAllSelections()` tidak clear `hoveredBlockId` (DITEMUKAN 8.2S-2)
+### M-006 — `clearAllSelections()` tidak clear `hoveredBlockId` (FIXED)
 - **Severity**: P3
 - **Area**: mode-lifecycle
-- **Reproduction**: Edit mode → hover block → `setAppMode('preview')`. `hoveredBlockId` masih terisi setelah mode switch. Implementasi `clearAllSelections()` di `src/store/canva/session-slice.ts` line 59-69 tidak include `hoveredBlockId` di returned object.
-- **Workaround**: Tidak ada efek fatal. Hanya visual hint yang bocor.
-- **Owner**: unassigned
-- **Target**: Sprint 8.2B (saat touch session-slice untuk M-004/M-005)
-- **Closure**: OPEN — smoke test documents current behavior
+- **Reproduction**: Edit mode → hover block → `setAppMode('preview')`. `hoveredBlockId` masih terisi setelah mode switch.
+- **Workaround**: Tidak ada (pre-fix).
+- **Owner**: Sprint 8.2S-2-Patch
+- **Target**: Sprint 8.2S-2-Patch
+- **Closure**: FIXED in 8.2S-2-Patch — `clearAllSelections()` in `src/store/canva/session-slice.ts` now includes `hoveredBlockId: null` in returned object. Verified by `src/__tests__/mode-lifecycle-smoke.test.ts` "selection is cleared when entering Preview (including hoveredBlockId)" test.
 
 ---
 
