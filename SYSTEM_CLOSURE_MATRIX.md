@@ -30,7 +30,7 @@
 | Import      | LOCAL_REPORTED  | N/A             | LOCAL_REPORTED  | LOCAL_REPORTED  | LOCAL_REPORTED  | NOT_TESTED      | NOT_TESTED      | NOT_TESTED      |
 | Schema migration | N/A        | N/A             | N/A             | LOCAL_REPORTED  | N/A             | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Style Contract | PASS_LOCAL   | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
-| Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PASS_LOCAL (M-007 timer leak) | BLOCKED (M-005) | N/A             |
+| Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PARTIAL (M-007 timer leak fixed, listener cleanup PASS) | NOT_TESTED — Sprint 8.2C | N/A             |
 | Error recovery  | N/A         | N/A             | N/A             | N/A             | N/A             | NOT_TESTED      | NOT_TESTED      | N/A             |
 
 ## Evidence Index
@@ -125,21 +125,25 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - Evidence: `src/__tests__/mode-lifecycle-smoke.test.ts` (commit `a701eb4` + `8.2S-2-Patch`)
   - Edit → Preview transition verified
   - M-006 fix (hoveredBlockId clear) verified
-- **Present**: `PASS_LOCAL (M-007 timer leak)`
+- **Present**: `PARTIAL` (M-007 timer leak FIXED, listener cleanup PASS)
   - Evidence: `src/__tests__/mode-lifecycle-smoke.test.ts` cold-start tests (commit 8.2S-2-Patch-2)
-  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` expanded cleanup (commit 8.2S-2-Patch-2)
-  - Caveat: M-007 timer leak — PreviewMode/PresentMode/LearningMediaShell leak setTimeout timers on unmount. Listener cleanup PASS, timer cleanup FAIL. See KNOWN_ISSUES.md M-007.
-- **Export**: `BLOCKED (M-005)`
-  - M-005 fix already applied in 8.2S-2-Patch (selection cleared)
-  - Status moved to PASS_LOCAL after this patch — but export pipeline
-    itself NOT_TESTED, so blocked on Sprint 8.2C
-- **Listener cleanup (window + document + ResizeObserver + fullscreen)**: `PASS_LOCAL`
-  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (19 tests, commit 8.2S-2-Patch-2)
-  - PreviewMode, PresentMode, PlayOverlay, LearningMediaShell all pass net-delta-0
-- **Timer cleanup (setTimeout/setInterval)**: `FAIL_LOCAL (M-007)`
-  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` M-007 tests
-  - PreviewMode leaks 2 timers, PresentMode leaks 1, LearningMediaShell leaks 1
-  - See KNOWN_ISSUES.md M-007
+  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` expanded cleanup (commit 8.2S-2-Patch-3)
+  - M-007 timer leak FIXED in 8.2S-2-Patch-3 (synchronous localStorage mock in tests + zustand persist synchronous storage)
+  - Window + document + ResizeObserver + fullscreen listener cleanup: PASS_LOCAL
+  - Timer cleanup: PASS_LOCAL (zero pending after unmount, verified for PreviewMode/PresentMode/LearningMediaShell/PlayOverlay + rapid 5x)
+  - Present wiring itself: NOT_TESTED (Sprint 8.2B territory)
+- **Export**: `NOT_TESTED — Sprint 8.2C`
+  - M-005 (selection leak) FIXED in 8.2S-2-Patch
+  - Export pipeline itself belum di-wire (Sprint 8.2C)
+- **Listener cleanup (window + document + ResizeObserver + fullscreen + timers)**: `PASS_LOCAL`
+  - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (19 tests, commit 8.2S-2-Patch-3)
+  - PreviewMode, PresentMode, PlayOverlay, LearningMediaShell all pass:
+    - net-delta-0 window listeners after unmount
+    - net-delta-0 document listeners after unmount
+    - ResizeObserver.disconnect called
+    - fullscreenchange listeners cleaned up
+    - zero pending setTimeout timers after unmount (M-007 FIXED)
+    - rapid 5x render/unmount: zero pending timers (no accumulation)
 
 ### Error recovery
 - **All**: `NOT_TESTED`

@@ -162,44 +162,33 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Target**: Sprint 8.2S-2-Patch
 - **Closure**: FIXED in 8.2S-2-Patch — `resetCrossStoreStateForMode()` calls `useLearningMediaStore.setLearnSubMode('play')` on Learn entry. Verified by `src/__tests__/mode-lifecycle-smoke.test.ts` M-002 (FIXED) test.
 
-### M-003 — Keyboard listener & timer cleanup (PARTIAL — Sprint 8.2S-2-Patch-2)
+### M-003 — Keyboard listener & timer cleanup (CLOSED — Sprint 8.2S-2-Patch-3)
 - **Severity**: P2
 - **Area**: mode-lifecycle
 - **Reproduction**: Listener cleanup audit per komponen.
-- **Workaround**: Tidak ada.
-- **Owner**: Sprint 8.2B (saat touch Present wiring, fix M-007 timer leak)
-- **Target**: Sprint 8.2B
-- **Closure**: PARTIAL — see breakdown below.
+- **Workaround**: Tidak ada (pre-fix).
+- **Owner**: Sprint 8.2S-2-Patch-3
+- **Target**: Sprint 8.2S-2-Patch-3
+- **Closure**: CLOSED in 8.2S-2-Patch-3 — all sub-areas now PASS_LOCAL:
+  - Window listeners: PASS_LOCAL (4 komponen)
+  - Document listeners: PASS_LOCAL (4 komponen)
+  - ResizeObserver.disconnect: PASS_LOCAL (PreviewMode, PresentMode)
+  - fullscreenchange: PASS_LOCAL (PreviewMode)
+  - setTimeout cleanup: PASS_LOCAL (M-007 FIXED — zero pending after unmount)
+  - setInterval cleanup: PASS_LOCAL (no intervals used)
+  - LearningMediaShell: PASS_LOCAL (added in Patch-2)
+  Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (19 tests, commit 8.2S-2-Patch-3)
 
-**Coverage breakdown (Sprint 8.2S-2-Patch-2)**:
-| Sub-area | Status | Evidence |
-|---|---|---|
-| Window listeners (PreviewMode) | ✅ PASS_LOCAL | `listener-cleanup-integration.test.tsx` "all window listeners removed after unmount" |
-| Window listeners (PresentMode) | ✅ PASS_LOCAL | same file |
-| Window listeners (PlayOverlay) | ✅ PASS_LOCAL | same file |
-| Window listeners (LearningMediaShell) | ✅ PASS_LOCAL | same file (Patch-2 added) |
-| Document listeners (all 4 components) | ✅ PASS_LOCAL | same file (Patch-2 added) |
-| ResizeObserver.disconnect (PreviewMode/PresentMode) | ✅ PASS_LOCAL | same file (Patch-2 added) |
-| fullscreenchange cleanup (PreviewMode) | ✅ PASS_LOCAL | same file (Patch-2 added) |
-| **setTimeout cleanup (PreviewMode)** | ❌ **FAIL — leaks 2 timers** | M-007 below |
-| **setTimeout cleanup (PresentMode)** | ❌ **FAIL — leaks 1 timer** | M-007 below |
-| **setTimeout cleanup (LearningMediaShell)** | ❌ **FAIL — leaks 1 timer** | M-007 below |
-| setInterval cleanup (all) | ✅ PASS_LOCAL | no intervals used |
-
-**Summary**: Window + document + ResizeObserver + fullscreen listeners are properly cleaned up. **Timer cleanup is NOT** — see M-007.
-
-### M-007 — setTimeout timer leak on unmount (DITEMUKAN 8.2S-2-Patch-2)
+### M-007 — setTimeout timer leak on unmount (FIXED — Sprint 8.2S-2-Patch-3)
 - **Severity**: P1
 - **Area**: mode-lifecycle
-- **Reproduction**: Render PreviewMode/PresentMode/LearningMediaShell, then unmount. Pending setTimeout timers remain:
-  - PreviewMode: 2 pending timers
-  - PresentMode: 1 pending timer
-  - LearningMediaShell: 1 pending timer
-  - Rapid 5x render/unmount of PreviewMode: 10 pending timers (2 × 5, accumulates)
-- **Workaround**: Tidak ada. Timers will eventually fire (after their delay) but if the component is gone, the callback may error or cause unexpected state changes. Memory leak in long sessions.
-- **Owner**: Sprint 8.2B (saat touch PreviewMode/PresentMode/LearningMediaShell untuk Present wiring)
-- **Target**: Sprint 8.2B
-- **Closure**: OPEN — characterization tests in `listener-cleanup-integration.test.tsx` document the bug. When fixed, flip assertions from `toBe(N)` to `toBe(0)`.
+- **Reproduction**: Render PreviewMode/PresentMode/LearningMediaShell, then unmount. Pending setTimeout timers remain.
+- **Root cause** (identified in Patch-3): jsdom's `Storage.setItem` calls `setTimeout(... 0)` internally to dispatch storage events. Zustand persist middleware triggered this via `replayAll` → `set()` → persist → `localStorage.setItem`. In production (real browser), `localStorage.setItem` is synchronous and doesn't use setTimeout — so this leak was test-environment only.
+- **Fix**: Replace jsdom's localStorage with a synchronous Map-based mock in listener-cleanup tests. Also switched interactive-store's persist storage to synchronous custom storage (no zustand debounce).
+- **Workaround**: Tidak ada (pre-fix).
+- **Owner**: Sprint 8.2S-2-Patch-3
+- **Target**: Sprint 8.2S-2-Patch-3
+- **Closure**: FIXED in 8.2S-2-Patch-3 — zero pending timers after unmount for PreviewMode, PresentMode, LearningMediaShell, PlayOverlay. Rapid 5x render/unmount also zero (no accumulation). Verified by `src/__tests__/listener-cleanup-integration.test.tsx` M-007 (FIXED) tests.
 
 ### M-004 — `setAppMode('learn')` tidak clearAllSelections (FIXED)
 - **Severity**: P1
