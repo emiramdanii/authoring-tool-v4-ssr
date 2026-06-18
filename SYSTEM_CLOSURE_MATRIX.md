@@ -126,7 +126,11 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - Edit → Preview transition verified
   - M-006 fix (hoveredBlockId clear) verified
 - **Present**: `PASS_CI`
-  - Evidence: `src/core/style/__tests__/present-wiring-integration.test.tsx` (11 tests, Sprint 8.2B)
+  - Token boundary: `src/core/style/__tests__/present-wiring-integration.test.tsx` (11 tests, Sprint 8.2B)
+  - Consumer smoke: `src/core/style/__tests__/present-consumer-smoke.test.tsx` (6 tests, Sprint 8.2B-Patch-1)
+  - Unmocked: PageFrame, SchemaScreenRenderer, GoldenPageRenderer, ScreenAdapter all REAL
+  - 3 corpus fixtures: golden-pertemuan, fresh-mission-adventure, macam-norma-legacy
+  - Verified: block text renders, background style applied, no crash, preset colors correct
   - PresentMode → PageRenderer mode="preview" → resolvePageStyleTokens + bridge
   - PlayOverlay → PageRenderer mode="preview" → same token path
   - LearningMediaShell → PageRenderer mode="learn" → same token path

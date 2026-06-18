@@ -1,8 +1,9 @@
-# Sprint 8.2B — Normalized TypeScript baseline (MULTISET, fail-closed)
+# Sprint 8.2B-Patch-1 — Normalized TypeScript baseline (MULTISET, fail-closed)
 # Format: <count>|<file-path>|<TS-error-code>|<normalized-message>
 #
-# Total signatures: 49
-# Total error occurrences: 65
+# Patch-1: removed 2 TS2339 exitFullscreen errors (fixed polyfill typing)
+# Total signatures: 48
+# Total error occurrences: 63
 
 2|e2e/manual-qa-core.spec.ts|TS18047|'bodyText' is possibly 'null'.
 1|scripts/generate-quiz-qa-html.ts|TS2305|Module '"../src/lib/export/index"' has no exported member 'ClientExportPayload'.
@@ -35,7 +36,6 @@
 1|src/core/schema/guided-patch.ts|TS1117|An object literal cannot have multiple properties with the same name.
 1|src/core/schema/guided-patch.ts|TS2353|Object literal may only specify known properties, and 'defaultValue' does not exist in type 'GuidedFieldDef'.
 3|src/core/schema/primary-edit-target.ts|TS2322|Type 'string | undefined' is not assignable to type 'string | null'.
-2|src/core/style/__tests__/present-wiring-integration.test.tsx|TS2339|Property 'exitFullscreen' does not exist on type 'Element'.
 1|src/core/template/CourseTemplateRegistry.ts|TS2339|Property 'info' does not exist on type '{ error(context: string, error: unknown, ...extra: unknown[]): void; warn(context: string, message: string): void; }'.
 1|src/core/template/health-check/auto-repair.ts|TS2352|Conversion of type 'BaseBlock | KuisBlock' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
 1|src/core/template/health-check/auto-repair.ts|TS7006|Parameter 'i' implicitly has an 'any' type.

@@ -137,9 +137,18 @@ setCanvaStoreRef(useCanvaStore as any);
 if (typeof globalThis.ResizeObserver === 'undefined') {
   globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} } as any;
 }
-if (typeof Element !== 'undefined') {
-  if (!Element.prototype.requestFullscreen) Element.prototype.requestFullscreen = async () => {};
-  if (!Element.prototype.exitFullscreen) Element.prototype.exitFullscreen = async () => {};
+// Sprint 8.2B-Patch-1: fix typing — exitFullscreen is on Document, not Element.
+if (typeof Element !== 'undefined' && !Element.prototype.requestFullscreen) {
+  Object.defineProperty(Element.prototype, 'requestFullscreen', {
+    configurable: true,
+    value: async function (): Promise<void> {},
+  });
+}
+if (typeof document !== 'undefined' && !document.exitFullscreen) {
+  Object.defineProperty(document, 'exitFullscreen', {
+    configurable: true,
+    value: async function (): Promise<void> {},
+  });
 }
 if (typeof document !== 'undefined' && !document.fullscreenElement) {
   Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => null });

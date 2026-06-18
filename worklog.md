@@ -1414,3 +1414,35 @@ Stage Summary:
 - Present path verified: token flow reaches PresentMode, PlayOverlay, LearningMediaShell
 - Contract & Boundary remains FROZEN
 - Sprint 8.2B READY for Senior Review
+
+---
+Task ID: 8.2B-Patch-1
+Agent: Super Z (main)
+Task: Sprint 8.2B-Patch-1 — fix TS polyfill + real fixture loader + unmocked consumer smoke tests
+
+Work Log:
+- Senior Review 8.2B: 4 blockers. Patch-1 addresses all 4.
+- Blocker 1 (consumer mocked): Added present-consumer-smoke.test.tsx (6 tests)
+  that render REAL PresentMode/PlayOverlay/LearningMediaShell WITHOUT mocking
+  PageFrame, SchemaScreenRenderer, GoldenPageRenderer, or ScreenAdapter.
+  Verified: block text appears, background applied, no crash, preset colors.
+- Blocker 2 (no corpus fixtures): Created test-fixture-loader.ts that loads
+  real JSON from fixtures/projects/. 3 tests use golden-pertemuan,
+  fresh-mission-adventure, macam-norma-legacy fixtures (not inline helpers).
+- Blocker 3 (2 new TS errors in baseline): Fixed polyfill typing —
+  exitFullscreen is on Document, not Element. Used Object.defineProperty
+  for both requestFullscreen (Element) and exitFullscreen (Document).
+  Baseline regenerated: 48 signatures / 63 occurrences (was 49/65).
+  2 TS2339 errors REMOVED from baseline — zero new errors from Sprint 8.2B.
+- Blocker 4 (Closure Matrix too optimistic): Updated to include both
+  token boundary (11 tests) + consumer smoke (6 tests) evidence.
+- All 516 tests PASS (was 510 + 6 consumer smoke).
+
+Stage Summary:
+- 2 files baru: test-fixture-loader.ts, present-consumer-smoke.test.tsx
+- 3 files modified: listener-cleanup-integration.test.tsx (polyfill fix),
+  present-wiring-integration.test.tsx (polyfill fix), ts-baseline.txt
+  (regenerated — 2 errors removed), SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- 0 new TS errors — baseline unchanged from pre-8.2B
+- Contract & Boundary remains FROZEN
+- Sprint 8.2B-Patch-1 READY for Senior Review

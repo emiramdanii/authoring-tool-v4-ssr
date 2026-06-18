@@ -132,13 +132,21 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
 }
 
 // requestFullscreen / exitFullscreen — used by PresentMode/PlayOverlay.
+// Sprint 8.2B-Patch-1: fix typing — Element.requestFullscreen is correct,
+// but exitFullscreen is on Document, not Element.
 if (typeof Element !== 'undefined') {
   if (!Element.prototype.requestFullscreen) {
-    Element.prototype.requestFullscreen = async function (): Promise<void> {};
+    Object.defineProperty(Element.prototype, 'requestFullscreen', {
+      configurable: true,
+      value: async function (): Promise<void> {},
+    });
   }
-  if (!Element.prototype.exitFullscreen) {
-    Element.prototype.exitFullscreen = async function (): Promise<void> {};
-  }
+}
+if (typeof document !== 'undefined' && !document.exitFullscreen) {
+  Object.defineProperty(document, 'exitFullscreen', {
+    configurable: true,
+    value: async function (): Promise<void> {},
+  });
 }
 if (typeof document !== 'undefined' && !document.fullscreenElement) {
   Object.defineProperty(document, 'fullscreenElement', {
