@@ -152,11 +152,11 @@ test file + commit SHA. Berikut daftar evidence per sel.
 
 ## Lubang Terbesar Sebelum Present (Sprint 8.2B)
 
-Setelah 8.2S-2-Patch, status lubang:
+Setelah 8.2S-2-Patch-5, status lubang:
 
 1. **Present mode wiring** — `NOT_TESTED` (Page/Block/Theme/Bg/Nav/Quiz Present kolom)
    → Sprint 8.2B akan tutup
-2. **Mode lifecycle Preview/Present** — `PASS_LOCAL` ✅ (smoke + listener tests)
+2. **Mode lifecycle Preview/Present** — `PASS_CI` ✅ (smoke + listener tests, CI verified on SHA `fe7eee2`)
 3. **Interactive store score bocor** — FIXED (M-001) ✅
 4. **Fixture corpus** — `PASS_LOCAL` ✅ (6 fixture di `fixtures/projects/`)
 
@@ -164,11 +164,23 @@ Setelah 8.2S-2-Patch, status lubang:
 
 1. **Export HTML contract belum dirancang** — `docs/EXPORT_CONTRACT_DESIGN.md` (design only)
 2. **Schema versioning belum ada** — `docs/SCHEMA_VERSIONING_DESIGN.md` (design only)
-3. **CI belum ada di remote** — `KNOWN_ISSUES.md` CI-001 (workflow file di lokal, butuh PAT workflow scope)
-4. **46 pre-existing TS errors** — `KNOWN_ISSUES.md` BUILD-002
+3. ~~**CI belum ada di remote**~~ — ✅ CLOSED (CI-001, CI-002, BUILD-001 all CLOSED)
+4. **46 pre-existing TS errors** — `KNOWN_ISSUES.md` BUILD-002 (baseline-gated, CI green)
 5. **Security & accessibility gate belum dijalankan** — Sprint 8.5
 6. **Image/audio Import Reload** — `PASS_SOURCE_ONLY` → perlu test otomatis
 7. **Error recovery UI** — `NOT_TESTED` → Sprint 8.5
+
+## CI Verified Statuses (Sprint 8.2S-2-Patch-5)
+
+Exact-SHA CI run `27736541608` on SHA `fe7eee27572a030cbf3335fbe03c790ae1a9519c`:
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Mode lifecycle Preview | `PASS_CI` | `mode-lifecycle-smoke.test.ts` (23 tests) — CI success |
+| Stability test suite | `PASS_CI` | `listener-cleanup-integration.test.tsx` (19 tests) + `store-init-bootstrap.test.tsx` (6 tests) + `normalize-ts-errors.test.ts` (24 tests) — CI success |
+| TypeScript regression gate | `PASS_CI` | `normalize-ts-errors.js --check` (multiset, fail-closed, signal capture) — CI success |
+| Build gate | `PASS_CI` | `npm run build` exit code 0 + `.next/BUILD_ID` verification — CI success |
+| Reproducible install | `PASS_CI` | `npm ci --legacy-peer-deps` on all 3 jobs — CI success |
 
 ## Cara Memperbarui Matriks Ini
 

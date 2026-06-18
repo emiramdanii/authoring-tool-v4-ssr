@@ -30,45 +30,32 @@ Closure:      <commit SHA + tanggal | OPEN>
 
 ## CI / Build
 
-### CI-001 — Tidak ada CI workflow
+### CI-001 — Tidak ada CI workflow (CLOSED)
 - **Severity**: P1
 - **Area**: ci
-- **Reproduction**: `ls .github/workflows/` returns "No such file or directory" di remote. Workflow file `ci.yml` sudah dibuat dan direvisi (Patch-4: single source of truth `normalize-ts-errors.js --check`), tetapi **TIDAK BISA di-push** karena PAT yang tersedia tidak punya `workflow` scope.
-- **Workaround**: Verifikasi lokal: `npx vitest run` + `node scripts/normalize-ts-errors.js --check` + `npm run build`. File `ci.yml` + `package-lock.json` + `.gitignore` update tersimpan di stash lokal.
-- **Owner**: User (perlu push manual dengan PAT workflow scope, atau via GitHub Web UI)
-- **Target**: Immediate — user action required
-- **Closure**: OPEN — blocked on PAT workflow scope
-- **User action**:
-  1. Buat PAT baru di https://github.com/settings/tokens dengan scope `repo` + `workflow`.
-  2. `git stash pop`
-  3. `git add .gitignore .github/workflows/ci.yml package-lock.json`
-  4. `git commit -m "ci: add reproducible exact-sha quality gates"`
-  5. `git push origin main`
-  6. Atau: push via GitHub Web UI.
-- **CI workflow design (Patch-4 final)**:
-  - 3 jobs: test (vitest run), types (node scripts/normalize-ts-errors.js --check), build (npm run build + artifact verify)
-  - `npm ci` (reproducible install)
-  - TypeScript gate: SINGLE source of truth = `normalize-ts-errors.js --check` (no inline shell logic)
-  - Normalizer: spawnSync + signal capture + process.execPath + multiset + fail-closed baseline
-  - Build: exit code 0 + .next/standalone artifact verification
+- **Reproduction**: `.github/workflows/ci.yml` now exists in remote with 3 jobs (test, types, build).
+- **Workaround**: Tidak ada (CI active).
+- **Owner**: Sprint 8.2S-2-Patch-4
+- **Target**: Sprint 8.2S-2-Patch-4
+- **Closure**: CLOSED — CI workflow active in remote. Exact-SHA CI run `27736541608` on SHA `fe7eee27572a030cbf3335fbe03c790ae1a9519c` — all 3 jobs `success`. Workflow uses `npm ci` (reproducible install), `normalize-ts-errors.js --check` (single source of truth TypeScript gate), and `npm run build` (exit code 0 + `.next/BUILD_ID` verification).
 
-### CI-002 — `package-lock.json` di-gitignore (POLICY REVERSED — pending push)
+### CI-002 — `package-lock.json` di-gitignore (CLOSED)
 - **Severity**: P2
 - **Area**: ci
-- **Reproduction**: `.gitignore` baris `package-lock.json`. Lockfile lokal tidak pernah ter-commit. Sprint 8.2S-2-Patch membalik kebijakan ini: lockfile WAJIB di-commit untuk `npm ci` reproducible install. Update `.gitignore` (hapus `package-lock.json`) + `package-lock.json` itself sudah di-stash lokal, menunggu push bersama CI workflow (CI-001).
-- **Workaround**: Konfigurasi `.gitignore` lama (lockfile ignored) masih aktif di remote sampai stash di-push. CI yang akan datang harus pakai `npm install` (bukan `npm ci`) sampai lockfile ter-commit.
-- **Owner**: User (push stash dengan PAT workflow scope)
-- **Target**: Immediate — bersama CI-001
-- **Closure**: OPEN — stash siap push, blocked on PAT workflow scope
+- **Reproduction**: `.gitignore` no longer ignores `package-lock.json`. Lockfile is committed (15162 lines). CI uses `npm ci --legacy-peer-deps` for reproducible install.
+- **Workaround**: Tidak ada (lockfile tracked).
+- **Owner**: Sprint 8.2S-2-Patch-4
+- **Target**: Sprint 8.2S-2-Patch-4
+- **Closure**: CLOSED — `package-lock.json` committed in remote. `.gitignore` updated to un-ignore lockfile + `.github/workflows/`. CI `npm ci` succeeds on all 3 jobs.
 
-### BUILD-001 — `cp: cannot create directory '.next/standalone/.next/static'`
+### BUILD-001 — `cp: cannot create directory '.next/standalone/.next/static'` (CLOSED)
 - **Severity**: P2
 - **Area**: build
-- **Reproduction**: `npm run build` berakhir dengan error `cp: cannot create directory '.next/standalone/.next/static': No such file or directory` karena `next build` tidak menghasilkan `.next/standalone/` (output config issue di `next.config`).
-- **Workaround**: Build inti sukses; hanya langkah `cp` standalone yang gagal. Untuk dev/test, abaikan.
-- **Owner**: unassigned
-- **Target**: Sprint 8.5 (release prep)
-- **Closure**: OPEN
+- **Reproduction**: Build script previously included `shx cp -r .next/static .next/standalone/.next/static` which failed because `output: 'standalone'` is disabled in `next.config.ts`.
+- **Workaround**: Tidak ada (build script fixed).
+- **Owner**: Sprint 8.2S-2-Patch-5
+- **Target**: Sprint 8.2S-2-Patch-5
+- **Closure**: CLOSED — Build script split: `build:app` (vite build + next build, no cp steps), `build` delegates to `build:app`. Standalone cp steps removed. CI build gate uses `npm run build` (exit code 0 required) + `.next/BUILD_ID` verification. No grep tolerance. CI run `27736541608` confirms build success.
 
 ### BUILD-002 — 46 pre-existing TypeScript errors
 - **Severity**: P2

@@ -1352,3 +1352,31 @@ Stage Summary:
 - process.execPath + typescript/bin/tsc cross-platform (P1-1).
 - readBaseline fail-closed on malformed/duplicate (P1-2).
 - Contract & Boundary remains FROZEN.
+
+---
+Task ID: 8.2S-Closure
+Agent: Super Z (main)
+Task: Sprint 8.2S closure documentation sync
+
+Work Log:
+- Senior Review Final: TECHNICAL PASS — CLOSURE DOC SYNC REQUIRED.
+  All technical gates PASS_CI. Documentation needs sync with remote state.
+- Closed 3 issues in KNOWN_ISSUES.md:
+  * CI-001 → CLOSED (CI workflow active, run 27736541608, SHA fe7eee27572a030cbf3335fbe03c790ae1a9519c)
+  * CI-002 → CLOSED (package-lock.json tracked, npm ci success)
+  * BUILD-001 → CLOSED (standalone cp removed, build exit-code gate success)
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Mode lifecycle Preview: PASS_CI (CI verified)
+  * Added "CI Verified Statuses" table with exact SHA + run ID + 5 gates PASS_CI
+  * Updated "Lubang Terbesar" sections: CI no longer listed as blocker
+  * Present wiring remains NOT_TESTED — Sprint 8.2B
+- Recorded in worklog:
+  * Exact SHA: fe7eee27572a030cbf3335fbe03c790ae1a9519c
+  * CI Run: 27736541608
+  * 3 jobs: Test ✅, TypeScript gate ✅, Build ✅
+
+Stage Summary:
+- 3 files updated: KNOWN_ISSUES.md, SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Zero source code changes — pure documentation sync
+- Sprint 8.2S: TECHNICAL PASS + DOC SYNC COMPLETE → READY FOR CLOSED
+- Sprint 8.2B (Present): TECHNICALLY UNBLOCKED
