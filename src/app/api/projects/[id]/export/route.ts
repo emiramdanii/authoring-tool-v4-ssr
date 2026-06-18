@@ -50,9 +50,11 @@ interface ReconstructedPage {
   overlay: number;
   elements: unknown[];
   templateType: string;
+  templateVariant?: 'A' | 'B' | 'C';
   colorPalette: Record<string, unknown> | null;
   navConfig: Record<string, unknown>;
   templateData: Record<string, unknown>;
+  pageMode?: 'schema' | 'elements';
   schema?: Record<string, unknown>;
 }
 
@@ -110,9 +112,16 @@ function reconstructPages(
       overlay: p.bgOverlay !== null ? Math.round(p.bgOverlay * 100) : 20,
       elements,
       templateType: p.templateType || 'custom',
+      templateVariant: (p.variant === 'A' || p.variant === 'B' || p.variant === 'C') ? p.variant : undefined,
       colorPalette: p.colorPalette ? (() => { try { return JSON.parse(p.colorPalette); } catch { return null; } })() : null,
       navConfig: p.navConfig ? (() => { try { return JSON.parse(p.navConfig); } catch { return { showNavbar: true, showPrevNext: true, showScore: true, showProgress: true, navbarStyle: 'colorful' }; } })() : { showNavbar: true, showPrevNext: true, showScore: true, showProgress: true, navbarStyle: 'colorful' },
       templateData: p.templateData ? (() => { try { return JSON.parse(p.templateData); } catch { return {}; } })() : {},
+      // Sprint 8.2C: infer pageMode from schema presence
+      pageMode: schema ? 'schema' : 'elements',
+      // Note: contractId is NOT available in Prisma Page model yet.
+      // GET project export falls back to legacy-theme → preset bridge
+      // for contract resolution. POST /api/export preserves contractId
+      // because it receives the full page object directly.
       ...(schema ? { schema } : {}),
     };
   });

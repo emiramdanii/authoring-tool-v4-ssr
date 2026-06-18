@@ -1501,3 +1501,46 @@ Stage Summary:
 - Zero source code changes — pure documentation sync
 - Sprint 8.2B: PASS / CLOSURE COMPLETE
 - Sprint 8.2C (Export): TECHNICALLY UNBLOCKED
+
+---
+Task ID: 8.2C
+Agent: Super Z (main)
+Task: Sprint 8.2C — Export HTML wiring
+
+Work Log:
+- Audit: ExportApp already uses PageRenderer mode="export" → shared Style
+  Contract pipeline (same as 8.2A/8.2B). POST /api/export preserves full
+  page objects. GET /api/projects/[id]/export was missing templateVariant
+  and pageMode — fixed in reconstructPages().
+- P0: Fixed reconstructPages in GET export route:
+  * Added templateVariant (from DB variant field)
+  * Added pageMode (inferred from schema presence)
+  * Documented contractId limitation (not in Prisma Page model — falls
+    back to legacy-theme → preset bridge)
+- P1: Wired Export chrome to resolved Style Contract tokens:
+  * ExportApp resolves pageStyle = resolvePageStyleTokens(page)
+  * Shell background uses chromeBg (page preset background)
+  * ExportTopNavbar: surface, text, muted, accent, border from tokens
+  * ExportBottomNav: surface, border, accent, muted from tokens
+  * Phase badge row: background + border from tokens
+  * isDarkContent: now computed from resolved background luminance
+    (not hardcoded theme list)
+  * All hardcoded hex colors (#0e1c2f, #080f1a, etc.) replaced with
+    token-derived values + safe fallbacks
+- P2: Created export-wiring-integration.test.tsx (7 tests):
+  * golden-pertemuan: ExportApp renders with academic-clean tokens
+  * golden-pertemuan: chrome background uses #0f172a
+  * fresh-mission-adventure: ExportApp renders with mission-adventure tokens (NOT golden)
+  * fresh-mission-adventure: chrome background uses #1c1917
+  * macam-norma-legacy: ExportApp renders with legacy fallback
+  * image-background-large: overlay=40 in resolved tokens
+  * Canvas/Export token parity: identical pageStyleTokens
+
+Stage Summary:
+- 1 file baru: src/core/style/__tests__/export-wiring-integration.test.tsx (7 tests)
+- 2 files modified: src/export/ExportApp.tsx (chrome wiring + token resolution),
+  src/app/api/projects/[id]/export/route.ts (reconstructPages fix)
+- All 526 tests PASS (was 519 + 7 export baru)
+- TS baseline unchanged (48 sigs, 0 new errors)
+- Contract & Boundary remains FROZEN
+- Sprint 8.2C READY for Senior Review

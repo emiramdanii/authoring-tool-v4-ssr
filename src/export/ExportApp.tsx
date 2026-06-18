@@ -40,6 +40,8 @@ import { computeSceneScale } from '@/core/scene/SceneLayoutEngine';
 import { getPageContract, type PageCompletionStatus } from '@/core/edu/page-runtime-contract';
 import { fireConfettiCelebration } from '@/lib/confetti';
 import { Button } from '@/components/ui/button';
+// Sprint 8.2C: wire Style Contract tokens to Export chrome
+import { resolvePageStyleTokens, type ResolvePageStyleTokensResult } from '@/core/style';
 import {
   ChevronLeft,
   ChevronRight,
@@ -77,45 +79,59 @@ function getPhaseMeta(templateType: string) {
 // TOP NAVBAR — 48px fixed height (export version — no Back button)
 // ═══════════════════════════════════════════════════════════════
 
+interface ChromeStyle {
+  surface: string;
+  text: string;
+  muted: string;
+  accent: string;
+  border: string;
+  radius: string;
+}
+
 function ExportTopNavbar({
   title,
   progress,
   totalScore,
   maxScore,
   isDark,
+  chromeStyle,
 }: {
   title: string;
   progress: number;
   totalScore: number;
   maxScore: number;
   isDark: boolean;
+  chromeStyle?: ChromeStyle;
 }) {
+  const surface = chromeStyle?.surface ?? (isDark ? '#0e1c2f' : '#ffffff');
+  const text = chromeStyle?.text ?? (isDark ? '#e8f2ff' : '#1e293b');
+  const muted = chromeStyle?.muted ?? '#64748b';
+  const accent = chromeStyle?.accent ?? '#fbbf24';
+  const border = chromeStyle?.border ?? 'rgba(255,255,255,0.1)';
+
   return (
-    <div className={`h-12 flex items-center gap-3 px-4 shrink-0 z-10 ${
-      isDark
-        ? 'bg-[#0e1c2f]/95 backdrop-blur-md border-b border-white/10'
-        : 'bg-white border-b border-slate-200'
-    }`}>
+    <div
+      className="h-12 flex items-center gap-3 px-4 shrink-0 z-10"
+      style={{
+        background: isDark ? `${surface}f2` : surface,
+        backdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${border}`,
+      }}
+    >
       {/* Title */}
       <div className="flex-1 min-w-0">
-        <h1 className={`text-sm font-semibold truncate ${
-          isDark ? 'text-white' : 'text-slate-800'
-        }`}>{title}</h1>
+        <h1 className="text-sm font-semibold truncate" style={{ color: text }}>{title}</h1>
       </div>
 
       {/* Progress bar */}
       <div className="flex items-center gap-2">
-        <div className={`w-24 h-2 rounded-full overflow-hidden ${
-          isDark ? 'bg-white/10' : 'bg-slate-200'
-        }`}>
+        <div className="w-24 h-2 rounded-full overflow-hidden" style={{ background: `${muted}30` }}>
           <div
-            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${progress}%`, background: accent }}
           />
         </div>
-        <span className={`text-[10px] font-medium min-w-[32px] text-right ${
-          isDark ? 'text-slate-400' : 'text-slate-500'
-        }`}>
+        <span className="text-[10px] font-medium min-w-[32px] text-right" style={{ color: muted }}>
           {progress}%
         </span>
       </div>
@@ -147,6 +163,7 @@ function ExportBottomNav({
   isNextLocked,
   lockReason,
   isDark,
+  chromeStyle,
 }: {
   currentScreen: number;
   totalScreens: number;
@@ -158,7 +175,12 @@ function ExportBottomNav({
   isNextLocked: boolean;
   lockReason: string;
   isDark: boolean;
+  chromeStyle?: ChromeStyle;
 }) {
+  const surface = chromeStyle?.surface ?? (isDark ? '#0e1c2f' : '#ffffff');
+  const border = chromeStyle?.border ?? 'rgba(255,255,255,0.1)';
+  const accent = chromeStyle?.accent ?? '#fbbf24';
+  const muted = chromeStyle?.muted ?? '#64748b';
   // Cover page gets a prominent "Mulai" button
   const isCoverPage = currentScreen === 0 && templateType === 'cover';
 
@@ -183,11 +205,14 @@ function ExportBottomNav({
   };
 
   return (
-    <div className={`h-14 flex items-center justify-between px-4 shrink-0 z-10 ${
-      isDark
-        ? 'bg-[#0e1c2f]/95 backdrop-blur-md border-t border-white/10'
-        : 'bg-white border-t border-slate-200'
-    }`}>
+    <div
+      className="h-14 flex items-center justify-between px-4 shrink-0 z-10"
+      style={{
+        background: isDark ? `${surface}f2` : surface,
+        backdropFilter: 'blur(12px)',
+        borderTop: `1px solid ${border}`,
+      }}
+    >
       {/* Prev — hidden on cover page */}
       {!isCoverPage ? (
         <Button
@@ -633,12 +658,26 @@ export default function ExportApp() {
   const phaseMeta = getPhaseMeta(templateType);
   const pageTitle = page?.label || phaseMeta.label || `Halaman ${currentScreenIndex + 1}`;
 
-  // Detect dark content (same logic as LearningMediaShell)
+  // Sprint 8.2C: resolve Style Contract tokens for chrome
+  const pageStyle: ResolvePageStyleTokensResult | null = page
+    ? resolvePageStyleTokens(page)
+    : null;
+  const chromeBg = pageStyle?.tokens.colors.background ?? '#080f1a';
+  const chromeSurface = pageStyle?.tokens.colors.surface ?? '#0e1c2f';
+  const chromeText = pageStyle?.tokens.colors.text ?? '#e8f2ff';
+  const chromeMuted = pageStyle?.tokens.colors.textMuted ?? '#64748b';
+  const chromeAccent = pageStyle?.tokens.colors.accent ?? '#fbbf24';
+  const chromeBorder = pageStyle?.tokens.colors.border ?? 'rgba(255,255,255,0.1)';
+  const chromeRadius = pageStyle?.tokens.shape.radius ?? '12px';
+
+  // Detect dark content — use resolved background luminance
   const isDarkContent = (() => {
-    const schemaThemeId = page?.schema?.themeId || (page?.templateData as Record<string, unknown>)?.schemaThemeId as string | undefined;
-    const lightThemes = ['ios-light', 'ios-warm', 'minimal', 'ocean-light', 'warm-light'];
-    if (lightThemes.includes(schemaThemeId || '')) return false;
-    return true;
+    const bg = pageStyle?.tokens.colors.background ?? '#080f1a';
+    if (!bg.startsWith('#') || bg.length < 7) return true;
+    const r = parseInt(bg.slice(1, 3), 16);
+    const g = parseInt(bg.slice(3, 5), 16);
+    const b = parseInt(bg.slice(5, 7), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
   })();
 
   // ── Handlers ──
@@ -669,9 +708,10 @@ export default function ExportApp() {
   if (!page) return null;
 
   return (
-    <div className={`flex-1 flex flex-col h-screen overflow-hidden ${
-      isDarkContent ? 'bg-[#080f1a]' : 'bg-slate-100'
-    }`}>
+    <div
+      className="flex-1 flex flex-col h-screen overflow-hidden"
+      style={{ background: chromeBg, color: chromeText }}
+    >
       {/* Top Navbar — title, progress, score */}
       <ExportTopNavbar
         title={pageTitle}
@@ -679,14 +719,26 @@ export default function ExportApp() {
         totalScore={totalScore}
         maxScore={maxScore}
         isDark={isDarkContent}
+        chromeStyle={{
+          surface: chromeSurface,
+          text: chromeText,
+          muted: chromeMuted,
+          accent: chromeAccent,
+          border: chromeBorder,
+          radius: chromeRadius,
+        }}
       />
 
       {/* Phase badge row */}
-      <div className={`flex items-center gap-2 px-4 py-1.5 shrink-0 ${
-        isDarkContent
-          ? 'bg-[#0e1c2f]/80 border-b border-white/5'
-          : 'bg-white/80 border-b border-slate-100'
-      }`}>
+      <div
+        className="flex items-center gap-2 px-4 py-1.5 shrink-0"
+        style={{
+          background: isDarkContent
+            ? `${chromeSurface}80`
+            : 'rgba(255,255,255,0.8)',
+          borderBottom: `1px solid ${chromeBorder}`,
+        }}
+      >
         <PhaseBadge templateType={templateType} />
         <span className="text-[11px] text-slate-400">
           Halaman {currentScreenIndex + 1} dari {totalScreens}
@@ -733,6 +785,14 @@ export default function ExportApp() {
         isNextLocked={!isNextAllowed && currentScreenIndex < totalScreens - 1}
         lockReason={nextLockReason}
         isDark={isDarkContent}
+        chromeStyle={{
+          surface: chromeSurface,
+          text: chromeText,
+          muted: chromeMuted,
+          accent: chromeAccent,
+          border: chromeBorder,
+          radius: chromeRadius,
+        }}
       />
 
       {/* Navigation Lock Toast */}
