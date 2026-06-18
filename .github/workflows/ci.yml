@@ -111,41 +111,27 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Build (next build)
+      - name: Build (npm run build, exit code 0 required)
         env:
           NODE_OPTIONS: '--max-old-space-size=2048'
-        # The build script includes a `cp` step for standalone output
-        # that fails because output:'standalone' is disabled (BUILD-001).
-        # We tolerate the cp failure as long as Next.js compiled successfully.
-        run: |
-          set +e
-          npm run build > build-output.txt 2>&1
-          BUILD_EXIT=$?
-          set -e
-          if grep -q "Compiled successfully" build-output.txt; then
-            echo "✅ Next.js compiled successfully"
-            exit 0
-          else
-            echo "❌ Build failed — 'Compiled successfully' not found"
-            tail -30 build-output.txt
-            exit 1
-          fi
+        run: npm run build
 
       - name: Verify build artifacts
         run: |
-          # Build is considered successful if:
+          # Build is considered successful only if:
           #   1. `npm run build` exited 0 (above step)
-          #   2. .next/ directory has actual build output
+          #   2. .next/ directory exists with BUILD_ID
           #
-          # Note: .next/standalone/ is NOT required because
-          # output: 'standalone' is currently disabled in next.config.ts
-          # (BUILD-001 in KNOWN_ISSUES.md). The cp step in the build
-          # script will fail, but that doesn't affect the actual Next.js
-          # compile. We only verify .next/ exists.
-          if [ ! -d ".next" ]; then
-            echo "❌ .next/ directory missing"
+          # Sprint 8.2S-2-Patch-5: build script no longer includes
+          # the standalone cp steps that caused false failures.
+          # output:'standalone' is disabled in next.config.ts —
+          # the app uses `next start` (not standalone server.js).
+          # We verify .next/BUILD_ID which Next.js generates on
+          # successful compile.
+          if [ ! -f ".next/BUILD_ID" ]; then
+            echo "❌ .next/BUILD_ID missing — build did not complete"
             exit 1
           fi
-          echo "✅ Build artifacts verified (.next/ exists)"
+          echo "✅ Build artifacts verified (.next/BUILD_ID exists)"
           echo "--- .next/ size ---"
           du -sh .next/
