@@ -1544,3 +1544,34 @@ Stage Summary:
 - TS baseline unchanged (48 sigs, 0 new errors)
 - Contract & Boundary remains FROZEN
 - Sprint 8.2C READY for Senior Review
+
+---
+Task ID: 8.2C-Patch-1
+Agent: Super Z (main)
+Task: Sprint 8.2C-Patch-1 — unmocked consumer tests + payload tests + standalone boot
+
+Work Log:
+- Senior Review 8.2C: 4 blockers. Patch-1 addresses all.
+- Blocker 1 (CI run ID): CI run #27772486010 on SHA 5235285 confirmed success.
+- Blocker 2 (consumer mocked): New export-consumer-smoke.test.tsx (10 tests)
+  renders REAL ExportApp WITHOUT mocking PageFrame, SchemaScreenRenderer,
+  GoldenPageRenderer, ScreenAdapter. Verified: bg #0f172a, bg #1c1917,
+  overlay 0.4 in DOM, legacy no crash, all 4 fixtures.
+- Blocker 3 (overlay in DOM): Now proven via unmocked consumer test —
+  overlay=40 → rgba alpha 0.4 in real DOM inline style.
+- Blocker 4 (GET contract limitation): Documented explicitly in test:
+  reconstructedPage has no contractId property (Prisma limitation).
+  Test verifies templateVariant + pageMode ARE preserved.
+  POST export test verifies contractId IS preserved in full payload.
+- Standalone HTML boot smoke (3 tests):
+  * __EXPORT_DATA__ payload parseable + all authority fields present
+  * POST export preserves contractId, pageMode, schema, templateData
+  * GET export documents contractId limitation (falls back to legacy bridge)
+- All 536 tests PASS. TS baseline unchanged (48 sigs, 0 new errors).
+
+Stage Summary:
+- 1 file baru: src/core/style/__tests__/export-consumer-smoke.test.tsx (10 tests)
+- Zero source code changes — pure test addition
+- CI run #27772486010 on SHA 5235285: 3/3 jobs success
+- Contract & Boundary remains FROZEN
+- Sprint 8.2C-Patch-1 READY for Senior Review
