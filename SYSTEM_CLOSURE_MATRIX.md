@@ -30,7 +30,7 @@
 | Import      | LOCAL_REPORTED  | N/A             | LOCAL_REPORTED  | LOCAL_REPORTED  | LOCAL_REPORTED  | NOT_TESTED      | NOT_TESTED      | NOT_TESTED      |
 | Schema migration | N/A        | N/A             | N/A             | LOCAL_REPORTED  | N/A             | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Style Contract | PASS_LOCAL   | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
-| Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PARTIAL (M-007 timer leak fixed, listener cleanup PASS) | NOT_TESTED — Sprint 8.2C | N/A             |
+| Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PASS_CI | NOT_TESTED — Sprint 8.2C | N/A             |
 | Error recovery  | N/A         | N/A             | N/A             | N/A             | N/A             | NOT_TESTED      | NOT_TESTED      | N/A             |
 
 ## Evidence Index
@@ -125,7 +125,13 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - Evidence: `src/__tests__/mode-lifecycle-smoke.test.ts` (commit `a701eb4` + `8.2S-2-Patch`)
   - Edit → Preview transition verified
   - M-006 fix (hoveredBlockId clear) verified
-- **Present**: `PARTIAL` (M-007 timer leak FIXED, listener cleanup PASS)
+- **Present**: `PASS_CI`
+  - Evidence: `src/core/style/__tests__/present-wiring-integration.test.tsx` (11 tests, Sprint 8.2B)
+  - PresentMode → PageRenderer mode="preview" → resolvePageStyleTokens + bridge
+  - PlayOverlay → PageRenderer mode="preview" → same token path
+  - LearningMediaShell → PageRenderer mode="learn" → same token path
+  - 3 fixtures verified: golden-pertemuan, macam-norma-legacy, fresh-mission-adventure
+  - Canvas/Present token parity verified (JSON.stringify equality)
   - Evidence: `src/__tests__/mode-lifecycle-smoke.test.ts` cold-start tests (commit 8.2S-2-Patch-2)
   - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` expanded cleanup (commit 8.2S-2-Patch-3)
   - M-007 timer leak FIXED in 8.2S-2-Patch-3 (synchronous localStorage mock in tests + zustand persist synchronous storage)

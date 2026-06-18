@@ -1380,3 +1380,37 @@ Stage Summary:
 - Zero source code changes — pure documentation sync
 - Sprint 8.2S: TECHNICAL PASS + DOC SYNC COMPLETE → READY FOR CLOSED
 - Sprint 8.2B (Present): TECHNICALLY UNBLOCKED
+
+---
+Task ID: 8.2B
+Agent: Super Z (main)
+Task: Sprint 8.2B — Present Wiring Integration
+
+Work Log:
+- Audit: PresentMode, PlayOverlay, LearningMediaShell ALL route through
+  PageRenderer (mode="preview" or mode="learn"). Token flow already
+  wired via Sprint 8.2A (resolvePageStyleTokens + bridge + auto-golden gate).
+  No missing wiring points found.
+- Created src/core/style/__tests__/present-wiring-integration.test.tsx (11 tests):
+  * Fixture 1 golden-pertemuan: PresentMode + PlayOverlay verify explicit contract
+    source, academic-clean preset, golden-pertemuan contractId, token bridge
+  * Fixture 2 macam-norma-legacy: PresentMode + LearningMediaShell verify
+    legacy-theme source, auto-golden fallback, legacyThemeId preserved
+  * Fixture 3 fresh-mission-adventure: PresentMode + PlayOverlay verify
+    new-preset source, NO auto-golden, mission-adventure earth-tone colors
+  * Navigation style: glass + minimal carried through to tokens.navigation.style
+  * Background overlay: overlay=40 + imageUrl preserved
+  * Block accent: accentColor="p" resolves to academic-clean purple #c084fc
+  * Canvas/Present parity: same page produces identical pageStyleTokens
+- Tests mock PageFrame + SchemaScreenRenderer to capture actual props.
+  PresentMode/PlayOverlay/LearningMediaShell are rendered REAL (not mocked).
+  Store pages set before render (PresentMode reads from store, not props).
+- Updated SYSTEM_CLOSURE_MATRIX.md: Mode lifecycle Present → PASS_CI
+
+Stage Summary:
+- 1 file baru: src/core/style/__tests__/present-wiring-integration.test.tsx (11 tests)
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- All 510 tests PASS (was 499 + 11 Present baru)
+- Present path verified: token flow reaches PresentMode, PlayOverlay, LearningMediaShell
+- Contract & Boundary remains FROZEN
+- Sprint 8.2B READY for Senior Review
