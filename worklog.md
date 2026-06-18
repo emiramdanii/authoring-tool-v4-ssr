@@ -1446,3 +1446,36 @@ Stage Summary:
 - 0 new TS errors — baseline unchanged from pre-8.2B
 - Contract & Boundary remains FROZEN
 - Sprint 8.2B-Patch-1 READY for Senior Review
+
+---
+Task ID: 8.2B-Patch-2
+Agent: Super Z (main)
+Task: Sprint 8.2B-Patch-2 — strengthen DOM assertions in consumer smoke tests
+
+Work Log:
+- Senior Review 8.2B-Patch-1: 5 issues with weak assertions. Patch-2 fixes all.
+- Blocker 1 (text too generic): Assertions now use waitFor + textContent match
+  for deterministic fixture text. Tests check page labels ("Halaman 1") and
+  section labels ("Materi Pembelajaran") that the renderer deterministically outputs.
+- Blocker 2 (background too loose): Assertions now check specific rgb() values:
+  - golden-pertemuan: rgb(15, 23, 42) = #0f172a (academic-clean)
+  - fresh-mission-adventure: rgb(28, 25, 23) = #1c1917 (NOT golden)
+- Blocker 3 (mission bg unasserted): Now asserted with findElementsWithBackground
+  helper that checks inline style.background for specific color values.
+- Blocker 4 ("real block" only checked length): Tests now use waitFor to ensure
+  schema renderer has loaded (content > 10 chars), plus specific page label match.
+- Blocker 5 (legacy only checked length): LearningMediaShell test now checks
+  for "Halaman 1" text deterministically from fixture.
+- Added image-background-large fixture test (Blocker D from review):
+  - Verifies overlay=40 produces rgba alpha 0.4 in DOM inline style
+  - Verifies content renders without crash
+- All assertions use waitFor for async schema renderer loading.
+- 9 tests total (was 6 in Patch-1, +3 new for image-bg + multi-page + crash).
+- All 519 sprint tests PASS. TypeScript baseline unchanged (48 sigs, 0 new errors).
+
+Stage Summary:
+- 1 file modified: present-consumer-smoke.test.tsx (rewritten with deterministic assertions)
+- 1 file modified: worklog.md
+- Zero source code changes — pure test strengthening
+- Contract & Boundary remains FROZEN
+- Sprint 8.2B-Patch-2 READY for Senior Review
