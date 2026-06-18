@@ -1479,3 +1479,25 @@ Stage Summary:
 - Zero source code changes — pure test strengthening
 - Contract & Boundary remains FROZEN
 - Sprint 8.2B-Patch-2 READY for Senior Review
+
+---
+Task ID: 8.2B-Closure
+Agent: Super Z (main)
+Task: Sprint 8.2B closure documentation sync
+
+Work Log:
+- Senior Review Final: TECHNICAL PASS / CLOSURE PENDING DOC SYNC.
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * M-007 evidence: "FIXED" → "CLOSED — TEST-HARNESS FALSE POSITIVE (production Zustand storage unchanged)"
+  * Removed "Present wiring itself: NOT_TESTED"
+  * Consumer smoke test count: 6 → 9 (Patch-2)
+  * "Lubang Terbesar Sebelum Present" → "Lubang Setelah Present (Sprint 8.2B CLOSED)"
+  * Present mode wiring: NOT_TESTED → PASS_CI
+  * Present/Export split: Present = PASS_CI, Export = NOT_TESTED (8.2C)
+- Sprint 8.2B: TECHNICAL PASS + DOC SYNC COMPLETE → READY FOR CLOSED
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Zero source code changes — pure documentation sync
+- Sprint 8.2B: PASS / CLOSURE COMPLETE
+- Sprint 8.2C (Export): TECHNICALLY UNBLOCKED

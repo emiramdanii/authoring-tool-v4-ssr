@@ -46,7 +46,8 @@ test file + commit SHA. Berikut daftar evidence per sel.
 - **Preview**: `PASS_LOCAL`
   - Evidence: `src/core/style/__tests__/canvas-preview-parity.test.ts` (commit `c02adb5`)
   - Evidence: `src/core/style/__tests__/page-renderer-integration.test.tsx` (commit `262dd1b`)
-- **Present/Export**: `NOT_TESTED`
+- **Present**: `PASS_CI` (Sprint 8.2B CLOSED)
+- **Export**: `NOT_TESTED` — Sprint 8.2C
   - Sprint 8.2B/8.2C territory
 - **Legacy**: `PASS_LOCAL`
   - Evidence: `src/core/style/__tests__/legacy-style-adapter.test.ts` (commit `50af012`)
@@ -127,7 +128,7 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - M-006 fix (hoveredBlockId clear) verified
 - **Present**: `PASS_CI`
   - Token boundary: `src/core/style/__tests__/present-wiring-integration.test.tsx` (11 tests, Sprint 8.2B)
-  - Consumer smoke: `src/core/style/__tests__/present-consumer-smoke.test.tsx` (6 tests, Sprint 8.2B-Patch-1)
+  - Consumer smoke: `src/core/style/__tests__/present-consumer-smoke.test.tsx` (9 tests, Sprint 8.2B-Patch-2)
   - Unmocked: PageFrame, SchemaScreenRenderer, GoldenPageRenderer, ScreenAdapter all REAL
   - 3 corpus fixtures: golden-pertemuan, fresh-mission-adventure, macam-norma-legacy
   - Verified: block text renders, background style applied, no crash, preset colors correct
@@ -138,10 +139,9 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - Canvas/Present token parity verified (JSON.stringify equality)
   - Evidence: `src/__tests__/mode-lifecycle-smoke.test.ts` cold-start tests (commit 8.2S-2-Patch-2)
   - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` expanded cleanup (commit 8.2S-2-Patch-3)
-  - M-007 timer leak FIXED in 8.2S-2-Patch-3 (synchronous localStorage mock in tests + zustand persist synchronous storage)
+  - M-007 CLOSED — TEST-HARNESS FALSE POSITIVE (jsdom Storage.setItem setTimeout artifact; production Zustand storage unchanged)
   - Window + document + ResizeObserver + fullscreen listener cleanup: PASS_LOCAL
   - Timer cleanup: PASS_LOCAL (zero pending after unmount, verified for PreviewMode/PresentMode/LearningMediaShell/PlayOverlay + rapid 5x)
-  - Present wiring itself: NOT_TESTED (Sprint 8.2B territory)
 - **Export**: `NOT_TESTED — Sprint 8.2C`
   - M-005 (selection leak) FIXED in 8.2S-2-Patch
   - Export pipeline itself belum di-wire (Sprint 8.2C)
@@ -152,7 +152,7 @@ test file + commit SHA. Berikut daftar evidence per sel.
     - net-delta-0 document listeners after unmount
     - ResizeObserver.disconnect called
     - fullscreenchange listeners cleaned up
-    - zero pending setTimeout timers after unmount (M-007 FIXED)
+    - zero pending setTimeout timers after unmount (M-007 CLOSED — test-harness false positive)
     - rapid 5x render/unmount: zero pending timers (no accumulation)
 
 ### Error recovery
@@ -160,12 +160,11 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - KNOWN_ISSUES RECOV-001: Tidak ada UI recovery flow
   - Sprint 8.5 target
 
-## Lubang Terbesar Sebelum Present (Sprint 8.2B)
+## Lubang Setelah Present (Sprint 8.2B CLOSED)
 
-Setelah 8.2S-2-Patch-5, status lubang:
+Setelah 8.2B-Patch-2, status:
 
-1. **Present mode wiring** — `NOT_TESTED` (Page/Block/Theme/Bg/Nav/Quiz Present kolom)
-   → Sprint 8.2B akan tutup
+1. **Present mode wiring** — `PASS_CI` ✅ (11 token boundary + 9 consumer smoke tests, CI verified on SHA `6e9201f`)
 2. **Mode lifecycle Preview/Present** — `PASS_CI` ✅ (smoke + listener tests, CI verified on SHA `fe7eee2`)
 3. **Interactive store score bocor** — FIXED (M-001) ✅
 4. **Fixture corpus** — `PASS_LOCAL` ✅ (6 fixture di `fixtures/projects/`)
