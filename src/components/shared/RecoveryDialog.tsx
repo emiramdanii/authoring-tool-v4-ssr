@@ -21,11 +21,12 @@
 //   - Emergency save from AppErrorBoundary is now read back and offered
 // ═══════════════════════════════════════════════════════════════════════
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useDirtyStore } from '@/store/dirty-store';
 import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
+import { bootRecoveryOrchestrator, type BootReport } from '@/core/editor/boot-recovery';
 import {
   AlertTriangle,
   RotateCcw,
@@ -53,6 +54,28 @@ export function hasDirtyExit(): boolean {
   return localStorage.getItem(DIRTY_EXIT_KEY) === '1';
 }
 
+/**
+ * Clear ALL recovery-related storage keys.
+ *
+ * Sprint 8.5A: Used by "Mulai Baru" to guarantee a clean slate — both
+ * localStorage (canva/authoring/emergency) and sessionStorage crash
+ * recovery data via the boot recovery orchestrator.
+ */
+export function clearRecoveryKeys(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(CANVA_STORAGE_KEY);
+    localStorage.removeItem(AUTHORING_STORAGE_KEY);
+    localStorage.removeItem(EMERGENCY_SAVE_KEY);
+    localStorage.removeItem(DIRTY_EXIT_KEY);
+    localStorage.removeItem(SESSION_ACTIVE_KEY);
+  } catch { /* ignore */ }
+  // Also discard any incomplete-transaction recovery data via the orchestrator
+  try {
+    bootRecoveryOrchestrator.discardCrashRecovery();
+  } catch { /* non-critical */ }
+}
+
 export function clearDirtyExitFlag(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(DIRTY_EXIT_KEY);
@@ -74,7 +97,23 @@ export function markSessionCleanExit(): void {
 }
 
 // ── Types ────────────────────────────────────────────────────────────
-type RecoveryReason = 'emergency' | 'crash' | 'auto-save';
+// Sprint 8.5A: 'boot-report' is a 4th reason, surfaced when
+// BootRecoveryOrchestrator.run() returns needsRecovery=true.
+// Priority: boot-report > emergency > crash > auto-save.
+type RecoveryReason = 'boot-report' | 'emergency' | 'crash' | 'auto-save';
+
+/**
+ * Props for RecoveryDialog.
+ *
+ * Sprint 8.5A: `bootReport` is produced by `bootRecoveryOrchestrator.run()`
+ * at AuthoringTool init. When `bootReport.needsRecovery` is true, the
+ * dialog displays the boot report's severity + summary, and the
+ * "Pulihkan" / "Mulai Baru" actions call the orchestrator's
+ * applyCrashRecovery / discardCrashRecovery respectively.
+ */
+export interface RecoveryDialogProps {
+  bootReport?: BootReport | null;
+}
 
 interface CanvaRecoveryData {
   timestamp: number;
@@ -267,14 +306,98 @@ function getTimeAgo(timestamp: number): string {
 // COMPONENT
 // ══════════════════════════════════════════════════════════════════════
 
-export default function RecoveryDialog() {
+export default function RecoveryDialog({ bootReport }: RecoveryDialogProps = {}) {
   const [recoveryInfo, setRecoveryInfo] = useState<RecoveryInfo | null>(() => {
     if (typeof window === 'undefined') return null;
     return checkRecoverableData();
   });
 
+  // Sprint 8.5A: Boot-report takes priority over localStorage-based detection.
+  // When bootReport.needsRecovery is true, we synthesize a RecoveryInfo that
+  // surfaces the boot report's severity + summary in the dialog UI.
+  useEffect(() => {
+    if (!bootReport || !bootReport.needsRecovery) return;
+    setRecoveryInfo((prev) => {
+      // boot-report has highest priority — overrides emergency/crash/auto-save
+      const canva: CanvaRecoveryData | null = prev?.canva ?? (bootReport.healedPages?.length
+        ? {
+            timestamp: bootReport.bootTimestamp,
+            pageCount: bootReport.healedPages.length,
+            currentPageLabel: bootReport.healedPages[0]?.label || 'Untitled',
+          }
+        : null);
+      return {
+        reason: 'boot-report',
+        canva,
+        authoring: prev?.authoring ?? null,
+      };
+    });
+  }, [bootReport]);
+
   const loadCanvaFromStorage = useCanvaStore((s) => s.loadFromStorage);
   const loadAuthoringFromStorage = useAuthoringStore((s) => s.loadFromStorage);
+
+  // Sprint 8.5A: a11y — focus trap + Esc handler
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const titleId = 'recovery-dialog-title';
+
+  // Focus first action button on mount
+  useEffect(() => {
+    if (!recoveryInfo) return;
+    // Move focus to the first focusable element shortly after mount
+    const t = window.setTimeout(() => {
+      const root = dialogRef.current;
+      if (!root) return;
+      const first = root.querySelector<HTMLElement>('button, [href], input, [tabindex]:not([tabindex="-1"])');
+      first?.focus();
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [recoveryInfo]);
+
+  // Esc key handler — Esc = "Mulai Baru" (discard recovery)
+  // This is safe because the dialog only appears when there's recoverable
+  // data; Esc is the equivalent of "I don't want to recover, start fresh".
+  useEffect(() => {
+    if (!recoveryInfo) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      handleStartFreshRef.current();
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [recoveryInfo]);
+
+  // Tab focus trap — cycle Tab within dialog
+  useEffect(() => {
+    if (!recoveryInfo) return;
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const root = dialogRef.current;
+      if (!root) return;
+      const focusables = root.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener('keydown', handleTab);
+    return () => window.removeEventListener('keydown', handleTab);
+  }, [recoveryInfo]);
+
+  // handleStartFresh is recreated on every render (depends on stores).
+  // Keep a ref so the Esc handler (registered once per recoveryInfo change)
+  // can call the latest version without re-binding the listener.
+  const handleStartFreshRef = useRef<() => void>(() => {});
 
   // ── Session marker setup ─────────────────────────────────────────
   useEffect(() => {
@@ -337,23 +460,29 @@ export default function RecoveryDialog() {
       }
     } catch { /* ignore */ }
 
+    // Sprint 8.5A: If boot-report flagged an incomplete transaction, apply
+    // the orchestrator's crash recovery (rolls back to pre-transaction schema).
+    if (bootReport?.transactionRecovery.hasIncompleteTransaction) {
+      try {
+        bootRecoveryOrchestrator.applyCrashRecovery();
+      } catch { /* non-critical — loadFromStorage will still run */ }
+    }
+
     // Load data from localStorage into both stores
     loadCanvaFromStorage();
     loadAuthoringFromStorage();
     clearDirtyExitFlag();
     markSessionActive();
     setRecoveryInfo(null);
-  }, [loadCanvaFromStorage, loadAuthoringFromStorage]);
+  }, [loadCanvaFromStorage, loadAuthoringFromStorage, bootReport]);
 
   const handleStartFresh = useCallback(() => {
-    // Actually clear ALL stored data (fixes the bug where "Mulai Baru" didn't clear data)
-    try {
-      localStorage.removeItem(CANVA_STORAGE_KEY);
-      localStorage.removeItem(AUTHORING_STORAGE_KEY);
-      localStorage.removeItem(EMERGENCY_SAVE_KEY);
-    } catch { /* ignore */ }
+    // Sprint 8.5A: Use the unified clearRecoveryKeys() helper so ALL recovery
+    // storage (canva/authoring/emergency/dirty-exit/session-active + crash
+    // recovery data via orchestrator.discardCrashRecovery) is wiped in one
+    // place. This is the source of truth for "start fresh".
+    clearRecoveryKeys();
 
-    clearDirtyExitFlag();
     markSessionCleanExit();
 
     // Reset both stores to default state
@@ -363,12 +492,28 @@ export default function RecoveryDialog() {
     setRecoveryInfo(null);
   }, []);
 
+  // Keep Esc-handler ref in sync with latest handleStartFresh
+  handleStartFreshRef.current = handleStartFresh;
+
   if (!recoveryInfo) return null;
 
   const { reason, canva, authoring } = recoveryInfo;
 
   // Determine header based on reason
-  const headerConfig = {
+  const headerConfig: Record<RecoveryReason, {
+    icon: React.ReactNode;
+    bgClass: string;
+    iconBgClass: string;
+    title: string;
+    subtitle: string;
+  }> = {
+    'boot-report': {
+      icon: <ShieldAlert size={20} className="text-orange-400" />,
+      bgClass: 'bg-orange-500/10 border-orange-500/20',
+      iconBgClass: 'bg-orange-500/20',
+      title: 'Pemulihan Boot Aman',
+      subtitle: 'Data sebelumnya tidak konsisten — sistem telah memulihkannya',
+    },
     emergency: {
       icon: <ShieldAlert size={20} className="text-red-400" />,
       bgClass: 'bg-red-500/10 border-red-500/20',
@@ -398,6 +543,10 @@ export default function RecoveryDialog() {
 
   // Build summary
   const summaryParts: string[] = [];
+  // Sprint 8.5A: For boot-report, surface orchestrator's summary message
+  if (reason === 'boot-report' && bootReport) {
+    summaryParts.push(bootReport.summary);
+  }
   if (canva) summaryParts.push(`${canva.pageCount} halaman`);
   if (authoring) {
     if (authoring.tpCount > 0) summaryParts.push(`${authoring.tpCount} tujuan pembelajaran`);
@@ -411,8 +560,23 @@ export default function RecoveryDialog() {
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md mx-4 rounded-2xl bg-app-surface border border-app-border shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+      // Sprint 8.5A: a11y — backdrop click = Esc = start fresh
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          handleStartFreshRef.current();
+        }
+      }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby="recovery-dialog-desc"
+        className="w-full max-w-md mx-4 rounded-2xl bg-app-surface border border-app-border shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+      >
         {/* Header */}
         <div className={`px-5 py-4 border-b ${header.bgClass}`}>
           <div className="flex items-center gap-3">
@@ -420,8 +584,8 @@ export default function RecoveryDialog() {
               {header.icon}
             </div>
             <div>
-              <h2 className="text-sm font-bold text-amber-300">{header.title}</h2>
-              <p className="text-[10px] text-amber-400/60 mt-0.5">
+              <h2 id={titleId} className="text-sm font-bold text-amber-300">{header.title}</h2>
+              <p id="recovery-dialog-desc" className="text-[10px] text-amber-400/60 mt-0.5">
                 {header.subtitle}
               </p>
             </div>

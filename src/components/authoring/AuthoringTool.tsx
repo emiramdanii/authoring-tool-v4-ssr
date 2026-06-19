@@ -14,6 +14,9 @@ import { ProjectProvider, useProjectManager } from '@/hooks/use-project-manager'
 import WorkflowStepIndicator from '@/components/shared/WorkflowStepIndicator';
 import TeacherModeToggle from '@/components/shared/TeacherModeToggle';
 import RecoveryDialog, { setDirtyExitFlag, clearDirtyExitFlag } from '@/components/shared/RecoveryDialog';
+// Sprint 8.5A: Boot recovery orchestrator — runs once at app boot to detect
+// incomplete transactions, integrity issues, and crash-prone blocks.
+import { bootRecoveryOrchestrator, type BootReport } from '@/core/editor/boot-recovery';
 const PerformanceMonitor = dynamic(() => import('@/components/shared/PerformanceMonitor'), { ssr: false });
 
 // Lazy-load panels — each panel is only loaded when first rendered
@@ -122,6 +125,9 @@ function AuthoringToolInner() {
   });
   const [tourStep, setTourStep] = useState(0);
   const [wizardOpen, setWizardOpen] = useState(false);
+  // Sprint 8.5A: Boot report from bootRecoveryOrchestrator.run().
+  // Initialized to null — populated by the boot effect after canva store loads.
+  const [bootReport, setBootReport] = useState<BootReport | null>(null);
   const activePanel = useAuthoringStore((s) => s.activePanel);
   const setActivePanel = useAuthoringStore((s) => s.setActivePanel);
   const dirty = useDirtyStore((s) => s.dirty);
@@ -142,6 +148,34 @@ function AuthoringToolInner() {
     loadFromStorage();
     clearDirtyExitFlag();
   }, [loadFromStorage]);
+
+  // Sprint 8.5A: Run boot recovery orchestrator once after stores load.
+  // The orchestrator is fault-tolerant (never throws, never returns null)
+  // and produces a BootReport that may surface transaction/integrity/safe-mode
+  // issues. We defer the run by one tick so StoreInit has a chance to populate
+  // the canva store first; otherwise pages would be empty.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let cancelled = false;
+    const t = window.setTimeout(() => {
+      if (cancelled) return;
+      try {
+        const pages = useCanvaStore.getState().pages;
+        const report = bootRecoveryOrchestrator.run(pages);
+        if (!cancelled && report.needsRecovery) {
+          setBootReport(report);
+        }
+      } catch {
+        // Orchestrator is supposed to never throw, but if it does we
+        // silently skip — RecoveryDialog will still work on localStorage
+        // detection alone.
+      }
+    }, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, []);
 
   // ── Dirty exit flag + browser confirmation ──
   useEffect(() => {
@@ -582,7 +616,7 @@ function AuthoringToolInner() {
       <PerformanceMonitor />
 
       {/* ── Unified Recovery Dialog ─────────────────────────── */}
-      <RecoveryDialog />
+      <RecoveryDialog bootReport={bootReport} />
 
       {/* ── Guided Tour Overlay ────────────────────────────── */}
       {showTour && activePanel === 'dashboard' && (
