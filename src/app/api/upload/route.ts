@@ -5,17 +5,31 @@
 // has been calling since Sprint 5. Previously returned 404, which broke
 // the image upload flow end-to-end.
 //
+// Sprint 8.5C-Patch-1 — SECURITY: removed image/svg+xml from allowed
+// types. SVG uploads are now rejected because:
+//   - SVG is XML text, so magic-byte verification doesn't apply
+//   - SVG can carry <script>, on* event handlers, <foreignObject>,
+//     external references, and other XSS payloads
+//   - Stored SVG served from same-origin /uploads/ would execute
+//     scripts in the app's origin → stored XSS
+//   - X-Content-Type-Options: nosniff does NOT sanitize SVG content;
+//     it only prevents MIME sniffing. The SVG itself remains executable.
+//   - For teacher image-upload use cases, JPG/PNG/GIF/WebP are sufficient.
+//   - If SVG support becomes a hard requirement, use Opsi B (sanitize
+//     with DOMPurify or equivalent + serve from a sandboxed origin).
+//
 // Contract (must match ImageUploader.tsx):
 //   Request:  POST multipart/form-data with field "file"
 //   Success:  200 { success: true, url: string, filename: string }
 //   Error:    400/413/500 { success: false, error: string (generic) }
 //
 // Validation:
-//   - Allowed MIME types: image/jpeg, image/png, image/gif, image/webp, image/svg+xml
+//   - Allowed MIME types: image/jpeg, image/png, image/gif, image/webp
+//     (image/svg+xml INTENTIONALLY EXCLUDED — see Patch-1 note above)
 //   - Max size: 5 MB (matches ImageUploader's MAX_SIZE_MB)
 //   - Reject empty files
 //   - Reject path traversal in filename (filename is content-derived, not user-supplied)
-//   - Magic-byte verification for non-SVG images (defense in depth —
+//   - Magic-byte verification for all allowed types (defense in depth —
 //     a malicious client could send image/jpeg MIME with non-image payload)
 //
 // Storage:
@@ -29,7 +43,6 @@
 //   - Server-side console.error with full error
 //   - Security headers applied by middleware (X-Content-Type-Options: nosniff
 //     prevents MIME sniffing on uploaded files)
-//   - SVG uploads stored as .svg; served with nosniff from middleware
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -39,12 +52,13 @@ import path from 'node:path';
 
 // ── Constants ────────────────────────────────────────────────────────
 
+// Sprint 8.5C-Patch-1: image/svg+xml INTENTIONALLY EXCLUDED for security.
+// See file header for rationale.
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
   'image/png',
   'image/gif',
   'image/webp',
-  'image/svg+xml',
 ]);
 
 // MIME → extension map (canonical extensions for storage)
@@ -53,13 +67,13 @@ const MIME_TO_EXT: Record<string, string> = {
   'image/png': 'png',
   'image/gif': 'gif',
   'image/webp': 'webp',
-  'image/svg+xml': 'svg',
 };
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB (matches ImageUploader)
 
-// Magic bytes for non-SVG images — defense in depth against MIME spoofing.
-// SVG is XML text, so we skip magic-byte check for it (rely on MIME + size).
+// Magic bytes for ALL allowed image types — defense in depth against
+// MIME spoofing. (Sprint 8.5C-Patch-1: SVG removed, so all remaining
+// types are binary and have verifiable magic bytes.)
 const MAGIC_BYTES: Record<string, number[]> = {
   'image/jpeg': [0xff, 0xd8, 0xff],
   'image/png': [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
@@ -74,11 +88,14 @@ const UPLOAD_URL_PREFIX = '/uploads';
 
 /**
  * Verify magic bytes match the expected signature for the given MIME type.
- * Returns true for SVG (text-based, no magic bytes to check).
+ * (Sprint 8.5C-Patch-1: SVG is no longer in ALLOWED_MIME_TYPES, so all
+ * allowed types have magic bytes. Unknown MIME types return false here
+ * as a fail-closed default — but the ALLOWED_MIME_TYPES check upstream
+ * already rejects them.)
  */
 function verifyMagicBytes(buffer: Buffer, mimeType: string): boolean {
   const expected = MAGIC_BYTES[mimeType];
-  if (!expected) return true; // SVG or unknown — skip check
+  if (!expected) return false; // fail-closed — unknown type rejected
   if (buffer.length < expected.length) return false;
   for (let i = 0; i < expected.length; i++) {
     if (buffer[i] !== expected[i]) return false;

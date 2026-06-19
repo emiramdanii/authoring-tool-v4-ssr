@@ -27,7 +27,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import { mkdir, rm, readFile, access } from 'node:fs/promises';
+import { mkdir, rm, readFile, access, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 
@@ -182,14 +182,45 @@ describe('Sprint 8.5C — /api/upload Route', () => {
     expect(body.url).toMatch(/^\/uploads\/[a-f0-9]{64}\.webp$/);
   });
 
-  it('POST with valid SVG returns URL with .svg extension', async () => {
-    const buffer = makeFakeImage('image/svg+xml', 0); // size override ignored for SVG
+  it('POST with SVG is REJECTED (400) — Sprint 8.5C-Patch-1 security fix', async () => {
+    // Sprint 8.5C-Patch-1: SVG uploads are blocked because SVG can carry
+    // XSS payloads (<script>, on* handlers, <foreignObject>, external
+    // refs) and stored SVG served from same-origin /uploads/ would
+    // execute scripts in the app's origin → stored XSS.
+    // nosniff header does NOT sanitize SVG content.
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><script>alert('xss')</script></svg>`;
+    const buffer = Buffer.from(svgContent);
     const file = new File([buffer], 'icon.svg', { type: 'image/svg+xml' });
     const req = makeUploadRequest(file);
     const res = await POST(req);
-    expect(res.status).toBe(200);
+
+    expect(res.status).toBe(400);
     const body = await res.json();
-    expect(body.url).toMatch(/^\/uploads\/[a-f0-9]{64}\.svg$/);
+    expect(body.success).toBe(false);
+    expect(body.error).toContain('Tipe file tidak didukung');
+    // Verify the file was NOT written to disk
+    const files = await readdir(TEST_UPLOAD_DIR).catch(() => [] as string[]);
+    expect(files.length).toBe(0);
+  });
+
+  it('POST with SVG containing XSS payload is REJECTED (400)', async () => {
+    // Even though MIME spoofing test verifies magic bytes, SVG itself
+    // is rejected at the MIME-type check before magic-byte verification.
+    // Verify multiple SVG attack vectors are all blocked:
+    const xssPayloads = [
+      `<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>`,
+      `<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>`,
+      `<svg xmlns="http://www.w3.org/2000/svg"><foreignObject>html</foreignObject></svg>`,
+      `<svg xmlns="http://www.w3.org/2000/svg"><use href="external.svg#x"/></svg>`,
+    ];
+    for (const payload of xssPayloads) {
+      const buffer = Buffer.from(payload);
+      const file = new File([buffer], 'xss.svg', { type: 'image/svg+xml' });
+      const res = await POST(makeUploadRequest(file));
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.success).toBe(false);
+    }
   });
 
   // ── Content-addressed dedupe ────────────────────────────────
@@ -335,6 +366,8 @@ describe('Sprint 8.5C — /api/upload Route', () => {
     expect(body.allowedTypes).toContain('image/png');
     expect(body.allowedTypes).toContain('image/gif');
     expect(body.allowedTypes).toContain('image/webp');
-    expect(body.allowedTypes).toContain('image/svg+xml');
+    // Sprint 8.5C-Patch-1: image/svg+xml intentionally EXCLUDED for security
+    expect(body.allowedTypes).not.toContain('image/svg+xml');
+    expect(body.allowedTypes.length).toBe(4);
   });
 });
