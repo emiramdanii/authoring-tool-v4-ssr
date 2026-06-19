@@ -236,10 +236,12 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
+    // Sprint 8.5B: log full error server-side, but return GENERIC message
+    // to client to prevent stack trace / internal detail leak.
     const message = error instanceof Error ? error.message : 'Export gagal';
-    console.error('[SCORM Export API] Error:', error);
+    console.error('[SCORM Export API] Error:', message, error);
     return NextResponse.json(
-      { error: message },
+      { success: false, error: 'Export SCORM gagal. Silakan coba lagi.' },
       { status: 500 }
     );
   }
