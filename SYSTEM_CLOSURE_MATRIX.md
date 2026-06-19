@@ -28,7 +28,7 @@
 | Quiz        | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Image/audio | PASS_CI         | PASS_CI         | PASS_CI         | PASS_CI         | PASS_CI         | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Import      | PASS_CI         | N/A             | PASS_CI         | PASS_CI         | PASS_CI         | NOT_TESTED      | NOT_TESTED      | PASS_CI         |
-| Schema migration | N/A        | N/A             | N/A             | LOCAL_REPORTED  | N/A             | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
+| Schema migration | N/A        | N/A             | N/A             | PASS_CI         | N/A             | NOT_TESTED      | NOT_TESTED      | PASS_CI         |
 | Style Contract | PASS_LOCAL   | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
 | Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PASS_CI | PASS_CI (POST full / GET partial) | N/A             |
 | Error recovery  | N/A         | N/A             | N/A             | PASS_CI         | N/A             | NOT_TESTED      | NOT_TESTED      | PASS_CI         |
@@ -140,11 +140,24 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - golden-pertemuan fixture: contractId + pageMode + schema.themeId + resolver source survive roundtrip
 
 ### Schema migration
-- **Reload**: `LOCAL_REPORTED`
-  - `migrateAllPages()` jalan di load time
-  - KNOWN_ISSUES PERSIST-002: idempotensi belum teruji menyeluruh
-- **Legacy**: `LOCAL_REPORTED`
-  - overlay elements migration (`_migrationVersion < 1`) ada
+- **Reload**: `PASS_CI` (Sprint 8.6A CLOSED)
+  - Evidence: `src/__tests__/project-schema-versioning.test.ts` (58 tests, commit `b1a18dc`)
+  - Evidence: `src/__tests__/schema-versioning-import-export.test.ts` (24 tests, commit `b1a18dc`)
+  - `migrateAllPages()` jalan di load time (per-page ScreenSchema migration, unchanged)
+  - NEW: `migrateProjectDocument()` gates project-level JSON at import time
+  - Project-level schemaVersion: `CURRENT_PROJECT_SCHEMA_VERSION = 1` (separate from per-page SCHEMA_VERSION = 2)
+  - Export JSON writes `schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION` at top level
+  - Import JSON passes through `migrateProjectDocument()` BEFORE any store mutation
+  - Compatibility: missing/v0/v1 (legacy) → accept + migrate to current; current → accept; future > current → reject (fail-safe); malformed → reject (fail-safe)
+  - Migration preserves ALL existing fields (canva.pages, ratioId, contractId, pageMode, schema.themeId, templateData.*, navConfig, bgColor, bgDataUrl, overlay, schema.background, schema.blocks, meta, cp, tp, atp, alur, kuis, modules, materi)
+  - Import failure does NOT mutate stores — early return before setState()
+  - ScreenSchema.version compatibility bug FIXED (was rejecting v2 = current!): now accepts missing/v0/v1 + current v2, rejects future + malformed
+  - 4 fixtures verified: legacy-no-schema-version, current-schema-version, future-schema-version, malformed-schema-version
+  - CI run ID: `27837399563` on SHA `b1a18dc0a78eaf6a27c4cc56c45a3708a8c2695a` — 3/3 jobs success
+- **Legacy**: `PASS_CI` (Sprint 8.6A CLOSED)
+  - overlay elements migration (`_migrationVersion < 1`) ada (unchanged, still works)
+  - Legacy project JSON without `schemaVersion` field → migrated to current via `migrateProjectDocument()` (verified by `legacy-no-schema-version.json` fixture)
+  - Legacy top-level `pages` (no `canva` field, pre-8.4 format) → still accepted via fallback in `handleImportJSON`
 
 ### Style Contract
 - **All operations**: `PASS_LOCAL`
@@ -295,7 +308,7 @@ Setelah 8.2B-Patch-2, status:
 ## Lubang Terbesar Sebelum Release
 
 1. ~~**Export HTML contract belum dirancang**~~ — ✅ IMPLEMENTED (Sprint 8.2C CLOSED). POST export + chrome wiring + consumer DOM verified. GET project export PARTIAL (contractId not persisted in Prisma).
-2. **Schema versioning belum ada** — `docs/SCHEMA_VERSIONING_DESIGN.md` (design only)
+2. ~~**Schema versioning belum ada**~~ — ✅ CLOSED (Sprint 8.6A). Project-level schemaVersion (v1) implemented end-to-end: export writes it, import gates on it, legacy migrates, future/malformed rejected safely. Per-page ScreenSchema.version compatibility bug also fixed.
 3. ~~**CI belum ada di remote**~~ — ✅ CLOSED (CI-001, CI-002, BUILD-001 all CLOSED)
 4. **46 pre-existing TS errors** — `KNOWN_ISSUES.md` BUILD-002 (baseline-gated, CI green)
 5. ~~**Security & accessibility gate belum dijalankan**~~ — ✅ CLOSED (Sprint 8.5B). Security headers middleware (7 headers on all responses) + a11y smoke tests (SkipNavLink, A11yProvider, useGameA11y, RecoveryDialog) + no-stack-leak fix for export/scorm routes.
@@ -404,6 +417,31 @@ Final remote HEAD after docs sync: see commit log.
 | 8.5C tests total | `PASS_CI` | 21 tests total (14 api-upload including 2 SVG-rejection + 7 media-reload-persistence) — all CI success |
 | Exact SHA (initial 8.5C) | `PASS_CI` | `99258bd78d94520b5c2a2099cbea51630cae4b36` — CI run `27834030578` 3/3 success |
 | Exact SHA (Patch-1 SVG fix) | `PASS_CI` | `84da68c835429ca2021e342d502a6629becaf109` — CI run `27835293255` 3/3 success |
+
+## Sprint 8.6A Closure (Project Schema Versioning Gate)
+
+Exact-SHA CI run `27837399563` on SHA `b1a18dc0a78eaf6a27c4cc56c45a3708a8c2695a`:
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| CURRENT_PROJECT_SCHEMA_VERSION constant exists (=1) | `PASS_CI` | `project-schema-versioning.test.ts` — constant exported, separate from per-page SCHEMA_VERSION (2) |
+| Export JSON includes schemaVersion | `PASS_CI` | `schema-versioning-import-export.test.ts` — both Dashboard.tsx + use-export-actions.ts shapes include `schemaVersion: 1` |
+| Legacy JSON (no schemaVersion) migrates successfully | `PASS_CI` | `schema-versioning-import-export.test.ts` + `legacy-no-schema-version.json` fixture → `migrateProjectDocument` returns `{ok: true, document: {schemaVersion: 1}}` |
+| Current schemaVersion roundtrip stable | `PASS_CI` | `schema-versioning-import-export.test.ts` — export → import → re-export preserves `schemaVersion: 1` |
+| Future schemaVersion rejected safely | `PASS_CI` | `schema-versioning-import-export.test.ts` + `future-schema-version.json` fixture (schemaVersion: 99) → `{ok: false, reason: 'future-version'}` |
+| Malformed schemaVersion rejected safely | `PASS_CI` | `schema-versioning-import-export.test.ts` + `malformed-schema-version.json` fixture (schemaVersion: 'not-a-number') → `{ok: false, reason: 'malformed-version'}`; also NaN, negative, object, array |
+| Invalid shape rejected safely | `PASS_CI` | `schema-versioning-import-export.test.ts` — null + array inputs → `{ok: false, reason: 'invalid-shape'}` |
+| Import failure does NOT mutate stores | `PASS_CI` | `schema-versioning-import-export.test.ts` — 3 tests verify canva store, authoring store, both stores unchanged on failure |
+| canva.pages preserved through import | `PASS_CI` | `schema-versioning-import-export.test.ts` — 3 pages imported, all IDs preserved |
+| ratioId / currentPageIndex preserved | `PASS_CI` | `schema-versioning-import-export.test.ts` — `'4:3'` + `2` preserved |
+| bgDataUrl preserved | `PASS_CI` | `schema-versioning-import-export.test.ts` — custom data URL preserved byte-for-byte |
+| navConfig / overlay preserved | `PASS_CI` | `schema-versioning-import-export.test.ts` — custom navConfig + overlay=60 preserved |
+| contractId / pageMode preserved | `PASS_CI` | `schema-versioning-import-export.test.ts` — `'academic-clean-contract'` + `'schema'` preserved |
+| ScreenSchema.version compatibility bug fixed | `PASS_CI` | `project-schema-versioning.test.ts` — 8 tests via `isSchemaVersionCompatible` from `validation.ts`: missing/v0/v1 → true, v2 (current) → true (BUG FIX), future → false, malformed → false |
+| Field preservation (all 12+ fields) | `PASS_CI` | `project-schema-versioning.test.ts` — separate test per field: canva.pages, ratioId, currentPageIndex, contractId, pageMode, schema.themeId, templateData.schemaThemeId, templateVariant, navConfig, bgColor, bgDataUrl, overlay, schema.background, schema.blocks, meta, cp, tp, atp, alur, kuis, modules, materi |
+| 8.6A tests total | `PASS_CI` | 82 new tests (58 project-schema-versioning + 24 schema-versioning-import-export) — all CI success |
+| Exact SHA | `PASS_CI` | Checkout SHA `b1a18dc0a78eaf6a27c4cc56c45a3708a8c2695a` verified in CI log |
+| CI Run | `PASS_CI` | `27837399563` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
 ## Cara Memperbarui Matriks Ini
 

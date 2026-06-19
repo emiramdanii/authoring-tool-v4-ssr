@@ -2181,3 +2181,113 @@ Stage Summary:
 - Jobs: Test success, TypeScript success, Build success
 - Sprint 8.5C overall (initial + Patch-1): ✅ PASS / CLOSED / PASS_CI
 - All Sprints 8.1 → 8.5C now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.6A
+Agent: Super Z (main)
+Task: Sprint 8.6A — Project Schema Versioning Gate
+
+Work Log:
+- Audit found schema migration still LOCAL_REPORTED, docs/SCHEMA_VERSIONING_DESIGN.md
+  still DESIGN (not implemented). ScreenSchema.version existed partially,
+  ProjectDocument.schemaVersion was not active in export/import JSON.
+- Audit found compatibility bug in validation.ts:
+  isSchemaVersionCompatible() only accepted v1/missing and rejected v2
+  (the current SCHEMA_VERSION!) plus all future versions.
+- Implementation (commit b1a18dc):
+  * src/core/schema/validation.ts (+38/-9):
+    - Fixed isSchemaVersionCompatible() — now uses fail-safe semantics:
+      missing/v0/v1 → true (migratable); v2 (current) → true (BUG FIX);
+      future > current → false (fail-safe); malformed → false (fail-safe)
+  * src/core/schema/project-schema-versioning.ts (new, 274 lines):
+    - CURRENT_PROJECT_SCHEMA_VERSION = 1 (separate from per-page SCHEMA_VERSION = 2)
+    - getCurrentProjectSchemaVersion()
+    - normalizeProjectSchemaVersion(input) — handles missing/number/string/malformed
+      (empty string rejected explicitly — Number('') returns 0 in JS)
+    - isSupportedProjectSchemaVersion(input) — fail-safe semantics
+    - validateProjectSchemaVersion(input) — plain-object shape check
+    - migrateProjectDocument(input) — accept legacy/current, reject future/malformed/invalid-shape
+    - Migration preserves ALL existing fields (only adds/bumps schemaVersion)
+  * src/components/authoring/import-export/use-export-actions.ts (+3/-0):
+    - Export JSON now includes schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION
+  * src/components/authoring/Dashboard.tsx (+3/-0):
+    - Same export JSON schemaVersion write (parallel export path)
+  * src/components/authoring/import-export/use-excel-import.ts (+45/-15):
+    - handleImportJSON now calls migrateProjectDocument() BEFORE any store mutation
+    - On failure (future/malformed/invalid-shape): early return WITHOUT setState()
+    - User sees specific toast error per failure reason
+    - Casts migrated document to Record<string, any> at frozen boundary
+      between versioned JSON shape and typed store shape
+  * 4 new fixtures:
+    - fixtures/projects/legacy-no-schema-version.json
+    - fixtures/projects/current-schema-version.json (schemaVersion: 1)
+    - fixtures/projects/future-schema-version.json (schemaVersion: 99)
+    - fixtures/projects/malformed-schema-version.json (schemaVersion: 'not-a-number')
+  * 2 new test files (82 tests total):
+    - src/__tests__/project-schema-versioning.test.ts (58 tests):
+      Constants + getters, normalizeProjectSchemaVersion (all input shapes),
+      isSupportedProjectSchemaVersion (fail-safe), validateProjectSchemaVersion
+      (shape check), migrateProjectDocument (accept/reject logic), field
+      preservation (12+ fields), fixture files, ScreenSchema.version
+      compatibility bug fix cross-check (8 tests via isSchemaVersionCompatible)
+    - src/__tests__/schema-versioning-import-export.test.ts (24 tests):
+      Export JSON includes schemaVersion, legacy migration, current roundtrip
+      stable, future/malformed/invalid-shape rejection, import failure does
+      NOT mutate stores, field preservation through successful import
+  * CI workflow updated: 2 new test files added to vitest job
+- Patch-1 NOT needed — first push CI was green on run 27837399563
+
+Stage Summary:
+- Files modified (commit b1a18dc):
+  * src/core/schema/validation.ts (+38/-9)
+  * src/components/authoring/import-export/use-export-actions.ts (+3/-0)
+  * src/components/authoring/Dashboard.tsx (+3/-0)
+  * src/components/authoring/import-export/use-excel-import.ts (+45/-15)
+  * .github/workflows/ci.yml (+3/-0)
+- Files baru:
+  * src/core/schema/project-schema-versioning.ts (274 lines)
+  * src/__tests__/project-schema-versioning.test.ts (58 tests)
+  * src/__tests__/schema-versioning-import-export.test.ts (24 tests)
+  * fixtures/projects/legacy-no-schema-version.json
+  * fixtures/projects/current-schema-version.json
+  * fixtures/projects/future-schema-version.json
+  * fixtures/projects/malformed-schema-version.json
+- Local gates: vitest 759 tests pass, tsc 48 sigs (0 new), build ok
+- Sprint 8.6A initial implementation READY for Senior Review
+
+---
+Task ID: 8.6A-Closure
+Agent: Super Z (main)
+Task: Sprint 8.6A closure documentation sync
+
+Work Log:
+- Senior Review 8.6A: TECHNICAL PASS / pending CI verification.
+- Verified remote: HEAD = b1a18dc0a78eaf6a27c4cc56c45a3708a8c2695a.
+- Monitored GitHub Actions via authenticated API:
+  * CI Run ID: 27837399563
+  * Exact SHA: b1a18dc0a78eaf6a27c4cc56c45a3708a8c2695a
+  * Run status: completed, conclusion: success
+  * 3/3 jobs success:
+    - Test (vitest): completed → success
+    - TypeScript gate (normalize-ts-errors.js --check): completed → success
+    - Build (exit code + artifact verification): completed → success
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Schema migration row: LOCAL_REPORTED → PASS_CI (Reload + Legacy)
+  * Rewrote Schema migration evidence section with PASS_CI + Sprint 8.6A
+    CLOSED marker (migrateProjectDocument, schemaVersion field, 4 fixtures,
+    ScreenSchema.version bug fix, CI run ID, all field preservation)
+  * Added new "Sprint 8.6A Closure (Project Schema Versioning Gate)" table
+    with 18 gates all PASS_CI
+  * Updated "Lubang Terbesar Sebelum Release": item 2 struck through —
+    Schema versioning CLOSED
+- worklog.md: appended 8.6A + 8.6A-Closure entries.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.6A: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: b1a18dc0a78eaf6a27c4cc56c45a3708a8c2695a
+- CI run: 27837399563
+- Jobs: Test success, TypeScript success, Build success
+- Sprint 8.6A overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
+- All Sprints 8.1 → 8.6A now CLOSED with PASS_CI status.
