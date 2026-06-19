@@ -18,6 +18,8 @@ import BsnpCompliancePanel from './BsnpCompliancePanel';
 import { useCanvaStore } from '@/store/canva-store';
 import { useSchemaKuisProjection, useSchemaModulesProjection } from '@/hooks/use-schema-projection';
 import { deriveExportPayloadFromSchema } from '@/core/schema/export-projection';
+// Sprint 8.6A: project-level schemaVersion gate for export/import JSON
+import { CURRENT_PROJECT_SCHEMA_VERSION } from '@/core/schema/project-schema-versioning';
 // COLORS import removed — using silse-* tokens instead
 import { useTeacherMode } from '@/hooks/use-teacher-mode';
 import dynamic from 'next/dynamic';
@@ -195,6 +197,8 @@ export default function Dashboard() {
     const canvaState = useCanvaStore.getState();
     const schemaPayload = deriveExportPayloadFromSchema(canvaState.pages);
     const data = {
+      // Sprint 8.6A: project-level schemaVersion — import path gates on this
+      schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
       meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
       ...schemaPayload,
       // Sprint 8.4: include full canva state with all style authority fields

@@ -1,0 +1,58 @@
+{
+  "_fixture": {
+    "name": "legacy-no-schema-version",
+    "description": "Legacy project JSON tanpa field schemaVersion. Test: import path harus menerima + migrate ke CURRENT_PROJECT_SCHEMA_VERSION (v1). Semua field lain (canva.pages, ratioId, contractId, pageMode, schema.themeId, templateData, navConfig, bgColor, bgDataUrl, overlay, schema.background, schema.blocks) harus preserved.",
+    "schemaVersion": null,
+    "skenario": "legacy-missing-schemaVersion-migrates-to-current"
+  },
+  "meta": {
+    "judulPertemuan": "Legacy Project Test",
+    "mapel": "PPKn",
+    "kelas": "VII",
+    "namaBab": "Bab 1"
+  },
+  "canva": {
+    "pages": [
+      {
+        "id": "p-legacy-1",
+        "label": "Page Legacy 1",
+        "bgDataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+        "bgColor": "#0f172a",
+        "overlay": 40,
+        "elements": [],
+        "templateType": "materi",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "colorful"
+        },
+        "templateData": {
+          "schemaThemeId": "legacy-theme-001"
+        },
+        "pageMode": "schema",
+        "contractId": "legacy-contract-001",
+        "schema": {
+          "id": "schema-legacy-1",
+          "templateType": "materi",
+          "blocks": [
+            {
+              "id": "block-legacy-1",
+              "type": "materi-section",
+              "title": "Legacy Section",
+              "body": "Body text"
+            }
+          ],
+          "background": {
+            "type": "solid",
+            "color1": "bg"
+          }
+        }
+      }
+    ],
+    "ratioId": "16:9",
+    "currentPageIndex": 0
+  }
+}

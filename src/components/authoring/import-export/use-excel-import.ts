@@ -7,6 +7,9 @@ import { toast } from 'sonner';
 import type { WorkBook } from 'xlsx';
 import type { SheetPreview } from './types';
 import { logger } from '@/core/utils/logger';
+// Sprint 8.6A: project-level schemaVersion gate for import JSON
+import { migrateProjectDocument } from '@/core/schema/project-schema-versioning';
+import type { CanvaPage } from '@/components/canva/types';
 import {
   META_HEADERS,
   CP_HEADERS,
@@ -41,7 +44,45 @@ export function useExcelImport() {
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const data = JSON.parse(reader.result as string);
+        const raw = JSON.parse(reader.result as string);
+
+        // ── Sprint 8.6A: Project schema versioning gate ──────────
+        // BEFORE any store mutation, the parsed JSON must pass through
+        // the project schema migration gate. This ensures:
+        //   - legacy (no schemaVersion) → migrated to current
+        //   - current version → accepted as-is
+        //   - future version → REJECTED safely (no store mutation)
+        //   - malformed version → REJECTED safely (no store mutation)
+        //   - invalid shape (not an object) → REJECTED safely (no store mutation)
+        //
+        // If migration fails, we return early WITHOUT calling
+        // useAuthoringStore.setState() or useCanvaStore.setState().
+        // This prevents partial/corrupt state from leaking into stores.
+        const migrationResult = migrateProjectDocument(raw);
+        if (!migrationResult.ok) {
+          const reason = migrationResult.reason;
+          let userMessage: string;
+          if (reason === 'future-version') {
+            userMessage = '❌ Versi skema project terlalu baru. Update aplikasi lalu coba lagi.';
+          } else if (reason === 'malformed-version') {
+            userMessage = '❌ Versi skema project tidak valid (malformed).';
+          } else {
+            userMessage = '❌ Format JSON project tidak valid.';
+          }
+          toast.error(userMessage, {
+            description: migrationResult.message,
+          });
+          return;
+        }
+
+        // Sprint 8.6A: ProjectDocumentOutput types all payload fields as
+        // `unknown` because legacy/future versions may have different
+        // shapes. The migration gate (migrateProjectDocument) guarantees
+        // the shape is compatible with our runtime expectations, so we
+        // cast to a permissive Record<string, any> here. This is the
+        // frozen boundary between the versioned JSON shape and the
+        // typed store shape — exactly where the cast belongs.
+        const data = migrationResult.document as Record<string, any>;
         const store = useAuthoringStore.getState();
         useAuthoringStore.setState({
           meta: data.meta || store.meta,
@@ -72,7 +113,7 @@ export function useExcelImport() {
           // Fallback: some export formats put pages at top level
           const canvaStore = useCanvaStore.getState();
           useCanvaStore.setState({
-            pages: data.pages,
+            pages: data.pages as CanvaPage[],
             currentPageIndex: 0,
             panelRequest: null,
           });

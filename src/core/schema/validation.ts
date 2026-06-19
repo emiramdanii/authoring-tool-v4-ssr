@@ -547,17 +547,52 @@ export const SCHEMA_VERSION = 2;
 
 /**
  * Check if a schema version is compatible with the current runtime.
- * Returns true if the schema can be safely loaded.
+ *
+ * Sprint 8.6A — fixed compatibility bug. Previous implementation only
+ * accepted v1/missing and rejected v2 (the current version!) plus all
+ * future versions. Now uses fail-safe semantics:
+ *
+ *   - missing version / v0 / v1 → compatible (can be migrated to current)
+ *   - v2 (current SCHEMA_VERSION) → compatible
+ *   - future version > SCHEMA_VERSION → NOT compatible (fail-safe)
+ *   - malformed version (non-number, NaN, negative) → NOT compatible (fail-safe)
+ *
+ * Returns true if the schema can be safely loaded (possibly after migration).
  */
 export function isSchemaVersionCompatible(schema: ScreenSchema): boolean {
-  // Version 1 (or missing version) is always compatible
-  if (!schema.version || schema.version === 1) return true;
+  const v = schema.version;
 
-  // Future: Add version migration logic here
-  // if (schema.version === 2) return migrateV2toV1(schema);
+  // Malformed version (missing, non-number, NaN, negative) — fail-safe reject
+  // EXCEPT missing/undefined which is treated as v0 → migratable
+  if (v === undefined || v === null) {
+    return true; // missing → treated as legacy v0 → migratable
+  }
+  if (typeof v !== 'number' || Number.isNaN(v) || v < 0) {
+    logger.warn('SCHEMA-VERSION', `Malformed schema version: ${String(v)} — rejected`);
+    return false;
+  }
 
-  logger.warn('SCHEMA-VERSION', `Unknown schema version: ${schema.version} — may not be fully compatible`);
-  return false;
+  // v0 or v1 → legacy, migratable to current
+  if (v === 0 || v === 1) {
+    return true;
+  }
+
+  // Current version → compatible
+  if (v === SCHEMA_VERSION) {
+    return true;
+  }
+
+  // Future version > current → fail-safe reject (cannot migrate down)
+  if (v > SCHEMA_VERSION) {
+    logger.warn(
+      'SCHEMA-VERSION',
+      `Future schema version ${v} > runtime version ${SCHEMA_VERSION} — not compatible (fail-safe)`
+    );
+    return false;
+  }
+
+  // Any other version (e.g., between 1 and SCHEMA_VERSION) → migratable
+  return true;
 }
 
 /**

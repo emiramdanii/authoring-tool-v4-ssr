@@ -1,0 +1,17 @@
+{
+  "_fixture": {
+    "name": "malformed-schema-version",
+    "description": "Project JSON dengan schemaVersion malformed (string non-numeric). Test: import path harus REJECT safely. Malformed variants: string non-numeric, NaN, negative, object, array — all harus ditolak.",
+    "schemaVersion": "not-a-number",
+    "skenario": "malformed-version-rejected-safely"
+  },
+  "schemaVersion": "not-a-number",
+  "meta": {
+    "judulPertemuan": "Malformed Project Test"
+  },
+  "canva": {
+    "pages": [],
+    "ratioId": "16:9",
+    "currentPageIndex": 0
+  }
+}

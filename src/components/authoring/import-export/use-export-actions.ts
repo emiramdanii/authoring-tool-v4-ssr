@@ -4,6 +4,8 @@ import { useCallback } from 'react';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
 import { deriveExportPayloadFromSchema } from '@/core/schema/export-projection';
+// Sprint 8.6A: project-level schemaVersion gate for export/import JSON
+import { CURRENT_PROJECT_SCHEMA_VERSION } from '@/core/schema/project-schema-versioning';
 import { useViteExport } from '@/lib/use-vite-export';
 import { toast } from 'sonner';
 import { logger } from '@/core/utils/logger';
@@ -52,6 +54,8 @@ export function useExportActions() {
     // Phase 5: Content data from schema (single source of truth)
     const schemaPayload = deriveExportPayloadFromSchema(canvaState.pages);
     const data = {
+      // Sprint 8.6A: project-level schemaVersion — import path gates on this
+      schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
       meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
       ...schemaPayload,
       // Sprint 8.4: include full canva state with all style authority fields

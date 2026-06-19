@@ -1,0 +1,61 @@
+{
+  "_fixture": {
+    "name": "current-schema-version",
+    "description": "Project JSON dengan schemaVersion = 1 (current). Test: import path harus menerima as-is, roundtrip stable (export → import → re-export should produce identical schemaVersion).",
+    "schemaVersion": 1,
+    "skenario": "current-version-accepted-as-is"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Current Project Test",
+    "mapel": "PPKn",
+    "kelas": "VIII",
+    "namaBab": "Bab 2"
+  },
+  "canva": {
+    "pages": [
+      {
+        "id": "p-current-1",
+        "label": "Page Current 1",
+        "bgDataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+        "bgColor": "#ffffff",
+        "overlay": 20,
+        "elements": [],
+        "templateType": "materi",
+        "colorPalette": null,
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": false,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "minimal"
+        },
+        "templateData": {
+          "schemaThemeId": "academic-clean"
+        },
+        "pageMode": "schema",
+        "contractId": "academic-clean-contract",
+        "schema": {
+          "id": "schema-current-1",
+          "version": 2,
+          "templateType": "materi",
+          "blocks": [
+            {
+              "id": "block-current-1",
+              "type": "materi-section",
+              "title": "Current Section",
+              "body": "Body text"
+            }
+          ],
+          "background": {
+            "type": "radial",
+            "color1": "y",
+            "color2": "bg"
+          }
+        }
+      }
+    ],
+    "ratioId": "16:9",
+    "currentPageIndex": 0
+  }
+}

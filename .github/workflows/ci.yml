@@ -59,6 +59,7 @@ jobs:
         # (P0 false-positive fix — clean boot must NOT trigger dialog).
         # Sprint 8.5B: added middleware-security + a11y-smoke + api-no-stack-leak.
         # Sprint 8.5C: added api-upload + media-reload-persistence.
+        # Sprint 8.6A: added project-schema-versioning + schema-versioning-import-export.
         run: |
           npx vitest run src/core
           npx vitest run src/__tests__/mode-lifecycle-smoke.test.ts
@@ -74,6 +75,8 @@ jobs:
           npx vitest run src/__tests__/api-no-stack-leak.test.ts
           npx vitest run src/__tests__/api-upload.test.ts
           npx vitest run src/__tests__/media-reload-persistence.test.ts
+          npx vitest run src/__tests__/project-schema-versioning.test.ts
+          npx vitest run src/__tests__/schema-versioning-import-export.test.ts
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

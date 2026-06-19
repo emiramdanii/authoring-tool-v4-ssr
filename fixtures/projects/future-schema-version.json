@@ -1,0 +1,19 @@
+{
+  "_fixture": {
+    "name": "future-schema-version",
+    "description": "Project JSON dengan schemaVersion = 99 (future, > CURRENT_PROJECT_SCHEMA_VERSION). Test: import path harus REJECT safely (no store mutation). User sees error message about future version.",
+    "schemaVersion": 99,
+    "skenario": "future-version-rejected-safely"
+  },
+  "schemaVersion": 99,
+  "meta": {
+    "judulPertemuan": "Future Project Test",
+    "mapel": "PPKn",
+    "kelas": "IX"
+  },
+  "canva": {
+    "pages": [],
+    "ratioId": "16:9",
+    "currentPageIndex": 0
+  }
+}
