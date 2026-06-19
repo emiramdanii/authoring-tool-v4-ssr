@@ -58,6 +58,7 @@ jobs:
         # Sprint 8.5A-Patch-1: added recovery-clean-boot-regression tests
         # (P0 false-positive fix — clean boot must NOT trigger dialog).
         # Sprint 8.5B: added middleware-security + a11y-smoke + api-no-stack-leak.
+        # Sprint 8.5C: added api-upload + media-reload-persistence.
         run: |
           npx vitest run src/core
           npx vitest run src/__tests__/mode-lifecycle-smoke.test.ts
@@ -71,6 +72,8 @@ jobs:
           npx vitest run src/__tests__/middleware-security.test.ts
           npx vitest run src/__tests__/a11y-smoke.test.tsx
           npx vitest run src/__tests__/api-no-stack-leak.test.ts
+          npx vitest run src/__tests__/api-upload.test.ts
+          npx vitest run src/__tests__/media-reload-persistence.test.ts
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

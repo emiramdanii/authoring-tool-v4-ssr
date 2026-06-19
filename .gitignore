@@ -78,6 +78,10 @@ db/
 # Download outputs
 download/
 
+# Sprint 8.5C: User-uploaded images (runtime artifacts, content-addressed)
+# /api/upload route writes here. Do NOT commit uploaded files to git.
+public/uploads/
+
 # Sprint 8.2S-2-Patch (Senior Review):
 # - package-lock.json WAJIB di-commit untuk `npm ci` reproducible install.
 #   Sebelumnya di-ignore (CI-002) — kebijakan dibalik.
