@@ -26,7 +26,7 @@
 | Background  | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
 | Navigation  | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
 | Quiz        | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
-| Image/audio | PASS_SOURCE_ONLY| PASS_SOURCE_ONLY| PASS_SOURCE_ONLY| LOCAL_REPORTED  | PASS_SOURCE_ONLY| NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
+| Image/audio | PASS_CI         | PASS_CI         | PASS_CI         | PASS_CI         | PASS_CI         | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Import      | PASS_CI         | N/A             | PASS_CI         | PASS_CI         | PASS_CI         | NOT_TESTED      | NOT_TESTED      | PASS_CI         |
 | Schema migration | N/A        | N/A             | N/A             | LOCAL_REPORTED  | N/A             | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Style Contract | PASS_LOCAL   | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
@@ -88,12 +88,32 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - KNOWN_ISSUES QUIZ-001: KuisImportPanel punya TS error
 
 ### Image/audio
-- **Create/Edit/Save/Preview**: `PASS_SOURCE_ONLY`
-  - Source: `src/components/canva/right-panel/block-properties/field-registry.tsx`
-  - Source: `src/components/authoring/konten/ImageUploader.tsx`
-  - Tidak ada test otomatis untuk image upload flow
-- **Reload**: `LOCAL_REPORTED`
-  - bgDataUrl base64 besar (>1MB) belum ada test slow network
+- **Create/Edit/Save/Reload/Preview**: `PASS_CI` (Sprint 8.5C CLOSED)
+  - `/api/upload` route now exists at `src/app/api/upload/route.ts` (was 404 before Sprint 8.5C — ImageUploader had been calling it since Sprint 5)
+  - Evidence: `src/__tests__/api-upload.test.ts` (13 tests, commit `99258bd`)
+    * Successful upload of each MIME type (jpeg/png/gif/webp/svg+xml) returns 200 + correct URL extension
+    * File written to public/uploads/<sha256>.<ext> with exact content
+    * Same content uploaded twice returns same URL (content-addressed dedupe)
+    * Invalid MIME type → 400 + generic error
+    * Empty file → 400 + generic error
+    * Oversized file (>5MB) → 413 + generic error
+    * MIME spoofing (claims JPEG but bytes are not JPEG) → 400 (magic-byte verification)
+    * No 'file' field in form → 400
+    * Internal failure (writeFile EACCES) → 500 + generic message (no stack leak)
+    * GET discovery endpoint returns metadata
+  - Validation: 5 allowed MIME types (jpeg/png/gif/webp/svg+xml), 5MB max size, magic-byte verification for non-SVG (defense in depth against MIME spoofing)
+  - Storage: content-addressed (`public/uploads/<sha256>.<ext>`) — automatic dedupe + prevents path traversal
+  - No stack leak (Sprint 8.5B pattern): generic Indonesian error to client, full error to console.error server-side
+- **Reload (large media)**: `PASS_CI` (Sprint 8.5C CLOSED)
+  - Evidence: `src/__tests__/media-reload-persistence.test.ts` (7 tests, commit `99258bd`)
+    * >1MB bgDataUrl survives save → clear → load roundtrip (byte-for-byte)
+    * Multiple pages each with large bgDataUrl survive roundtrip
+    * Small bgDataUrl (~100 bytes) survives roundtrip (regression)
+    * bgDataUrl=null survives roundtrip (page without background image)
+    * image-background-large.json fixture still has bgDataUrl + overlay=40 after parse
+    * bgDataUrl URL pattern (data:image/png;base64,...) preserved exactly
+    * Reload preserves all Patch-2 invariant fields together (bgDataUrl + overlay + navConfig)
+  - Note: tests use @vitest-environment node for large buffer manipulation (jsdom localStorage has size limits that break >1MB tests)
 - **Legacy**: `LOCAL_REPORTED`
   - paletteToTokenOverrides masih jalan, tidak ada fixture korpus
 
@@ -270,7 +290,7 @@ Setelah 8.2B-Patch-2, status:
 3. ~~**CI belum ada di remote**~~ — ✅ CLOSED (CI-001, CI-002, BUILD-001 all CLOSED)
 4. **46 pre-existing TS errors** — `KNOWN_ISSUES.md` BUILD-002 (baseline-gated, CI green)
 5. ~~**Security & accessibility gate belum dijalankan**~~ — ✅ CLOSED (Sprint 8.5B). Security headers middleware (7 headers on all responses) + a11y smoke tests (SkipNavLink, A11yProvider, useGameA11y, RecoveryDialog) + no-stack-leak fix for export/scorm routes.
-6. **Image/audio Import Reload** — `PASS_SOURCE_ONLY` → perlu test otomatis (Sprint 8.4 menutup project JSON import/export, bukan media binary reload). Sprint 8.5C target.
+6. ~~**Image/audio Import Reload**~~ — ✅ CLOSED (Sprint 8.5C). `/api/upload` route created (was 404), 13 upload tests + 7 media reload tests cover Create/Edit/Save/Reload/Preview paths.
 7. ~~**Error recovery UI**~~ — ✅ CLOSED (Sprint 8.5A). Boot recovery + safe boot bridge + a11y basics + clean-boot regression all PASS_CI.
 8. ~~**Project Import/Export JSON**~~ — ✅ CLOSED (Sprint 8.4). Style authority fields + 4 fixtures verified through roundtrip.
 
@@ -340,6 +360,38 @@ Exact-SHA CI run `27831532947` on SHA `c487df0d9f271ed1c0da2a1369a019b75b41e2d0`
 | 8.5B tests total | `PASS_CI` | 32 new tests (15 middleware-security + 12 a11y-smoke + 5 api-no-stack-leak) — all CI success |
 | Exact SHA | `PASS_CI` | Checkout SHA `c487df0d9f271ed1c0da2a1369a019b75b41e2d0` verified in CI log |
 | CI Run | `PASS_CI` | `27831532947` — 3/3 jobs success (Test, TypeScript gate, Build) |
+
+## Sprint 8.5C Closure (Image/audio Upload + Reload)
+
+Exact-SHA CI run `27834030578` on SHA `99258bd78d94520b5c2a2099cbea51630cae4b36`:
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| `/api/upload` route exists (was 404) | `PASS_CI` | `src/app/api/upload/route.ts` — POST handler with multipart/form-data parsing |
+| Image upload contract matches ImageUploader | `PASS_CI` | `api-upload.test.ts` — POST returns `{success, url, filename}` matching ImageUploader.tsx expectations |
+| Successful upload — JPEG | `PASS_CI` | `api-upload.test.ts` — returns 200, URL `/uploads/<sha256>.jpg` |
+| Successful upload — PNG | `PASS_CI` | `api-upload.test.ts` — file written to `public/uploads/<sha256>.png` with exact content |
+| Successful upload — GIF | `PASS_CI` | `api-upload.test.ts` — URL `/uploads/<sha256>.gif` |
+| Successful upload — WebP | `PASS_CI` | `api-upload.test.ts` — URL `/uploads/<sha256>.webp` |
+| Successful upload — SVG | `PASS_CI` | `api-upload.test.ts` — URL `/uploads/<sha256>.svg` (no magic-byte check for text-based SVG) |
+| Content-addressed dedupe | `PASS_CI` | `api-upload.test.ts` — same content uploaded twice returns same URL |
+| Invalid MIME type rejection | `PASS_CI` | `api-upload.test.ts` — text/plain → 400 + generic error |
+| Empty file rejection | `PASS_CI` | `api-upload.test.ts` — size=0 → 400 + generic error |
+| Oversized file rejection (>5MB) | `PASS_CI` | `api-upload.test.ts` — >5MB → 413 + generic error |
+| MIME spoofing rejection (magic bytes) | `PASS_CI` | `api-upload.test.ts` — claims image/jpeg but bytes are not JPEG → 400 (defense in depth) |
+| No 'file' field rejection | `PASS_CI` | `api-upload.test.ts` — empty form → 400 |
+| No stack leak on internal failure | `PASS_CI` | `api-upload.test.ts` — writeFile EACCES → 500 + `'Gagal mengunggah file. Silakan coba lagi.'`, no EACCES/path leak |
+| GET discovery endpoint | `PASS_CI` | `api-upload.test.ts` — returns metadata (methods, maxFileSize, allowedTypes) |
+| >1MB bgDataUrl survives save → load roundtrip | `PASS_CI` | `media-reload-persistence.test.ts` — byte-for-byte equality after save → clear → load |
+| Multiple pages with large bgDataUrl survive roundtrip | `PASS_CI` | `media-reload-persistence.test.ts` — 3 pages × ~800KB each, all preserved |
+| Small bgDataUrl survives roundtrip (regression) | `PASS_CI` | `media-reload-persistence.test.ts` — ~100 bytes preserved |
+| bgDataUrl=null survives roundtrip | `PASS_CI` | `media-reload-persistence.test.ts` — null preserved for pages without background |
+| image-background-large.json fixture intact | `PASS_CI` | `media-reload-persistence.test.ts` — has bgDataUrl + overlay=40 after parse |
+| bgDataUrl URL pattern preserved | `PASS_CI` | `media-reload-persistence.test.ts` — `data:image/png;base64,...` prefix intact |
+| Patch-2 invariant fields survive together | `PASS_CI` | `media-reload-persistence.test.ts` — bgDataUrl + overlay + navConfig all preserved |
+| 8.5C tests total | `PASS_CI` | 20 new tests (13 api-upload + 7 media-reload-persistence) — all CI success |
+| Exact SHA | `PASS_CI` | Checkout SHA `99258bd78d94520b5c2a2099cbea51630cae4b36` verified in CI log |
+| CI Run | `PASS_CI` | `27834030578` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
 ## Cara Memperbarui Matriks Ini
 

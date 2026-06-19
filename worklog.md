@@ -1989,3 +1989,110 @@ Stage Summary:
 - Jobs: Test success, TypeScript success, Build success
 - Sprint 8.5B overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
 - All Sprints 8.1 → 8.5B now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.5C
+Agent: Super Z (main)
+Task: Sprint 8.5C — Image/audio Upload + Reload
+
+Work Log:
+- Audit found ImageUploader.tsx (line 71) had been calling `fetch('/api/upload', ...)`
+  since Sprint 5, but `/api/upload` route was missing → 404 on every image upload
+  attempt. End-to-end image upload flow was broken.
+- Audit existing media storage pattern:
+  * bgDataUrl base64 stored directly in DB (Prisma Page.bgImage field)
+  * Audio files (mp3) bundled as static files in public/sounds/ — no user upload path
+  * So 8.5C scope is IMAGE upload only (audio already works)
+- Implementation (commit 99258bd):
+  * src/app/api/upload/route.ts (new, 207 lines):
+    - POST handler accepts multipart/form-data with 'file' field
+    - 5 allowed MIME types: image/jpeg, image/png, image/gif, image/webp, image/svg+xml
+    - 5MB max size (matches ImageUploader's MAX_SIZE_MB constant)
+    - Rejects empty files (size=0)
+    - Magic-byte verification for non-SVG images (defense in depth against
+      MIME spoofing — malicious client sending image/jpeg MIME with non-image
+      payload will be rejected by checking JPEG SOI/PNG signature/GIF8/RIFF)
+    - SVG is text/XML — no magic bytes to check, rely on MIME + size only
+    - Content-addressed storage: filename = SHA-256(file contents) + ext
+      * Automatic dedupe (same content → same URL)
+      * Prevents filename collisions and path traversal (filename is fully
+        derived from content, not user-supplied)
+    - Files written to public/uploads/<sha256>.<ext> with mode 0o644
+    - URL returned: /uploads/<sha256>.<ext>
+    - mkdir with recursive: true ensures dir exists on first request
+    - EEXIST on writeFile is treated as dedupe (no error)
+    - GET discovery endpoint returns metadata (methods, maxFileSize, allowedTypes)
+    - No stack leak (Sprint 8.5B pattern): generic Indonesian error to client,
+      full error to console.error server-side
+  * .gitignore: added public/uploads/ (runtime artifacts, not source)
+  * 2 new test files (20 tests total):
+    - api-upload.test.ts (13 tests, @vitest-environment node):
+      * Successful upload of each MIME type returns 200 + correct URL extension
+      * File written to public/uploads/<sha256>.<ext> with exact content
+      * Same content uploaded twice returns same URL (content-addressed dedupe)
+      * Invalid MIME type (text/plain) → 400 + generic error
+      * Empty file → 400 + generic error
+      * Oversized file (>5MB) → 413 + generic error
+      * MIME spoofing (claims JPEG but bytes are not JPEG) → 400
+      * No 'file' field in form → 400
+      * Internal failure (writeFile EACCES) → 500 + generic message (no leak)
+      * GET discovery endpoint returns metadata
+    - media-reload-persistence.test.ts (7 tests, @vitest-environment node):
+      * >1MB bgDataUrl survives save → clear → load roundtrip (byte-for-byte)
+      * Multiple pages each with large bgDataUrl survive roundtrip
+      * Small bgDataUrl (~100 bytes) survives roundtrip (regression)
+      * bgDataUrl=null survives roundtrip (page without background image)
+      * image-background-large.json fixture still has bgDataUrl + overlay=40
+      * bgDataUrl URL pattern preserved exactly
+      * Reload preserves all Patch-2 invariant fields together
+        (bgDataUrl + overlay + navConfig)
+  * CI workflow updated: 2 new test files added to vitest job
+- Patch-1 NOT needed — first push CI was green on run 27834030578
+
+Stage Summary:
+- Files modified (commit 99258bd):
+  * .github/workflows/ci.yml (+3/-0)
+  * .gitignore (+4/-0)
+- Files baru:
+  * src/app/api/upload/route.ts (207 lines)
+  * src/__tests__/api-upload.test.ts (13 tests)
+  * src/__tests__/media-reload-persistence.test.ts (7 tests)
+- Local gates: vitest 676 tests pass, tsc 48 sigs (0 new), build ok
+- Sprint 8.5C initial implementation READY for Senior Review
+
+---
+Task ID: 8.5C-Closure
+Agent: Super Z (main)
+Task: Sprint 8.5C closure documentation sync
+
+Work Log:
+- Senior Review 8.5C: TECHNICAL PASS / pending CI verification.
+- Verified remote: HEAD = 99258bd78d94520b5c2a2099cbea51630cae4b36.
+- Monitored GitHub Actions via authenticated API:
+  * CI Run ID: 27834030578
+  * Exact SHA: 99258bd78d94520b5c2a2099cbea51630cae4b36
+  * Run status: completed, conclusion: success
+  * 3/3 jobs success:
+    - Test (vitest): completed → success
+    - TypeScript gate (normalize-ts-errors.js --check): completed → success
+    - Build (exit code + artifact verification): completed → success
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Image/audio row in main matrix: PASS_SOURCE_ONLY/LOCAL_REPORTED → PASS_CI
+    across Create/Edit/Save/Reload/Preview
+  * Rewrote Image/audio evidence section with 2 PASS_CI blocks (Upload route
+    + Reload large media) — Sprint 8.5C CLOSED marker
+  * Added new "Sprint 8.5C Closure (Image/audio Upload + Reload)" table
+    with 24 gates all PASS_CI
+  * Updated "Lubang Terbesar Sebelum Release": item 6 struck through —
+    Image/audio Import Reload CLOSED
+- worklog.md: appended 8.5C + 8.5C-Closure entries.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.5C: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: 99258bd78d94520b5c2a2099cbea51630cae4b36
+- CI run: 27834030578
+- Jobs: Test success, TypeScript success, Build success
+- Sprint 8.5C overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
+- All Sprints 8.1 → 8.5C now CLOSED with PASS_CI status.
