@@ -153,6 +153,17 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - Standalone boot smoke: __EXPORT_DATA__ payload parseable + stores hydrate + ExportApp boots
   - CI: run #27776715138 on SHA 0091309 — 3/3 jobs success
   - Canvas/Export token parity verified (identical pageStyleTokens)
+
+- **Teacher Style Picker**: `PASS_CI`
+  - Component: `src/components/canva/StylePresetPicker.tsx` (Sprint 8.2D)
+  - Wiring: `src/components/canva/right-panel/BackgroundSection.tsx` (import + StylePresetPicker)
+  - Tests: `src/core/style/__tests__/teacher-style-picker.test.tsx` (11 tests, Sprint 8.2D)
+  - 6 Style Contract presets: academic-clean, school-cheerful, mission-adventure, dark-elegant, nusantara-nature, modern-interactive
+  - Authority: setSchemaThemeId writes to schema.themeId + templateData.schemaThemeId
+  - Resolver: resolvePageStyleTokens picks up new preset (source = 'new-preset')
+  - Canvas/Export token parity verified after preset selection
+  - Legacy → new preset switch changes source correctly
+  - CI: run #27803625541 on SHA 1eab9c2 — 3/3 jobs success
 - **Listener cleanup (window + document + ResizeObserver + fullscreen + timers)**: `PASS_LOCAL`
   - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (19 tests, commit 8.2S-2-Patch-3)
   - PreviewMode, PresentMode, PlayOverlay, LearningMediaShell all pass:
