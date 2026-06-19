@@ -8,6 +8,8 @@ import Section from './Section';
 import type { ScreenSchema } from '@/core/schema/types';
 import { THEME_PRESETS } from '@/core/themes/tokens';
 import { compressImage } from '@/lib/compress-image';
+// Sprint 8.2D: new Style Contract preset picker
+import { StylePresetPicker } from '../StylePresetPicker';
 
 /** Schema background type for updates */
 type SchemaBg = NonNullable<ScreenSchema['background']>
@@ -122,9 +124,9 @@ export default function BackgroundSection() {
         collapsed={collapsed}
         onToggle={() => setCollapsed(c => !c)}
       >
-        {/* Theme preset selector */}
+        {/* Theme preset selector — legacy themes */}
         <div className="mb-3">
-          <label className="text-[10px] text-silse-on-surface-variant block mb-1">🎨 Tema Warna</label>
+          <label className="text-[10px] text-silse-on-surface-variant block mb-1">🎨 Tema Warna (Lama)</label>
           <div className="grid grid-cols-3 gap-1">
             {THEME_PRESETS.map(t => (
               <button
@@ -142,6 +144,12 @@ export default function BackgroundSection() {
             ))}
           </div>
         </div>
+
+        {/* Sprint 8.2D: Style Contract preset selector — new presets */}
+        <StylePresetPicker
+          currentThemeId={schemaThemeId}
+          onSelect={setSchemaThemeId}
+        />
 
         {/* Background type selector */}
         <div className="mb-2">

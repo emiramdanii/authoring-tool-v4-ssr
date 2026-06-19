@@ -1597,3 +1597,43 @@ Stage Summary:
 - Zero source code changes — pure documentation sync
 - Sprint 8.2C: PASS / CLOSURE COMPLETE
 - Sprint 8.2D (Teacher Style Picker): TECHNICALLY UNBLOCKED
+
+---
+Task ID: 8.2D
+Agent: Super Z (main)
+Task: Sprint 8.2D — Teacher Style Picker
+
+Work Log:
+- Audit: BackgroundSection already has legacy theme picker (17 THEME_PRESETS).
+  setSchemaThemeId writes to schema.themeId + templateData.schemaThemeId.
+  resolvePageStyleTokens already picks up schema.themeId → 6 new presets
+  already flow through Style Contract pipeline. Missing: UI for new presets.
+- Created StylePresetPicker component (src/components/canva/StylePresetPicker.tsx):
+  * Shows 6 Style Contract presets with color swatch previews
+  * Calls setSchemaThemeId(presetId) — same authority path as legacy themes
+  * Active preset highlighted based on currentThemeId
+  * Labels in Bahasa Indonesia (teacher-facing)
+- Wired into BackgroundSection (right panel):
+  * Added import + StylePresetPicker below legacy theme selector
+  * Legacy picker labeled "Tema Warna (Lama)" — coexists during migration
+  * New picker labeled "Preset Gaya Baru" — for Style Contract presets
+- Created teacher-style-picker.test.tsx (11 tests):
+  * Preset selection → page authority: setSchemaThemeId writes to schema.themeId
+  * resolvePageStyleTokens picks up new preset (source = 'new-preset')
+  * All 6 presets selectable with correct accent colors
+  * Canvas/Export token parity after preset selection
+  * Switching from legacy to new preset changes source correctly
+  * StylePresetPicker renders 6 presets with correct labels
+  * onClick calls onSelect with correct presetId
+  * Active preset highlighted
+  * Fixture verification: mission-adventure → new-preset, golden → explicit-contract,
+    macam-norma → legacy-theme
+- All 547 tests PASS (was 536 + 11 new). TS baseline unchanged (48 sigs, 0 new errors).
+
+Stage Summary:
+- 1 file baru: src/components/canva/StylePresetPicker.tsx
+- 1 file baru: src/core/style/__tests__/teacher-style-picker.test.tsx (11 tests)
+- 1 file modified: src/components/canva/right-panel/BackgroundSection.tsx (import + StylePresetPicker)
+- 1 file modified: worklog.md
+- Contract & Boundary remains FROZEN
+- Sprint 8.2D READY for Senior Review
