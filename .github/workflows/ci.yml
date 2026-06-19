@@ -55,6 +55,8 @@ jobs:
         # `npx vitest run` (all tests).
         #
         # Sprint 8.5A: added recovery-* tests (boot bridge + safe boot + a11y).
+        # Sprint 8.5A-Patch-1: added recovery-clean-boot-regression tests
+        # (P0 false-positive fix — clean boot must NOT trigger dialog).
         run: |
           npx vitest run src/core
           npx vitest run src/__tests__/mode-lifecycle-smoke.test.ts
@@ -64,6 +66,7 @@ jobs:
           npx vitest run src/__tests__/recovery-boot-bridge.test.tsx
           npx vitest run src/__tests__/recovery-safe-boot.test.tsx
           npx vitest run src/__tests__/recovery-dialog-a11y.test.tsx
+          npx vitest run src/__tests__/recovery-clean-boot-regression.test.tsx
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

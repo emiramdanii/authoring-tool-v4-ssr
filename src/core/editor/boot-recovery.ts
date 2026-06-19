@@ -170,8 +170,16 @@ export class BootRecoveryOrchestrator {
     }
 
     // ── Step 4: Heal corrupted pages ──────────────────────────
-    // Use integrity result to determine which pages need healing
+    // Use integrity result to determine which pages need healing.
+    //
+    // Sprint 8.5A-Patch-1: This used to call buildSchemaHealingResult()
+    // AFTER step 4 — which did reference comparison on the deep-cloned
+    // pages. Since deepClonePages() always produces new object references,
+    // needsHealing was always true for non-empty page arrays → false
+    // positive recovery dialog on every clean boot. Fix: use the actual
+    // healResult / proactiveHealResult from step 4 directly.
     let workingPages = this.deepClonePages(pages);
+    let schemaHealingResult: SchemaHealingBootResult;
 
     // If integrity check found corruption, heal those pages
     if (integrityResult.status === 'corrupted' || integrityResult.healed) {
@@ -180,8 +188,9 @@ export class BootRecoveryOrchestrator {
         workingPages = healResult.healedPages ?? workingPages;
         maxSeverity = this.worseSeverity(maxSeverity, 'moderate');
       }
-
-      const schemaHealingResult: SchemaHealingBootResult = healResult;
+      // Strip the healedPages field — not part of SchemaHealingBootResult
+      const { healedPages: _hp, ...healingBoot } = healResult;
+      schemaHealingResult = healingBoot;
     } else {
       // Still check all pages for structural validity
       const proactiveHealResult = this.proactiveSchemaCheck(workingPages);
@@ -189,6 +198,8 @@ export class BootRecoveryOrchestrator {
         workingPages = proactiveHealResult.healedPages ?? workingPages;
         maxSeverity = this.worseSeverity(maxSeverity, 'mild');
       }
+      const { healedPages: _hp2, ...proactiveBoot } = proactiveHealResult;
+      schemaHealingResult = proactiveBoot;
     }
 
     // ── Step 5: Prepare safe mode for rendering ───────────────
@@ -198,11 +209,10 @@ export class BootRecoveryOrchestrator {
       maxSeverity = this.worseSeverity(maxSeverity, 'mild');
     }
 
-    // ── Step 6: Build schema healing result ───────────────────
-    // Combine all healing information
-    const schemaHealingResult = this.buildSchemaHealingResult(pages, workingPages);
-
     // ── Build final report ────────────────────────────────────
+    // Sprint 8.5A-Patch-1: schemaHealingResult now reflects REAL healing
+    // activity (neededHealing=true only when SchemaHealer actually repaired
+    // or removed blocks), not deep-clone reference drift.
     const needsRecovery =
       transactionResult.hasIncompleteTransaction ||
       integrityResult.status === 'corrupted' ||
@@ -537,36 +547,12 @@ export class BootRecoveryOrchestrator {
 
   // ── Helpers ─────────────────────────────────────────────────
 
-  private buildSchemaHealingResult(
-    originalPages: CanvaPage[],
-    healedPages: CanvaPage[]
-  ): SchemaHealingBootResult {
-    // Compare original vs healed to detect changes
-    let neededHealing = false;
-    let totalBlocksExamined = 0;
-    let totalBlocksRepaired = 0;
-
-    for (let i = 0; i < originalPages.length; i++) {
-      const orig = originalPages[i];
-      const healed = healedPages[i];
-
-      if (orig?.schema && healed?.schema) {
-        totalBlocksExamined += healed.schema.blocks.length;
-        // Simple comparison: if schemas differ, healing was applied
-        if (orig.schema !== healed.schema) {
-          neededHealing = true;
-        }
-      }
-    }
-
-    return {
-      neededHealing,
-      totalBlocksExamined,
-      totalBlocksRepaired,
-      totalBlocksRemoved: 0,
-      pageReports: [],
-    };
-  }
+  // Sprint 8.5A-Patch-1: Removed buildSchemaHealingResult() — it compared
+  // originalPages vs healedPages by reference (orig.schema !== healed.schema),
+  // which is always true after deepClonePages() produces fresh objects.
+  // This caused needsRecovery=true on every clean boot. The actual healing
+  // result is now captured directly from healCorruptedSchemas() /
+  // proactiveSchemaCheck() in step 4 above.
 
   private deepClonePages(pages: CanvaPage[]): CanvaPage[] {
     try {
