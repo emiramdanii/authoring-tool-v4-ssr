@@ -164,6 +164,16 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - Canvas/Export token parity verified after preset selection
   - Legacy → new preset switch changes source correctly
   - CI: run #27803625541 on SHA 1eab9c2 — 3/3 jobs success
+
+- **Persistence & Schema Versioning**: `PASS_CI`
+  - Prisma migration: `prisma/migrations/20260619040000_add_contractid_pagemode/migration.sql`
+  - contractId: persisted in Prisma Page model + save route + loadFromDB + GET export
+  - pageMode: persisted in Prisma Page model + save route + loadFromDB + GET export
+  - Roundtrip tests: `src/core/style/__tests__/persistence-roundtrip.test.ts` (18 tests)
+  - TS normalizer: union type members sorted alphabetically for cross-env stability
+  - CI: run #27806691207 on SHA cfa7727 — 3/3 jobs success
+  - All 4 fixtures verified: golden-pertemuan, fresh-mission-adventure, macam-norma-legacy, image-background-large
+  - Fields proven durable: contractId, pageMode, schema.themeId, templateData.schemaThemeId, templateVariant, navConfig, bgColor, bgDataUrl, overlay, colorPalette, schema.background
 - **Listener cleanup (window + document + ResizeObserver + fullscreen + timers)**: `PASS_LOCAL`
   - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (19 tests, commit 8.2S-2-Patch-3)
   - PreviewMode, PresentMode, PlayOverlay, LearningMediaShell all pass:
