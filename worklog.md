@@ -2291,3 +2291,113 @@ Stage Summary:
 - Jobs: Test success, TypeScript success, Build success
 - Sprint 8.6A overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
 - All Sprints 8.1 → 8.6A now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.6B
+Agent: Super Z (main)
+Task: Sprint 8.6B — TypeScript Release Gate
+
+Work Log:
+- Audit: `npx tsc --noEmit` returns 63 errors / 48 signatures (baseline-gated).
+  Categorized into 10 fix groups:
+  1. Missing deps (14 shadcn + 3 @dnd-kit) — all dead code
+  2. Cast issues (Record<string,unknown>) — 8 errors
+  3. Null vs undefined — 6 errors
+  4. Duplicate property + missing type field — 2 errors
+  5. Enum mismatch — 4 errors
+  6. Missing logger.info — 1 error
+  7. Missing interface fields — 2 errors
+  8. Schema hydration type mismatch (PERSIST-001) — 2 errors
+  9. Test file TS errors — 2 errors
+ 10. Script file TS errors — 15 errors (bodyText, exports, nav, CanvaPage)
+
+- Implementation (commit f01a7143):
+  * Deleted 14 unused shadcn/ui components + transitive dead deps (toaster,
+    use-toast, sidebar) — 14 errors eliminated
+  * Deleted SortableCanvas.tsx (0 imports, missing @dnd-kit) — 3 errors
+    eliminated, closes BUILD-003
+  * Deleted OverflowDialog.deprecated.tsx (already deprecated)
+  * Deleted 2 dead generate-quiz scripts (referenced removed exports) — 4 errors
+  * src/core/schema/guided-patch.ts: removed duplicate 'materi-blok' key (TS1117)
+    + added defaultValue?: string to GuidedFieldDef (TS2353) — 2 errors
+  * src/core/utils/logger.ts: added info() method — 1 error
+  * src/core/schema/primary-edit-target.ts: 3 ?? null coalescing fixes — 3 errors
+  * src/lib/db.ts: switched PrismaClient | null → | undefined + as unknown cast — 3 errors
+  * src/core/schema/types/base.ts: added 'evaluasi' to learningPhase union — 2 errors
+  * src/store/canva/types.ts: aligned UpdateSchemaBlockOptions.source with
+    PatchSource union (removed 'system', added 'auto'/'sync'/'guided-form'/
+    'konten-tab'/'dokumen-tab') — 2 errors
+  * src/core/schema/{kuis,roda,sortir}-import.ts: made ImportPatch types extend
+    Record<string, unknown> — 3 errors
+  * src/core/template/health-check/auto-repair.ts: cast through unknown for
+    kuis block introspection + typed filter callback — 2 errors
+  * src/core/template/visual-audit/visual-parity-check.ts: cast through unknown
+    for 4 block introspection sites — 4 errors
+  * src/components/canva/CanvaBuilder.tsx: added openAIAssistant stub to
+    CanvaShortcutDeps — 1 error
+  * src/store/authoring/module-slice.ts: added games: [] initial state — 1 error
+  * src/core/schema/schema-migration.ts: made migrateAllSchemas generic
+    <T extends { schema?: ScreenSchema | null }> — 2 errors, closes PERSIST-001
+  * src/core/schema/__tests__/primary-edit-target.test.ts: replaced {} overlays
+    with proper types — 2 errors
+  * scripts/runtime-contract-check.ts: added early-continue guard for
+    screen.nav (per type, nav is optional) — 10 errors
+  * scripts/health-check-macam-norma.ts: cast partial CanvaPage[] to full — 1 error
+  * e2e/manual-qa-core.spec.ts: coalesce page.textContent() with ?? '' — 2 errors
+  * scripts/ts-baseline.txt: regenerated to 0 signatures / 0 occurrences
+
+- Result: `npx tsc --noEmit` returns 0 errors (was 63).
+  `normalize-ts-errors.js --check` passes with 0 sigs / 0 occurrences.
+  `npm run build` exit 0, BUILD_ID present.
+  vitest: 759 tests pass (514 src/core + 245 existing sprint tests).
+- Patch-1 NOT needed — first push CI was green on run 27841199162.
+
+Stage Summary:
+- Files modified (commit f01a7143): 16
+- Files deleted: 19 (14 shadcn + SortableCanvas + OverflowDialog.deprecated +
+  toaster + use-toast + sidebar + 2 generate-quiz scripts)
+- Before: 63 errors / 48 signatures
+- After: 0 errors / 0 signatures
+- Issues closed: BUILD-002, BUILD-003, PERSIST-001
+- Local gates: tsc 0 errors, normalize 0 sigs, build ok, 759 tests pass
+- Sprint 8.6B initial implementation READY for Senior Review
+
+---
+Task ID: 8.6B-Closure
+Agent: Super Z (main)
+Task: Sprint 8.6B closure documentation sync
+
+Work Log:
+- Senior Review 8.6B: TECHNICAL PASS / pending CI verification.
+- Verified remote: HEAD = f01a714300380d1cca2b1248a627535b4bd6a9ea.
+- Monitored GitHub Actions via authenticated API:
+  * CI Run ID: 27841199162
+  * Exact SHA: f01a714300380d1cca2b1248a627535b4bd6a9ea
+  * Run status: completed, conclusion: success
+  * 3/3 jobs success:
+    - Test (vitest): completed → success
+    - TypeScript gate (normalize-ts-errors.js --check): completed → success
+    - Build (exit code + artifact verification): completed → success
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Lubang Terbesar item 4 struck through — 46 pre-existing TS errors CLOSED
+  * Added new "Sprint 8.6B Closure (TypeScript Release Gate)" table with
+    18 gates all PASS_CI, including before/after error counts and
+    BUILD-002/BUILD-003/PERSIST-001 status CLOSED
+- Updated KNOWN_ISSUES.md:
+  * BUILD-002: OPEN → CLOSED — full closure notes with 8-bullet fix summary
+  * BUILD-003: OPEN → CLOSED — SortableCanvas.tsx deleted
+  * PERSIST-001: OPEN → CLOSED — migrateAllSchemas generic preserves CanvaPage[]
+- worklog.md: appended 8.6B + 8.6B-Closure entries.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.6B: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 3 files modified: SYSTEM_CLOSURE_MATRIX.md, KNOWN_ISSUES.md, worklog.md
+- Source commit: f01a714300380d1cca2b1248a627535b4bd6a9ea
+- CI run: 27841199162
+- Jobs: Test success, TypeScript success, Build success
+- Before: 63 tsc errors / 48 normalize signatures
+- After: 0 tsc errors / 0 normalize signatures
+- Issues closed: BUILD-002, BUILD-003, PERSIST-001
+- Sprint 8.6B overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
+- All Sprints 8.1 → 8.6B now CLOSED with PASS_CI status.

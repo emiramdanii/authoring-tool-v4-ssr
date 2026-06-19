@@ -71,18 +71,27 @@ Closure:      <commit SHA + tanggal | OPEN>
   - `src/store/{authoring/index,canva/persistence-slice,canva/schema-crud-slice}.ts` (4 errors)
   - `src/core/schema/__tests__/primary-edit-target.test.ts` (2 errors)
 - **Workaround**: `npm run build` skip type-check (`next build` tidak validate types). Tests via vitest berjalan normal karena vitest pakai transformasi esbuild.
-- **Owner**: unassigned (per kategori)
-- **Target**: Sprint 8.5 (release prep)
-- **Closure**: OPEN
+- **Owner**: Sprint 8.6B
+- **Target**: Sprint 8.6B
+- **Closure**: CLOSED — Sprint 8.6B. `npx tsc --noEmit` now returns **0 errors** (was 63 occurrences / 48 signatures). All errors fixed via:
+  - Dead-code removal: 14 unused shadcn/ui components + SortableCanvas.tsx + OverflowDialog.deprecated.tsx + 2 dead generate-quiz scripts deleted (20 errors eliminated)
+  - Type guards + adapters: `?? null` coalescing, `as unknown` casts, `extends Record<string, unknown>` for ImportPatch types
+  - Enum alignment: added `'evaluasi'` to `learningPhase` union; aligned `UpdateSchemaBlockOptions.source` with PatchSource union
+  - Generic migration helper: `migrateAllSchemas<T>` preserves CanvaPage[] (closes PERSIST-001)
+  - Missing fields: added `logger.info()` method, `openAIAssistant` stub, `games: []` initial state, `defaultValue?: string` to GuidedFieldDef
+  - Duplicate property: removed duplicate `'materi-blok'` key in guided-patch.ts
+  - Script typing: early-continue guard for `screen.nav`, partial→full CanvaPage cast, `?? ''` coalescing for `page.textContent()`
+  - Baseline reset: `scripts/ts-baseline.txt` now 0 signatures / 0 occurrences. Any new TS error will be flagged immediately by the gate.
+  - CI run `27841199162` on SHA `f01a7143` — 3/3 jobs success (Test, TypeScript gate, Build).
 
 ### BUILD-003 — `@dnd-kit/*` dependency hilang
 - **Severity**: P2
 - **Area**: deps
 - **Reproduction**: `src/features/canvas/components/SortableCanvas.tsx` meng-import `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` tetapi package tidak ada di `package.json`.
 - **Workaround**: `SortableCanvas` tidak di-import di mana pun (dead code) — tidak ada efek runtime. Bisa dihapus atau dependencies ditambahkan.
-- **Owner**: unassigned
-- **Target**: Sprint 8.5
-- **Closure**: OPEN
+- **Owner**: Sprint 8.6B
+- **Target**: Sprint 8.6B
+- **Closure**: CLOSED — Sprint 8.6B. `SortableCanvas.tsx` deleted (was 0 imports, dead code). No @dnd-kit dependency needed.
 
 ---
 
@@ -93,9 +102,9 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Area**: persistence
 - **Reproduction**: `npx tsc --noEmit src/store/canva/persistence-slice.ts` error "Type '{ schema?: ScreenSchema | null | undefined; }[]' is not assignable to parameter of type 'CanvaPage[]'" — partial type hydration menghasilkan tipe yang tidak kompatibel dengan `CanvaPage`.
 - **Workaround**: Vitest transformasi esbuild mengabaikan type error; runtime aman karena validasi `ensurePageSchema` menangani field hilang.
-- **Owner**: unassigned
-- **Target**: Sprint 8.5
-- **Closure**: OPEN
+- **Owner**: Sprint 8.6B
+- **Target**: Sprint 8.6B
+- **Closure**: CLOSED — Sprint 8.6B. `migrateAllSchemas` in `src/core/schema/schema-migration.ts` is now generic `<T extends { schema?: ScreenSchema | null }>` so it preserves `CanvaPage[]` through the migration chain instead of widening to `Array<{ schema?: ScreenSchema | null }>`. No cast needed at the hydration boundary in `persistence-slice.ts`. Both line 243 + 458 errors eliminated.
 
 ### PERSIST-002 — Idempotensi migrasi belum teruji menyeluruh
 - **Severity**: P1

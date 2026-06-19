@@ -310,7 +310,7 @@ Setelah 8.2B-Patch-2, status:
 1. ~~**Export HTML contract belum dirancang**~~ — ✅ IMPLEMENTED (Sprint 8.2C CLOSED). POST export + chrome wiring + consumer DOM verified. GET project export PARTIAL (contractId not persisted in Prisma).
 2. ~~**Schema versioning belum ada**~~ — ✅ CLOSED (Sprint 8.6A). Project-level schemaVersion (v1) implemented end-to-end: export writes it, import gates on it, legacy migrates, future/malformed rejected safely. Per-page ScreenSchema.version compatibility bug also fixed.
 3. ~~**CI belum ada di remote**~~ — ✅ CLOSED (CI-001, CI-002, BUILD-001 all CLOSED)
-4. **46 pre-existing TS errors** — `KNOWN_ISSUES.md` BUILD-002 (baseline-gated, CI green)
+4. ~~**46 pre-existing TS errors**~~ — ✅ CLOSED (Sprint 8.6B). `npx tsc --noEmit` now returns 0 errors. All 63 errors / 48 signatures fixed via dead-code removal + type guards + enum alignment + generic migration helpers. Baseline reset to 0.
 5. ~~**Security & accessibility gate belum dijalankan**~~ — ✅ CLOSED (Sprint 8.5B). Security headers middleware (7 headers on all responses) + a11y smoke tests (SkipNavLink, A11yProvider, useGameA11y, RecoveryDialog) + no-stack-leak fix for export/scorm routes.
 6. ~~**Image/audio Import Reload**~~ — ✅ CLOSED (Sprint 8.5C). `/api/upload` route created (was 404), 13 upload tests + 7 media reload tests cover Create/Edit/Save/Reload/Preview paths.
 7. ~~**Error recovery UI**~~ — ✅ CLOSED (Sprint 8.5A). Boot recovery + safe boot bridge + a11y basics + clean-boot regression all PASS_CI.
@@ -442,6 +442,35 @@ Exact-SHA CI run `27837399563` on SHA `b1a18dc0a78eaf6a27c4cc56c45a3708a8c2695a`
 | 8.6A tests total | `PASS_CI` | 82 new tests (58 project-schema-versioning + 24 schema-versioning-import-export) — all CI success |
 | Exact SHA | `PASS_CI` | Checkout SHA `b1a18dc0a78eaf6a27c4cc56c45a3708a8c2695a` verified in CI log |
 | CI Run | `PASS_CI` | `27837399563` — 3/3 jobs success (Test, TypeScript gate, Build) |
+
+## Sprint 8.6B Closure (TypeScript Release Gate)
+
+Exact-SHA CI run `27841199162` on SHA `f01a714300380d1cca2b1248a627535b4bd6a9ea`:
+
+**Before**: 63 errors / 48 signatures (baseline-gated, BUILD-002 OPEN)
+**After**: 0 errors / 0 signatures (BUILD-002 CLOSED, baseline reset to 0)
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| `npx tsc --noEmit` returns 0 | `PASS_CI` | Local + CI both report 0 errors (was 63) |
+| `normalize-ts-errors.js --check` passes with 0 sigs | `PASS_CI` | Baseline `scripts/ts-baseline.txt` reset to 0 signatures / 0 occurrences |
+| Dead code removed (shadcn + SortableCanvas + scripts) | `PASS_CI` | 14 unused shadcn/ui components + SortableCanvas.tsx + OverflowDialog.deprecated.tsx + 2 dead generate-quiz scripts deleted (20 errors eliminated) |
+| Duplicate property + missing type field fixed | `PASS_CI` | `guided-patch.ts`: removed duplicate `'materi-blok'` key (TS1117) + added `defaultValue?: string` to `GuidedFieldDef` (TS2353) |
+| Logger.info method added | `PASS_CI` | `src/core/utils/logger.ts`: added `info(context, message)` — CourseTemplateRegistry + project-schema-versioning depend on it |
+| Null vs undefined fixed | `PASS_CI` | `primary-edit-target.ts`: 3 errors fixed via `?? null` coalescing; `db.ts`: 3 errors fixed by switching `PrismaClient \| null` → `PrismaClient \| undefined` + `as unknown` cast |
+| Enum mismatches fixed | `PASS_CI` | `types/base.ts`: added `'evaluasi'` to `learningPhase` union (2 errors); `canva/types.ts`: aligned `UpdateSchemaBlockOptions.source` with PatchSource union (2 errors) |
+| Record<string,unknown> casts fixed | `PASS_CI` | `kuis/roda/sortir-import.ts`: made ImportPatch types extend `Record<string, unknown>` (3 errors); `auto-repair.ts` + `visual-parity-check.ts`: cast through `unknown` (5 errors) |
+| Missing interface fields fixed | `PASS_CI` | `CanvaBuilder.tsx`: added `openAIAssistant` stub to CanvaShortcutDeps; `module-slice.ts`: added `games: []` initial state |
+| Generic migration helper (PERSIST-001) | `PASS_CI` | `schema-migration.ts`: `migrateAllSchemas` now generic `<T extends { schema?: ScreenSchema \| null }>` — preserves `CanvaPage[]` through migration chain (2 errors fixed, PERSIST-001 CLOSED) |
+| Test file typing fixed | `PASS_CI` | `primary-edit-target.test.ts`: replaced `overlay: {}` with `overlay: 0`, `navConfig: {}` with full object, `colorPalette: {}` with `null` (2 errors) |
+| Script file typing fixed | `PASS_CI` | `runtime-contract-check.ts`: 10 errors fixed via early-continue guard for `screen.nav`; `health-check-macam-norma.ts`: 1 error fixed via partial→full CanvaPage cast; `manual-qa-core.spec.ts`: 2 errors fixed via `?? ''` coalescing |
+| Build success | `PASS_CI` | `npm run build` exit code 0, `.next/BUILD_ID` present |
+| All CI tests pass | `PASS_CI` | 759 tests pass (514 src/core + 245 existing sprint tests) |
+| BUILD-002 status | `CLOSED` | Was 46 errors → now 0 errors. `npx tsc --noEmit` clean. |
+| BUILD-003 status | `CLOSED` | Dead `SortableCanvas.tsx` deleted (was missing @dnd-kit deps, 0 imports). |
+| PERSIST-001 status | `CLOSED` | `migrateAllSchemas` generic preserves CanvaPage[] — no cast needed at hydration boundary. |
+| Exact SHA | `PASS_CI` | Checkout SHA `f01a714300380d1cca2b1248a627535b4bd6a9ea` verified in CI log |
+| CI Run | `PASS_CI` | `27841199162` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
 ## Cara Memperbarui Matriks Ini
 
