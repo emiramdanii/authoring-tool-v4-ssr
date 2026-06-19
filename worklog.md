@@ -1900,3 +1900,92 @@ Stage Summary:
 - Jobs: Test success, TypeScript success, Build success
 - Sprint 8.5A overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
 - All Sprints 8.1 → 8.5A now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.5B
+Agent: Super Z (main)
+Task: Sprint 8.5B — Security + Accessibility Gate
+
+Work Log:
+- Audit existing middleware (src/middleware.ts): rate-limit logic was solid
+  (4 tiers: ai/export/project/general), but ONLY applied to /api/* paths
+  and had NO security headers. Comment claimed "security headers" but
+  implementation was rate-limit headers only.
+- Audit API routes for stack leak: 2 routes were leaking raw error.message
+  to client (export + scorm). Other routes (projects, ai, templates) already
+  had generic messages.
+- Audit a11y utilities: A11yProvider + SkipNavLink + LiveAnnouncer wired
+  in root layout. useGameA11y hook comprehensive (ariaLabel, progressAria,
+  liveAria, announce, rovingFocus, activationKey). RecoveryDialog a11y
+  already covered by 8.5A tests.
+- Implementation (commit c487df0):
+  * src/middleware.ts (+76/-15):
+    - Added SECURITY_HEADERS constant with 7 headers (X-Content-Type-Options,
+      X-Frame-Options, Referrer-Policy, X-XSS-Protection, Permissions-Policy,
+      Strict-Transport-Security, Cross-Origin-Opener-Policy)
+    - applySecurityHeaders() applied to ALL responses (page + API + 429 + 503)
+    - Matcher expanded from /api/:path* to all routes except static assets
+    - CSP intentionally NOT set (needs page-specific nonces, out of scope)
+  * src/app/api/export/route.ts (+5/-3): catch block returns generic
+    'Export gagal. Silakan coba lagi.' (was leaking raw error.message)
+  * src/app/api/export/scorm/route.ts (+5/-3): same fix with
+    'Export SCORM gagal. Silakan coba lagi.'
+  * 3 new test files (32 tests total):
+    - middleware-security.test.ts (15 tests): SECURITY_HEADERS constant,
+      headers on API/page/429/503 responses, rate-limit tier mapping regression
+    - a11y-smoke.test.tsx (12 tests): SkipNavLink, A11yProvider, useGameA11y
+      hook contract, RecoveryDialog a11y cross-cover
+    - api-no-stack-leak.test.ts (5 tests): /api/export, /api/export/scorm,
+      /api/projects (regression), /api/ai (regression), server-side logging
+      preserved
+  * CI workflow updated: 3 new test files added to vitest job
+- Patch-1 NOT needed — first push CI was green on run 27831532947
+
+Stage Summary:
+- Files modified (commit c487df0):
+  * src/middleware.ts (+76/-15)
+  * src/app/api/export/route.ts (+5/-3)
+  * src/app/api/export/scorm/route.ts (+5/-3)
+  * .github/workflows/ci.yml (+4/-0)
+- Files baru:
+  * src/__tests__/middleware-security.test.ts (15 tests)
+  * src/__tests__/a11y-smoke.test.tsx (12 tests)
+  * src/__tests__/api-no-stack-leak.test.ts (5 tests)
+- Local gates: vitest 656 tests pass, tsc 48 sigs (0 new), build ok
+- Sprint 8.5B initial implementation READY for Senior Review
+
+---
+Task ID: 8.5B-Closure
+Agent: Super Z (main)
+Task: Sprint 8.5B closure documentation sync
+
+Work Log:
+- Senior Review 8.5B: TECHNICAL PASS / pending CI verification.
+- Verified remote: HEAD = c487df0d9f271ed1c0da2a1369a019b75b41e2d0.
+- Monitored GitHub Actions via authenticated API (PAT — needed because
+  unauthenticated API hit rate limit after 8.5A monitoring):
+  * CI Run ID: 27831532947
+  * Exact SHA: c487df0d9f271ed1c0da2a1369a019b75b41e2d0
+  * Run status: completed, conclusion: success
+  * 3/3 jobs success:
+    - Test (vitest): completed → success
+    - TypeScript gate (normalize-ts-errors.js --check): completed → success
+    - Build (exit code + artifact verification): completed → success
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Added 3 new PASS_CI evidence blocks (Security Headers Middleware,
+    API No-Stack-Leak, A11y Smoke Tests) under Error recovery section
+  * Added new "Sprint 8.5B Closure (Security + Accessibility Gate)" table
+    with 17 gates all PASS_CI
+  * Updated "Lubang Terbesar Sebelum Release": item 5 struck through —
+    Security & accessibility gate CLOSED
+- worklog.md: appended 8.5B + 8.5B-Closure entries.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.5B: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: c487df0d9f271ed1c0da2a1369a019b75b41e2d0
+- CI run: 27831532947
+- Jobs: Test success, TypeScript success, Build success
+- Sprint 8.5B overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
+- All Sprints 8.1 → 8.5B now CLOSED with PASS_CI status.

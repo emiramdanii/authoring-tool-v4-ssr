@@ -223,6 +223,37 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - Exact SHA: `f4f19266a619f294996a7dcda6d2fc311cda1fa8`
   - GitHub Actions: 3/3 jobs success (Test, TypeScript gate, Build)
 
+- **Security Headers Middleware**: `PASS_CI` (Sprint 8.5B CLOSED)
+  - Evidence: `src/__tests__/middleware-security.test.ts` (15 tests, commit `c487df0`)
+  - 7 security headers applied to ALL responses (page + API + 429 + 503):
+    * `X-Content-Type-Options: nosniff`
+    * `X-Frame-Options: DENY`
+    * `Referrer-Policy: strict-origin-when-cross-origin`
+    * `X-XSS-Protection: 0` (legacy auditor disabled; rely on CSP/sanitization)
+    * `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()`
+    * `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
+    * `Cross-Origin-Opener-Policy: same-origin`
+  - Matcher expanded from `/api/:path*` to all routes except static assets (`_next/static`, `_next/image`, favicon, icons/, sounds/, og.png, manifest.json, sw.js, robots.txt, logo.svg, mockup.html)
+  - CSP intentionally NOT set (needs page-specific nonces, out of scope — tracked as future work in KNOWN_ISSUES.md)
+  - Rate-limit tier mapping preserved (regression): ai/export/project/general
+  - CI run ID: `27831532947` on SHA `c487df0d9f271ed1c0da2a1369a019b75b41e2d0` — 3/3 jobs success
+
+- **API No-Stack-Leak**: `PASS_CI` (Sprint 8.5B CLOSED)
+  - Evidence: `src/__tests__/api-no-stack-leak.test.ts` (5 tests, commit `c487df0`)
+  - 2 routes fixed (were leaking raw `error.message` to client):
+    * `/api/export` — now returns generic `'Export gagal. Silakan coba lagi.'` (still logs full error server-side via `console.error`)
+    * `/api/export/scorm` — now returns generic `'Export SCORM gagal. Silakan coba lagi.'`
+  - Other routes (projects, ai, templates) already had generic messages — verified via regression tests
+  - All 5 tests assert: (a) response body uses generic message, (b) response body does NOT contain `TypeError`/stack/internal paths, (c) `console.error` was called for server-side debugging
+
+- **A11y Smoke Tests**: `PASS_CI` (Sprint 8.5B CLOSED)
+  - Evidence: `src/__tests__/a11y-smoke.test.tsx` (12 tests, commit `c487df0`)
+  - SkipNavLink: `href="#main-content"`, `sr-only` + `focus:not-sr-only` classes, keyboard-focusable
+  - A11yProvider: default context (`reducedMotion=false`, `highContrast=false`)
+  - `useGameA11y` hook: `ariaLabel` with score+maxScore, `progressAria` with `role=progressbar` + `aria-valuenow/min/max`, `liveAria` with `aria-live=polite`, unique `instructionId` (blockId-based), `ariaLabel` omits score when `maxScore=0`
+  - RecoveryDialog cross-cover: `role=dialog`, `aria-modal=true`, `aria-labelledby` points to visible title, Tab focus trap cycles, Esc triggers Mulai Baru
+  - Note: these are SMOKE tests for the a11y contract, NOT a substitute for full axe-core audits (which would require Playwright + axe integration — out of scope for 8.5B)
+
 ## Lubang Setelah Present (Sprint 8.2B CLOSED)
 
 Setelah 8.2B-Patch-2, status:
@@ -238,7 +269,7 @@ Setelah 8.2B-Patch-2, status:
 2. **Schema versioning belum ada** — `docs/SCHEMA_VERSIONING_DESIGN.md` (design only)
 3. ~~**CI belum ada di remote**~~ — ✅ CLOSED (CI-001, CI-002, BUILD-001 all CLOSED)
 4. **46 pre-existing TS errors** — `KNOWN_ISSUES.md` BUILD-002 (baseline-gated, CI green)
-5. **Security & accessibility gate belum dijalankan** — Sprint 8.5B (security headers + WCAG/a11y smoke)
+5. ~~**Security & accessibility gate belum dijalankan**~~ — ✅ CLOSED (Sprint 8.5B). Security headers middleware (7 headers on all responses) + a11y smoke tests (SkipNavLink, A11yProvider, useGameA11y, RecoveryDialog) + no-stack-leak fix for export/scorm routes.
 6. **Image/audio Import Reload** — `PASS_SOURCE_ONLY` → perlu test otomatis (Sprint 8.4 menutup project JSON import/export, bukan media binary reload). Sprint 8.5C target.
 7. ~~**Error recovery UI**~~ — ✅ CLOSED (Sprint 8.5A). Boot recovery + safe boot bridge + a11y basics + clean-boot regression all PASS_CI.
 8. ~~**Project Import/Export JSON**~~ — ✅ CLOSED (Sprint 8.4). Style authority fields + 4 fixtures verified through roundtrip.
@@ -285,6 +316,30 @@ Exact-SHA CI run `27825766751` on SHA `f4f19266a619f294996a7dcda6d2fc311cda1fa8`
 | 8.5A tests total | `PASS_CI` | 38 recovery tests (12 bridge + 11 safe-boot + 8 a11y + 7 regression) — all CI success |
 | Exact SHA | `PASS_CI` | Checkout SHA `f4f19266a619f294996a7dcda6d2fc311cda1fa8` verified in CI log |
 | CI Run | `PASS_CI` | `27825766751` — 3/3 jobs success (Test, TypeScript gate, Build) |
+
+## Sprint 8.5B Closure (Security + Accessibility Gate)
+
+Exact-SHA CI run `27831532947` on SHA `c487df0d9f271ed1c0da2a1369a019b75b41e2d0`:
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Security headers on API responses | `PASS_CI` | `middleware-security.test.ts` — 7 headers present on /api/projects, /api/ai/*, /api/export*, /api/projects/:id/save |
+| Security headers on page responses | `PASS_CI` | `middleware-security.test.ts` — headers present on `/` (non-API), `/api` health check |
+| Security headers on 429 response | `PASS_CI` | `middleware-security.test.ts` — rate-limited response still has all 7 headers + Retry-After |
+| Security headers on 503 sandbox | `PASS_CI` | `middleware-security.test.ts` — sandbox-mode response still has all 7 headers |
+| Rate-limit tier mapping | `PASS_CI` | `middleware-security.test.ts` — regression: ai/export/project/general tiers preserved |
+| No stack leak — /api/export | `PASS_CI` | `api-no-stack-leak.test.ts` — generic `'Export gagal. Silakan coba lagi.'`, no TypeError/stack/internal paths |
+| No stack leak — /api/export/scorm | `PASS_CI` | `api-no-stack-leak.test.ts` — generic `'Export SCORM gagal. Silakan coba lagi.'`, no TypeError/stack/internal paths |
+| No stack leak — /api/projects (regression) | `PASS_CI` | `api-no-stack-leak.test.ts` — already generic `'Failed to fetch projects'`, no Prisma/db leak |
+| No stack leak — /api/ai (regression) | `PASS_CI` | `api-no-stack-leak.test.ts` — already generic `'Gagal menghasilkan konten AI. Silakan coba lagi.'`, no NetworkError/DNS leak |
+| Server-side logging preserved | `PASS_CI` | `api-no-stack-leak.test.ts` — `console.error` called even when client gets generic message |
+| SkipNavLink a11y | `PASS_CI` | `a11y-smoke.test.tsx` — href=#main-content, sr-only + focus:not-sr-only, keyboard-focusable |
+| A11yProvider context | `PASS_CI` | `a11y-smoke.test.tsx` — default context (reducedMotion=false, highContrast=false) |
+| useGameA11y hook contract | `PASS_CI` | `a11y-smoke.test.tsx` — ariaLabel, progressAria (role=progressbar), liveAria (aria-live=polite), instructionId (blockId-based), ariaLabel omits score when maxScore=0 |
+| RecoveryDialog a11y (cross-cover) | `PASS_CI` | `a11y-smoke.test.tsx` — role=dialog, aria-modal=true, aria-labelledby, Tab focus trap, Esc triggers Mulai Baru |
+| 8.5B tests total | `PASS_CI` | 32 new tests (15 middleware-security + 12 a11y-smoke + 5 api-no-stack-leak) — all CI success |
+| Exact SHA | `PASS_CI` | Checkout SHA `c487df0d9f271ed1c0da2a1369a019b75b41e2d0` verified in CI log |
+| CI Run | `PASS_CI` | `27831532947` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
 ## Cara Memperbarui Matriks Ini
 
