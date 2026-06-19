@@ -62,8 +62,14 @@ export type Snapshot = {
 export interface UpdateSchemaBlockOptions {
   /** What to do if the patch causes content overflow. Default: 'none' */
   overflowPolicy?: 'none' | 'warn' | 'reject' | 'auto-split';
-  /** Source of the edit — for edit bus tracking. Default: 'user' */
-  source?: 'user' | 'ai' | 'system';
+  /** Source of the edit — for edit bus tracking. Default: 'user'
+   *
+   * Sprint 8.6B: aligned with the PatchSource union used by guided-patch.ts
+   * + edit-bus + patch-history. Previously this was 'user' | 'ai' | 'system'
+   * but 'system' was never used by any caller (search confirmed) and was
+   * not part of the patch-history payload type. Removed to match the
+   * actual runtime union. */
+  source?: 'user' | 'ai' | 'auto' | 'sync' | 'guided-form' | 'konten-tab' | 'dokumen-tab';
   /** Skip pushing history snapshot (caller manages history). Default: false */
   skipHistory?: boolean;
 }

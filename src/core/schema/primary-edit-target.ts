@@ -107,7 +107,9 @@ export function resolvePrimaryEditableTarget(page: CanvaPage): PrimaryEditTarget
     if (primaryType) {
       const found = findBlockByType(blocks, primaryType);
       if (found) {
-        return { blockId: found.id, blockType: found.type };
+        // Sprint 8.6B: SchemaBlock.id is string | undefined; coalesce to null
+        // to match PrimaryEditTarget.blockId: string | null contract.
+        return { blockId: found.id ?? null, blockType: found.type };
       }
     }
   }
@@ -118,7 +120,7 @@ export function resolvePrimaryEditableTarget(page: CanvaPage): PrimaryEditTarget
   // or where a custom combination of blocks is present.
   for (const block of blocks) {
     if (hasGuidedEditor(block.type)) {
-      return { blockId: block.id, blockType: block.type };
+      return { blockId: block.id ?? null, blockType: block.type };
     }
   }
 
@@ -127,7 +129,7 @@ export function resolvePrimaryEditableTarget(page: CanvaPage): PrimaryEditTarget
   // will show a contextual editor instead of generic "Edit Halaman".
   const first = blocks[0];
   if (first) {
-    return { blockId: first.id, blockType: first.type };
+    return { blockId: first.id ?? null, blockType: first.type };
   }
 
   // ── Step 5: Page-level fallback ──

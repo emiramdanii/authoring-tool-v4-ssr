@@ -564,6 +564,9 @@ export interface GuidedFieldDef {
   /** Conditional visibility: show this field only when another field's value is in `values`.
    *  If undefined, the field is always shown (backward-compatible). */
   showWhen?: { field: string; values: string[] };
+  /** Sprint 8.6B: default value used by some fields (e.g. default accentColor).
+   *  Consumed by the guided editor when initializing a new block. */
+  defaultValue?: string;
 }
 
 /**
@@ -1188,83 +1191,6 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     sections: [
       { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'intro', 'kartu'] },
       { key: 'appearance', label: 'Tampilan', fieldKeys: ['layoutVariant', 'accentColor'], collapsed: true },
-    ],
-  },
-
-  // ── Sprint 2B: MateriBlok Guided Editor ────────────────────────
-  // The most important content block — teachers need this to edit
-  // materi content without falling through to raw SchemaDrivenEditor.
-  //
-  // P1 FIX: Merged duplicate entry. The old Entry 1 (displayName
-  // 'Konten Materi') was silently overwritten by this entry. Now
-  // this is the single source of truth, with kutipan and gambar
-  // added to options + showWhen per MateriBlokRenderer support.
-  //
-  // Supported tipe (from MateriBlokRenderer + MateriBlokTipe):
-  //   teks, definisi, poin, checklist, infobox, highlight,
-  //   kutipan, gambar, tabel, timeline, compare, statistik, studi
-  // Guided editor currently exposes 8 most-used types.
-  // Remaining 5 (tabel, timeline, compare, statistik, studi) can
-  // be added in future sprints when their guided fields are defined.
-
-  'materi-blok': {
-    blockType: 'materi-blok',
-    displayName: 'Materi',
-    description: 'Blok konten materi — pilih tipe dan isi konten sesuai kebutuhan',
-    icon: '📚',
-    fields: [
-      {
-        key: 'tipe',
-        label: 'Tipe Konten',
-        type: 'select',
-        required: true,
-        helpText: 'Pilih jenis konten yang ingin ditampilkan',
-        options: [
-          { label: 'Paragraf', value: 'teks' },
-          { label: 'Definisi', value: 'definisi' },
-          { label: 'Poin-poin', value: 'poin' },
-          { label: 'Checklist', value: 'checklist' },
-          { label: 'Info Box', value: 'infobox' },
-          { label: 'Highlight', value: 'highlight' },
-          { label: 'Kutipan', value: 'kutipan' },
-          { label: 'Gambar', value: 'gambar' },
-          // Sprint 6.3-C: tabel + timeline now have guided editors
-          { label: 'Tabel', value: 'tabel' },
-          { label: 'Timeline', value: 'timeline' },
-        ],
-      },
-      { key: 'judul', label: 'Judul', type: 'text', helpText: 'Judul opsional untuk blok materi', placeholder: 'Judul materi...' },
-      { key: 'isi', label: 'Isi Konten', type: 'textarea', showWhen: { field: 'tipe', values: ['teks', 'definisi', 'infobox', 'highlight', 'kutipan', 'gambar'] }, helpText: 'Teks utama konten (untuk gambar: URL gambar)', placeholder: 'Tulis konten di sini...' },
-      { key: 'karakter', label: 'Sumber Kutipan', type: 'text', showWhen: { field: 'tipe', values: ['kutipan'] }, helpText: 'Nama tokoh atau sumber kutipan', placeholder: '— Nama tokoh...' },
-      { key: 'butir', label: 'Butir-butir', type: 'array', maxItems: 6, showWhen: { field: 'tipe', values: ['poin', 'checklist'] }, helpText: 'Setiap butir menjadi satu poin/checklist', fields: [
-        { key: '', label: 'Butir', type: 'text', placeholder: 'Tulis poin...' },
-      ]},
-      // Sprint 6.3-C: tabel editor — baris is string[][], displayed as pipe-delimited rows
-      { key: 'baris', label: 'Baris Tabel', type: 'table-text', showWhen: { field: 'tipe', values: ['tabel'] }, helpText: 'Satu baris per baris. Pisahkan kolom dengan tanda |. Baris pertama = header.', placeholder: 'Header 1 | Header 2 | Header 3\nData 1 | Data 2 | Data 3' },
-      // Sprint 6.3-C: timeline editor — langkah is Array<{ icon?, judul, isi? }>
-      { key: 'langkah', label: 'Langkah-langkah', type: 'array', maxItems: 8, showWhen: { field: 'tipe', values: ['timeline'] }, helpText: 'Setiap langkah dalam timeline', fields: [
-        { key: 'icon', label: 'Ikon', type: 'icon', helpText: 'Ikon opsional (emoji)' },
-        { key: 'judul', label: 'Judul Langkah', type: 'text', required: true, placeholder: 'Langkah 1...' },
-        { key: 'isi', label: 'Deskripsi', type: 'textarea', placeholder: 'Deskripsi langkah...' },
-      ]},
-      // S2J.5: warna is the REAL field that MateriBlokRenderer reads.
-      // accentColor removed — it was a dead field (renderer never read it).
-      { key: 'warna', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, showWhen: { field: 'tipe', values: ['teks', 'definisi', 'poin', 'kutipan', 'checklist', 'gambar', 'tabel', 'timeline', 'highlight'] }, helpText: 'Warna aksen untuk elemen dekoratif blok' },
-      { key: 'icon', label: 'Ikon', type: 'icon', showWhen: { field: 'tipe', values: ['highlight'] }, helpText: 'Ikon untuk blok highlight' },
-      { key: 'infoboxStyle', label: 'Gaya Info Box', type: 'select', showWhen: { field: 'tipe', values: ['infobox'] }, options: [
-        { label: 'Info', value: 'info' },
-        { label: 'Tips', value: 'tips' },
-        { label: 'Peringatan', value: 'warning' },
-        { label: 'Berhasil', value: 'success' },
-      ]},
-      // S2J.5: accentColor field REMOVED from guided editor.
-      // It was dead — MateriBlokRenderer reads block.warna, not block.accentColor.
-      // The accentColor field still exists on MateriBlokBlock type for backward
-      // compat, but it's no longer exposed to teachers.
-    ],
-    sections: [
-      { key: 'content', label: 'Isi Utama', fieldKeys: ['tipe', 'judul', 'isi', 'karakter', 'butir', 'baris', 'langkah'] },
-      { key: 'style', label: 'Tampilan', fieldKeys: ['warna', 'icon', 'infoboxStyle'], collapsed: true },
     ],
   },
 

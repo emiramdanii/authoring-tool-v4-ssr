@@ -7,6 +7,7 @@
  *   logger.error('MyContext', error);
  *   logger.error('ErrorBoundary', error, componentStack);  // extra details
  *   logger.warn('MyContext', 'Something suspicious happened');
+ *   logger.info('MyContext', 'Something noteworthy happened');  // Sprint 8.6B
  */
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -18,5 +19,10 @@ export const logger = {
   },
   warn(context: string, message: string) {
     if (isDev) console.warn(`[${context}]`, message);
+  },
+  // Sprint 8.6B: info-level logging for non-warning notices (e.g. migrations,
+  // schema upgrades, recovery actions). Silently dropped in production.
+  info(context: string, message: string) {
+    if (isDev) console.info(`[${context}]`, message);
   },
 };

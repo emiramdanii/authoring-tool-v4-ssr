@@ -16,10 +16,14 @@ function deriveGames(modules: Module[]): Game[] {
   return modules.filter(m => (GAME_TYPES as readonly string[]).includes(m.type));
 }
 
-export type ModuleSlice = Pick<AuthoringState, 'modules'>;
+export type ModuleSlice = Pick<AuthoringState, 'modules' | 'games'>;
 
 export const createModuleSlice: StateCreator<AuthoringState, [], [], ModuleSlice> = (set) => ({
   modules: [],
+  // Sprint 8.6B: games is a derived projection from modules (see deriveGames
+  // above). Initialize to [] — startProjectionSync() in index.ts populates
+  // this on store boot via setState({ games: derivedGames }).
+  games: [],
   // Phase 5-D: Removed write actions — modules is now a read-only projection.
   // addModule, removeModule, updateModuleField, moveModule,
   // addModuleItem, removeModuleItem, updateModuleItem — all DELETED.

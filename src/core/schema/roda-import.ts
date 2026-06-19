@@ -332,7 +332,7 @@ export function parseRodaImportJSON(raw: string): { data: RodaImportPayload | nu
 
 // ── Mapper ─────────────────────────────────────────────────────
 
-export interface RodaImportPatch {
+export interface RodaImportPatch extends Record<string, unknown> {
   title?: string;
   questions: Array<{
     q: string;

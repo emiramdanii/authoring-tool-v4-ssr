@@ -41,9 +41,10 @@ function makePage(templateType: string, blocks: SchemaBlock[]): CanvaPage {
     bgColor: '#ffffff',
     bgDataUrl: '',
     elements: [],
-    overlay: {},
-    colorPalette: {},
-    navConfig: {},
+    // Sprint 8.6B: use proper types — overlay is number, navConfig is object
+    overlay: 0,
+    colorPalette: null,
+    navConfig: { showNavbar: true, showPrevNext: true, showScore: true, showProgress: true, navbarStyle: 'colorful' },
     templateData: {},
     templateVariant: 'A',
     schema,
@@ -146,8 +147,12 @@ describe('resolvePrimaryEditableTarget', () => {
   it('no schema → null target', () => {
     const page = {
       id: 'page-test', label: 'Test Page', templateType: 'custom',
-      bgColor: '#ffffff', bgDataUrl: '', elements: [], overlay: {},
-      colorPalette: {}, navConfig: {}, templateData: {}, templateVariant: 'A',
+      bgColor: '#ffffff', bgDataUrl: '', elements: [],
+      // Sprint 8.6B: use proper types — overlay is number, navConfig is object
+      overlay: 0,
+      colorPalette: null,
+      navConfig: { showNavbar: true, showPrevNext: true, showScore: true, showProgress: true, navbarStyle: 'colorful' },
+      templateData: {}, templateVariant: 'A',
       pageMode: 'schema' as const,
     } as CanvaPage;
     const target = resolvePrimaryEditableTarget(page);

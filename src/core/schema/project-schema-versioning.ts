@@ -31,8 +31,6 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { logger } from '@/core/utils/logger';
-// Note: logger has .warn() and .error() only — for .info-level migration
-// notices, we use console.info directly (guarded by NODE_ENV check).
 
 // ── Constants ────────────────────────────────────────────────────────
 
@@ -265,14 +263,15 @@ export function migrateProjectDocument(input: unknown): ProjectSchemaMigrationRe
   };
 
   if (normalized === null) {
-    // logger has no .info() — use console.info directly for migration notices
-    if (process.env.NODE_ENV === 'development') {
-      console.info(`[PROJECT-SCHEMA] Legacy project document (no schemaVersion) — migrated to v${CURRENT_PROJECT_SCHEMA_VERSION}`);
-    }
+    logger.info(
+      'PROJECT-SCHEMA',
+      `Legacy project document (no schemaVersion) — migrated to v${CURRENT_PROJECT_SCHEMA_VERSION}`
+    );
   } else if (normalized < CURRENT_PROJECT_SCHEMA_VERSION) {
-    if (process.env.NODE_ENV === 'development') {
-      console.info(`[PROJECT-SCHEMA] Project document v${normalized} → migrated to v${CURRENT_PROJECT_SCHEMA_VERSION}`);
-    }
+    logger.info(
+      'PROJECT-SCHEMA',
+      `Project document v${normalized} → migrated to v${CURRENT_PROJECT_SCHEMA_VERSION}`
+    );
   }
 
   return { ok: true, document: migrated };

@@ -255,7 +255,7 @@ export function parseSortirImportJSON(raw: string): { data: SortirImportPayload 
 
 // ── Mapper ─────────────────────────────────────────────────────
 
-export interface SortirImportPatch {
+export interface SortirImportPatch extends Record<string, unknown> {
   title?: string;
   kolom: Array<{
     id: string;

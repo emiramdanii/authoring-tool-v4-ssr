@@ -217,7 +217,7 @@ export function parseKuisImportJSON(raw: string): { data: KuisImportPayload | nu
 
 // ── Mapper ─────────────────────────────────────────────────────
 
-export interface KuisImportPatch {
+export interface KuisImportPatch extends Record<string, unknown> {
   title?: string;
   questions: Array<{
     q: string;

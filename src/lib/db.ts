@@ -18,7 +18,10 @@ const globalForPrisma = globalThis as unknown as {
 
 // ── Sandbox guard: skip PrismaClient instantiation to avoid OOM ──
 // Uses `import type` (zero-cost) + lazy require only when NOT in sandbox
-let _prisma: PrismaClient | null = null;
+// Sprint 8.6B: use `undefined` (not `null`) so the type matches
+// `globalForPrisma.prisma: PrismaClient | undefined` and avoids
+// PrismaClient | null not assignable errors.
+let _prisma: PrismaClient | undefined = undefined;
 
 function getPrisma(): PrismaClient {
   if (_prisma) return _prisma;
@@ -27,18 +30,22 @@ function getPrisma(): PrismaClient {
   }
   // Lazy-load PrismaClient only when actually needed
   const { PrismaClient: PC } = require('@prisma/client');
-  _prisma = globalForPrisma.prisma ?? new PC();
+  const client = globalForPrisma.prisma ?? new PC();
+  _prisma = client;
   if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.prisma = _prisma;
+    globalForPrisma.prisma = client;
   }
-  return _prisma;
+  return client;
 }
 
 // Export a Proxy so `prisma.project.findMany()` triggers lazy load + throws in sandbox
+// Sprint 8.6B: cast through `unknown` to bypass the PrismaClient index-signature
+// mismatch (PrismaClient's type doesn't expose a string index signature, but the
+// Proxy needs to forward arbitrary property access).
 export const prisma = new Proxy({} as PrismaClient, {
   get(_target, prop) {
     const client = getPrisma();
-    return (client as Record<string | symbol, unknown>)[prop];
+    return (client as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 

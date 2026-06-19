@@ -372,7 +372,9 @@ test('T16: Export HTML → buka file → fitur ada', async ({ page }) => {
   await page.goto('file:///tmp/silse-export-test.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForTimeout(3000);
 
-  const bodyText = await page.textContent('body').catch(() => '');
+  // Sprint 8.6B: page.textContent may return null per Playwright types.
+  // Coalesce to '' so .length + .toBeGreaterThan() typecheck cleanly.
+  const bodyText = (await page.textContent('body').catch(() => '')) ?? '';
   console.log('T16: Export HTML body length:', bodyText.length);
   expect(bodyText.length).toBeGreaterThan(50);
 

@@ -140,7 +140,10 @@ export default function CanvaBuilder() {
       getCanvaState: useCanvaStore.getState,
       setCanvaState: useCanvaStore.setState,
       getInteractiveState: useInteractiveStore.getState,
-      // AI Assistant shortcut removed — AI Generator is a parked area per CORE_SCOPE.md
+      // AI Assistant shortcut removed — AI Generator is a parked area per CORE_SCOPE.md.
+      // Sprint 8.6B: stub openAIAssistant to satisfy CanvaShortcutDeps contract
+      // (the AI shortcut registration is dead code, so this is never invoked).
+      openAIAssistant: () => { /* no-op — AI Generator is parked */ },
     }),
     [],
   );

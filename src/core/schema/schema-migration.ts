@@ -182,8 +182,17 @@ export function migrateSchema(schema: ScreenSchema): ScreenSchema {
  * Returns the same array reference if no migration was needed,
  * or a new array with migrated schemas.
  */
-export function migrateAllSchemas(pages: Array<{ schema?: ScreenSchema | null }>): {
-  pages: Array<{ schema?: ScreenSchema | null }>;
+/**
+ * Sprint 8.6B: generic over input page type — preserves CanvaPage[]
+ * (and any other page shape) through the migration chain instead of
+ * widening to Array<{ schema?: ScreenSchema | null }>. This closes
+ * PERSIST-001: persistence-slice.ts no longer needs a cast at the
+ * hydration boundary.
+ */
+export function migrateAllSchemas<T extends { schema?: ScreenSchema | null }>(
+  pages: T[]
+): {
+  pages: T[];
   migratedCount: number;
 } {
   let migratedCount = 0;

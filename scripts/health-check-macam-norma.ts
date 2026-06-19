@@ -11,6 +11,8 @@ import { MACAM_NORMA_LESSON } from '../src/presets/ppkn/macam-norma-schema';
 import { schemaToCanvaPages } from '../src/core/engine/SchemaEngine.utils';
 import { validateTemplate } from '../src/core/template/health-check/template-health-check';
 import { getHealthStatusLabel, getHealthStatusColor } from '../src/core/template/health-check/types';
+// Sprint 8.6B: type-only import for the partial→full CanvaPage cast below
+import type { CanvaPage } from '../src/components/canva/types';
 
 function main() {
   console.log('═══════════════════════════════════════════════════════════');
@@ -19,7 +21,12 @@ function main() {
   console.log();
 
   // Step 1: Convert schema to CanvaPage[]
-  const pages = schemaToCanvaPages(MACAM_NORMA_LESSON);
+  // Sprint 8.6B: schemaToCanvaPages returns a partial CanvaPage shape
+  // (missing bgDataUrl, overlay, elements, colorPalette, navConfig — those
+  // are populated by schema-preset-slice when loading into the store).
+  // For this script's health-check purpose, cast to CanvaPage[] —
+  // validateTemplate only reads id/label/templateType/schema/templateData.
+  const pages = schemaToCanvaPages(MACAM_NORMA_LESSON) as unknown as CanvaPage[];
   console.log(`📐 Screens: ${pages.length}`);
   console.log(`📐 Template: ${MACAM_NORMA_LESSON.title} (v${MACAM_NORMA_LESSON.version})`);
   console.log();

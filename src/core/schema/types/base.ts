@@ -68,7 +68,10 @@ export interface SemanticHints {
   /** BSNP relevance — is this block required by BSNP curriculum standards? */
   bsnpRelevant?: boolean;
   /** Which phase of learning does this block serve? */
-  learningPhase?: 'pendahuluan' | 'inti' | 'penutup';
+  // Sprint 8.6B: added 'evaluasi' as a valid phase — used by preset schemas
+  // (e.g. pancasila-golden-schema) to mark assessment blocks. The 4th phase
+  // aligns with Kurikulum Merdeka's 4-phase learning cycle.
+  learningPhase?: 'pendahuluan' | 'inti' | 'penutup' | 'evaluasi';
   /** Interaction type hint — what kind of student interaction? */
   interactionType?: 'read' | 'write' | 'choose' | 'drag' | 'discuss' | 'reflect';
 }

@@ -173,7 +173,7 @@ function checkTypography(
   for (const screen of screens) {
     for (const block of screen.blocks) {
       // Check cover title
-      if (block.type === 'cover' && (block as Record<string, unknown>).title) {
+      if (block.type === 'cover' && (block as unknown as Record<string, unknown>).title) {
         // The contract should enforce 48px minimum for cover titles
         // We check if the contract exists and has the right values
         // This is a structural check — the actual rendered size depends on EduRenderingContext
@@ -211,16 +211,16 @@ function checkDensity(screens: ScreenSchema[]): DensityCheck {
       chars += extractTextContent(block).length;
 
       if (block.type === 'nc-grid') {
-        cards += ((block as Record<string, unknown>).cards as unknown[])?.length || 0;
+        cards += ((block as unknown as Record<string, unknown>).cards as unknown[])?.length || 0;
       }
       if (block.type === 'nk-card') {
         cards += 1;
       }
       if (block.type === 'tabel-accord') {
-        accordions += ((block as Record<string, unknown>).rows as unknown[])?.length || 0;
+        accordions += ((block as unknown as Record<string, unknown>).rows as unknown[])?.length || 0;
       }
       if (block.type === 'materi-section') {
-        tabs += ((block as Record<string, unknown>).tabs as unknown[])?.length || 0;
+        tabs += ((block as unknown as Record<string, unknown>).tabs as unknown[])?.length || 0;
       }
     }
 
@@ -265,8 +265,8 @@ function checkHierarchy(screens: ScreenSchema[]): HierarchyCheck {
 
     for (const block of screen.blocks) {
       if (block.type === 'cover' || block.type === 'hero') hero = true;
-      if ((block as Record<string, unknown>).title) heading = true;
-      if ((block as Record<string, unknown>).accentColor || (block as Record<string, unknown>).sectionColor) accent = true;
+      if ((block as unknown as Record<string, unknown>).title) heading = true;
+      if ((block as unknown as Record<string, unknown>).accentColor || (block as unknown as Record<string, unknown>).sectionColor) accent = true;
     }
 
     hasHero[screen.id] = hero;
@@ -327,7 +327,7 @@ function checkColorConsistency(
   for (const screen of screens) {
     const colors = new Set<string>();
     for (const block of screen.blocks) {
-      const blockRec = block as Record<string, unknown>;
+      const blockRec = block as unknown as Record<string, unknown>;
       if (blockRec.accentColor) colors.add(String(blockRec.accentColor));
       if (blockRec.sectionColor) colors.add(String(blockRec.sectionColor));
       if (blockRec.color) colors.add(String(blockRec.color));
@@ -382,7 +382,7 @@ function checkScreenWeight(screens: ScreenSchema[]): ScreenWeightCheck {
 // ── Helpers ────────────────────────────────────────────────────
 
 function extractTextContent(block: SchemaBlock): string {
-  const rec = block as Record<string, unknown>;
+  const rec = block as unknown as Record<string, unknown>;
   let text = '';
 
   if (typeof rec.title === 'string') text += rec.title + ' ';
@@ -423,7 +423,7 @@ function extractTextContent(block: SchemaBlock): string {
 }
 
 function computeBlockWeight(block: SchemaBlock): number {
-  const rec = block as Record<string, unknown>;
+  const rec = block as unknown as Record<string, unknown>;
   let weight = 1; // Base weight
 
   const text = extractTextContent(block);

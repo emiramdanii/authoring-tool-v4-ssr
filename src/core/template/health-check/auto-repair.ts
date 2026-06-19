@@ -256,7 +256,7 @@ export function repairAddFeedback(pages: CanvaPage[]): RepairResult {
     const modifiedBlocks = page.schema.blocks.map(block => {
       if (block.type !== 'kuis') return block;
 
-      const b = block as Record<string, unknown>;
+      const b = block as unknown as Record<string, unknown>;
       const questions = b.questions as Array<Record<string, unknown>> | undefined;
       if (!questions) return block;
 
@@ -575,7 +575,7 @@ export function runRepairPipeline(
     appliedRepairs,
     totalChanges,
     modifiedPages: currentPages,
-    nowPassesGate: newResult.score >= 90 && newResult.issues.filter(i => i.severity === 'error').length === 0,
+    nowPassesGate: newResult.score >= 90 && newResult.issues.filter((i: { severity: string }) => i.severity === 'error').length === 0,
     newScore: newResult.score,
     remainingIssues: newResult.issues,
   };

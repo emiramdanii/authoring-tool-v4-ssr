@@ -112,7 +112,10 @@ function main() {
   let navErrors = 0;
   for (let i = 0; i < screens.length; i++) {
     const screen = screens[i]!;
+    // Sprint 8.6B: nav may be undefined per type — guard with optional chaining.
+    // screen.nav is optional in the ScreenSchema type.
     const nav = screen.nav;
+    if (!nav) continue;
 
     // Check: prev links back to previous screen (except first)
     if (i > 0 && nav.prev) {
