@@ -31,7 +31,7 @@
 | Schema migration | N/A        | N/A             | N/A             | LOCAL_REPORTED  | N/A             | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Style Contract | PASS_LOCAL   | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
 | Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PASS_CI | PASS_CI (POST full / GET partial) | N/A             |
-| Error recovery  | N/A         | N/A             | N/A             | N/A             | N/A             | NOT_TESTED      | NOT_TESTED      | N/A             |
+| Error recovery  | N/A         | N/A             | N/A             | PASS_CI         | N/A             | NOT_TESTED      | NOT_TESTED      | PASS_CI         |
 
 ## Evidence Index
 
@@ -204,9 +204,24 @@ test file + commit SHA. Berikut daftar evidence per sel.
     - rapid 5x render/unmount: zero pending timers (no accumulation)
 
 ### Error recovery
-- **All**: `NOT_TESTED`
-  - KNOWN_ISSUES RECOV-001: Tidak ada UI recovery flow
-  - Sprint 8.5 target
+- **Boot Recovery + Safe Boot Bridge**: `PASS_CI` (Sprint 8.5A CLOSED)
+  - Evidence: `src/__tests__/recovery-boot-bridge.test.tsx` (12 tests, commit `fa45931` + `f4f1926`)
+  - Evidence: `src/__tests__/recovery-safe-boot.test.tsx` (11 tests, commit `fa45931`)
+  - Evidence: `src/__tests__/recovery-dialog-a11y.test.tsx` (8 tests, commit `fa45931`)
+  - Evidence: `src/__tests__/recovery-clean-boot-regression.test.tsx` (7 tests, commit `f4f1926` — P0 false-positive fix)
+  - `RecoveryDialog` accepts `bootReport?: BootReport | null` prop
+  - `BootRecoveryOrchestrator.run()` bridge wired from `AuthoringTool` boot effect (deferred via `setTimeout(0)` so `StoreInit` populates canva store first)
+  - 4th reason branch `'boot-report'` (priority: boot-report > emergency > crash > auto-save)
+  - Clean boot false-positive FIXED (Patch-1): `buildSchemaHealingResult()` removed — was comparing post-deep-clone references, always returning `neededHealing=true`. Now uses real healing results from step 4.
+  - `RecoveryDialog` does NOT render on clean valid boot
+  - `RecoveryDialog` DOES render on real incomplete transaction
+  - Safe boot: orchestrator survives corrupted localStorage (unparseable JSON), corrupted sessionStorage crash recovery data, malformed fixture
+  - `clearRecoveryKeys()` helper: single source of truth for "Mulai Baru" — wipes canva/authoring/emergency/dirty-exit/session-active localStorage + calls `orchestrator.discardCrashRecovery()` for sessionStorage crash recovery data
+  - A11y basics: `role="dialog"`, `aria-modal="true"`, `aria-labelledby` (points to visible title), `aria-describedby` (points to visible subtitle), focus trap (Tab cycles within dialog), Esc key = "Mulai Baru", backdrop click = "Mulai Baru"
+  - 8.5A tests total: 38 recovery tests (12 + 11 + 8 + 7)
+  - CI run ID: `27825766751`
+  - Exact SHA: `f4f19266a619f294996a7dcda6d2fc311cda1fa8`
+  - GitHub Actions: 3/3 jobs success (Test, TypeScript gate, Build)
 
 ## Lubang Setelah Present (Sprint 8.2B CLOSED)
 
@@ -223,9 +238,9 @@ Setelah 8.2B-Patch-2, status:
 2. **Schema versioning belum ada** — `docs/SCHEMA_VERSIONING_DESIGN.md` (design only)
 3. ~~**CI belum ada di remote**~~ — ✅ CLOSED (CI-001, CI-002, BUILD-001 all CLOSED)
 4. **46 pre-existing TS errors** — `KNOWN_ISSUES.md` BUILD-002 (baseline-gated, CI green)
-5. **Security & accessibility gate belum dijalankan** — Sprint 8.5
-6. **Image/audio Import Reload** — `PASS_SOURCE_ONLY` → perlu test otomatis (Sprint 8.4 menutup project JSON import/export, bukan media binary reload)
-7. **Error recovery UI** — `NOT_TESTED` → Sprint 8.5
+5. **Security & accessibility gate belum dijalankan** — Sprint 8.5B (security headers + WCAG/a11y smoke)
+6. **Image/audio Import Reload** — `PASS_SOURCE_ONLY` → perlu test otomatis (Sprint 8.4 menutup project JSON import/export, bukan media binary reload). Sprint 8.5C target.
+7. ~~**Error recovery UI**~~ — ✅ CLOSED (Sprint 8.5A). Boot recovery + safe boot bridge + a11y basics + clean-boot regression all PASS_CI.
 8. ~~**Project Import/Export JSON**~~ — ✅ CLOSED (Sprint 8.4). Style authority fields + 4 fixtures verified through roundtrip.
 
 ## CI Verified Statuses (Sprint 8.2S-2-Patch-5)
@@ -253,6 +268,23 @@ Exact-SHA CI run `27809941108` on SHA `43065022188df51809bb393e3cb6f38ff53dc34a`
 | Roundtrip tests | `PASS_CI` | `src/core/style/__tests__/import-export-roundtrip.test.ts` (21 tests) — CI success |
 | Exact SHA | `PASS_CI` | Checkout SHA `43065022188df51809bb393e3cb6f38ff53dc34a` verified in CI log |
 | CI Run | `PASS_CI` | `27809941108` — 3/3 jobs success (Test, TypeScript gate, Build) |
+
+## Sprint 8.5A Closure (Recovery UI + Safe Boot Bridge)
+
+Exact-SHA CI run `27825766751` on SHA `f4f19266a619f294996a7dcda6d2fc311cda1fa8`:
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| RecoveryDialog accepts BootReport | `PASS_CI` | `bootReport?: BootReport \| null` prop + 4th reason branch 'boot-report' (priority: boot-report > emergency > crash > auto-save) |
+| BootRecoveryOrchestrator bridge wired | `PASS_CI` | `AuthoringTool` boot effect calls `bootRecoveryOrchestrator.run(pages)` (deferred `setTimeout(0)`) + passes report to `<RecoveryDialog bootReport={...} />` |
+| Clean boot false-positive fixed (Patch-1) | `PASS_CI` | Removed `buildSchemaHealingResult()` — was comparing post-deep-clone references. Now uses real `healResult` / `proactiveHealResult` from step 4. |
+| RecoveryDialog does NOT render on clean valid boot | `PASS_CI` | `recovery-clean-boot-regression.test.tsx` (7 tests) — clean page → `needsRecovery=false` → dialog hidden |
+| RecoveryDialog renders on real incomplete transaction | `PASS_CI` | Regression test seeds `silse_incomplete_transaction` → orchestrator flags `needsRecovery=true` → dialog shows 'Pemulihan Boot Aman' |
+| Safe boot / corrupted storage | `PASS_CI` | `recovery-safe-boot.test.tsx` (11 tests) — orchestrator survives unparseable JSON in canva/at/emergency/crash-recovery keys + malformed fixture |
+| RecoveryDialog a11y basics | `PASS_CI` | `recovery-dialog-a11y.test.tsx` (8 tests) — `role=dialog`, `aria-modal=true`, `aria-labelledby` → visible title, `aria-describedby` → visible subtitle, Tab focus trap, Esc = Mulai Baru, backdrop click = Mulai Baru |
+| 8.5A tests total | `PASS_CI` | 38 recovery tests (12 bridge + 11 safe-boot + 8 a11y + 7 regression) — all CI success |
+| Exact SHA | `PASS_CI` | Checkout SHA `f4f19266a619f294996a7dcda6d2fc311cda1fa8` verified in CI log |
+| CI Run | `PASS_CI` | `27825766751` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
 ## Cara Memperbarui Matriks Ini
 

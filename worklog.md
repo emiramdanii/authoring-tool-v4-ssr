@@ -1786,3 +1786,117 @@ Stage Summary:
 - 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
 - Sprint 8.4 overall: ✅ PASS / CLOSED (no further conditions)
 - All Sprints 8.1 → 8.4 now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.5A
+Agent: Super Z (main)
+Task: Sprint 8.5A — Recovery UI + Safe Boot Bridge
+
+Work Log:
+- Audited existing recovery infra: BootRecoveryOrchestrator (boot-recovery.ts, 651 lines),
+  RecoveryDialog.tsx (546 lines), AppErrorBoundary.tsx (238 lines), transaction-manager.ts
+- Found wiring gap: BootRecoveryOrchestrator.run() existed but was never called from
+  AuthoringTool; RecoveryDialog had no bootReport prop; only localStorage-based detection.
+- Found a11y gap: RecoveryDialog had NO role/aria-modal/focus-trap/Esc — pure fixed overlay.
+- Implementation (commit fa45931):
+  * RecoveryDialog.tsx (+196/-17): added bootReport?: BootReport | null prop, 4th reason
+    branch 'boot-report' (priority: boot-report > emergency > crash > auto-save), orange
+    header 'Pemulihan Boot Aman', a11y attrs (role=dialog, aria-modal=true, aria-labelledby,
+    aria-describedby), Tab focus trap, Esc key = Mulai Baru, backdrop click = Mulai Baru,
+    clearRecoveryKeys() helper (single source of truth for clearing ALL recovery storage)
+  * AuthoringTool.tsx (+36/-0): bootReport state via useState(null), useEffect runs
+    bootRecoveryOrchestrator.run(pages) after stores load (deferred setTimeout(0)),
+    passes bootReport to <RecoveryDialog bootReport={bootReport} />
+  * 3 new test files (31 tests total):
+    - recovery-boot-bridge.test.tsx (12 tests): orchestrator API, dialog rendering,
+      action wiring, clearRecoveryKeys, priority, summary
+    - recovery-safe-boot.test.tsx (11 tests): corrupted localStorage/sessionStorage,
+      malformed fixture, emergency snapshot, Mulai Baru clears keys, idempotency
+    - recovery-dialog-a11y.test.tsx (8 tests): role/aria-modal/aria-labelledby/
+      aria-describedby, focus target, Tab trap, Esc, backdrop
+  * CI workflow updated: 3 new test files added to vitest job
+
+Stage Summary:
+- Files modified (commit fa45931):
+  * src/components/shared/RecoveryDialog.tsx (+196/-17)
+  * src/components/authoring/AuthoringTool.tsx (+36/-0)
+  * .github/workflows/ci.yml (+5/-0)
+- Files baru:
+  * src/__tests__/recovery-boot-bridge.test.tsx (12 tests)
+  * src/__tests__/recovery-safe-boot.test.tsx (11 tests)
+  * src/__tests__/recovery-dialog-a11y.test.tsx (8 tests)
+- Local gates: vitest 617 tests pass, tsc 48 sigs (0 new), build ok
+- Sprint 8.5A initial implementation READY for Senior Review
+
+---
+Task ID: 8.5A-Patch-1
+Agent: Super Z (main)
+Task: Sprint 8.5A-Patch-1 — fix P0 false-positive boot recovery on clean projects
+
+Work Log:
+- Senior Review 8.5A: CHANGES REQUIRED / HOLD. P0 blocker: buildSchemaHealingResult()
+  compared originalPages vs healedPages by reference (orig.schema !== healed.schema),
+  which is ALWAYS true after deepClonePages() produces fresh objects. This caused
+  needsRecovery=true on every clean boot, triggering RecoveryDialog for normal users.
+- Root cause confirmed: step 4 (heal corrupted pages) computed healResult /
+  proactiveHealResult correctly (neededHealing=false for clean schemas), but step 6
+  OVERWROTE that result with buildSchemaHealingResult() which did reference comparison
+  after deep clone → always true.
+- Fix (commit f4f1926):
+  * Removed buildSchemaHealingResult() entirely (dead code after fix)
+  * Use actual healResult / proactiveHealResult from step 4 (neededHealing=true only
+    when SchemaHealer actually repairs or removes blocks)
+  * Strip healedPages field from internal helper return so result conforms to
+    SchemaHealingBootResult
+- New regression test file: recovery-clean-boot-regression.test.tsx (7 tests):
+  1. orchestrator.run([clean valid page]) → needsRecovery=false
+  2. orchestrator.run([3 clean pages]) → needsRecovery=false
+  3. orchestrator.run([pages with non-trivial blocks]) → needsRecovery=false
+  4. RecoveryDialog does NOT render on clean boot (no bootReport)
+  5. RecoveryDialog does NOT render when bootReport.needsRecovery=false
+  6. RecoveryDialog DOES render on real incomplete transaction
+  7. orchestrator.run() with crash recovery data → needsRecovery=true
+- CI workflow updated: recovery-clean-boot-regression.test.tsx added to vitest job
+- Patch-1 pushed to remote (HEAD = f4f19266a619f294996a7dcda6d2fc311cda1fa8)
+
+Stage Summary:
+- Files modified (commit f4f1926):
+  * src/core/editor/boot-recovery.ts (-38 lines: removed buildSchemaHealingResult + rewire step 4 → final report)
+  * .github/workflows/ci.yml (+3/-0)
+- Files baru:
+  * src/__tests__/recovery-clean-boot-regression.test.tsx (7 tests)
+- Local gates: vitest 624 tests pass, tsc 48 sigs (0 new), build ok
+- Sprint 8.5A-Patch-1 READY for Senior Review
+
+---
+Task ID: 8.5A-Closure
+Agent: Super Z (main)
+Task: Sprint 8.5A closure documentation sync
+
+Work Log:
+- Senior Review 8.5A-Patch-1: TECHNICAL PASS / pending CI verification.
+- Verified remote: re-cloned clean from public GitHub (HEAD = f4f19266...).
+- Monitored GitHub Actions via public API (no auth needed for public repo):
+  * CI Run ID: 27825766751
+  * Exact SHA: f4f19266a619f294996a7dcda6d2fc311cda1fa8
+  * Run status: completed, conclusion: success
+  * 3/3 jobs success:
+    - Test (vitest): completed → success
+    - TypeScript gate (normalize-ts-errors.js --check): completed → success
+    - Build (exit code + artifact verification): completed → success
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Error recovery row in main matrix: NOT_TESTED → PASS_CI (Reload + Legacy)
+  * Rewrote Error recovery evidence section with PASS_CI + Sprint 8.5A CLOSED marker
+  * Added new "Sprint 8.5A Closure (Recovery UI + Safe Boot Bridge)" table with 10 gates
+  * Updated "Lubang Terbesar Sebelum Release": item 7 struck through — Error recovery CLOSED
+- worklog.md: appended 8.5A implementation + 8.5A-Patch-1 + 8.5A-Closure entries.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.5A: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: f4f19266a619f294996a7dcda6d2fc311cda1fa8
+- CI run: 27825766751
+- Jobs: Test success, TypeScript success, Build success
+- Sprint 8.5A overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
+- All Sprints 8.1 → 8.5A now CLOSED with PASS_CI status.
