@@ -45,6 +45,16 @@ function normalizeTscOutput(output) {
     const tscode = m[4];
     let message = m[5];
     message = message.replace(/\s+/g, ' ').trim();
+    // Sprint 8.3: normalize union type member order in messages.
+    // TypeScript can emit union members in different orders depending
+    // on the TypeScript version and Prisma client generation. Sort
+    // the union members so the signature is stable across environments.
+    // Pattern: type '"a" | "b" | "c"' → type '"a" | "b" | "c"' (sorted)
+    message = message.replace(/"([^"]+)"(\s*\|\s*"[^"]+")+/g, (union) => {
+      const members = union.match(/"[^"]+"/g);
+      if (!members) return union;
+      return members.sort().join(' | ');
+    });
     const signature = `${filepath}|${tscode}|${message}`;
     multiset.set(signature, (multiset.get(signature) ?? 0) + 1);
   }

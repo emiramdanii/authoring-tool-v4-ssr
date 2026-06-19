@@ -1,5 +1,9 @@
-# Sprint 8.3 — Normalized TypeScript baseline (MULTISET, fail-closed)
+# Sprint 8.3 — Normalized TypeScript baseline (MULTISET, fail-closed, union-sorted)
 # Format: <count>|<file-path>|<TS-error-code>|<normalized-message>
+#
+# Sprint 8.3: union type members in error messages are now sorted
+# alphabetically so the signature is stable across TypeScript versions
+# and Prisma client generations.
 #
 # Total signatures: 48
 # Total error occurrences: 63
@@ -48,7 +52,7 @@
 1|src/lib/db.ts|TS2322|Type 'PrismaClient<PrismaClientOptions, never, DefaultArgs> | null' is not assignable to type 'PrismaClient<PrismaClientOptions, never, DefaultArgs> | undefined'.
 1|src/lib/db.ts|TS2322|Type 'PrismaClient<PrismaClientOptions, never, DefaultArgs> | null' is not assignable to type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
 1|src/lib/db.ts|TS2352|Conversion of type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>' to type 'Record<string | symbol, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-2|src/presets/ppkn/pancasila-golden-schema.ts|TS2322|Type '"evaluasi"' is not assignable to type '"penutup" | "pendahuluan" | "inti" | undefined'.
+2|src/presets/ppkn/pancasila-golden-schema.ts|TS2322|Type '"evaluasi"' is not assignable to type '"inti" | "pendahuluan" | "penutup" | undefined'.
 1|src/store/authoring/index.ts|TS2345|Argument of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]], { petunjuk: PetunjukData; penutup: PenutupData; motivasi: MotivasiData; ... 50 more ...; setActivePanel: (panel: PanelId) => void; }>' is not assignable to parameter of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]]>'.
 2|src/store/canva/persistence-slice.ts|TS2345|Argument of type '{ schema?: ScreenSchema | null | undefined; }[]' is not assignable to parameter of type 'CanvaPage[]'.
-2|src/store/canva/schema-crud-slice.ts|TS2322|Type '"user" | "ai" | "system"' is not assignable to type '"user" | "ai" | "sync" | "guided-form" | "konten-tab" | "dokumen-tab" | "auto" | undefined'.
+2|src/store/canva/schema-crud-slice.ts|TS2322|Type '"ai" | "system" | "user"' is not assignable to type '"ai" | "auto" | "dokumen-tab" | "guided-form" | "konten-tab" | "sync" | "user" | undefined'.
