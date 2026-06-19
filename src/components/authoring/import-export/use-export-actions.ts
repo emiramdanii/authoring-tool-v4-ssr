@@ -54,6 +54,12 @@ export function useExportActions() {
     const data = {
       meta: s.meta, cp: s.cp, tp: s.tp, atp: s.atp, alur: s.alur,
       ...schemaPayload,
+      // Sprint 8.4: include full canva state with all style authority fields
+      canva: {
+        pages: canvaState.pages,
+        ratioId: canvaState.ratioId,
+        currentPageIndex: canvaState.currentPageIndex,
+      },
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);

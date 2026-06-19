@@ -1728,3 +1728,39 @@ Stage Summary:
 - 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
 - Zero source code changes — pure documentation sync
 - Sprint 8.3: PASS / CLOSURE COMPLETE
+
+---
+Task ID: 8.4
+Agent: Super Z (main)
+Task: Sprint 8.4 — Project Import/Export JSON + Media Reload
+
+Work Log:
+- Audit found 3 export paths (AuthoringTool, Dashboard, use-export-actions)
+  and 1 import path (use-excel-import handleImportJSON).
+- P0: Import JSON was NOT restoring canva pages — only restored
+  authoring store fields. Fixed handleImportJSON to also restore
+  canva.pages, ratioId, currentPageIndex from data.canva or data.pages.
+- P0: Dashboard.tsx and use-export-actions.ts exportJSON were NOT
+  including canva.pages in the export. Fixed both to include
+  canva: { pages, ratioId, currentPageIndex }.
+- P1: Created import-export-roundtrip.test.ts (21 tests):
+  * golden-pertemuan: contractId, pageMode, schema.themeId survive
+  * fresh-mission-adventure: themeId survives (new-preset source)
+  * macam-norma-legacy: templateData.schemaThemeId survives (legacy)
+  * image-background-large: overlay=40, bgDataUrl, navConfig survive
+  * Full authority field checklist for golden + mission
+  * ratioId survives roundtrip
+  * Backward compatibility: legacy export (no canva field) handled
+  * Alternative format (top-level pages) handled
+- All 586 tests PASS (was 565 + 21 import/export baru)
+- TS baseline unchanged (48 sigs, 0 new errors)
+
+Stage Summary:
+- Files modified:
+  * src/components/authoring/import-export/use-excel-import.ts (import canva pages)
+  * src/components/authoring/Dashboard.tsx (export canva pages)
+  * src/components/authoring/import-export/use-export-actions.ts (export canva pages)
+- Files baru:
+  * src/core/style/__tests__/import-export-roundtrip.test.ts (21 tests)
+- Contract & Boundary remains FROZEN
+- Sprint 8.4 READY for Senior Review

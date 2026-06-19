@@ -56,6 +56,27 @@ export function useExcelImport() {
           materi: data.materi || { blok: [] },
           dirty: true,
         });
+        // Sprint 8.4: Restore canva store state including all style
+        // authority fields (contractId, pageMode, schema.themeId,
+        // templateData.schemaThemeId, navConfig, etc.)
+        // The export format includes canva.pages as full CanvaPage objects.
+        if (data.canva) {
+          const canvaStore = useCanvaStore.getState();
+          useCanvaStore.setState({
+            pages: data.canva.pages || canvaStore.pages,
+            ratioId: data.canva.ratioId || canvaStore.ratioId,
+            currentPageIndex: data.canva.currentPageIndex || 0,
+            panelRequest: null,
+          });
+        } else if (data.pages) {
+          // Fallback: some export formats put pages at top level
+          const canvaStore = useCanvaStore.getState();
+          useCanvaStore.setState({
+            pages: data.pages,
+            currentPageIndex: 0,
+            panelRequest: null,
+          });
+        }
         useCanvaStore.setState({ panelRequest: 'dashboard' });
         toast.success('✅ Data berhasil diimport!');
       } catch {
