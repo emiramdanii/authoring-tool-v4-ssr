@@ -90,8 +90,8 @@ test file + commit SHA. Berikut daftar evidence per sel.
 ### Image/audio
 - **Create/Edit/Save/Reload/Preview**: `PASS_CI` (Sprint 8.5C CLOSED)
   - `/api/upload` route now exists at `src/app/api/upload/route.ts` (was 404 before Sprint 8.5C — ImageUploader had been calling it since Sprint 5)
-  - Evidence: `src/__tests__/api-upload.test.ts` (13 tests, commit `99258bd`)
-    * Successful upload of each MIME type (jpeg/png/gif/webp/svg+xml) returns 200 + correct URL extension
+  - Evidence: `src/__tests__/api-upload.test.ts` (14 tests, commit `99258bd` + Patch-1 `84da68c`)
+    * Successful upload of each MIME type (jpeg/png/gif/webp) returns 200 + correct URL extension
     * File written to public/uploads/<sha256>.<ext> with exact content
     * Same content uploaded twice returns same URL (content-addressed dedupe)
     * Invalid MIME type → 400 + generic error
@@ -101,7 +101,16 @@ test file + commit SHA. Berikut daftar evidence per sel.
     * No 'file' field in form → 400
     * Internal failure (writeFile EACCES) → 500 + generic message (no stack leak)
     * GET discovery endpoint returns metadata
-  - Validation: 5 allowed MIME types (jpeg/png/gif/webp/svg+xml), 5MB max size, magic-byte verification for non-SVG (defense in depth against MIME spoofing)
+    * **SVG upload REJECTED (400) — Sprint 8.5C-Patch-1 security fix** (was accepted in initial 8.5C, blocked after senior review flagged stored-XSS risk)
+    * SVG with XSS payload (`<script>`, `onload`, `<foreignObject>`, `<use href>`) all rejected
+  - Validation: 4 allowed MIME types (jpeg/png/gif/webp), 5MB max size, magic-byte verification for ALL allowed types (Sprint 8.5C-Patch-1: SVG removed — see security note below)
+  - **Sprint 8.5C-Patch-1 SECURITY**: SVG (`image/svg+xml`) intentionally EXCLUDED from allowed types because:
+    * SVG is XML text, so magic-byte verification doesn't apply
+    * SVG can carry `<script>`, `on*` event handlers, `<foreignObject>`, external references, and other XSS payloads
+    * Stored SVG served from same-origin `/uploads/` would execute scripts in the app's origin → stored XSS
+    * `X-Content-Type-Options: nosniff` does NOT sanitize SVG content; it only prevents MIME sniffing
+    * For teacher image-upload use cases, JPG/PNG/GIF/WebP are sufficient
+    * If SVG becomes a hard requirement later, use Opsi B (sanitize with DOMPurify + serve from sandboxed origin)
   - Storage: content-addressed (`public/uploads/<sha256>.<ext>`) — automatic dedupe + prevents path traversal
   - No stack leak (Sprint 8.5B pattern): generic Indonesian error to client, full error to console.error server-side
 - **Reload (large media)**: `PASS_CI` (Sprint 8.5C CLOSED)
@@ -363,7 +372,9 @@ Exact-SHA CI run `27831532947` on SHA `c487df0d9f271ed1c0da2a1369a019b75b41e2d0`
 
 ## Sprint 8.5C Closure (Image/audio Upload + Reload)
 
-Exact-SHA CI run `27834030578` on SHA `99258bd78d94520b5c2a2099cbea51630cae4b36`:
+Sprint 8.5C initial: CI run `27834030578` on SHA `99258bd78d94520b5c2a2099cbea51630cae4b36` — 3/3 jobs success.
+Sprint 8.5C-Patch-1 (SVG security fix): CI run `27835293255` on SHA `84da68c835429ca2021e342d502a6629becaf109` — 3/3 jobs success.
+Final remote HEAD after docs sync: see commit log.
 
 | Gate | CI Status | Evidence |
 |---|---|---|
@@ -373,7 +384,8 @@ Exact-SHA CI run `27834030578` on SHA `99258bd78d94520b5c2a2099cbea51630cae4b36`
 | Successful upload — PNG | `PASS_CI` | `api-upload.test.ts` — file written to `public/uploads/<sha256>.png` with exact content |
 | Successful upload — GIF | `PASS_CI` | `api-upload.test.ts` — URL `/uploads/<sha256>.gif` |
 | Successful upload — WebP | `PASS_CI` | `api-upload.test.ts` — URL `/uploads/<sha256>.webp` |
-| Successful upload — SVG | `PASS_CI` | `api-upload.test.ts` — URL `/uploads/<sha256>.svg` (no magic-byte check for text-based SVG) |
+| **SVG upload REJECTED (Patch-1 security)** | `PASS_CI` | `api-upload.test.ts` — `image/svg+xml` returns 400 + `'Tipe file tidak didukung'` + file NOT written to disk |
+| **SVG XSS payload rejection (Patch-1)** | `PASS_CI` | `api-upload.test.ts` — 4 SVG attack vectors all rejected: `<script>`, `onload=`, `<foreignObject>`, `<use href>` |
 | Content-addressed dedupe | `PASS_CI` | `api-upload.test.ts` — same content uploaded twice returns same URL |
 | Invalid MIME type rejection | `PASS_CI` | `api-upload.test.ts` — text/plain → 400 + generic error |
 | Empty file rejection | `PASS_CI` | `api-upload.test.ts` — size=0 → 400 + generic error |
@@ -381,7 +393,7 @@ Exact-SHA CI run `27834030578` on SHA `99258bd78d94520b5c2a2099cbea51630cae4b36`
 | MIME spoofing rejection (magic bytes) | `PASS_CI` | `api-upload.test.ts` — claims image/jpeg but bytes are not JPEG → 400 (defense in depth) |
 | No 'file' field rejection | `PASS_CI` | `api-upload.test.ts` — empty form → 400 |
 | No stack leak on internal failure | `PASS_CI` | `api-upload.test.ts` — writeFile EACCES → 500 + `'Gagal mengunggah file. Silakan coba lagi.'`, no EACCES/path leak |
-| GET discovery endpoint | `PASS_CI` | `api-upload.test.ts` — returns metadata (methods, maxFileSize, allowedTypes) |
+| GET discovery endpoint | `PASS_CI` | `api-upload.test.ts` — returns metadata (4 allowed types only, no svg) |
 | >1MB bgDataUrl survives save → load roundtrip | `PASS_CI` | `media-reload-persistence.test.ts` — byte-for-byte equality after save → clear → load |
 | Multiple pages with large bgDataUrl survive roundtrip | `PASS_CI` | `media-reload-persistence.test.ts` — 3 pages × ~800KB each, all preserved |
 | Small bgDataUrl survives roundtrip (regression) | `PASS_CI` | `media-reload-persistence.test.ts` — ~100 bytes preserved |
@@ -389,9 +401,9 @@ Exact-SHA CI run `27834030578` on SHA `99258bd78d94520b5c2a2099cbea51630cae4b36`
 | image-background-large.json fixture intact | `PASS_CI` | `media-reload-persistence.test.ts` — has bgDataUrl + overlay=40 after parse |
 | bgDataUrl URL pattern preserved | `PASS_CI` | `media-reload-persistence.test.ts` — `data:image/png;base64,...` prefix intact |
 | Patch-2 invariant fields survive together | `PASS_CI` | `media-reload-persistence.test.ts` — bgDataUrl + overlay + navConfig all preserved |
-| 8.5C tests total | `PASS_CI` | 20 new tests (13 api-upload + 7 media-reload-persistence) — all CI success |
-| Exact SHA | `PASS_CI` | Checkout SHA `99258bd78d94520b5c2a2099cbea51630cae4b36` verified in CI log |
-| CI Run | `PASS_CI` | `27834030578` — 3/3 jobs success (Test, TypeScript gate, Build) |
+| 8.5C tests total | `PASS_CI` | 21 tests total (14 api-upload including 2 SVG-rejection + 7 media-reload-persistence) — all CI success |
+| Exact SHA (initial 8.5C) | `PASS_CI` | `99258bd78d94520b5c2a2099cbea51630cae4b36` — CI run `27834030578` 3/3 success |
+| Exact SHA (Patch-1 SVG fix) | `PASS_CI` | `84da68c835429ca2021e342d502a6629becaf109` — CI run `27835293255` 3/3 success |
 
 ## Cara Memperbarui Matriks Ini
 

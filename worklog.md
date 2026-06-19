@@ -2096,3 +2096,88 @@ Stage Summary:
 - Jobs: Test success, TypeScript success, Build success
 - Sprint 8.5C overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
 - All Sprints 8.1 → 8.5C now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.5C-Patch-1
+Agent: Super Z (main)
+Task: Sprint 8.5C-Patch-1 — block SVG upload for stored-XSS prevention
+
+Work Log:
+- Senior Review 8.5C: HOLD / PATCH REQUIRED. SVG upload was accepted but
+  not sanitized. Stored SVG served from same-origin /uploads/ would
+  execute scripts in the app's origin → stored XSS.
+- Risk analysis confirmed:
+  * SVG is XML text, so magic-byte verification doesn't apply
+  * SVG can carry <script>, on* event handlers, <foreignObject>,
+    external references, and other XSS payloads
+  * X-Content-Type-Options: nosniff does NOT sanitize SVG content;
+    it only prevents MIME sniffing. The SVG itself remains executable.
+  * For teacher image-upload use cases, JPG/PNG/GIF/WebP are sufficient.
+- Fix (Opsi A — paling aman, hapus SVG dari allowed types):
+  * src/app/api/upload/route.ts:
+    - Removed 'image/svg+xml' from ALLOWED_MIME_TYPES
+    - Removed 'image/svg+xml' from MIME_TO_EXT map
+    - Updated file header comments explaining SVG exclusion rationale
+    - Updated verifyMagicBytes() — fail-closed for unknown types
+      (was previously 'return true' for SVG; now 'return false' since
+      all allowed types have magic bytes)
+    - GET discovery endpoint now returns only 4 allowed types
+- Tests updated (api-upload.test.ts, 14 tests):
+  * Replaced 'POST with valid SVG returns URL with .svg extension' test
+    (was expecting 200) with:
+    - 'POST with SVG is REJECTED (400) — Sprint 8.5C-Patch-1 security fix'
+      — verifies SVG returns 400 + 'Tipe file tidak didukung' error +
+      file NOT written to disk (readdir assertion)
+    - 'POST with SVG containing XSS payload is REJECTED (400)'
+      — verifies 4 SVG attack vectors all rejected:
+        1. <script>alert(1)</script>
+        2. onload='alert(1)'
+        3. <foreignObject>html</foreignObject>
+        4. <use href='external.svg#x'/>
+  * Updated GET discovery test:
+    - allowedTypes no longer includes image/svg+xml
+    - allowedTypes.length === 4 (jpeg/png/gif/webp only)
+  * All other tests unchanged (JPEG/PNG/GIF/WebP still pass, MIME spoofing
+    still rejected, no-stack-leak still passes)
+- Patch-1 pushed to remote (HEAD = 84da68c835429ca2021e342d502a6629becaf109)
+- CI run 27835293255 — 3/3 jobs success
+
+Stage Summary:
+- Files modified (commit 84da68c):
+  * src/app/api/upload/route.ts (+27/-10)
+  * src/__tests__/api-upload.test.ts (+38/-3)
+- Local gates: vitest 677 tests pass, tsc 48 sigs (0 new), build ok
+- Sprint 8.5C-Patch-1 READY for Senior Review
+
+---
+Task ID: 8.5C-Patch-1-Closure
+Agent: Super Z (main)
+Task: Sprint 8.5C-Patch-1 closure documentation sync
+
+Work Log:
+- Senior Review 8.5C-Patch-1: TECHNICAL PASS / pending CI verification.
+- Verified remote: HEAD = 84da68c835429ca2021e342d502a6629becaf109.
+- Monitored GitHub Actions via authenticated API:
+  * CI Run ID: 27835293255
+  * Exact SHA: 84da68c835429ca2021e342d502a6629becaf109
+  * Run status: completed, conclusion: success
+  * 3/3 jobs success:
+    - Test (vitest): completed → success
+    - TypeScript gate (normalize-ts-errors.js --check): completed → success
+    - Build (exit code + artifact verification): completed → success
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Image/audio evidence section: updated test count (13→14), added
+    SVG-rejection evidence + Sprint 8.5C-Patch-1 SECURITY rationale block
+  * Sprint 8.5C Closure table: replaced SVG-success gate with 2 new
+    SVG-rejection gates, updated total tests (20→21), added Patch-1 SHA row
+- worklog.md: appended 8.5C-Patch-1 + 8.5C-Patch-1-Closure entries.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.5C-Patch-1: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit (Patch-1): 84da68c835429ca2021e342d502a6629becaf109
+- CI run (Patch-1): 27835293255
+- Jobs: Test success, TypeScript success, Build success
+- Sprint 8.5C overall (initial + Patch-1): ✅ PASS / CLOSED / PASS_CI
+- All Sprints 8.1 → 8.5C now CLOSED with PASS_CI status.
