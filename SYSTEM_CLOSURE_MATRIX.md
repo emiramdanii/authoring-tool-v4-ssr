@@ -30,7 +30,7 @@
 | Import      | LOCAL_REPORTED  | N/A             | LOCAL_REPORTED  | LOCAL_REPORTED  | LOCAL_REPORTED  | NOT_TESTED      | NOT_TESTED      | NOT_TESTED      |
 | Schema migration | N/A        | N/A             | N/A             | LOCAL_REPORTED  | N/A             | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Style Contract | PASS_LOCAL   | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
-| Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PASS_CI | NOT_TESTED — Sprint 8.2C | N/A             |
+| Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PASS_CI | PASS_CI (POST full / GET partial) | N/A             |
 | Error recovery  | N/A         | N/A             | N/A             | N/A             | N/A             | NOT_TESTED      | NOT_TESTED      | N/A             |
 
 ## Evidence Index
@@ -47,7 +47,7 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - Evidence: `src/core/style/__tests__/canvas-preview-parity.test.ts` (commit `c02adb5`)
   - Evidence: `src/core/style/__tests__/page-renderer-integration.test.tsx` (commit `262dd1b`)
 - **Present**: `PASS_CI` (Sprint 8.2B CLOSED)
-- **Export**: `NOT_TESTED` — Sprint 8.2C
+- **Export**: `PASS_CI` (POST export full authority; GET project export PARTIAL — explicit contract unsupported, documented)
   - Sprint 8.2B/8.2C territory
 - **Legacy**: `PASS_LOCAL`
   - Evidence: `src/core/style/__tests__/legacy-style-adapter.test.ts` (commit `50af012`)
@@ -142,9 +142,17 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - M-007 CLOSED — TEST-HARNESS FALSE POSITIVE (jsdom Storage.setItem setTimeout artifact; production Zustand storage unchanged)
   - Window + document + ResizeObserver + fullscreen listener cleanup: PASS_LOCAL
   - Timer cleanup: PASS_LOCAL (zero pending after unmount, verified for PreviewMode/PresentMode/LearningMediaShell/PlayOverlay + rapid 5x)
-- **Export**: `NOT_TESTED — Sprint 8.2C`
-  - M-005 (selection leak) FIXED in 8.2S-2-Patch
-  - Export pipeline itself belum di-wire (Sprint 8.2C)
+- **Export**: `PASS_CI`
+  - Token boundary: `src/core/style/__tests__/export-wiring-integration.test.tsx` (7 tests, Sprint 8.2C)
+  - Consumer DOM (unmocked): `src/core/style/__tests__/export-consumer-smoke.test.tsx` (10 tests, Sprint 8.2C-Patch-1)
+  - ExportApp → PageRenderer mode="export" → resolvePageStyleTokens + bridge (same as Canvas/Present)
+  - Chrome wired: top navbar, bottom nav, phase badge, shell — all use resolved tokens
+  - 4 fixtures: golden-pertemuan, fresh-mission-adventure, image-background-large, macam-norma-legacy
+  - POST /api/export: preserves full page authority (contractId, pageMode, schema, templateData)
+  - GET /api/projects/[id]/export: PARTIAL — contractId not in Prisma Page model; falls back to legacy-theme → preset bridge
+  - Standalone boot smoke: __EXPORT_DATA__ payload parseable + stores hydrate + ExportApp boots
+  - CI: run #27776715138 on SHA 0091309 — 3/3 jobs success
+  - Canvas/Export token parity verified (identical pageStyleTokens)
 - **Listener cleanup (window + document + ResizeObserver + fullscreen + timers)**: `PASS_LOCAL`
   - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (19 tests, commit 8.2S-2-Patch-3)
   - PreviewMode, PresentMode, PlayOverlay, LearningMediaShell all pass:
@@ -171,7 +179,7 @@ Setelah 8.2B-Patch-2, status:
 
 ## Lubang Terbesar Sebelum Release
 
-1. **Export HTML contract belum dirancang** — `docs/EXPORT_CONTRACT_DESIGN.md` (design only)
+1. ~~**Export HTML contract belum dirancang**~~ — ✅ IMPLEMENTED (Sprint 8.2C CLOSED). POST export + chrome wiring + consumer DOM verified. GET project export PARTIAL (contractId not persisted in Prisma).
 2. **Schema versioning belum ada** — `docs/SCHEMA_VERSIONING_DESIGN.md` (design only)
 3. ~~**CI belum ada di remote**~~ — ✅ CLOSED (CI-001, CI-002, BUILD-001 all CLOSED)
 4. **46 pre-existing TS errors** — `KNOWN_ISSUES.md` BUILD-002 (baseline-gated, CI green)

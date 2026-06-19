@@ -1575,3 +1575,25 @@ Stage Summary:
 - CI run #27772486010 on SHA 5235285: 3/3 jobs success
 - Contract & Boundary remains FROZEN
 - Sprint 8.2C-Patch-1 READY for Senior Review
+
+---
+Task ID: 8.2C-Closure
+Agent: Super Z (main)
+Task: Sprint 8.2C closure documentation sync
+
+Work Log:
+- Senior Review: TECHNICAL PASS / CLOSURE PENDING DOC SYNC.
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Export: NOT_TESTED → PASS_CI (POST full authority, GET partial — documented)
+  * Added Export evidence: token boundary (7 tests), consumer DOM unmocked (10 tests),
+    chrome wiring, 4 fixtures, POST payload, GET limitation, standalone boot, CI run
+  * Updated Lubang Terbesar: Export no longer listed as unimplemented
+  * Canvas/Export token parity verified
+  * GET project export: PARTIAL — contractId not in Prisma Page model, documented
+- Sprint 8.2C: TECHNICAL PASS + DOC SYNC COMPLETE → READY FOR CLOSED
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Zero source code changes — pure documentation sync
+- Sprint 8.2C: PASS / CLOSURE COMPLETE
+- Sprint 8.2D (Teacher Style Picker): TECHNICALLY UNBLOCKED
