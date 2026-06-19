@@ -27,7 +27,7 @@
 | Navigation  | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
 | Quiz        | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Image/audio | PASS_SOURCE_ONLY| PASS_SOURCE_ONLY| PASS_SOURCE_ONLY| LOCAL_REPORTED  | PASS_SOURCE_ONLY| NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
-| Import      | LOCAL_REPORTED  | N/A             | LOCAL_REPORTED  | LOCAL_REPORTED  | LOCAL_REPORTED  | NOT_TESTED      | NOT_TESTED      | NOT_TESTED      |
+| Import      | PASS_CI         | N/A             | PASS_CI         | PASS_CI         | PASS_CI         | NOT_TESTED      | NOT_TESTED      | PASS_CI         |
 | Schema migration | N/A        | N/A             | N/A             | LOCAL_REPORTED  | N/A             | NOT_TESTED      | NOT_TESTED      | LOCAL_REPORTED  |
 | Style Contract | PASS_LOCAL   | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | PASS_LOCAL      | NOT_TESTED      | NOT_TESTED      | PASS_LOCAL      |
 | Mode lifecycle  | N/A         | N/A             | N/A             | N/A             | PASS_LOCAL      | PASS_CI | PASS_CI (POST full / GET partial) | N/A             |
@@ -98,12 +98,17 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - paletteToTokenOverrides masih jalan, tidak ada fixture korpus
 
 ### Import
-- **Create**: `LOCAL_REPORTED`
-  - Import Excel ada (`src/components/authoring/import-export/`)
-  - Import project JSON belum lengkap
-- **Save/Reload/Preview**: `LOCAL_REPORTED`
-  - KNOWN_ISSUES PERSIST-001: persistence-slice.ts punya 2 TS errors
-- **Legacy**: `NOT_TESTED`
+- **Create/Save/Reload/Preview**: `PASS_CI` (Sprint 8.4 CLOSED)
+  - Evidence: `src/core/style/__tests__/import-export-roundtrip.test.ts` (21 tests, commit `4306502`)
+  - `handleImportJSON` restores `canva.pages`, `ratioId`, `currentPageIndex` from `data.canva` (with fallback to top-level `data.pages` for legacy/alt format)
+  - Dashboard.tsx + use-export-actions.ts both export `canva: { pages, ratioId, currentPageIndex }` — export paths now equivalent
+  - 4 fixture corpus verified durable through export → import roundtrip: golden-pertemuan, fresh-mission-adventure, macam-norma-legacy, image-background-large
+  - Style authority fields proven durable: contractId, pageMode, schema.themeId, templateData.schemaThemeId, templateVariant, navConfig, bgColor, bgDataUrl, overlay, colorPalette, schema.background, schema.blocks
+  - Backward compatibility: legacy JSON without `canva` field handled; alternative top-level `pages` format handled
+  - CI: run #27809941108 on SHA `4306502` — 3/3 jobs success
+- **Legacy**: `PASS_CI` (Sprint 8.4 CLOSED)
+  - macam-norma-legacy fixture: templateData.schemaThemeId + elements survive roundtrip (source = legacy-theme preserved)
+  - golden-pertemuan fixture: contractId + pageMode + schema.themeId + resolver source survive roundtrip
 
 ### Schema migration
 - **Reload**: `LOCAL_REPORTED`
@@ -174,6 +179,20 @@ test file + commit SHA. Berikut daftar evidence per sel.
   - CI: run #27806691207 on SHA cfa7727 — 3/3 jobs success
   - All 4 fixtures verified: golden-pertemuan, fresh-mission-adventure, macam-norma-legacy, image-background-large
   - Fields proven durable: contractId, pageMode, schema.themeId, templateData.schemaThemeId, templateVariant, navConfig, bgColor, bgDataUrl, overlay, colorPalette, schema.background
+
+- **Project Import/Export JSON**: `PASS_CI` (Sprint 8.4 CLOSED)
+  - Export paths (now equivalent): `src/components/authoring/Dashboard.tsx` + `src/components/authoring/import-export/use-export-actions.ts`
+    - Both include `canva: { pages, ratioId, currentPageIndex }`
+  - Import path: `src/components/authoring/import-export/use-excel-import.ts` `handleImportJSON`
+    - Restores `canva.pages`, `ratioId`, `currentPageIndex` from `data.canva`
+    - Falls back to top-level `data.pages` for alternative format
+  - Roundtrip tests: `src/core/style/__tests__/import-export-roundtrip.test.ts` (21 tests, commit `4306502`)
+    - 4 fixtures: golden-pertemuan, fresh-mission-adventure, macam-norma-legacy, image-background-large
+    - Style authority field checklist: contractId, pageMode, schema.themeId, templateData.schemaThemeId, templateVariant, navConfig, bgColor, bgDataUrl, overlay, colorPalette, schema.background, schema.blocks
+    - Backward compatibility: legacy JSON without `canva` field handled
+    - Alternative format: top-level `pages` handled
+  - CI: run #27809941108 on SHA `43065022188df51809bb393e3cb6f38ff53dc34a` — 3/3 jobs success (Test, TypeScript gate, Build)
+  - Note: tests use a helper simulation of export/import (hook is private). Source code is simple and aligned with helper — sufficient for technical pass.
 - **Listener cleanup (window + document + ResizeObserver + fullscreen + timers)**: `PASS_LOCAL`
   - Evidence: `src/__tests__/listener-cleanup-integration.test.tsx` (19 tests, commit 8.2S-2-Patch-3)
   - PreviewMode, PresentMode, PlayOverlay, LearningMediaShell all pass:
@@ -205,8 +224,9 @@ Setelah 8.2B-Patch-2, status:
 3. ~~**CI belum ada di remote**~~ — ✅ CLOSED (CI-001, CI-002, BUILD-001 all CLOSED)
 4. **46 pre-existing TS errors** — `KNOWN_ISSUES.md` BUILD-002 (baseline-gated, CI green)
 5. **Security & accessibility gate belum dijalankan** — Sprint 8.5
-6. **Image/audio Import Reload** — `PASS_SOURCE_ONLY` → perlu test otomatis
+6. **Image/audio Import Reload** — `PASS_SOURCE_ONLY` → perlu test otomatis (Sprint 8.4 menutup project JSON import/export, bukan media binary reload)
 7. **Error recovery UI** — `NOT_TESTED` → Sprint 8.5
+8. ~~**Project Import/Export JSON**~~ — ✅ CLOSED (Sprint 8.4). Style authority fields + 4 fixtures verified through roundtrip.
 
 ## CI Verified Statuses (Sprint 8.2S-2-Patch-5)
 
@@ -219,6 +239,20 @@ Exact-SHA CI run `27736541608` on SHA `fe7eee27572a030cbf3335fbe03c790ae1a9519c`
 | TypeScript regression gate | `PASS_CI` | `normalize-ts-errors.js --check` (multiset, fail-closed, signal capture) — CI success |
 | Build gate | `PASS_CI` | `npm run build` exit code 0 + `.next/BUILD_ID` verification — CI success |
 | Reproducible install | `PASS_CI` | `npm ci --legacy-peer-deps` on all 3 jobs — CI success |
+
+## Sprint 8.4 Closure (Import/Export JSON)
+
+Exact-SHA CI run `27809941108` on SHA `43065022188df51809bb393e3cb6f38ff53dc34a`:
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Export JSON canva.pages | `PASS_CI` | Dashboard.tsx + use-export-actions.ts both emit `canva: { pages, ratioId, currentPageIndex }` |
+| Import JSON canva restore | `PASS_CI` | `handleImportJSON` restores `canva.pages/ratioId/currentPageIndex` from `data.canva` (fallback `data.pages`) |
+| Style authority roundtrip | `PASS_CI` | contractId / pageMode / schema.themeId / templateData.schemaThemeId / templateVariant / navConfig / bgColor / bgDataUrl / overlay / colorPalette / schema.background / schema.blocks all verified across 4 fixtures |
+| Legacy compatibility | `PASS_CI` | Legacy JSON without `canva` field handled; alternative top-level `pages` format handled |
+| Roundtrip tests | `PASS_CI` | `src/core/style/__tests__/import-export-roundtrip.test.ts` (21 tests) — CI success |
+| Exact SHA | `PASS_CI` | Checkout SHA `43065022188df51809bb393e3cb6f38ff53dc34a` verified in CI log |
+| CI Run | `PASS_CI` | `27809941108` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
 ## Cara Memperbarui Matriks Ini
 

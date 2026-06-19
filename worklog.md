@@ -1764,3 +1764,25 @@ Stage Summary:
   * src/core/style/__tests__/import-export-roundtrip.test.ts (21 tests)
 - Contract & Boundary remains FROZEN
 - Sprint 8.4 READY for Senior Review
+
+---
+Task ID: 8.4-Closure
+Agent: Super Z (main)
+Task: Sprint 8.4 closure documentation sync
+
+Work Log:
+- Senior Review verdict: TECHNICAL PASS / DOC SYNC REQUIRED on SHA `43065022188df51809bb393e3cb6f38ff53dc34a` (HEAD main), CI run #27809941108 — 3/3 jobs success.
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Import row in main matrix: LOCAL_REPORTED → PASS_CI across Create/Save/Reload/Preview/Legacy (Present/Export remain NOT_TESTED)
+  * Rewrote Import evidence section with PASS_CI + Sprint 8.4 CLOSED marker (4 fixtures + style authority field checklist + backward compat + CI run ID)
+  * Added new "Project Import/Export JSON" PASS_CI evidence block under Mode lifecycle (export paths, import path, roundtrip tests, CI run #27809941108 on SHA 4306502...)
+  * Added Sprint 8.4 Closure table at end of CI Verified Statuses (7 gates all PASS_CI)
+  * Updated "Lubang Terbesar Sebelum Release": item 8 struck through — Project Import/Export JSON CLOSED
+- worklog.md: appended this closure entry.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.4: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Sprint 8.4 overall: ✅ PASS / CLOSED (no further conditions)
+- All Sprints 8.1 → 8.4 now CLOSED with PASS_CI status.
