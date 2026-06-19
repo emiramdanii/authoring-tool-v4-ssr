@@ -1,7 +1,6 @@
-# Sprint 8.2B-Patch-1 — Normalized TypeScript baseline (MULTISET, fail-closed)
+# Sprint 8.3 — Normalized TypeScript baseline (MULTISET, fail-closed)
 # Format: <count>|<file-path>|<TS-error-code>|<normalized-message>
 #
-# Patch-1: removed 2 TS2339 exitFullscreen errors (fixed polyfill typing)
 # Total signatures: 48
 # Total error occurrences: 63
 
@@ -52,4 +51,4 @@
 2|src/presets/ppkn/pancasila-golden-schema.ts|TS2322|Type '"evaluasi"' is not assignable to type '"penutup" | "pendahuluan" | "inti" | undefined'.
 1|src/store/authoring/index.ts|TS2345|Argument of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]], { petunjuk: PetunjukData; penutup: PenutupData; motivasi: MotivasiData; ... 50 more ...; setActivePanel: (panel: PanelId) => void; }>' is not assignable to parameter of type 'StateCreator<AuthoringState, [], [["zustand/devtools", never]]>'.
 2|src/store/canva/persistence-slice.ts|TS2345|Argument of type '{ schema?: ScreenSchema | null | undefined; }[]' is not assignable to parameter of type 'CanvaPage[]'.
-2|src/store/canva/schema-crud-slice.ts|TS2322|Type '"user" | "ai" | "system"' is not assignable to type '"user" | "ai" | "sync" | "auto" | "guided-form" | "konten-tab" | "dokumen-tab" | undefined'.
+2|src/store/canva/schema-crud-slice.ts|TS2322|Type '"user" | "ai" | "system"' is not assignable to type '"user" | "ai" | "sync" | "guided-form" | "konten-tab" | "dokumen-tab" | "auto" | undefined'.

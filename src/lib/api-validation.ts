@@ -150,6 +150,7 @@ export const savePageSchema = z.object({
   templateType: z.string().max(100).optional(),
   templateVariant: z.string().max(100).optional(),
   contractId: z.string().max(100).optional(),
+  pageMode: z.string().max(50).optional(),
   bgColor: z.string().max(50).optional(),
   bgDataUrl: z.string().nullable().optional(),
   overlay: z.number().min(0).max(100).optional(),

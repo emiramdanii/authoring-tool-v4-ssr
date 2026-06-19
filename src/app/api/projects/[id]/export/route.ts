@@ -51,6 +51,7 @@ interface ReconstructedPage {
   elements: unknown[];
   templateType: string;
   templateVariant?: 'A' | 'B' | 'C';
+  contractId?: string;
   colorPalette: Record<string, unknown> | null;
   navConfig: Record<string, unknown>;
   templateData: Record<string, unknown>;
@@ -64,6 +65,8 @@ function reconstructPages(
     label: string | null;
     templateType: string | null;
     variant: string | null;
+    contractId: string | null;
+    pageMode: string | null;
     bgColor: string | null;
     bgImage: string | null;
     bgOverlay: number | null;
@@ -113,15 +116,12 @@ function reconstructPages(
       elements,
       templateType: p.templateType || 'custom',
       templateVariant: (p.variant === 'A' || p.variant === 'B' || p.variant === 'C') ? p.variant : undefined,
+      contractId: p.contractId || undefined,
       colorPalette: p.colorPalette ? (() => { try { return JSON.parse(p.colorPalette); } catch { return null; } })() : null,
       navConfig: p.navConfig ? (() => { try { return JSON.parse(p.navConfig); } catch { return { showNavbar: true, showPrevNext: true, showScore: true, showProgress: true, navbarStyle: 'colorful' }; } })() : { showNavbar: true, showPrevNext: true, showScore: true, showProgress: true, navbarStyle: 'colorful' },
       templateData: p.templateData ? (() => { try { return JSON.parse(p.templateData); } catch { return {}; } })() : {},
-      // Sprint 8.2C: infer pageMode from schema presence
-      pageMode: schema ? 'schema' : 'elements',
-      // Note: contractId is NOT available in Prisma Page model yet.
-      // GET project export falls back to legacy-theme → preset bridge
-      // for contract resolution. POST /api/export preserves contractId
-      // because it receives the full page object directly.
+      // Sprint 8.3: use DB pageMode + contractId fields (now persisted)
+      pageMode: (p.pageMode === 'schema' || p.pageMode === 'elements') ? p.pageMode : (schema ? 'schema' : 'elements'),
       ...(schema ? { schema } : {}),
     };
   });

@@ -1656,3 +1656,57 @@ Stage Summary:
 - Zero source code changes — pure documentation sync
 - Sprint 8.2D: PASS / CLOSURE COMPLETE
 - Sprint 8.2 series: ALL CLOSED (A, B, C, D)
+
+---
+Task ID: 8.3
+Agent: Super Z (main)
+Task: Sprint 8.3 — Persistence & Schema Versioning
+
+Work Log:
+- Audit: contractId and pageMode were NOT in Prisma Page model.
+  DBPageData type had contractId but Prisma didn't — save route
+  didn't persist it, loadFromDB couldn't reconstruct it.
+  schema.themeId + templateData.schemaThemeId already durable via
+  schemaData + templateData JSON columns.
+- Added contractId + pageMode to Prisma Page model:
+  * prisma/schema.prisma: two new nullable String columns
+  * src/store/canva/types.ts: DBPageData.pageMode added
+  * src/lib/api-validation.ts: savePageSchema.pageMode added
+- Updated save route to persist contractId + pageMode:
+  * src/app/api/projects/[id]/save/route.ts: tx.page.create now
+    includes contractId and pageMode fields
+- Updated loadFromDB to reconstruct pageMode from DB:
+  * src/store/canva/persistence-slice.ts: pageMode reads from
+    p.pageMode, falls back to inference from schema presence
+  * contractId was already reading from p.contractId — now the
+    DB actually has the field so it will work
+- Updated GET export reconstructPages:
+  * src/app/api/projects/[id]/export/route.ts: contractId and
+    pageMode now read from DB fields (not inferred/commented out)
+  * ReconstructedPage interface includes contractId
+- Created persistence-roundtrip.test.ts (18 tests):
+  * golden-pertemuan: contractId, pageMode, schema.themeId survive
+  * fresh-mission-adventure: themeId survives (new-preset source)
+  * macam-norma-legacy: templateData.schemaThemeId survives (legacy)
+  * image-background-large: overlay=40 survives (0.4 → 40 roundtrip)
+  * navConfig durability: navbarStyle + all fields survive
+  * templateVariant durability: variant → templateVariant roundtrip
+  * Full authority field checklist for golden + mission fixtures
+  * resolvePageStyleTokens produces same source after roundtrip
+- All 565 tests PASS (was 547 + 18 roundtrip baru)
+- TS baseline: 48 sigs, 0 new errors
+
+Stage Summary:
+- Files modified:
+  * prisma/schema.prisma (contractId + pageMode columns)
+  * src/store/canva/types.ts (DBPageData.pageMode)
+  * src/lib/api-validation.ts (savePageSchema.pageMode)
+  * src/app/api/projects/[id]/save/route.ts (persist contractId + pageMode)
+  * src/store/canva/persistence-slice.ts (reconstruct pageMode from DB)
+  * src/app/api/projects/[id]/export/route.ts (reconstructPages uses DB fields)
+  * scripts/ts-baseline.txt (regenerated — union order shifted, same count)
+  * worklog.md
+- Files baru:
+  * src/core/style/__tests__/persistence-roundtrip.test.ts (18 tests)
+- Contract & Boundary: Prisma schema updated (new columns only, no breaking changes)
+- Sprint 8.3 READY for Senior Review

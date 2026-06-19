@@ -48,6 +48,8 @@ model Page {
   label         String?
   templateType  String?  // e.g., "cover", "kuis", "materi", etc.
   variant       String?  // "A" | "B" | "C"
+  contractId    String?  // Sprint 8.3: explicit style contract (e.g., "golden-pertemuan")
+  pageMode      String?  // Sprint 8.3: "schema" | "elements"
   bgColor       String?
   bgImage       String?  // URL or base64
   bgOverlay     Float?   // 0-1 opacity

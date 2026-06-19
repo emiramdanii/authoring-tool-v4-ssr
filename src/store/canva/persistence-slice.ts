@@ -440,6 +440,8 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           templateData,
           templateVariant: (p.variant as 'A' | 'B' | 'C') || undefined,
           contractId: (p.contractId as string) || undefined,
+          // Sprint 8.3: reconstruct pageMode from DB field, fallback to inference
+          pageMode: (p.pageMode as 'schema' | 'elements') || (schema ? 'schema' : 'elements'),
           schema: schema || (schemaBlocks.length > 0 ? { id: p.id, templateType: p.templateType || 'custom', blocks: schemaBlocks } : undefined),
         };
 

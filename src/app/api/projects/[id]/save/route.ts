@@ -137,6 +137,8 @@ export async function PUT(
             label: page.label || null,
             templateType: page.templateType || null,
             variant: page.templateVariant || null,
+            contractId: page.contractId || null,
+            pageMode: page.pageMode || null,
             bgColor: page.bgColor || null,
             bgImage: page.bgDataUrl || null,
             bgOverlay: page.overlay !== undefined ? page.overlay / 100 : null,

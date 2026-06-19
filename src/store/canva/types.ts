@@ -25,6 +25,7 @@ export interface DBPageData {
   templateType: string | null;
   variant: string | null;
   contractId: string | null;
+  pageMode: string | null;
   bgColor: string | null;
   bgImage: string | null;
   bgOverlay: number | null;
