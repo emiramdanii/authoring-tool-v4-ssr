@@ -493,6 +493,28 @@ Exact-SHA CI run `27860394387` on SHA `d51fe0ea7d2a15ca3395155b722cdc97b5a783f1`
 | Exact SHA | `PASS_CI` | Checkout SHA `d51fe0ea7d2a15ca3395155b722cdc97b5a783f1` verified in CI log |
 | CI Run | `PASS_CI` | `27860394387` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
+## Sprint 8.7B Closure (Guided Editor Polish)
+
+Exact-SHA CI run `27863757407` on SHA `f85522cd3e89d739a475ac64d3ad175861aa860c`:
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Refleksi guided editor exposes `warna` field | `PASS_CI` | `guided-editor-polish.test.ts` — questions[] has warna (type=color, has options) |
+| Refleksi still has teks/petunjuk/icon (regression) | `PASS_CI` | `guided-editor-polish.test.ts` — all 4 fields verified present |
+| Roda-game opts[].correct has `exclusiveToggle=true` | `PASS_CI` | `guided-editor-polish.test.ts` — exclusiveToggle verified on correct field |
+| Roda-game opts[] still has text field (regression) | `PASS_CI` | `guided-editor-polish.test.ts` — text field verified |
+| Roda-game schema UNCHANGED (opts[].correct: boolean) | `PASS_CI` | No change to RodaGameBlock type. Renderer reads opt.correct as before. |
+| Diskusi label/icon/color guard (all 5 fields) | `PASS_CI` | `guided-editor-polish.test.ts` — label, icon, teks, petunjuk, color all present |
+| Kuis opts stays string[] (regression guard) | `PASS_CI` | `guided-editor-polish.test.ts` — opts sub-field key='', type='text' |
+| Kuis ans stays A/B/C/D select (regression guard) | `PASS_CI` | `guided-editor-polish.test.ts` — ans select with 4 options [A,B,C,D] |
+| All 4 block types still have guided editors | `PASS_CI` | `guided-editor-polish.test.ts` — hasGuidedEditor true for all 4 |
+| tsc 0 errors | `PASS_CI` | `npx tsc --noEmit` returns 0 |
+| normalize-ts-errors 0 sigs | `PASS_CI` | baseline 0 signatures / 0 occurrences |
+| Build success | `PASS_CI` | `npm run build` exit code 0, `.next/BUILD_ID` present |
+| 8.7B tests total | `PASS_CI` | 14 new tests (guided-editor-polish.test.ts) — all CI success |
+| Exact SHA | `PASS_CI` | `f85522cd3e89d739a475ac64d3ad175861aa860c` verified in CI log |
+| CI Run | `PASS_CI` | `27863757407` — 3/3 jobs success (Test, TypeScript gate, Build) |
+
 ## Cara Memperbarui Matriks Ini
 
 - Update matriks setiap sprint yang menutup lubang atau menemukan

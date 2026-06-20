@@ -2485,3 +2485,68 @@ Stage Summary:
 - Jobs: Test success, TypeScript success, Build success
 - Sprint 8.7A overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
 - All Sprints 8.1 → 8.7A now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.7B
+Agent: Super Z (main)
+Task: Sprint 8.7B — Guided Editor Polish
+
+Work Log:
+- Senior Review audit confirmed scope: refleksi warna, roda-game A/B/C/D
+  selector (UI adapter only), diskusi/kuis regression guards.
+- Implementation (commit f85522c):
+  * Refleksi warna: added { key: 'warna', label: 'Warna', type: 'color',
+    options: ACCENT_COLOR_OPTIONS } to refleksi questions[] sub-fields in
+    GUIDED_EDITOR_REGISTRY. Schema + renderer already supported warna.
+  * Roda-game A/B/C/D: added exclusiveToggle?: boolean to GuidedFieldDef.
+    Set exclusiveToggle: true on roda-game opts[].correct. Updated
+    InlineNestedArrayField in field-registry.tsx to render exclusiveToggle
+    booleans as radio buttons (role=radio, aria-checked, aria-label with
+    A/B/C/D letter). When clicked: sets this item correct=true AND all
+    siblings correct=false. Schema UNCHANGED — still opts[].correct: boolean.
+  * Diskusi: no code change. Regression guard test verifies all 5 fields.
+  * Kuis: no code change. Regression guard test verifies opts stays string[]
+    and ans stays A/B/C/D select.
+  * 14 new tests in guided-editor-polish.test.ts
+  * CI workflow updated
+- Patch-1 NOT needed — first push CI was green on run 27863757407.
+
+Stage Summary:
+- Files modified (commit f85522c):
+  * src/core/schema/guided-patch.ts (+11/-3)
+  * src/components/canva/right-panel/block-properties/field-registry.tsx (+35/-2)
+  * .github/workflows/ci.yml (+2/-0)
+- Files baru:
+  * src/__tests__/guided-editor-polish.test.ts (14 tests)
+- Local gates: tsc 0 errors, normalize 0 sigs, build ok, 787 tests pass
+- Sprint 8.7B initial implementation READY for Senior Review
+
+---
+Task ID: 8.7B-Closure
+Agent: Super Z (main)
+Task: Sprint 8.7B closure documentation sync
+
+Work Log:
+- Senior Review 8.7B: TECHNICAL PASS / pending CI verification.
+- Verified remote: HEAD = f85522cd3e89d739a475ac64d3ad175861aa860c.
+- Monitored GitHub Actions via authenticated API:
+  * CI Run ID: 27863757407
+  * Exact SHA: f85522cd3e89d739a475ac64d3ad175861aa860c
+  * Run status: completed, conclusion: success
+  * 3/3 jobs success:
+    - Test (vitest): completed → success
+    - TypeScript gate (normalize-ts-errors.js --check): completed → success
+    - Build (exit code + artifact verification): completed → success
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Added Sprint 8.7B Closure table with 15 gates all PASS_CI
+- worklog.md: appended 8.7B + 8.7B-Closure entries.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.7B: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: f85522cd3e89d739a475ac64d3ad175861aa860c
+- CI run: 27863757407
+- Jobs: Test success, TypeScript success, Build success
+- Sprint 8.7B overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
+- All Sprints 8.1 → 8.7B now CLOSED with PASS_CI status.
