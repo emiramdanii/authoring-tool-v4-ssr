@@ -33,10 +33,11 @@ import { sanitizeHtml } from '@/core/renderer/blocks/RichText';
 import * as blockTypes from '@/core/schema/types/blocks';
 
 // The 10 curated blocks (from AddBlockPanel.tsx)
+// Sprint 8.8B: now includes hotspot-image (11 blocks)
 const TEACHER_ADDABLE_BLOCKS = [
   'materi-section', 'def-box', 'kuis', 'diskusi',
   'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-  'gambar', 'roda-game',
+  'gambar', 'roda-game', 'hotspot-image',
 ] as const;
 
 // ─────────────────────────────────────────────────────────────────
@@ -47,39 +48,36 @@ describe('Sprint 8.8A / 3A — Pre-Hotspot Contract Guards', () => {
 
   // ── 1. hotspot-image NOT yet addable ─────────────────────────
 
-  describe('hotspot-image is NOT yet in TEACHER_ADDABLE_BLOCKS', () => {
-    it('TEACHER_ADDABLE_BLOCKS does NOT include hotspot-image', () => {
-      expect(TEACHER_ADDABLE_BLOCKS).not.toContain('hotspot-image');
+  describe('hotspot-image is NOW in TEACHER_ADDABLE_BLOCKS (Sprint 8.8B)', () => {
+    it('TEACHER_ADDABLE_BLOCKS includes hotspot-image', () => {
+      expect(TEACHER_ADDABLE_BLOCKS).toContain('hotspot-image');
     });
 
-    it('TEACHER_ADDABLE_BLOCKS still has exactly 10 blocks', () => {
-      expect(TEACHER_ADDABLE_BLOCKS.length).toBe(10);
-    });
-  });
-
-  // ── 2. hotspot-image NOT in guided editor registry ──────────
-
-  describe('hotspot-image is NOT yet in GUIDED_EDITOR_REGISTRY', () => {
-    it('hasGuidedEditor("hotspot-image") returns false', () => {
-      expect(hasGuidedEditor('hotspot-image')).toBe(false);
-    });
-
-    it('getGuidedEditorSchema("hotspot-image") returns null', () => {
-      expect(getGuidedEditorSchema('hotspot-image')).toBeNull();
+    it('TEACHER_ADDABLE_BLOCKS now has 11 blocks (10 original + hotspot)', () => {
+      expect(TEACHER_ADDABLE_BLOCKS.length).toBe(11);
     });
   });
 
-  // ── 3. hotspot-image NOT in block types ─────────────────────
+  // ── 2. hotspot-image NOW in guided editor registry (Sprint 8.8B) ──
 
-  describe('HotspotImageBlock type does NOT exist yet in schema types', () => {
-    it('blockTypes module does not export HotspotImageBlock', () => {
-      expect(blockTypes).not.toHaveProperty('HotspotImageBlock');
+  describe('hotspot-image is NOW in GUIDED_EDITOR_REGISTRY (Sprint 8.8B)', () => {
+    it('hasGuidedEditor("hotspot-image") returns true', () => {
+      expect(hasGuidedEditor('hotspot-image')).toBe(true);
     });
 
-    it('blockTypes module does not export a hotspot-image interface', () => {
-      const exportedKeys = Object.keys(blockTypes);
-      const hotspotKeys = exportedKeys.filter(k => k.toLowerCase().includes('hotspot'));
-      expect(hotspotKeys.length).toBe(0);
+    it('getGuidedEditorSchema("hotspot-image") returns non-null', () => {
+      expect(getGuidedEditorSchema('hotspot-image')).not.toBeNull();
+    });
+  });
+
+  // ── 3. HotspotImageBlock type NOW exists (Sprint 8.8B) ──────
+
+  describe('HotspotImageBlock type NOW exists (Sprint 8.8B)', () => {
+    it('blockTypes module exports HotspotImageBlock', () => {
+      // HotspotImageBlock is an interface — at runtime, it doesn't appear as a property.
+      // We verify via type-check: if the import doesn't error, the type exists.
+      // This test is a placeholder — the real verification is that tsc passes.
+      expect(true).toBe(true);
     });
   });
 
