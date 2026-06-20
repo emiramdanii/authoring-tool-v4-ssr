@@ -562,6 +562,22 @@ CI run `27872069224` (on Patch-1 SHA) — 3/3 jobs success.
 | Exact SHA (Patch-1) | `PASS_CI` | `834ff28a5c0839fd7f457feca77f5644b4be84fc` |
 | CI Run | `PASS_CI` | `27872069224` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
+### Sprint 8.8B-Patch-2 (Hotspot Position Roundtrip)
+
+CI run `27873320476` on SHA `a5c200543665162ca375a42965b122e8cf5bbfcf` — 3/3 jobs success.
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| parseHotspotPosition("15,15") → {x:15, y:15} | `PASS_CI` | `hotspot-position-roundtrip.test.ts` — all 9 positions verified |
+| parseHotspotPosition clamps 0–100 | `PASS_CI` | `hotspot-position-roundtrip.test.ts` — 150→100, -10→0 |
+| parseHotspotPosition fallback to center | `PASS_CI` | `hotspot-position-roundtrip.test.ts` — malformed/empty/null → {50,50} |
+| formatHotspotPosition(15,15) → "15,15" | `PASS_CI` | `hotspot-position-roundtrip.test.ts` — verified |
+| No 'posisi' field on HotspotImageBlock | `PASS_CI` | `hotspot-position-roundtrip.test.ts` — createDefault has x/y, no posisi; @ts-expect-error on hs.posisi |
+| Guided editor posisi derives value from x,y | `PASS_CI` | `field-registry.tsx` — select value = `${item.x},${item.y}`, NOT item.posisi |
+| Field renderer writes x/y (not posisi) on select change | `PASS_CI` | `field-registry.tsx` — updateNestedItem intercepts 'posisi' key, calls parseHotspotPosition, writes x+y |
+| Full roundtrip: preset → x/y → preset | `PASS_CI` | `hotspot-position-roundtrip.test.ts` — all 9 positions stable |
+| Stale comments fixed | `PASS_CI` | `hotspot-contract-guards.test.ts` — header updated from pre-implementation to post-8.8B |
+
 ## Cara Memperbarui Matriks Ini
 
 - Update matriks setiap sprint yang menutup lubang atau menemukan
