@@ -515,6 +515,26 @@ Exact-SHA CI run `27863757407` on SHA `f85522cd3e89d739a475ac64d3ad175861aa860c`
 | Exact SHA | `PASS_CI` | `f85522cd3e89d739a475ac64d3ad175861aa860c` verified in CI log |
 | CI Run | `PASS_CI` | `27863757407` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
+## Sprint 8.8A / 3A Closure (Pre-Hotspot Contract + Roadmap Sync)
+
+Exact-SHA CI run `27865099925` on SHA `7ec3ef93c1658f846ad55cde57a4e1d95cea4e18`:
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Hotspot contract document FROZEN | `PASS_CI` | `docs/HOTSPOT-IMAGE-CONTRACT.md` — schema, UX (3×3 preset), renderer, export parity, security, acceptance criteria for 3B |
+| Roadmap synced (Sprint 2C CLOSED) | `PASS_CI` | `docs/Teacher-Flow-v1-Stable-Baseline.md` — 2C items marked ✅/⏸️, Sprint 3 split into 3A/3B, urutan updated |
+| hotspot-image NOT in TEACHER_ADDABLE_BLOCKS | `PASS_CI` | `hotspot-contract-guards.test.ts` — verified not addable before 3B |
+| hotspot-image NOT in GUIDED_EDITOR_REGISTRY | `PASS_CI` | `hotspot-contract-guards.test.ts` — hasGuidedEditor returns false |
+| hotspot-image NOT in block types | `PASS_CI` | `hotspot-contract-guards.test.ts` — no HotspotImageBlock export |
+| 10 curated blocks stable (regression) | `PASS_CI` | `hotspot-contract-guards.test.ts` — all 10 still have guided editors |
+| sanitizeHtml security boundary | `PASS_CI` | `hotspot-contract-guards.test.ts` — 7 tests: strips script/iframe/style/on*/javascript:, preserves allowed tags |
+| tsc 0 errors | `PASS_CI` | `npx tsc --noEmit` returns 0 |
+| normalize-ts-errors 0 sigs | `PASS_CI` | baseline 0 signatures / 0 occurrences |
+| Build success | `PASS_CI` | `npm run build` exit code 0 |
+| 8.8A tests total | `PASS_CI` | 16 new tests (hotspot-contract-guards.test.ts) — all CI success |
+| Exact SHA | `PASS_CI` | `7ec3ef93c1658f846ad55cde57a4e1d95cea4e18` verified in CI log |
+| CI Run | `PASS_CI` | `27865099925` — 3/3 jobs success (Test, TypeScript gate, Build) |
+
 ## Cara Memperbarui Matriks Ini
 
 - Update matriks setiap sprint yang menutup lubang atau menemukan

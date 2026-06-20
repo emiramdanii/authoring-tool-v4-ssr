@@ -2550,3 +2550,88 @@ Stage Summary:
 - Jobs: Test success, TypeScript success, Build success
 - Sprint 8.7B overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
 - All Sprints 8.1 → 8.7B now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.8A / 3A
+Agent: Super Z (main)
+Task: Sprint 8.8A / Sprint 3A — Pre-Hotspot Contract + Roadmap Sync
+
+Work Log:
+- Senior Review: "Jangan langsung implementasi Sprint 3 Hotspot dulu.
+  Fase berikutnya yang paling aman adalah Sprint 8.8A / 3A — Pre-Hotspot
+  Contract + Roadmap Sync."
+- Audited roadmap docs: Teacher-Flow-v1-Stable-Baseline.md still had
+  Sprint 2C items as "rencana" despite being closed in 8.7A/8.7B.
+- Audited source boundaries:
+  * hotspot-image NOT in TEACHER_ADDABLE_BLOCKS, NOT in GUIDED_EDITOR_REGISTRY,
+    NOT in block types — only in legacy preset-module-card preview
+  * sanitizeHtml() in RichText.tsx: whitelist approach (strips script/iframe/
+    style/on*/javascript:, preserves strong/em/b/i/u/br/span/sub/sup/mark/small)
+  * dangerouslySetInnerHTML: 2 sites (DefBoxRenderer + InlineTextEditor) —
+    both use sanitizeHtml() first. HotspotImageRenderer will NOT use it.
+- Implementation (commit 7ec3ef9):
+  * docs/HOTSPOT-IMAGE-CONTRACT.md (new, 180 lines):
+    - HotspotImageBlock schema (image.url/alt, hotspots[] with id/x/y/label/
+      title/body/icon/color, accentColor)
+    - UX: V1 uses preset 3×3 grid positions (9 positions mapped to x/y percent)
+    - Renderer: responsive image + numbered hotspots + click-to-open card +
+      keyboard nav (Tab/Enter/Esc)
+    - Export parity: via PageRenderer mode="export" (Style Contract auto-parity)
+    - Security: body = plain text (NOT dangerouslySetInnerHTML), javascript:
+      URL rejected, SVG upload already blocked
+    - Acceptance criteria for Sprint 3B: 11 items
+    - Files to touch in 3B: ~8-10 (smaller than original 13 estimate)
+  * docs/Teacher-Flow-v1-Stable-Baseline.md (updated):
+    - Sprint 2C section: marked CLOSED via 8.7A/8.7B (all 4 items status)
+    - Sprint 3 section: split into 3A (contract) + 3B (implementation)
+    - Risk table: roda-game boolean toggle struck through (CLOSED)
+    - Urutan yang Aman: updated with ✅ markers
+  * src/__tests__/hotspot-contract-guards.test.ts (new, 16 tests):
+    - hotspot-image NOT in TEACHER_ADDABLE_BLOCKS
+    - hotspot-image NOT in GUIDED_EDITOR_REGISTRY
+    - hotspot-image NOT in block types
+    - 10 curated blocks stable (regression)
+    - sanitizeHtml: 7 security tests (strips + preserves)
+  * CI workflow updated: hotspot-contract-guards.test.ts added
+- Patch-1 NOT needed — first push CI was green on run 27865099925.
+
+Stage Summary:
+- Files modified (commit 7ec3ef9):
+  * docs/Teacher-Flow-v1-Stable-Baseline.md (+25/-15)
+  * .github/workflows/ci.yml (+2/-0)
+- Files baru:
+  * docs/HOTSPOT-IMAGE-CONTRACT.md (180 lines)
+  * src/__tests__/hotspot-contract-guards.test.ts (16 tests)
+- Local gates: tsc 0 errors, normalize 0 sigs, build ok, 803 tests pass
+- Sprint 8.8A / 3A READY for Senior Review
+
+---
+Task ID: 8.8A-Closure
+Agent: Super Z (main)
+Task: Sprint 8.8A / 3A closure documentation sync
+
+Work Log:
+- Senior Review 8.8A: TECHNICAL PASS / pending CI verification.
+- Verified remote: HEAD = 7ec3ef93c1658f846ad55cde57a4e1d95cea4e18.
+- Monitored GitHub Actions via authenticated API:
+  * CI Run ID: 27865099925
+  * Exact SHA: 7ec3ef93c1658f846ad55cde57a4e1d95cea4e18
+  * Run status: completed, conclusion: success
+  * 3/3 jobs success:
+    - Test (vitest): completed → success
+    - TypeScript gate (normalize-ts-errors.js --check): completed → success
+    - Build (exit code + artifact verification): completed → success
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Added Sprint 8.8A / 3A Closure table with 13 gates all PASS_CI
+- worklog.md: appended 8.8A + 8.8A-Closure entries.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.8A / 3A: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: 7ec3ef93c1658f846ad55cde57a4e1d95cea4e18
+- CI run: 27865099925
+- Jobs: Test success, TypeScript success, Build success
+- Sprint 8.8A / 3A overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
+- All Sprints 8.1 → 8.8A now CLOSED with PASS_CI status.
+- Next: Sprint 8.8B / 3B — Hotspot Image Minimal Vertical Slice
