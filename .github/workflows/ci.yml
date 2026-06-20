@@ -60,6 +60,7 @@ jobs:
         # Sprint 8.5B: added middleware-security + a11y-smoke + api-no-stack-leak.
         # Sprint 8.5C: added api-upload + media-reload-persistence.
         # Sprint 8.6A: added project-schema-versioning + schema-versioning-import-export.
+        # Sprint 8.7A: added flow-guru-gate (teacher flow contract tests).
         run: |
           npx vitest run src/core
           npx vitest run src/__tests__/mode-lifecycle-smoke.test.ts
@@ -77,6 +78,7 @@ jobs:
           npx vitest run src/__tests__/media-reload-persistence.test.ts
           npx vitest run src/__tests__/project-schema-versioning.test.ts
           npx vitest run src/__tests__/schema-versioning-import-export.test.ts
+          npx vitest run src/__tests__/flow-guru-gate.test.ts
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

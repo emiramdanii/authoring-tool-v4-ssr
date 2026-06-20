@@ -133,9 +133,9 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Area**: quiz
 - **Reproduction**: 3 file di `src/components/canva/right-panel/block-properties/` punya TS errors di sekitar baris 73-75. Kemungkinan signature mismatch dengan import shape dari Excel parser.
 - **Workaround**: Vitest berjalan. UI berfungsi manual.
-- **Owner**: unassigned
-- **Target**: Sprint 8.5
-- **Closure**: OPEN
+- **Owner**: Sprint 8.6B
+- **Target**: Sprint 8.6B
+- **Closure**: CLOSED — Sprint 8.6B. The 3 ImportPatch types (KuisImportPatch, RodaImportPatch, SortirImportPatch) now extend `Record<string, unknown>`, satisfying `applyGuidedSchemaPatch`'s `patch` param type. `npx tsc --noEmit` returns 0 errors for these files.
 
 ---
 
@@ -223,9 +223,9 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Area**: error-recovery
 - **Reproduction**: Saat save gagal, project load gagal, atau schema invalid, aplikasi hanya menampilkan console error. Tidak ada UI untuk retry / restore last successful save / download backup JSON.
 - **Workaround**: User bisa manual export JSON lewat Import/Export dialog bila masih bisa buka project. Bila tidak, data hilang.
-- **Owner**: Sprint 8.5 (release prep)
-- **Target**: Sprint 8.5
-- **Closure**: OPEN
+- **Owner**: Sprint 8.5A
+- **Target**: Sprint 8.5A
+- **Closure**: CLOSED — Sprint 8.5A. `BootRecoveryOrchestrator.run()` wired to `RecoveryDialog` via `AuthoringTool` boot effect. Dialog has 4 reason branches (boot-report > emergency > crash > auto-save), a11y basics (role=dialog, aria-modal, focus trap, Esc/backdrop handling). `clearRecoveryKeys()` helper is single source of truth for "Mulai Baru". 38 recovery tests (12 bridge + 11 safe-boot + 8 a11y + 7 regression). CI run `27825766751` — 3/3 jobs success.
 
 ### RECOV-002 — Autosave failure tidak ada telemetry
 - **Severity**: P2
@@ -259,18 +259,18 @@ Closure:      <commit SHA + tanggal | OPEN>
   - SVG upload
   - iframe/embed (bila ada module yang pakai)
 - **Workaround**: React secara default escape text content. Tapi `dangerouslySetInnerHTML` bila dipakai perlu audit.
-- **Owner**: Sprint 8.5 (security gate)
-- **Target**: Sprint 8.5
-- **Closure**: OPEN
+- **Owner**: Sprint 8.5B / 8.5C
+- **Target**: Sprint 8.5B / 8.5C
+- **Closure**: PARTIAL — Sprint 8.5B/8.5C. Security headers middleware (7 headers on all responses) + no-stack-leak fix for export/scorm routes (8.5B) + `/api/upload` route with MIME validation + magic-byte verification + SVG upload blocked for stored-XSS prevention (8.5C-Patch-1). React default escaping handles inline text. Full `dangerouslySetInnerHTML` audit still needed for export HTML rendering — deferred to Sprint 3 (export pipeline refactor).
 
 ### SEC-003 — File upload size/type belum dibatasi
 - **Severity**: P2
 - **Area**: security
 - **Reproduction**: Image uploader (`src/components/authoring/konten/ImageUploader.tsx`) belum diperiksa apakah ada limit size dan whitelist type.
 - **Workaround**: Browser memory akan jadi bottleneck natural, tetapi tidak ada proteksi aktif.
-- **Owner**: Sprint 8.5
-- **Target**: Sprint 8.5
-- **Closure**: OPEN
+- **Owner**: Sprint 8.5C
+- **Target**: Sprint 8.5C
+- **Closure**: CLOSED — Sprint 8.5C. `/api/upload` route created with: 4 allowed MIME types (jpeg/png/gif/webp), 5MB max size, magic-byte verification for all allowed types, SVG upload blocked (8.5C-Patch-1 — stored-XSS prevention). Content-addressed storage (SHA-256 filename) prevents path traversal. 14 upload tests + 7 media reload tests. CI run `27835293255` — 3/3 jobs success.
 
 ---
 
@@ -285,13 +285,13 @@ Closure:      <commit SHA + tanggal | OPEN>
   - modal focus trap
   - Escape bekerja di semua modal
   - tombol label (aria-label)
-  - kontras cukup (WCAG AA)
+ - kontras cukup (WCAG AA)
   - reduced motion support
   - screen reader labels untuk navigation dan quiz
 - **Workaround**: Tidak ada. A11Y yang ditunda sampai akhir biasanya mahal karena menyentuh seluruh komponen.
-- **Owner**: Sprint 8.5
-- **Target**: Sprint 8.5
-- **Closure**: OPEN
+- **Owner**: Sprint 8.5A / 8.5B
+- **Target**: Sprint 8.5A / 8.5B
+- **Closure**: PARTIAL — Sprint 8.5A/8.5B. A11y smoke tests added: SkipNavLink (href, sr-only, keyboard-focusable), A11yProvider (reducedMotion/highContrast context), useGameA11y hook (ariaLabel, progressAria, liveAria, instructionId), RecoveryDialog (role=dialog, aria-modal, aria-labelledby, aria-describedby, Tab focus trap, Esc/backdrop handling). 12 a11y-smoke tests + 8 recovery-dialog-a11y tests. Full axe-core audit (Playwright + axe integration) still needed — deferred to Sprint 4 (final QA).
 
 ---
 
@@ -323,9 +323,9 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Area**: schema
 - **Reproduction**: Project document di database tidak punya field versi. Migrasi saat ini pakai flag per-page (`_migrationVersion`) tetapi tidak ada versi document-level.
 - **Workaround**: `migrateAllPages()` mendeteksi kondisi yang perlu migrasi berdasarkan shape data, bukan versi. Ini rapuh bila ada shape yang ambigu.
-- **Owner**: Sprint 8.2S-3
-- **Target**: Sprint 8.2S-3
-- **Closure**: OPEN — design doc di `docs/SCHEMA_VERSIONING_DESIGN.md`
+- **Owner**: Sprint 8.6A
+- **Target**: Sprint 8.6A
+- **Closure**: CLOSED — Sprint 8.6A. `CURRENT_PROJECT_SCHEMA_VERSION = 1` implemented in `src/core/schema/project-schema-versioning.ts`. Export JSON writes `schemaVersion: 1` at top level (both Dashboard.tsx + use-export-actions.ts paths). Import JSON gates through `migrateProjectDocument()` BEFORE any store mutation — legacy (no schemaVersion) migrates to current, future version rejected safely, malformed rejected safely. ScreenSchema.version compatibility bug also fixed (`isSchemaVersionCompatible` now accepts v2=current). 82 tests (58 project-schema-versioning + 24 schema-versioning-import-export). CI run `27837399563` — 3/3 jobs success.
 
 ---
 
@@ -346,7 +346,7 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Workaround**: Tidak ada. Keputusan terlambat dapat merombak renderer dan asset pipeline.
 - **Owner**: Sprint 8.2C (design frozen sebelum implementasi)
 - **Target**: Sprint 8.2C
-- **Closure**: OPEN — design doc di `docs/EXPORT_CONTRACT_DESIGN.md`
+- **Closure**: CLOSED — Sprint 8.2C. Export HTML contract implemented: POST `/api/export` generates standalone HTML via Vite SSR template, `ExportApp.tsx` chrome wired to resolved style tokens, consumer smoke tests (10 tests) verify ExportApp → PageRenderer mode="export" → resolvePageStyleTokens + bridge. GET `/api/projects/[id]/export` PARTIAL (contractId not in Prisma Page model — falls back to legacy-theme → preset bridge). 7 token boundary tests + 10 consumer smoke tests. CI run `27776715138` — 3/3 jobs success.
 
 ---
 
