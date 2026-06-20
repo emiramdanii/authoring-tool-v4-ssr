@@ -86,6 +86,7 @@ jobs:
           npx vitest run src/__tests__/hotspot-image.test.ts
           npx vitest run src/__tests__/hotspot-position-roundtrip.test.ts
           npx vitest run src/__tests__/hotspot-add-item.test.ts
+          npx vitest run src/__tests__/hotspot-qa.test.tsx
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)
