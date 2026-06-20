@@ -1,18 +1,16 @@
 // ═══════════════════════════════════════════════════════════════════
-// SPRINT 8.8A / 3A — Pre-Hotspot Contract Guard Tests
+// SPRINT 8.8A / 3A → 8.8B / 3B — Hotspot Contract + Implementation Guards
 // ═══════════════════════════════════════════════════════════════════
-// Verifies the pre-implementation state before Sprint 3B (hotspot):
+// Originally created in Sprint 8.8A as pre-implementation guards (asserting
+// hotspot-image was NOT yet implemented). Updated in Sprint 8.8B-Patch-1
+// to verify the implementation IS present.
 //
-//   1. hotspot-image is NOT in TEACHER_ADDABLE_BLOCKS (not yet addable)
-//   2. hotspot-image is NOT in GUIDED_EDITOR_REGISTRY (no guided editor yet)
-//   3. hotspot-image is NOT in BlockDefinitionRegistry (not registered yet)
+// Current assertions (post 8.8B):
+//   1. hotspot-image IS in TEACHER_ADDABLE_BLOCKS (11 blocks total)
+//   2. hotspot-image IS in GUIDED_EDITOR_REGISTRY (has guided editor)
+//   3. HotspotImageBlock type IS exported from schema types
 //   4. Existing 10 curated blocks are still stable (regression)
 //   5. sanitizeHtml() strips dangerous content (security boundary)
-//   6. HotspotImageBlock type does NOT exist yet in schema types
-//
-// These tests are GUARD tests — they verify the contract is in place
-// BEFORE implementation begins. When Sprint 3B adds hotspot-image,
-// these tests should be updated to verify the implementation instead.
 // ═══════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi } from 'vitest';

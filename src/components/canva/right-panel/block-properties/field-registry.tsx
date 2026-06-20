@@ -749,7 +749,20 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
   maxItems?: number;
   onUpdate: (items: Array<Record<string, unknown>>) => void;
 }) {
+  // Sprint 8.8B-Patch-2: when field is 'posisi' (hotspot-image preset position),
+  // parse "x,y" string into x + y numbers and write BOTH to the item.
+  // The 'posisi' field itself is NEVER stored on the block — it's a UI-only
+  // abstraction that maps to HotspotImageBlock.hotspots[].x and .y.
   const updateNestedItem = (idx: number, field: string, value: unknown) => {
+    if (field === 'posisi') {
+      // Import inline to avoid circular dependency at module-eval time
+      const { parseHotspotPosition } = require('@/core/schema/hotspot-position');
+      const { x, y } = parseHotspotPosition(value);
+      const newItems = [...items];
+      newItems[idx] = { ...newItems[idx], x, y };
+      onUpdate(newItems);
+      return;
+    }
     const newItems = [...items];
     newItems[idx] = { ...newItems[idx], [field]: value };
     onUpdate(newItems);
@@ -871,6 +884,20 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
                         rows={1}
                         className="flex-1 px-2 py-1 rounded-md border border-outline-variant/30 bg-surface-bright text-[11px] text-on-surface focus:border-secondary focus:outline-none transition-all resize-y min-w-0"
                       />
+                    ) : fieldDef.type === 'select' && fieldDef.options ? (
+                      // Sprint 8.8B-Patch-2: for 'posisi' field, derive value from x,y
+                      <select
+                        value={fieldDef.key === 'posisi'
+                          ? `${item['x'] ?? 50},${item['y'] ?? 50}`
+                          : String(item[fieldDef.key] || '')
+                        }
+                        onChange={e => updateNestedItem(idx, fieldDef.key, e.target.value)}
+                        className="flex-1 px-2 py-1 rounded-md border border-outline-variant/30 bg-surface-bright text-[11px] text-on-surface focus:border-secondary focus:outline-none transition-all min-w-0"
+                      >
+                        {fieldDef.options.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type={fieldDef.type === 'number' ? 'number' : 'text'}
