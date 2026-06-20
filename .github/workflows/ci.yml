@@ -62,6 +62,7 @@ jobs:
         # Sprint 8.6A: added project-schema-versioning + schema-versioning-import-export.
         # Sprint 8.7A: added flow-guru-gate (teacher flow contract tests).
         # Sprint 8.7B: added guided-editor-polish (refleksi warna, roda-game exclusiveToggle, diskusi/kuis guards).
+        # Sprint 8.8A: added hotspot-contract-guards (pre-hotspot contract + sanitizer boundary tests).
         run: |
           npx vitest run src/core
           npx vitest run src/__tests__/mode-lifecycle-smoke.test.ts
@@ -81,6 +82,7 @@ jobs:
           npx vitest run src/__tests__/schema-versioning-import-export.test.ts
           npx vitest run src/__tests__/flow-guru-gate.test.ts
           npx vitest run src/__tests__/guided-editor-polish.test.ts
+          npx vitest run src/__tests__/hotspot-contract-guards.test.ts
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

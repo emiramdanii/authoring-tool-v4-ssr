@@ -209,7 +209,7 @@ Flow guru (teacher mode / sederhana mode) dari awal sampai export:
 |--------|--------|----------|
 | **MateriBlok hanya 6/13 tipe** | Guru yang butuh tipe kutipan/gambar/compare/tabel di materi-blok tidak bisa edit via guided form — jatuh ke SchemaDrivenEditor di lengkap mode. | Sprint 2C: tambah tipe prioritas. Sementara, guru bisa switch ke lengkap mode. |
 | **Gambar hanya paste URL** | Guru harus tahu cara dapat URL gambar — tidak ada upload file di guided editor. | Sprint 2C: ImageUploader integration. Sementara, bisa upload di background section. |
-| **Roda-game correct = boolean toggle** | Guru harus toggle setiap opsi untuk menandai jawaban benar, bukan langsung pilih A/B/C/D. | Sprint 2C: polish ke A/B/C/D selector. |
+| ~~**Roda-game correct = boolean toggle**~~ | ~~Guru harus toggle setiap opsi untuk menandai jawaban benar, bukan langsung pilih A/B/C/D.~~ | ✅ CLOSED (Sprint 8.7B): `exclusiveToggle` radio button A/B/C/D. Schema unchanged. |
 | **Cover preset tidak ambil metadata project** | Cover yang dibuat dari preset tidak otomatis terisi judul/kelas dari metadata. | Low impact — guru bisa edit manual via guided editor. |
 
 ### 5.3 Risiko Rendah
@@ -224,33 +224,43 @@ Flow guru (teacher mode / sederhana mode) dari awal sampai export:
 
 ## 6. Roadmap Sprint Berikutnya
 
-### Sprint 2C — Guided Editor Lanjutan
+### Sprint 2C — Guided Editor Lanjutan (CLOSED via Sprint 8.7A/8.7B)
 
 **Tujuan:** Polish guided editor untuk fitur yang paling sering dipakai guru.
 
+**Status: CLOSED** — Semua item dikerjakan di Sprint 8.7A (flow gate + ledger sync)
+dan Sprint 8.7B (guided editor polish).
+
 **Urutan prioritas (paling sering dipakai dulu):**
 
-1. **diskusi label/icon** — Tambah field label dan icon per pertanyaan di guided editor diskusi
-2. **refleksi warna/icon** — Tambah field visual di guided editor refleksi
-3. **kuis opts schema fallback** — Improvement opsi kuis dari flat string ke object array
-4. **roda-game jawaban benar A/B/C/D** — Ganti boolean toggle dengan selector A/B/C/D
+1. ✅ **diskusi label/icon** — Sudah ada di GUIDED_EDITOR_REGISTRY (label, icon, teks, petunjuk, color). Guard test di `guided-editor-polish.test.ts`.
+2. ✅ **refleksi warna/icon** — `warna` field ditambahkan ke guided editor di Sprint 8.7B. Icon sudah ada sebelumnya. Renderer sudah membaca `q.warna`.
+3. ⏸️ **kuis opts schema fallback** — Sengaja TIDAK diubah. Senior review: "jangan ubah besar kalau tidak perlu." Opts tetap `string[]`, ans tetapat `number`. Guard test memverifikasi tidak ada regresi.
+4. ✅ **roda-game jawaban benar A/B/C/D** — `exclusiveToggle` radio button ditambahkan di Sprint 8.7B. Schema unchanged (`opts[].correct: boolean`). UI: klik opsi → set true + siblings false.
 
-**Estimasi:** 1-2 hari per item. Bisa dikerjakan paralel jika tidak saling bergantung.
+**Estimasi:** Selesai. CI run `27863757407` — 3/3 jobs success.
 
 ### Sprint 3 — Gambar Interaktif / Hotspot
 
 **Tujuan:** Tambah block baru `hotspot-image` dengan full vertical slice.
 
-**Scope:**
-- Block schema definition (`blocks.ts`, `definitions.ts`)
-- Guided editor (`guided-patch.ts`)
-- Renderer baru (`HotspotImageRenderer.tsx`)
-- Export parity (`html-templates.ts`, `game-renderers.ts`)
-- Registry entry (`SceneRegistry.ts`)
-- AddBlockPanel entry (`TEACHER_ADDABLE_BLOCKS`)
-- ~13 file total
+**Kontrak:** FROZEN di `docs/HOTSPOT-IMAGE-CONTRACT.md` (Sprint 8.8A / 3A).
 
-**Catatan:** X/Y manual berisiko membingungkan guru. Perlu UX yang baik — mungkin preset hotspot position atau visual picker.
+**Sub-sprints:**
+- **Sprint 3A (8.8A):** Pre-Hotspot Contract + Roadmap Sync — kontrak ini, roadmap sync, guard tests
+- **Sprint 3B (8.8B):** Hotspot Image Minimal Vertical Slice — implementasi block type + renderer + guided editor + export parity
+
+**Scope 3B:**
+- Block schema definition (`blocks.ts`) — sesuai kontrak
+- Guided editor (`guided-patch.ts`) — preset posisi 3×3, bukan raw X/Y
+- Renderer baru (`HotspotImageRenderer.tsx`) — gambar + hotspot + kartu
+- Export parity via PageRenderer mode="export" (otomatis via Style Contract)
+- Registry entry (`SceneRegistry.tsx` / `BlockDefinitionRegistry`)
+- AddBlockPanel entry (`TEACHER_ADDABLE_BLOCKS`) — hanya setelah semua siap
+- ~8-10 file total (lebih kecil dari estimasi awal 13 file)
+
+**Catatan:** X/Y manual berisiko membingungkan guru. Kontrak 3A memutuskan:
+V1 pakai preset posisi 3×3 grid. Visual picker click-on-image ditunda ke Sprint 4.
 
 ### Sprint 4 — Polish UI + QA Export
 
@@ -267,7 +277,12 @@ Flow guru (teacher mode / sederhana mode) dari awal sampai export:
 ### Urutan yang Aman
 
 ```
-Sprint 2C (polish) → Manual test guru → Sprint 3 (hotspot) → Manual test → Sprint 4 (final polish + QA)
+Sprint 2C (polish) ✅ CLOSED via 8.7A/8.7B
+→ Manual test guru ✅ Gate tests di flow-guru-gate.test.ts (8.7A)
+→ Sprint 3A (8.8A) — Pre-Hotspot Contract + Roadmap Sync ✅ THIS SPRINT
+→ Sprint 3B (8.8B) — Hotspot Image Minimal Vertical Slice (NEXT)
+→ Manual test guru
+→ Sprint 4 (final polish + QA)
 ```
 
 **Sebelum mulai Sprint 2C:** Jalankan minimal 1 kali uji manual guru melalui flow lengkap:
