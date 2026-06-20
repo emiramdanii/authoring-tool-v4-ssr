@@ -545,6 +545,8 @@ function ArrayField({ label, items, fieldDefs, maxItems, onUpdate, fieldId: _fie
       max?: number;
       step?: number;
       defaultValue?: unknown;
+      // Sprint 8.7B: exclusiveToggle for radio-style boolean in nested arrays
+      exclusiveToggle?: boolean;
     }>;
     maxItems?: number;
   }>;
@@ -741,6 +743,8 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
     max?: number;
     step?: number;
     defaultValue?: unknown;
+    // Sprint 8.7B: exclusiveToggle for radio-style boolean in arrays
+    exclusiveToggle?: boolean;
   }>;
   maxItems?: number;
   onUpdate: (items: Array<Record<string, unknown>>) => void;
@@ -813,7 +817,36 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
             </div>
             {fieldDefs.map((fieldDef) => (
               <div key={fieldDef.key}>
-                {fieldDef.type === 'boolean' ? (
+                {fieldDef.type === 'boolean' && fieldDef.exclusiveToggle ? (
+                  // Sprint 8.7B: exclusiveToggle renders as radio button (A/B/C/D style).
+                  // When clicked, sets this item's field=true AND all siblings' same field=false.
+                  // Schema unchanged — still writes boolean to opts[].correct.
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-on-surface-variant">{fieldDef.label}</span>
+                    <button
+                      onClick={() => {
+                        // Set ALL items' field to false, then this one to true
+                        const newItems = items.map((it, i) => ({
+                          ...it,
+                          [fieldDef.key]: i === idx,
+                        }));
+                        onUpdate(newItems);
+                      }}
+                      className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
+                        item[fieldDef.key]
+                          ? 'bg-secondary border-secondary'
+                          : 'bg-transparent border-outline-variant hover:border-secondary/50'
+                      }`}
+                      role="radio"
+                      aria-checked={!!item[fieldDef.key]}
+                      aria-label={`${fieldDef.label} ${String.fromCharCode(65 + idx)}`}
+                    >
+                      {Boolean(item[fieldDef.key]) && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-white mx-auto mt-[3px]" />
+                      )}
+                    </button>
+                  </div>
+                ) : fieldDef.type === 'boolean' ? (
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-on-surface-variant">{fieldDef.label}</span>
                     <button

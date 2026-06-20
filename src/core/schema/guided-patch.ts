@@ -567,6 +567,12 @@ export interface GuidedFieldDef {
   /** Sprint 8.6B: default value used by some fields (e.g. default accentColor).
    *  Consumed by the guided editor when initializing a new block. */
   defaultValue?: string;
+  /** Sprint 8.7B: when true on a boolean field inside an array, render as
+   *  an exclusive radio button (A/B/C/D style) instead of a toggle switch.
+   *  When clicked: sets this item's field to true AND all siblings' same
+   *  field to false. Used by roda-game opts[].correct. Does NOT change
+   *  the block schema — only affects guided editor UX. */
+  exclusiveToggle?: boolean;
 }
 
 /**
@@ -737,6 +743,9 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
           { key: 'teks', label: 'Teks Pertanyaan', type: 'textarea', required: true },
           { key: 'petunjuk', label: 'Petunjuk', type: 'textarea' },
           { key: 'icon', label: 'Ikon', type: 'icon' },
+          // Sprint 8.7B: expose warna field — RefleksiRenderer reads q.warna
+          // (falls back to 'p' if not set). Block type already has warna?: string.
+          { key: 'warna', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
         ],
       },
     ],
@@ -1281,10 +1290,13 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
             label: 'Pilihan Jawaban',
             type: 'array',
             maxItems: 4,
-            helpText: 'Tandai jawaban yang benar.',
+            helpText: 'Pilih satu jawaban yang benar (A/B/C/D).',
             fields: [
               { key: 'text', label: 'Teks Jawaban', type: 'text', required: true },
-              { key: 'correct', label: 'Jawaban Benar', type: 'boolean' },
+              // Sprint 8.7B: exclusiveToggle renders as radio button (A/B/C/D style).
+              // When clicked, sets this opt.correct=true and all siblings correct=false.
+              // Schema unchanged — still opts[].correct: boolean.
+              { key: 'correct', label: 'Jawaban Benar', type: 'boolean', exclusiveToggle: true },
             ],
           },
           { key: 'feedbackCorrect', label: 'Feedback Benar', type: 'text', placeholder: 'Benar!' },
