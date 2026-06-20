@@ -66,6 +66,8 @@ import { hasGuidedEditor, getGuidedEditorSchema } from '@/core/schema/guided-pat
 import { parseHotspotPosition, formatHotspotPosition } from '@/core/schema/hotspot-position';
 import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry/definitions';
 import type { HotspotImageBlock } from '@/core/schema/types/blocks';
+// Sprint 8.9B / 4B: import shared constant (single source of truth)
+import { TEACHER_ADDABLE_BLOCKS, ORIGINAL_TEACHER_BLOCKS } from '@/core/registry/teacher-curated-blocks';
 
 // ─────────────────────────────────────────────────────────────────
 // Mock TokenResolver — minimal stub that returns token values
@@ -110,11 +112,8 @@ function makeBlock(overrides: Partial<HotspotImageBlock> = {}): HotspotImageBloc
   };
 }
 
-const TEACHER_ADDABLE_BLOCKS = [
-  'materi-section', 'def-box', 'kuis', 'diskusi',
-  'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-  'gambar', 'roda-game', 'hotspot-image',
-] as const;
+// Sprint 8.9B / 4B: TEACHER_ADDABLE_BLOCKS is now imported from
+// @/core/registry/teacher-curated-blocks (single source of truth).
 
 // ─────────────────────────────────────────────────────────────────
 // Tests
@@ -378,11 +377,7 @@ describe('Sprint 8.9A / 4A — Post-Hotspot QA', () => {
 
   describe('Regression: 10 original blocks stable', () => {
     it('all 10 original blocks still have guided editors', () => {
-      const original10 = [
-        'materi-section', 'def-box', 'kuis', 'diskusi',
-        'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-        'gambar', 'roda-game',
-      ];
+      const original10 = ORIGINAL_TEACHER_BLOCKS;
       for (const blockType of original10) {
         expect(hasGuidedEditor(blockType), `${blockType} should have guided editor`).toBe(true);
       }

@@ -115,6 +115,8 @@ if (typeof globalThis.document === 'undefined') {
 
 import { useCanvaStore } from '@/store/canva-store';
 import { hasGuidedEditor, getGuidedEditorSchema } from '@/core/schema/guided-patch';
+// Sprint 8.9B / 4B: import shared constant (single source of truth)
+import { TEACHER_ADDABLE_BLOCKS, ORIGINAL_TEACHER_BLOCKS } from '@/core/registry/teacher-curated-blocks';
 import { CURRENT_PROJECT_SCHEMA_VERSION, migrateProjectDocument } from '@/core/schema/project-schema-versioning';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 import type { CanvaPage, ScreenSchema } from '@/components/canva/types';
@@ -123,18 +125,9 @@ import type { CanvaPage, ScreenSchema } from '@/components/canva/types';
 // The 10 curated teacher-addable blocks (from AddBlockPanel.tsx)
 // ─────────────────────────────────────────────────────────────────
 
-const TEACHER_ADDABLE_BLOCKS = [
-  'materi-section',
-  'def-box',
-  'kuis',
-  'diskusi',
-  'refleksi',
-  'sortir-game',
-  'rangkuman',
-  'motivasi',
-  'gambar',
-  'roda-game',
-] as const;
+// Sprint 8.9B / 4B: TEACHER_ADDABLE_BLOCKS is now imported from
+// @/core/registry/teacher-curated-blocks (single source of truth).
+// No more local copy — eliminates drift.
 
 // ─────────────────────────────────────────────────────────────────
 // Helpers
@@ -211,8 +204,8 @@ describe('Sprint 8.7A — Flow Guru Manual Gate', () => {
 
   // ── Gate 1: 10 curated blocks exist ──────────────────────────
 
-  it('TEACHER_ADDABLE_BLOCKS has exactly 10 block types', () => {
-    expect(TEACHER_ADDABLE_BLOCKS.length).toBe(10);
+  it('TEACHER_ADDABLE_BLOCKS has exactly 11 block types (10 original + hotspot)', () => {
+    expect(TEACHER_ADDABLE_BLOCKS.length).toBe(11);
   });
 
   // ── Gate 2: Every curated block has a guided editor ──────────

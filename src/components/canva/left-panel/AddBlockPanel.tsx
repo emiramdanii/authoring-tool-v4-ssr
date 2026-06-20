@@ -10,9 +10,11 @@
 // inserted after the selected block instead of appended to the end.
 //
 // TEACHER MODE: In 'sederhana' mode, only curated blocks are shown
-// (TEACHER_ADDABLE_BLOCKS) — 8 safe types that have guided editors.
+// (TEACHER_ADDABLE_BLOCKS) — 11 safe types that have guided editors.
 // Groups are simplified to "Isi & Materi", "Interaktif", etc.
 // "Block" terminology is replaced with "Isi".
+// Sprint 8.9B / 4B: TEACHER_ADDABLE_BLOCKS + POPULAR_BLOCK_TYPES now
+// imported from @/core/registry/teacher-curated-blocks (single source).
 
 import { useState, useMemo, useCallback } from 'react';
 // No lucide-react imports — all icons use Material Symbols Outlined per v4 spec
@@ -43,6 +45,8 @@ import {
   type TemplateFragmentCategory,
   type FragmentSuggestion,
 } from '@/core/template/template-fragments';
+// Sprint 8.9B / 4B: shared curated block list (single source of truth)
+import { TEACHER_ADDABLE_BLOCKS, POPULAR_BLOCK_TYPES } from '@/core/registry/teacher-curated-blocks';
 
 export default function AddBlockPanel() {
   const addSchemaBlock = useCanvaStore(s => s.addSchemaBlock);
@@ -58,27 +62,9 @@ export default function AddBlockPanel() {
   // Terminology helpers based on teacher mode
   const blockLabel = isSederhana ? 'Isi' : 'Block';
 
-  // ── Curated block types for Teacher/Sederhana mode ──
-  // Only blocks that are (1) addable, (2) have guided editors, and
-  // (3) are meaningful for teachers to insert as content.
-  // Page-level blocks (cover, tp, penutup, petunjuk) are NOT here —
-  // those are added via "Tambah Halaman", not "Tambah Isi".
-  // gambar (P3A) and roda-game (P3B) have guided editors.
-  const TEACHER_ADDABLE_BLOCKS = useMemo(() => [
-    'materi-section', 'def-box', 'kuis', 'diskusi',
-    'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-    'gambar', 'roda-game',
-    // Sprint 8.8B / 3B: hotspot-image now has full vertical slice
-    'hotspot-image',
-  ], []);
-
-  // ── Popular blocks for quick-access grid (Sederhana only) ──
-  // Aligned with TEACHER_ADDABLE_BLOCKS — no page-level or non-addable types.
-  const POPULAR_BLOCK_TYPES = useMemo(() => [
-    'materi-section', 'def-box', 'kuis', 'diskusi',
-    'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-    'gambar', 'roda-game',
-  ], []);
+  // Sprint 8.9B / 4B: TEACHER_ADDABLE_BLOCKS + POPULAR_BLOCK_TYPES are now
+  // imported from @/core/registry/teacher-curated-blocks (single source of truth).
+  // No more local copies — eliminates drift between AddBlockPanel and tests.
 
   // Check if current page can accept schema blocks
   // addSchemaBlock() auto-creates an empty schema for pages that
@@ -107,16 +93,16 @@ export default function AddBlockPanel() {
     const raw = getAllBlockDefinitions().filter(b => b.addable !== false);
     if (!isSederhana) return raw;
     // Teacher mode: only show curated blocks that are safe for teachers
-    return raw.filter(b => TEACHER_ADDABLE_BLOCKS.includes(b.type));
-  }, [isSederhana, TEACHER_ADDABLE_BLOCKS]);
+    return raw.filter(b => (TEACHER_ADDABLE_BLOCKS as readonly string[]).includes(b.type));
+  }, [isSederhana]);
 
   // Popular blocks derived from allBlocks (must come after allBlocks declaration)
   const popularBlocks = useMemo(() => {
     if (!isSederhana) return [];
-    return POPULAR_BLOCK_TYPES
+    return (POPULAR_BLOCK_TYPES as readonly string[])
       .map(type => allBlocks.find(b => b.type === type))
       .filter((b): b is BlockDefinition => b != null);
-  }, [isSederhana, allBlocks, POPULAR_BLOCK_TYPES]);
+  }, [isSederhana, allBlocks]);
 
   // ── Add block handler with screen reader announcement ──────────
   const handleAddBlock = useCallback((block: BlockDefinition) => {

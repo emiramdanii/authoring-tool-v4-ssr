@@ -29,14 +29,13 @@ vi.mock('@/store/canva-store', () => ({
 import { hasGuidedEditor, getGuidedEditorSchema } from '@/core/schema/guided-patch';
 import { sanitizeHtml } from '@/core/renderer/blocks/RichText';
 import * as blockTypes from '@/core/schema/types/blocks';
+// Sprint 8.9B / 4B: import shared constant (single source of truth)
+import { TEACHER_ADDABLE_BLOCKS } from '@/core/registry/teacher-curated-blocks';
 
 // The 10 curated blocks (from AddBlockPanel.tsx)
-// Sprint 8.8B: now includes hotspot-image (11 blocks)
-const TEACHER_ADDABLE_BLOCKS = [
-  'materi-section', 'def-box', 'kuis', 'diskusi',
-  'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-  'gambar', 'roda-game', 'hotspot-image',
-] as const;
+// Sprint 8.9B / 4B: TEACHER_ADDABLE_BLOCKS is now imported from
+// @/core/registry/teacher-curated-blocks (single source of truth).
+// No more local copy — eliminates drift.
 
 // ─────────────────────────────────────────────────────────────────
 // Tests

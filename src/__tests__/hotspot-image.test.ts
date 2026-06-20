@@ -28,12 +28,8 @@ import { hasGuidedEditor, getGuidedEditorSchema } from '@/core/schema/guided-pat
 import { BLOCK_DEFINITIONS } from '@/core/registry/BlockDefinitionRegistry/definitions';
 import { LAZY_RENDERER_MAP } from '@/core/renderer/RendererLazy';
 import type { HotspotImageBlock } from '@/core/schema/types/blocks';
-
-const TEACHER_ADDABLE_BLOCKS = [
-  'materi-section', 'def-box', 'kuis', 'diskusi',
-  'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-  'gambar', 'roda-game', 'hotspot-image',
-] as const;
+// Sprint 8.9B / 4B: import shared constant (single source of truth)
+import { TEACHER_ADDABLE_BLOCKS, ORIGINAL_TEACHER_BLOCKS } from '@/core/registry/teacher-curated-blocks';
 
 describe('Sprint 8.8B / 3B — Hotspot Image Vertical Slice', () => {
 
@@ -222,11 +218,7 @@ describe('Sprint 8.8B / 3B — Hotspot Image Vertical Slice', () => {
 
   describe('Regression: existing 10 blocks still stable', () => {
     it('all original 10 curated blocks still have guided editors', () => {
-      const original10 = [
-        'materi-section', 'def-box', 'kuis', 'diskusi',
-        'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
-        'gambar', 'roda-game',
-      ];
+      const original10 = ORIGINAL_TEACHER_BLOCKS;
       for (const blockType of original10) {
         expect(hasGuidedEditor(blockType), `${blockType} should still have guided editor`).toBe(true);
       }
