@@ -472,6 +472,27 @@ Exact-SHA CI run `27841199162` on SHA `f01a714300380d1cca2b1248a627535b4bd6a9ea`
 | Exact SHA | `PASS_CI` | Checkout SHA `f01a714300380d1cca2b1248a627535b4bd6a9ea` verified in CI log |
 | CI Run | `PASS_CI` | `27841199162` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
+## Sprint 8.7A Closure (Flow Guru Manual Gate + Ledger Sync)
+
+Exact-SHA CI run `27860394387` on SHA `d51fe0ea7d2a15ca3395155b722cdc97b5a783f1`:
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| 10 curated blocks exist (TEACHER_ADDABLE_BLOCKS) | `PASS_CI` | `flow-guru-gate.test.ts` — exactly 10: materi-section, def-box, kuis, diskusi, refleksi, sortir-game, rangkuman, motivasi, gambar, roda-game |
+| Every curated block has guided editor | `PASS_CI` | `flow-guru-gate.test.ts` — `getGuidedEditorSchema()` returns non-null for all 10 |
+| hasGuidedEditor() returns true for all 10 | `PASS_CI` | `flow-guru-gate.test.ts` — verified via public API |
+| Every guided editor has displayName + icon + fields | `PASS_CI` | `flow-guru-gate.test.ts` — each has non-empty displayName, icon, >= 1 field |
+| addSchemaBlock() mutates schema.blocks | `PASS_CI` | `flow-guru-gate.test.ts` — block count increments after add |
+| addSchemaBlock() works for all 10 types | `PASS_CI` | `flow-guru-gate.test.ts` — all types produce valid block with id + type |
+| Export JSON includes schemaVersion | `PASS_CI` | `flow-guru-gate.test.ts` — `schemaVersion: 1` present |
+| Export JSON includes canva.pages (no silent fallback) | `PASS_CI` | `flow-guru-gate.test.ts` — pages non-empty, schema.blocks preserved |
+| Import JSON roundtrips | `PASS_CI` | `flow-guru-gate.test.ts` — export → migrateProjectDocument → verify schemaVersion + canva.pages |
+| Store has valid ratioId + currentPageIndex | `PASS_CI` | `flow-guru-gate.test.ts` — ratioId non-empty, currentPageIndex in bounds |
+| KNOWN_ISSUES stale items cleaned | `PASS_CI` | 5 OPEN → CLOSED (QUIZ-001, RECOV-001, SEC-003, SCHEMA-001, EXPORT-001), 2 OPEN → PARTIAL (SEC-002, A11Y-001), 5 legitimately OPEN remain (BLOCK-001, RECOV-002, SEC-001, PERF-001, PERSIST-002) |
+| 8.7A tests total | `PASS_CI` | 14 new tests (flow-guru-gate.test.ts) — all CI success |
+| Exact SHA | `PASS_CI` | Checkout SHA `d51fe0ea7d2a15ca3395155b722cdc97b5a783f1` verified in CI log |
+| CI Run | `PASS_CI` | `27860394387` — 3/3 jobs success (Test, TypeScript gate, Build) |
+
 ## Cara Memperbarui Matriks Ini
 
 - Update matriks setiap sprint yang menutup lubang atau menemukan

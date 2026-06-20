@@ -2401,3 +2401,87 @@ Stage Summary:
 - Issues closed: BUILD-002, BUILD-003, PERSIST-001
 - Sprint 8.6B overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
 - All Sprints 8.1 → 8.6B now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.7A
+Agent: Super Z (main)
+Task: Sprint 8.7A — Flow Guru Manual Gate + Ledger Sync
+
+Work Log:
+- Senior Review audit identified stale OPEN items in KNOWN_ISSUES.md that
+  were already addressed by prior sprints but never updated in the ledger.
+- Audited 10 curated teacher-addable blocks (TEACHER_ADDABLE_BLOCKS from
+  AddBlockPanel.tsx): materi-section, def-box, kuis, diskusi, refleksi,
+  sortir-game, rangkuman, motivasi, gambar, roda-game. All 10 have guided
+  editors in GUIDED_EDITOR_REGISTRY.
+- Audited flow guru path: Dashboard → template → workspace → add blocks →
+  edit guided form → preview → export. Verified at contract level via
+  automated gate tests.
+- Implementation (commit d51fe0e):
+  * src/__tests__/flow-guru-gate.test.ts (14 tests, @vitest-environment node):
+    - 10 curated blocks exist (exactly 10)
+    - Every curated block has guided editor (via getGuidedEditorSchema)
+    - hasGuidedEditor() returns true for all 10
+    - Every guided editor has displayName, icon, >= 1 field
+    - addSchemaBlock() adds block to schema
+    - addSchemaBlock() works for all 10 types
+    - Export JSON includes schemaVersion
+    - Export JSON includes canva.pages with full data
+    - Export does NOT silently fall back
+    - Import roundtrips (export → migrate → verify)
+    - Each block has valid id + type
+    - Every guided editor field has non-empty label
+    - Store has valid ratioId
+    - currentPageIndex within bounds
+  * KNOWN_ISSUES.md ledger sync (7 stale OPEN items closed):
+    - QUIZ-001: OPEN → CLOSED (Sprint 8.6B fixed ImportPatch TS errors)
+    - RECOV-001: OPEN → CLOSED (Sprint 8.5A implemented recovery UI)
+    - SEC-003: OPEN → CLOSED (Sprint 8.5C implemented /api/upload)
+    - SCHEMA-001: OPEN → CLOSED (Sprint 8.6A implemented schema versioning)
+    - EXPORT-001: OPEN → CLOSED (Sprint 8.2C implemented export contract)
+    - SEC-002: OPEN → PARTIAL (8.5B/8.5C addressed; full audit deferred)
+    - A11Y-001: OPEN → PARTIAL (8.5A/8.5B smoke tests; full audit deferred)
+  * Still legitimately OPEN (not in 8.7A scope):
+    - BLOCK-001 (P3, post-9.0), RECOV-002 (P2, future), SEC-001 (user action),
+      PERF-001 (P2, future), PERSIST-002 (P1, future)
+  * CI workflow updated: flow-guru-gate.test.ts added to vitest job
+- Patch-1 NOT needed — first push CI was green on run 27860394387.
+
+Stage Summary:
+- Files modified (commit d51fe0e):
+  * .github/workflows/ci.yml (+2/-0)
+  * KNOWN_ISSUES.md (7 items OPEN → CLOSED/PARTIAL with closure notes)
+- Files baru:
+  * src/__tests__/flow-guru-gate.test.ts (14 tests)
+- Local gates: tsc 0 errors, normalize 0 sigs, build ok, 773 tests pass
+- Sprint 8.7A initial implementation READY for Senior Review
+
+---
+Task ID: 8.7A-Closure
+Agent: Super Z (main)
+Task: Sprint 8.7A closure documentation sync
+
+Work Log:
+- Senior Review 8.7A: TECHNICAL PASS / pending CI verification.
+- Verified remote: HEAD = d51fe0ea7d2a15ca3395155b722cdc97b5a783f1.
+- Monitored GitHub Actions via authenticated API:
+  * CI Run ID: 27860394387
+  * Exact SHA: d51fe0ea7d2a15ca3395155b722cdc97b5a783f1
+  * Run status: completed, conclusion: success
+  * 3/3 jobs success:
+    - Test (vitest): completed → success
+    - TypeScript gate (normalize-ts-errors.js --check): completed → success
+    - Build (exit code + artifact verification): completed → success
+- Updated SYSTEM_CLOSURE_MATRIX.md:
+  * Added Sprint 8.7A Closure table with 10 gates all PASS_CI
+- worklog.md: appended 8.7A + 8.7A-Closure entries.
+- Zero source code changes — pure documentation sync.
+- Sprint 8.7A: PASS / CLOSURE COMPLETE → READY FOR CLOSED.
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: d51fe0ea7d2a15ca3395155b722cdc97b5a783f1
+- CI run: 27860394387
+- Jobs: Test success, TypeScript success, Build success
+- Sprint 8.7A overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
+- All Sprints 8.1 → 8.7A now CLOSED with PASS_CI status.
