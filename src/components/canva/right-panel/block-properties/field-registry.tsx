@@ -749,17 +749,19 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
   maxItems?: number;
   onUpdate: (items: Array<Record<string, unknown>>) => void;
 }) {
-  // Sprint 8.8B-Patch-2: when field is 'posisi' (hotspot-image preset position),
-  // parse "x,y" string into x + y numbers and write BOTH to the item.
-  // The 'posisi' field itself is NEVER stored on the block — it's a UI-only
+  // Sprint 8.8B-Patch-2 + Patch-3: when field is 'posisi' (hotspot-image
+  // preset position), parse "x,y" string into x + y numbers and write BOTH
+  // to the item. Also strip any stale 'posisi' field from legacy items.
+  // The 'posisi' field is NEVER stored on the block — it's a UI-only
   // abstraction that maps to HotspotImageBlock.hotspots[].x and .y.
   const updateNestedItem = (idx: number, field: string, value: unknown) => {
     if (field === 'posisi') {
-      // Import inline to avoid circular dependency at module-eval time
       const { parseHotspotPosition } = require('@/core/schema/hotspot-position');
       const { x, y } = parseHotspotPosition(value);
       const newItems = [...items];
-      newItems[idx] = { ...newItems[idx], x, y };
+      // Strip stale 'posisi' field if it exists (from legacy add or pre-Patch-3)
+      const { posisi: _stripped, ...rest } = newItems[idx] as Record<string, unknown>;
+      newItems[idx] = { ...rest, x, y };
       onUpdate(newItems);
       return;
     }
@@ -772,6 +774,13 @@ function InlineNestedArrayField({ label, items, fieldDefs, maxItems, onUpdate }:
     if (maxItems && items.length >= maxItems) return;
     const newItem: Record<string, unknown> = {};
     fieldDefs.forEach(f => {
+      // Sprint 8.8B-Patch-3: 'posisi' is a UI-only field for hotspot-image.
+      // Don't store 'posisi' on the item — store x=50, y=50 (center) instead.
+      if (f.key === 'posisi') {
+        newItem['x'] = 50;
+        newItem['y'] = 50;
+        return;
+      }
       if (f.type === 'boolean') newItem[f.key] = false;
       else if (f.type === 'number') newItem[f.key] = f.defaultValue ?? 0;
       else newItem[f.key] = f.defaultValue ?? '';
