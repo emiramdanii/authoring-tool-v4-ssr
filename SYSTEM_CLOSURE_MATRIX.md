@@ -592,3 +592,32 @@ CI run `27873320476` on SHA `a5c200543665162ca375a42965b122e8cf5bbfcf` — 3/3 j
 
 Matriks ini adalah source of truth untuk "apa yang sudah benar-benar
 teruji" — bukan "apa yang seharusnya jalan menurut kode".
+
+## Sprint 8.9A / 4A Closure (Post-Hotspot QA & Export Stabilization)
+
+CI run `27875781401` on SHA `60a53a1beaa19d601ea7ffdf285fb85a2b4d164e` — 3/3 jobs success.
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Renderer: valid image renders with src+alt | `PASS_CI` | `hotspot-qa.test.tsx` — img src + alt verified |
+| Renderer: placeholder for empty/broken image | `PASS_CI` | `hotspot-qa.test.tsx` — no img, placeholder icon shown |
+| Renderer: hotspot buttons at x/y positions | `PASS_CI` | `hotspot-qa.test.tsx` — left:15%, top:15% verified |
+| Renderer: click opens card | `PASS_CI` | `hotspot-qa.test.tsx` — title+body shown after click |
+| Renderer: Escape closes card | `PASS_CI` | `hotspot-qa.test.tsx` — card gone after Escape |
+| Security: body is plain text | `PASS_CI` | `hotspot-qa.test.tsx` — <script> rendered as text (P element) |
+| Security: no dangerouslySetInnerHTML in source | `PASS_CI` | `hotspot-qa.test.tsx` — 0 JSX usages (comments only) |
+| Security: javascript: URL rejected | `PASS_CI` | `hotspot-qa.test.tsx` — placeholder shown, no img |
+| Export parity: renderer in LAZY_RENDERER_MAP | `PASS_CI` | `hotspot-qa.test.tsx` — entry exists + is lazy component |
+| Guided editor: posisi roundtrips to x/y | `PASS_CI` | `hotspot-qa.test.tsx` — parse+format+9 options verified |
+| No posisi field stored on block | `PASS_CI` | `hotspot-qa.test.tsx` — createDefault has x/y, no posisi |
+| 10 original blocks stable | `PASS_CI` | `hotspot-qa.test.tsx` — all 10 still have guided editors |
+| hotspot-image in TEACHER_ADDABLE_BLOCKS (11) | `PASS_CI` | `hotspot-qa.test.tsx` — 11 blocks verified |
+| Keyboard: Enter/Space opens card | `PASS_CI` | `hotspot-qa.test.tsx` — both keys tested |
+| Alt text fallback | `PASS_CI` | `hotspot-qa.test.tsx` — title fallback + 'Gambar hotspot' default |
+| Hotspot without body | `PASS_CI` | `hotspot-qa.test.tsx` — title only, no empty paragraph |
+| tsc 0 errors | `PASS_CI` | `npx tsc --noEmit` returns 0 |
+| normalize 0 sigs | `PASS_CI` | baseline 0 signatures |
+| Build success | `PASS_CI` | `npm run build` exit 0 |
+| 8.9A tests total | `PASS_CI` | 28 new tests (hotspot-qa.test.tsx) — all CI success |
+| Exact SHA | `PASS_CI` | `60a53a1beaa19d601ea7ffdf285fb85a2b4d164e` |
+| CI Run | `PASS_CI` | `27875781401` — 3/3 jobs success |

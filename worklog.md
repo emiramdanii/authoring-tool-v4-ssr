@@ -2635,3 +2635,59 @@ Stage Summary:
 - Sprint 8.8A / 3A overall: ✅ PASS / CLOSED / PASS_CI (no further conditions)
 - All Sprints 8.1 → 8.8A now CLOSED with PASS_CI status.
 - Next: Sprint 8.8B / 3B — Hotspot Image Minimal Vertical Slice
+
+---
+Task ID: 8.9A / 4A
+Agent: Super Z (main)
+Task: Sprint 8.9A / 4A — Post-Hotspot QA & Export Stabilization
+
+Work Log:
+- Audited source boundary: HotspotImageRenderer, LAZY_RENDERER_MAP,
+  AddBlockPanel, guided-patch.ts, definitions.ts, schema types — all present.
+- Verified no dangerouslySetInnerHTML in renderer source (comments only).
+- Verified javascript: URL rejection in renderer.
+- Verified POPULAR_BLOCK_TYPES does NOT include hotspot-image (per scope: not needed).
+- Wrote 28 comprehensive QA tests in hotspot-qa.test.tsx covering:
+  * Renderer: valid image (src + alt), placeholder for empty/broken, javascript: rejection
+  * Hotspot buttons: correct labels + x/y position styles
+  * Click interaction: opens card, switches card, close button
+  * Escape key: closes card
+  * Keyboard: Enter + Space opens card
+  * Security: body as plain text (<script> rendered as P element, not executed)
+  * Security: no dangerouslySetInnerHTML in source (file read + regex)
+  * Export parity: LAZY_RENDERER_MAP entry exists + is lazy component
+  * Guided editor: posisi roundtrip regression (parse + format + 9 options)
+  * No posisi field: createDefault has x/y, not posisi
+  * Regression: 10 original blocks still have guided editors
+  * AddBlockPanel: 11 blocks total (10 + hotspot)
+  * Alt text fallback: title → 'Gambar hotspot'
+  * Hotspot without body: title only, no empty paragraph
+- CI workflow updated: hotspot-qa.test.tsx added to vitest job
+- Patch-1 NOT needed — first push CI was green on run 27875781401
+
+Stage Summary:
+- Files baru: src/__tests__/hotspot-qa.test.tsx (28 tests)
+- Files modified: .github/workflows/ci.yml (+1 line)
+- Local gates: tsc 0 errors, normalize 0 sigs, build ok
+- Total hotspot tests: 83 (16 image + 28 QA + 8 add-item + 15 guards + 16 roundtrip)
+- Sprint 8.9A / 4A: PASS / CLOSED / PASS_CI
+
+---
+Task ID: 8.9A-Closure
+Agent: Super Z (main)
+Task: Sprint 8.9A / 4A closure documentation sync
+
+Work Log:
+- Senior Review 8.9A: TECHNICAL PASS / CI VERIFIED.
+- CI Run ID: 27875781401 — 3/3 jobs success
+- Updated SYSTEM_CLOSURE_MATRIX.md with Sprint 8.9A closure table (22 gates)
+- worklog.md: appended 8.9A + 8.9A-Closure entries
+- Zero source code changes — pure documentation sync
+- Sprint 8.9A / 4A: PASS / CLOSED / PASS_CI
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: 60a53a1beaa19d601ea7ffdf285fb85a2b4d164e
+- CI run: 27875781401
+- Sprint 8.9A / 4A overall: ✅ PASS / CLOSED / PASS_CI
+- All Sprints 8.1 → 8.9A now CLOSED with PASS_CI status.
