@@ -171,13 +171,23 @@ di HotspotImageRenderer.
 
 ### Block Definition Registry
 
+Registry entry harus mengikuti `BlockDefinitionMeta` dari
+`src/core/registry/BlockDefinitionRegistry/types.ts`:
+
 ```ts
 {
   type: 'hotspot-image',
-  displayName: 'Gambar Interaktif',
-  personality: 'interactive',
+  name: 'Gambar Interaktif',
   icon: '📍',
-  canAddToPage: (page) => page.templateType !== 'cover',
+  category: 'interactive',
+  personality: 'activation',  // BlockPersonality: 'understanding' | 'discussion' | 'reflection' | 'assessment' | 'activation' | 'structure'
+  description: 'Gambar dengan titik interaktif yang membuka kartu penjelasan',
+  capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
+  defaultLayout: { position: 'flow' },
+  usedInTemplates: ['materi', 'game'],
+  propertySchema: HOTSPOT_IMAGE_PROPERTY_SCHEMA,  // defined in property-schemas/
+  estimatedHeight: { A: 420, B: 420, C: 420 },
+  addable: true,  // appears in AddBlockPanel
   createDefault: () => ({
     type: 'hotspot-image',
     title: 'Gambar Interaktif',
@@ -189,6 +199,16 @@ di HotspotImageRenderer.
   }),
 }
 ```
+
+**Catatan tipe:** `BlockDefinitionMeta` tidak punya field `displayName` atau
+`canAddToPage`. Field yang valid: `name`, `icon`, `category`, `personality`,
+`description`, `capabilities`, `defaultLayout`, `usedInTemplates`,
+`propertySchema`, `estimatedHeight`, `addable`, `createDefault`.
+
+`BlockPersonality` yang valid: `'understanding' | 'discussion' | 'reflection' | 'assessment' | 'activation' | 'structure'` — tidak ada `'interactive'`.
+
+`BlockCapabilities` yang relevan untuk hotspot:
+`{ ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true }`
 
 ### TEACHER_ADDABLE_BLOCKS
 
