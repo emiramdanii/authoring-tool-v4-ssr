@@ -535,6 +535,33 @@ Exact-SHA CI run `27865099925` on SHA `7ec3ef93c1658f846ad55cde57a4e1d95cea4e18`
 | Exact SHA | `PASS_CI` | `7ec3ef93c1658f846ad55cde57a4e1d95cea4e18` verified in CI log |
 | CI Run | `PASS_CI` | `27865099925` — 3/3 jobs success (Test, TypeScript gate, Build) |
 
+## Sprint 8.8B / 3B Closure (Hotspot Image Minimal Vertical Slice)
+
+Source SHA `a6b2e835640baa5a2f85aa60935fa94530be4ec8` + Patch-1 `834ff28a5c0839fd7f457feca77f5644b4be84fc`.
+CI run `27872069224` (on Patch-1 SHA) — 3/3 jobs success.
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| HotspotImageBlock type exists | `PASS_CI` | `src/core/schema/types/blocks.ts` — interface with image{url,alt}, hotspots[{id,x,y,label,title,body,icon,color}], accentColor |
+| Block definition in registry | `PASS_CI` | `definitions.ts` — name='Gambar Interaktif', category='interactive', personality='activation', addable=true |
+| createDefault produces valid block | `PASS_CI` | `hotspot-image.test.ts` — 1 hotspot at center (50,50), label='1' |
+| Guided editor with preset 3×3 positions | `PASS_CI` | `hotspot-image.test.ts` — 9 options: 15,15 / 50,15 / 85,15 / 15,50 / 50,50 / 85,50 / 15,85 / 50,85 / 85,85 |
+| Guided editor sub-fields | `PASS_CI` | `hotspot-image.test.ts` — label, posisi, title, body, icon, color |
+| HotspotImageRenderer.tsx | `PASS_CI` | `src/core/renderer/blocks/HotspotImageRenderer.tsx` — image + hotspot buttons + click-to-open card + keyboard nav |
+| Export parity (PageRenderer auto-parity) | `PASS_CI` | `RendererLazy.tsx` — 'hotspot-image' in LAZY_RENDERER_MAP |
+| Security: javascript: URL rejected | `PASS_CI` | `hotspot-image.test.ts` — renderer checks startsWith('javascript:') → safeImageUrl='' |
+| Security: body is plain text (no dangerouslySetInnerHTML) | `PASS_CI` | `hotspot-image.test.ts` — body rendered via {activeHs.body} (React auto-escapes) |
+| hotspot-image in TEACHER_ADDABLE_BLOCKS | `PASS_CI` | `hotspot-image.test.ts` — 11 blocks total (10 original + hotspot) |
+| Contract guards updated (8.8B-Patch-1) | `PASS_CI` | `hotspot-contract-guards.test.ts` — assertions flipped from NOT→IS for all 3 checks |
+| 10 original curated blocks stable (regression) | `PASS_CI` | `hotspot-image.test.ts` — all 10 still have guided editors |
+| tsc 0 errors | `PASS_CI` | `npx tsc --noEmit` returns 0 |
+| normalize-ts-errors 0 sigs | `PASS_CI` | baseline 0 signatures / 0 occurrences |
+| Build success | `PASS_CI` | `npm run build` exit code 0 |
+| 8.8B tests total | `PASS_CI` | 16 new tests (hotspot-image.test.ts) + 15 updated (hotspot-contract-guards.test.ts) — all CI success |
+| Exact SHA (source) | `PASS_CI` | `a6b2e835640baa5a2f85aa60935fa94530be4ec8` |
+| Exact SHA (Patch-1) | `PASS_CI` | `834ff28a5c0839fd7f457feca77f5644b4be84fc` |
+| CI Run | `PASS_CI` | `27872069224` — 3/3 jobs success (Test, TypeScript gate, Build) |
+
 ## Cara Memperbarui Matriks Ini
 
 - Update matriks setiap sprint yang menutup lubang atau menemukan
