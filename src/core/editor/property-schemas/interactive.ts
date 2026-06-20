@@ -193,3 +193,27 @@ export const CHECKLIST_PROPERTY_SCHEMA: PropertySchema = {
     { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'c' },
   ],
 };
+
+// Sprint 8.8B / 3B: Hotspot Image property schema
+export const HOTSPOT_IMAGE_PROPERTY_SCHEMA: PropertySchema = {
+  blockType: 'hotspot-image',
+  groups: [
+    { key: 'content', label: 'Konten', icon: 'Type' },
+    { key: 'style', label: 'Tampilan', icon: 'Palette' },
+  ],
+  properties: [
+    { key: 'title', type: 'text', label: 'Judul', group: 'content' },
+    { key: 'image', type: 'json', label: 'Gambar (URL + Alt)', group: 'content' },
+    {
+      key: 'hotspots', type: 'array', label: 'Hotspot', group: 'content',
+      fields: [
+        { key: 'label', label: 'Label', type: 'text', placeholder: '1' },
+        { key: 'title', label: 'Judul Kartu', type: 'text' },
+        { key: 'body', label: 'Isi Kartu', type: 'textarea' },
+        { key: 'icon', label: 'Ikon', type: 'icon' },
+        { key: 'color', label: 'Warna', type: 'color' },
+      ],
+    },
+    { key: 'accentColor', type: 'color', label: 'Warna Aksen', group: 'style', defaultValue: 'y' },
+  ],
+};

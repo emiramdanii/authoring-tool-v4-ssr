@@ -53,6 +53,8 @@ import {
   ACCORDION_PROPERTY_SCHEMA,
   INFOGRAFIS_PROPERTY_SCHEMA,
 } from '../../editor/property-schemas';
+// Sprint 8.8B: direct import from interactive.ts (avoids barrel re-export resolution issue)
+import { HOTSPOT_IMAGE_PROPERTY_SCHEMA } from '../../editor/property-schemas/interactive';
 
 // ═══════════════════════════════════════════════════════════════════
 // BLOCK DEFINITIONS (renderer-free)
@@ -942,6 +944,30 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
       title: 'Infografis',
       cards: [{ icon: '📊', title: 'Kartu 1', body: 'Deskripsi kartu infografis', stat: '100', color: 'c' }],
       accentColor: 'c',
+    }),
+  },
+  // Sprint 8.8B / 3B: Hotspot Image block
+  'hotspot-image': {
+    type: 'hotspot-image',
+    name: 'Gambar Interaktif',
+    icon: '📍',
+    category: 'interactive',
+    personality: 'activation',
+    description: 'Gambar dengan titik interaktif yang membuka kartu penjelasan',
+    capabilities: { ...DEFAULT_CAPABILITIES, interactive: true, variants: ['A'], handlesCompression: true },
+    defaultLayout: { position: 'flow' },
+    usedInTemplates: ['materi', 'game'],
+    propertySchema: HOTSPOT_IMAGE_PROPERTY_SCHEMA,
+    estimatedHeight: { A: 420, B: 420, C: 420 },
+    addable: true,
+    createDefault: () => ({
+      type: 'hotspot-image',
+      title: 'Gambar Interaktif',
+      image: { url: '', alt: '' },
+      hotspots: [
+        { id: 'hs-1', x: 50, y: 50, label: '1', title: 'Titik 1', body: '', icon: '📍', color: 'y' },
+      ],
+      accentColor: 'y',
     }),
   },
 };

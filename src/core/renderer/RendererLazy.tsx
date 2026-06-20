@@ -46,6 +46,8 @@ const LazyTrueFalseGameRenderer = lazy(() => import('./blocks/TrueFalseGameRende
 const LazyDragDropGameRenderer = lazy(() => import('./blocks/DragDropGameRenderer').then(m => ({ default: m.DragDropGameRenderer })));
 const LazyCrosswordGameRenderer = lazy(() => import('./blocks/CrosswordGameRenderer').then(m => ({ default: m.CrosswordGameRenderer })));
 const LazyTeamBuzzerGameRenderer = lazy(() => import('./blocks/TeamBuzzerGameRenderer').then(m => ({ default: m.TeamBuzzerGameRenderer })));
+// Sprint 8.8B / 3B: Hotspot Image
+const LazyHotspotImageRenderer = lazy(() => import('./blocks/HotspotImageRenderer').then(m => ({ default: m.HotspotImageRenderer })));
 
 // ── Map of lazy renderers ─────────────────────────────────────────
 // Key = block type string, Value = lazy-loaded component
@@ -82,6 +84,7 @@ export const LAZY_RENDERER_MAP: Record<string, React.LazyExoticComponent<Compone
   'drag-drop-game': LazyDragDropGameRenderer,
   'crossword-game': LazyCrosswordGameRenderer,
   'team-buzzer-game': LazyTeamBuzzerGameRenderer,
+  'hotspot-image': LazyHotspotImageRenderer,
 };
 
 // ── Fallback component while loading ──────────────────────────────

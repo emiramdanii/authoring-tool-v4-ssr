@@ -48,6 +48,7 @@ import type {
   TabIconsBlock,
   AccordionBlock,
   InfografisBlock,
+  HotspotImageBlock,
 } from './blocks';
 
 import type { BaseBlock } from './base';
@@ -100,6 +101,7 @@ export type SchemaBlock =
   | TabIconsBlock
   | AccordionBlock
   | InfografisBlock
+  | HotspotImageBlock
   | BaseBlock;
 
 // ── Tab Definition ──────────────────────────────────────────────

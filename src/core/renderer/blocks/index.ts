@@ -58,3 +58,5 @@ export {
 } from './PremiumBlockEffects';
 export { OverflowIndicator } from './OverflowIndicator';
 export { RichText, hasHtmlTags, stripHtmlTags } from './RichText';
+// Sprint 8.8B / 3B: Hotspot Image
+export { HotspotImageRenderer } from './HotspotImageRenderer';

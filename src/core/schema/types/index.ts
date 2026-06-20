@@ -60,6 +60,7 @@ export type {
   TabIconsBlock,
   AccordionBlock,
   InfografisBlock,
+  HotspotImageBlock,
 } from './blocks';
 
 export type {

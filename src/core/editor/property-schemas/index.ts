@@ -62,6 +62,7 @@ export {
   RODAGAME_PROPERTY_SCHEMA,
   REVEAL_PROPERTY_SCHEMA,
   CHECKLIST_PROPERTY_SCHEMA,
+  HOTSPOT_IMAGE_PROPERTY_SCHEMA,
 } from './interactive';
 
 // BSNP pedagogical schemas

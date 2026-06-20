@@ -1266,6 +1266,63 @@ const GUIDED_EDITOR_REGISTRY: Record<string, GuidedEditorSchema> = {
     ],
   },
 
+  // ── Sprint 8.8B / 3B: Hotspot Image Guided Editor ─────────────
+  // V1 uses preset 3×3 grid positions (9 positions mapped to x,y percent).
+  // NOT raw X/Y — per HOTSPOT-IMAGE-CONTRACT.md Patch-1.
+  // body is plain text — NO dangerouslySetInnerHTML in renderer.
+  // image.url is validated against javascript: prefix in the guided editor
+  // via a helpText warning + the renderer rejects javascript: at render time.
+  'hotspot-image': {
+    blockType: 'hotspot-image',
+    displayName: 'Gambar Interaktif',
+    description: 'Gambar dengan titik interaktif yang membuka kartu penjelasan',
+    icon: '📍',
+    fields: [
+      { key: 'title', label: 'Judul', type: 'text', placeholder: 'Contoh: Bagian Tubuh Manusia' },
+      // image is a nested object — guided editor exposes url + alt as flat fields
+      // via the patch mechanism (image.url, image.alt)
+      { key: 'image.url', label: 'URL Gambar', type: 'text', required: true, helpText: 'Tempel tautan gambar. Tidak boleh javascript: URL.', placeholder: 'https://contoh.com/gambar.jpg' },
+      { key: 'image.alt', label: 'Alt Text', type: 'text', helpText: 'Deskripsi singkat gambar untuk aksesibilitas' },
+      {
+        key: 'hotspots',
+        label: 'Titik Interaktif',
+        type: 'array',
+        maxItems: 8,
+        helpText: 'Maksimal 8 hotspot. Pilih posisi dari grid 3×3.',
+        fields: [
+          { key: 'label', label: 'Label', type: 'text', required: true, placeholder: '1, 2, 3... atau A, B, C...' },
+          {
+            key: 'posisi',
+            label: 'Posisi',
+            type: 'select',
+            required: true,
+            helpText: 'Pilih posisi hotspot di gambar',
+            options: [
+              { label: 'Kiri Atas', value: '15,15' },
+              { label: 'Tengah Atas', value: '50,15' },
+              { label: 'Kanan Atas', value: '85,15' },
+              { label: 'Kiri Tengah', value: '15,50' },
+              { label: 'Tengah', value: '50,50' },
+              { label: 'Kanan Tengah', value: '85,50' },
+              { label: 'Kiri Bawah', value: '15,85' },
+              { label: 'Tengah Bawah', value: '50,85' },
+              { label: 'Kanan Bawah', value: '85,85' },
+            ],
+          },
+          { key: 'title', label: 'Judul Kartu', type: 'text', placeholder: 'Judul penjelasan hotspot' },
+          { key: 'body', label: 'Isi Kartu', type: 'textarea', helpText: 'Teks penjelasan (plain text, bukan HTML)', placeholder: 'Penjelasan singkat...' },
+          { key: 'icon', label: 'Ikon', type: 'icon' },
+          { key: 'color', label: 'Warna', type: 'color', options: ACCENT_COLOR_OPTIONS },
+        ],
+      },
+      { key: 'accentColor', label: 'Warna Aksen', type: 'color', options: ACCENT_COLOR_OPTIONS, defaultValue: 'y' },
+    ],
+    sections: [
+      { key: 'content', label: 'Isi Utama', fieldKeys: ['title', 'image.url', 'image.alt', 'hotspots'] },
+      { key: 'appearance', label: 'Tampilan', fieldKeys: ['accentColor'], collapsed: true },
+    ],
+  },
+
   // ── D8 P3B: Roda Game Guided Editor ────────────────────────────
   // Only fields the renderer actually reads are exposed.
   // S2J.3: accentColor now exposed — RodaGameRenderer reads it for wrapper/progress.

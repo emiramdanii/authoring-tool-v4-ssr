@@ -68,6 +68,8 @@ export default function AddBlockPanel() {
     'materi-section', 'def-box', 'kuis', 'diskusi',
     'refleksi', 'sortir-game', 'rangkuman', 'motivasi',
     'gambar', 'roda-game',
+    // Sprint 8.8B / 3B: hotspot-image now has full vertical slice
+    'hotspot-image',
   ], []);
 
   // ── Popular blocks for quick-access grid (Sederhana only) ──

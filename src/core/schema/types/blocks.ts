@@ -773,3 +773,25 @@ export interface MateriBlokBlock extends BaseBlock {
   /** Group name for tab organization — blocks with same tabGroup go into the same tab */
   tabGroup?: string;
 }
+
+// ── Hotspot Image Block (Sprint 8.8B / 3B) ──────────────────────
+
+export interface HotspotImageBlock extends BaseBlock {
+  type: 'hotspot-image';
+  title?: string;
+  image: {
+    url: string;
+    alt?: string;
+  };
+  hotspots: Array<{
+    id: string;
+    x: number;   // percent 0–100
+    y: number;   // percent 0–100
+    label: string;
+    title?: string;
+    body?: string;  // plain text, NOT HTML
+    icon?: string;
+    color?: 'y' | 'c' | 'g' | 'p' | 'o' | 'r';
+  }>;
+  accentColor?: string;
+}
