@@ -2691,3 +2691,50 @@ Stage Summary:
 - CI run: 27875781401
 - Sprint 8.9A / 4A overall: ✅ PASS / CLOSED / PASS_CI
 - All Sprints 8.1 → 8.9A now CLOSED with PASS_CI status.
+
+---
+Task ID: 8.9B / 4B
+Agent: Super Z (main)
+Task: Sprint 8.9B / 4B — Curated Block Registry Single Source
+
+Work Log:
+- Senior Review 8.9A note: test TEACHER_ADDABLE_BLOCKS still used array copy, not shared constant.
+- Audited all copies: found 5 locations with manual block lists (AddBlockPanel + 4 test files).
+- flow-guru-gate.test.ts had STALE copy (only 10 blocks, missing hotspot-image).
+- Created src/core/registry/teacher-curated-blocks.ts:
+  * TEACHER_ADDABLE_BLOCKS (11 blocks)
+  * POPULAR_BLOCK_TYPES (10 blocks — hotspot NOT popular, intentional)
+  * ORIGINAL_TEACHER_BLOCKS (10 blocks — first 10, for regression)
+  * isTeacherAddableBlock(type) + isPopularBlock(type) helpers
+- Updated AddBlockPanel.tsx: removed local useMemo copies, imports shared constant.
+- Updated 4 test files: removed local copies, imports shared + ORIGINAL_TEACHER_BLOCKS.
+- Created curated-block-registry.test.ts (14 tests): counts, guided editors, registry,
+  addable flag, subset, hotspot addable/not popular, original 10, helpers.
+- CI workflow updated: curated-block-registry.test.ts added.
+- Patch-1 NOT needed — first push CI was green on run 27876918765.
+
+Stage Summary:
+- Files baru: src/core/registry/teacher-curated-blocks.ts, src/__tests__/curated-block-registry.test.ts
+- Files modified: AddBlockPanel.tsx, flow-guru-gate.test.ts, hotspot-contract-guards.test.ts,
+  hotspot-image.test.ts, hotspot-qa.test.tsx, .github/workflows/ci.yml
+- Local gates: tsc 0 errors, normalize 0 sigs, build ok, 87 tests pass (5 files)
+- Sprint 8.9B / 4B: PASS / CLOSED / PASS_CI
+
+---
+Task ID: 8.9B-Closure
+Agent: Super Z (main)
+Task: Sprint 8.9B / 4B closure documentation sync
+
+Work Log:
+- CI Run ID: 27876918765 — 3/3 jobs success
+- Updated SYSTEM_CLOSURE_MATRIX.md with Sprint 8.9B closure table (18 gates)
+- worklog.md: appended 8.9B + 8.9B-Closure entries
+- Zero source code changes — pure documentation sync
+- Sprint 8.9B / 4B: PASS / CLOSED / PASS_CI
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: a8044cbe5d137bd2c2e18711f496ad7f3a774bff
+- CI run: 27876918765
+- Sprint 8.9B / 4B overall: ✅ PASS / CLOSED / PASS_CI
+- All Sprints 8.1 → 8.9B now CLOSED with PASS_CI status.

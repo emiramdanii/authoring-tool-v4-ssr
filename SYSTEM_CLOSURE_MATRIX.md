@@ -621,3 +621,28 @@ CI run `27875781401` on SHA `60a53a1beaa19d601ea7ffdf285fb85a2b4d164e` — 3/3 j
 | 8.9A tests total | `PASS_CI` | 28 new tests (hotspot-qa.test.tsx) — all CI success |
 | Exact SHA | `PASS_CI` | `60a53a1beaa19d601ea7ffdf285fb85a2b4d164e` |
 | CI Run | `PASS_CI` | `27875781401` — 3/3 jobs success |
+
+## Sprint 8.9B / 4B Closure (Curated Block Registry Single Source)
+
+CI run `27876918765` on SHA `a8044cbe5d137bd2c2e18711f496ad7f3a774bff` — 3/3 jobs success.
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Shared constant file created | `PASS_CI` | `src/core/registry/teacher-curated-blocks.ts` — TEACHER_ADDABLE_BLOCKS (11) + POPULAR_BLOCK_TYPES (10) + ORIGINAL_TEACHER_BLOCKS (10) + helpers |
+| AddBlockPanel uses shared constant | `PASS_CI` | Local useMemo copies removed, imports from shared module |
+| No more manual copies in tests | `PASS_CI` | 4 test files updated: flow-guru-gate, hotspot-contract-guards, hotspot-image, hotspot-qa — all import shared constant |
+| flow-guru-gate STALE copy fixed | `PASS_CI` | Was 10 blocks (missing hotspot) → now imports shared (11 blocks) |
+| TEACHER_ADDABLE_BLOCKS = 11 | `PASS_CI` | `curated-block-registry.test.ts` — verified |
+| POPULAR subset of ADDABLE | `PASS_CI` | `curated-block-registry.test.ts` — all popular types in addable |
+| All addable have guided editor | `PASS_CI` | `curated-block-registry.test.ts` — hasGuidedEditor true for all 11 |
+| All addable in BLOCK_DEFINITIONS | `PASS_CI` | `curated-block-registry.test.ts` — all 11 defined |
+| All addable have addable !== false | `PASS_CI` | `curated-block-registry.test.ts` — verified |
+| hotspot-image addable but NOT popular | `PASS_CI` | `curated-block-registry.test.ts` — in addable, not in popular |
+| 10 original blocks stable | `PASS_CI` | `curated-block-registry.test.ts` — all 10 in TEACHER_ADDABLE_BLOCKS |
+| Helper functions work | `PASS_CI` | `curated-block-registry.test.ts` — isTeacherAddableBlock + isPopularBlock |
+| tsc 0 errors | `PASS_CI` | `npx tsc --noEmit` returns 0 |
+| normalize 0 sigs | `PASS_CI` | baseline 0 signatures |
+| Build success | `PASS_CI` | `npm run build` exit 0 |
+| 8.9B tests total | `PASS_CI` | 14 new tests (curated-block-registry.test.ts) — all CI success |
+| Exact SHA | `PASS_CI` | `a8044cbe5d137bd2c2e18711f496ad7f3a774bff` |
+| CI Run | `PASS_CI` | `27876918765` — 3/3 jobs success |
