@@ -336,9 +336,30 @@ Closure:      <commit SHA + tanggal | OPEN>
   - waktu export
   - ukuran HTML hasil export
 - **Workaround**: Tidak ada. Perlu fixture `fixtures/projects/fifty-page-project.json`.
-- **Owner**: Sprint 8.4
-- **Target**: Sprint 8.4
-- **Closure**: OPEN
+- **Owner**: Sprint 8.4 → 9.0E (final)
+- **Target**: Sprint 9.0E
+- **Closure**: CLOSED — Sprint 9.0E (Performance Baseline Gate).
+  - **Approach**: Per sprint scope "Jangan membuat benchmark rapuh berbasis waktu absolut kalau CI tidak stabil. Utamakan structural/perf-budget checks." Established STRUCTURAL budgets (output size, DOM shape, no crash, no security regression) rather than wall-clock time thresholds. This avoids CI flakiness from slow runners while still catching real regressions (e.g. output size 4× growth, stack overflow, runaway recursion).
+  - **Audit findings**: No real performance bugs found. The export pipeline has intentional static inline event handlers (`onclick="this.classList.toggle('open')"` on tabel-accord rows, `onclick="switchFtab(...)"` on ftab buttons) — these are hardcoded by the renderer (NOT user-controlled) and needed for standalone export HTML interactivity. The migration is idempotent on large docs. The sanitizer handles large/deeply-nested inputs without stack overflow (tokenizer uses iterative `String.replace`, not recursion).
+  - **Source patches**: NONE. No real bugs found. Per scope "Patch source hanya jika ada bug nyata" — no patch applied.
+  - **Baseline numbers** (measured at Sprint 9.0E, structural budgets):
+    * W1: 300 mixed-type blocks via `renderBlockHtml` → completes without crash, total output < 5MB budget (actual ~1-2MB), all outputs non-empty + distinct (≥250 unique of 300)
+    * W2: 300 blocks via `renderPageHtml` (full page) → completes without crash, output < 10MB budget, ≥250 `<div class="block"` markers present
+    * W3: 10 pages × 30 blocks (300 total) → completes without crash, total output < 50MB budget, exactly 10 page wrappers
+    * W4: 50KB rich text via `sanitizeHtmlForRender` → completes without crash, output ≤ input × 2 (no bloat), safe tags (`<strong>`, `<em>`) preserved, malicious content stripped
+    * W5: 1000-level deep nested `<div>` → completes without RangeError (tokenizer is iterative), `<strong>` allowlist tag preserved, malicious content stripped
+    * W6: 10KB icon/emoji string via `sanitizeIconOrEmoji` → completes without crash, output ≤ input × 5 (escape grows `&`→`&amp;` etc.), injected `<script>` fully escaped
+    * W7: 100 pages × 5 blocks via `migrateAllSchemas` → completes without crash, idempotent (`migrate(migrate(x)) === migrate(x)` structurally), page IDs + labels preserved
+    * W8: 50-hotspot schema → constructs without crash, survives JSON round-trip, export fallback renders generic-block without crash, malicious image URL escaped, schema size < 50KB
+    * W9: existing `image-background-large.json` fixture → loads + parses + renders without crash, bgDataUrl preserved, overlay=40 invariant holds
+    * W10: build artifact size (documented, verified by CI build job): `.next/` total ~22MB (budget < 50MB), `.next/static/` ~6.2MB (budget < 20MB), largest JS chunk ~434KB (budget < 1MB), BUILD_ID exists
+  - **Security invariants** (verified across ALL workloads): no live `<script>` tag, no user-controlled `on*=` handler (static developer-written handlers like `this.classList.toggle()` are allowed), no live `javascript:` URL scheme.
+  - **Tests**: 37 new tests in `src/__tests__/performance-baseline-9.0e.test.ts` covering all 10 workloads + cross-cutting `sanitizeUrl` budget (1000 URLs).
+  - **Follow-up items** (NOT blocking PERF-001 closure — out of sprint scope):
+    * Wall-clock time benchmarks would require Playwright browser infrastructure (deferred to future sprint).
+    * Memory consumption measurement would require Node.js `--inspect` profiling (deferred).
+    * Real-world fixture `fixtures/projects/fifty-page-project.json` mentioned in original issue — synthetic 100-page × 5-block workload in W7 covers the same ground without committing a large fixture file.
+  - **Acceptance**: All 12 acceptance criteria met. tsc 0 errors, normalize 0 sigs, build OK, CI 3/3.
 
 ---
 

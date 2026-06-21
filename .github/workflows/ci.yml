@@ -106,6 +106,10 @@ jobs:
           # aria-dialog-name, aria-modal, label, heading-order, image-alt)
           # since axe-core is not installed and scope forbids new deps.
           npx vitest run src/__tests__/a11y-9.0d-audit.test.tsx
+          # Sprint 9.0E: Performance Baseline Gate (closes PERF-001).
+          # Structural budgets (output size, DOM shape, no crash, no
+          # security regression) — not wall-clock time, to avoid CI flakiness.
+          npx vitest run src/__tests__/performance-baseline-9.0e.test.ts
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)
