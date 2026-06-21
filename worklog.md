@@ -3457,3 +3457,53 @@ Stage Summary:
 - Release readiness: READY FOR LIMITED RELEASE / FINAL REVIEW
 - Blocker: SEC-001 (PAT revoke — manual user action required before public release)
 - All Sprints 8.1 → 9.0F: CLOSED / PASS_CI
+
+---
+Task ID: OPTIMIZE-LAST-01
+Agent: Super Z (main)
+Task: Lightweight Boot & Dev Startup — 5 optimization patches
+
+Work Log:
+- Patch 1: package.json dev script split
+  * 'dev' now only runs 'next dev' (was: vite build + next dev)
+  * Export build moved to 'dev:full' for when export HTML is needed
+  * Impact: dev startup ~5-10s faster (no export build blocking)
+- Patch 2: Delete next.config.js
+  * next.config.ts is the active config (has Connection:close header,
+    granular vendor splitting, runtime caching)
+  * next.config.js was stale duplicate causing documentation contradiction
+  * Next.js already preferred .ts over .js — deletion is safe
+- Patch 3: StoreInit idle warmup
+  * BlockCapabilityRegistry.getAll() + preloadSounds() moved from
+    synchronous boot to requestIdleCallback (fallback: setTimeout 1500ms)
+  * Critical path now: loadFromStorage + subscriptions + autoFlush only
+  * Warmup runs after first paint, not blocking it
+  * Cleanup handles cancelIdleCallback/clearTimeout on unmount
+  * preloadSounds already gated by isEnabled('soundEffects')=false default
+- Patch 4: PerformanceMonitor dev-only gate
+  * dynamic(() => import(...)) was always created even in production
+  * Now: IS_DEV ? dynamic(...) : () => null
+  * Production builds no longer download the PerformanceMonitor chunk
+- Patch 5: Font diet (5 → 3 Google Fonts)
+  * Removed: Geist, Geist_Mono
+  * Kept: Plus Jakarta Sans (primary sans), Fredoka (display), Nunito (body)
+  * globals.css: --font-sans now maps to Plus Jakarta (was Geist)
+  * --font-geist-sans/mono CSS vars kept for backward compat (mapped to
+    Plus Jakarta / system mono) so existing component styles work
+
+Local verification:
+- tsc 0 errors, normalize 0 sigs
+- 1190/1190 CI-tracked tests pass (52 files)
+- npm run build exit 0, .next/BUILD_ID generated
+- .next/static/ = 6.0MB (was 6.2MB — font diet reduced bundle)
+
+CI: 27912133985 — 3/3 jobs success (Test / TypeScript gate / Build)
+
+Stage Summary:
+- Files modified: package.json (dev script split), src/app/globals.css (font remap),
+  src/app/layout.tsx (remove Geist imports), src/components/authoring/AuthoringTool.tsx
+  (PerformanceMonitor dev gate), src/components/providers/StoreInit.tsx (idle warmup)
+- Files deleted: next.config.js (stale duplicate)
+- Source SHA: fa5959ee75d487f431d8093903157e90ca75787e
+- CI run: 27912133985
+- Sprint OPTIMIZE-LAST-01: PASS / CLOSED / PASS_CI
