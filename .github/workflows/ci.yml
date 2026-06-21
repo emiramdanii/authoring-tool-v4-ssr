@@ -89,6 +89,7 @@ jobs:
           npx vitest run src/__tests__/hotspot-qa.test.tsx
           npx vitest run src/__tests__/curated-block-registry.test.ts
           npx vitest run src/__tests__/addblock-panel-smoke.test.ts
+          npx vitest run src/__tests__/addblock-panel-ui-smoke.test.tsx
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

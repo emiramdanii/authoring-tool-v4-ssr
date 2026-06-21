@@ -250,6 +250,10 @@ const RENDERER_MAP: Record<string, React.ComponentType<any>> = {
   'tab-icons': TabIconsRenderer,
   'accordion': AccordionRenderer,
   'infografis': InfografisRenderer,
+  // Sprint 8.8B / 3B: Hotspot Image renderer
+  'hotspot-image': React.lazy(() =>
+    import('../renderer/blocks/HotspotImageRenderer').then(m => ({ default: m.HotspotImageRenderer }))
+  ),
 };
 
 // ═══════════════════════════════════════════════════════════════════
