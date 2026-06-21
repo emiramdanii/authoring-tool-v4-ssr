@@ -111,9 +111,9 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Area**: persistence
 - **Reproduction**: `migrateAllPages()` dipanggil saat load. Tidak ada test yang memverifikasi migrate(docs) === migrate(migrate(docs)) untuk semua skenario migrasi (`_migrationVersion < 1` overlay merge, `templateData.schemaScreen → page.schema` promotion, dll).
 - **Workaround**: Manual test saja. Tidak ada bug yang terlihat, tetapi tidak ada guarantee.
-- **Owner**: Sprint 8.2S-3 (schema versioning)
-- **Target**: Sprint 8.2S-3
-- **Closure**: OPEN
+- **Owner**: Sprint 9.0A
+- **Target**: Sprint 9.0A
+- **Closure**: CLOSED — Sprint 9.0A. 34 idempotency tests in `src/__tests__/migration-idempotency.test.ts` verify: migrate(migrate(doc)) === migrate(doc) for legacy/current/hotspot/extra-fields docs, real fixtures (5), per-page schema migration (migrateSchema), migrateAllSchemas, triple migration stability, invalid/minimal doc handling. No bugs found — migration is idempotent. CI run on SHA to be verified after push.
 
 ---
 
