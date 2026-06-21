@@ -765,5 +765,5 @@ are stubbed to keep module graph loadable) and the REAL `useDirtyStore`
 | 9.0B tests total | `PASS_CI` | 18 (autosave-telemetry.test.ts) + 12 (autosave-persistence-real.test.ts) = 30 tests — all CI success |
 | Exact SHA (9.0B initial) | `PASS_CI` | `44ca23de8f750aa312a392732e6d5f4fccc2bf0a` |
 | CI Run (9.0B initial) | `PASS_CI` | `27897850049` — 3/3 jobs success |
-| Exact SHA (9.0B-Patch-1) | `PASS_CI` | _filled after push_ |
-| CI Run (9.0B-Patch-1) | `PASS_CI` | _filled after push_ |
+| Exact SHA (9.0B-Patch-1) | `PASS_CI` | `96a5127c0e7d62b13f9ebab2d5b8a3aa93b87c0d` |
+| CI Run (9.0B-Patch-1) | `PASS_CI` | `27898825800` — 3/3 jobs success (Test / TypeScript gate / Build) |
