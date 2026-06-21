@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fredoka, Nunito, Plus_Jakarta_Sans } from "next/font/google";
+// OPTIMIZE-LAST-01: Font diet — removed Geist + Geist Mono (5 → 3 fonts).
+// Plus Jakarta Sans now serves as the primary --font-sans. Fredoka and
+// Nunito remain for schema-driven design system (display + body variants).
+import { Fredoka, Nunito, Plus_Jakarta_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { A11yProvider } from "@/components/providers/A11yProvider";
 import { StoreInit } from "@/components/providers/StoreInit";
@@ -12,14 +15,15 @@ import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// OPTIMIZE-LAST-01: Plus Jakarta Sans is now the primary sans-serif.
+// The --font-geist-sans CSS var is kept for backward compat (mapped to
+// Plus Jakarta in globals.css) so existing component styles that reference
+// var(--font-sans) keep working without a sweeping refactor.
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 // Design system fonts for schema-driven rendering
@@ -34,13 +38,6 @@ const nunito = Nunito({
   variable: "--font-nunito",
   subsets: ["latin"],
   weight: ["300", "400", "600", "700", "800", "900"],
-  display: "swap",
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -113,7 +110,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${nunito.variable} ${plusJakarta.variable} antialiased bg-background text-foreground`}
+        className={`${fredoka.variable} ${nunito.variable} ${plusJakarta.variable} antialiased bg-background text-foreground`}
       >
         <AppErrorBoundary>
           <SafeModeBanner />

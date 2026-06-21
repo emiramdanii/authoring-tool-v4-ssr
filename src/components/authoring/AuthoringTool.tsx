@@ -17,7 +17,12 @@ import RecoveryDialog, { setDirtyExitFlag, clearDirtyExitFlag } from '@/componen
 // Sprint 8.5A: Boot recovery orchestrator — runs once at app boot to detect
 // incomplete transactions, integrity issues, and crash-prone blocks.
 import { bootRecoveryOrchestrator, type BootReport } from '@/core/editor/boot-recovery';
-const PerformanceMonitor = dynamic(() => import('@/components/shared/PerformanceMonitor'), { ssr: false });
+// OPTIMIZE-LAST-01: PerformanceMonitor is dev-only. Gate the dynamic import
+// itself so production builds don't download the chunk at all.
+const IS_DEV = process.env.NODE_ENV === 'development';
+const PerformanceMonitor = IS_DEV
+  ? dynamic(() => import('@/components/shared/PerformanceMonitor'), { ssr: false })
+  : () => null;
 
 // Lazy-load panels — each panel is only loaded when first rendered
 const Dashboard = React.lazy(() => import('./Dashboard'));

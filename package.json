@@ -3,7 +3,8 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "vite build --config vite.export.config.ts 2>/dev/null; cross-env NODE_OPTIONS=--max-old-space-size=2048 next dev -p 3000",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=2048 next dev -p 3000",
+  "dev:full": "vite build --config vite.export.config.ts 2>/dev/null; cross-env NODE_OPTIONS=--max-old-space-size=2048 next dev -p 3000",
     "build:app": "vite build --config vite.export.config.ts && cross-env NODE_OPTIONS=--max-old-space-size=2048 next build",
     "build": "npm run build:app",
     "start": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=2048 node node_modules/.bin/next start -p 8080",
