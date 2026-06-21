@@ -92,6 +92,9 @@ jobs:
           npx vitest run src/__tests__/addblock-panel-ui-smoke.test.tsx
           npx vitest run src/__tests__/migration-idempotency.test.ts
           npx vitest run src/__tests__/autosave-telemetry.test.ts
+          # Sprint 9.0B-Patch-1: real saveToStorage() failure/success path
+          # + real dirty-store saveFailed() keeps dirty=true (closes RC1+RC2).
+          npx vitest run src/__tests__/autosave-persistence-real.test.ts
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

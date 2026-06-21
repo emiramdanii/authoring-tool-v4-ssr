@@ -2954,3 +2954,73 @@ Stage Summary:
 - Sprint 9.0B overall: ✅ PASS / CLOSED / PASS_CI
 - RECOV-002: CLOSED ✅
 - All Sprints 8.1 → 9.0B now CLOSED with PASS_CI status.
+
+---
+Task ID: 9.0B-Patch-1
+Agent: Super Z (main)
+Task: Sprint 9.0B-Patch-1 — Real saveToStorage() failure/success path tests (closes RC1+RC2)
+
+Work Log:
+- Senior Review 9.0B verdict: TECHNICAL IMPLEMENTATION PASS / CI VERIFIED / TEST GAP
+  * RC1: autosave-telemetry.test.ts mocked @/store/canva-store entirely →
+    never exercised the REAL saveToStorage() failure path. The 4 failure-reason
+    cases only called recordAutosaveFailure() directly.
+  * RC2: dirty-state protection (saveFailed() keeps dirty=true) was also
+    never tested against the REAL useDirtyStore.
+- Audited persistence-slice.ts saveToStorage() catch block:
+  * Classifies err instanceof RangeError → 'stack-overflow'
+  * Classifies err instanceof DOMException && err.name === 'QuotaExceededError' → 'quota-exceeded'
+  * Classifies err instanceof TypeError → 'serialization-error'
+  * Else → 'unknown'
+  * Calls recordAutosaveFailure(reason, err) + set({ _saveStatus: 'error' })
+  * On RangeError: also clears localStorage entry (corrupted data protection)
+- Audited dirty-store.ts saveFailed(msg):
+  * set({ savingRevision: null, dirty: isDirty(editRevision, lastSavedRevision),
+          saveStatus: 'error', lastError: msg })
+  * dirty stays true (because editRevision > lastSavedRevision)
+- Created src/__tests__/autosave-persistence-real.test.ts (12 tests):
+  * Imports REAL useCanvaStore (only authoring-store + dirty-store stubbed
+    to keep module graph loadable; canva-store itself is REAL).
+  * Uses vi.hoisted localStorage polyfill with __setThrow knob.
+  * IMPORTANT FIX: Force-overwrite globalThis.localStorage even when jsdom
+    has provided its own — otherwise real canva-store.saveToStorage() calls
+    jsdom's localStorage, not our polyfill, and __setThrow never fires.
+  * Test 1: localStorage.setItem throws DOMException('QuotaExceededError') →
+    real saveToStorage() records telemetry (lastReason='quota-exceeded',
+    errorCount=1) + _saveStatus='error' + localStorage NOT written.
+  * Test 2: TypeError throw → lastReason='serialization-error'.
+  * Test 3: RangeError throw → lastReason='stack-overflow' AND corrupted
+    localStorage entry cleared (RangeError branch in catch block).
+  * Test 4: generic Error throw → lastReason='unknown'.
+  * Test 5: After failure, restore localStorage + saveToStorage() succeeds →
+    telemetry cleared (errorCount=0, lastError=null, lastClearedAt!=null) +
+    localStorage written.
+  * Test 6: Multiple consecutive saveToStorage() failures increment errorCount.
+  * Test 7: Mixed failure reasons across real calls classified correctly.
+  * Test 8: Successful save with no prior failure leaves telemetry clean.
+  * Tests 9-12: REAL useDirtyStore (loaded via vi.importActual to bypass
+    the canva-store mock) — saveFailed('msg') keeps dirty=true; saveSucceeded()
+    matching revision clears dirty (proves failure path is NOT a false-clean);
+    saveFailed preserves editRevision (retry can resume); clearError() on
+    still-dirty store keeps dirty=true.
+- Updated .github/workflows/ci.yml: added autosave-persistence-real.test.ts
+  to the test job.
+- Updated KNOWN_ISSUES.md: RECOV-002 closure entry now documents both
+  9.0B (initial) and 9.0B-Patch-1 (closes RC1+RC2) evidence.
+- Updated SYSTEM_CLOSURE_MATRIX.md: Sprint 9.0B closure table expanded
+  with senior review note + 12 new gates for the real path tests.
+
+Local verification:
+- npx vitest run src/__tests__/autosave-persistence-real.test.ts → 12/12 pass
+- npx vitest run src/__tests__/autosave-telemetry.test.ts → 18/18 pass (no regression)
+- All 28 CI-tracked test files pass (457 tests)
+- tsc 0 errors, normalize 0 sigs
+- npm run build → exit 0, .next/BUILD_ID generated
+
+Stage Summary:
+- Files baru: src/__tests__/autosave-persistence-real.test.ts (12 tests, ~487 lines)
+- Files modified: .github/workflows/ci.yml, KNOWN_ISSUES.md, SYSTEM_CLOSURE_MATRIX.md
+- Source code (persistence-slice.ts, autosave-telemetry.ts, dirty-store.ts): UNCHANGED
+- Sprint 9.0B-Patch-1: ready for senior review → final CLOSED / PASS_CI
+- RC1 closed: real saveToStorage() failure path now exercised by 8 tests
+- RC2 closed: real useDirtyStore.saveFailed() keeps dirty=true verified by 4 tests
