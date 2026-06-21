@@ -110,6 +110,11 @@ jobs:
           # Structural budgets (output size, DOM shape, no crash, no
           # security regression) — not wall-clock time, to avoid CI flakiness.
           npx vitest run src/__tests__/performance-baseline-9.0e.test.ts
+          # Sprint 9.0F: dataIdx Fallback Cleanup Gate (closes BLOCK-001).
+          # Verifies resolver priority contract (moduleId > dataIdx),
+          # bounds checks, auto-heal, new-element contract, and source
+          # audit that all dataIdx consumers are documented.
+          npx vitest run src/__tests__/dataidx-9.0f-cleanup.test.ts
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

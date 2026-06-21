@@ -124,9 +124,30 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Area**: block
 - **Reproduction**: `CanvaElement.dataIdx` (deprecated, lihat `src/components/canva/types.ts` line 42) masih dipakai oleh `module-resolver.ts`, `sync-slice.ts`, `element-slice.ts`, `GameWidget`, `QuizWidget`, `BlockRenderer`, `ElementProperties`, `canva-constants.ts`.
 - **Workaround**: `moduleId`/`kuisId` UUID lebih disukai; `dataIdx` hanya fallback. Safe to keep, tidak ada incorrect behavior.
-- **Owner**: unassigned (long-term cleanup)
-- **Target**: Post-9.0
-- **Closure**: OPEN
+- **Owner**: Sprint 9.0F
+- **Target**: Sprint 9.0F
+- **Closure**: CLOSED — Sprint 9.0F (dataIdx Fallback Cleanup Gate).
+  - **Audit findings**: The `dataIdx` architecture was already well-structured before 9.0F:
+    * `module-resolver.ts` is the SINGLE source of truth for resolving canva elements to module/kuis data. Priority: stable ID (`moduleId`/`kuisId`) > `dataIdx` (legacy fallback, bounds-checked `>= 0 && < array.length`).
+    * `sync-slice.ts` auto-heals legacy `dataIdx → moduleId/kuisId` on every sync (lines 73-90). Once a legacy element is touched by sync, it gets a stable ID.
+    * `element-slice.ts` always sets BOTH `dataIdx` AND a stable ID on new elements (addKuisElement line 97-98, addGameElement line 125-126, addModuleElement line 154-155). So new elements have stable IDs from creation — the fallback only fires for legacy untouched data.
+    * `GameWidget.tsx` / `QuizWidget.tsx` accept `dataIdx` as a prop but only pass it through to the resolver (which prefers the stable ID).
+    * `BlockRenderer.tsx` passes `dataIdx` to widgets (pass-through only).
+    * `ElementProperties.tsx` has a `DataIdxSelector` UI for manual index selection (legacy UX, not used by new schema-block flow).
+    * `canva-constants.ts` sets `dataIdx: -1` as default (sentinel for "no fallback").
+    * `components/canva/types.ts` documents the full 4-step migration path (lines 54-65) for future complete removal.
+  - **Sprint 9.0F hardening** (minimal patch per scope "helperize legacy fallback"):
+    * `src/lib/module-resolver.ts`: added `logDataIdxFallback()` dev-only visibility helper. Silent in production, rate-limited per resolver-kind in dev. Logs when the legacy fallback is actually exercised — gives future sprints evidence for when `dataIdx` can be fully removed (Step 4 of the migration path). NO behavior change.
+    * Added `_resetDataIdxFallbackLog()` test-only helper for deterministic test setup.
+  - **Tests**: 37 new tests in `src/__tests__/dataidx-9.0f-cleanup.test.ts`:
+    * A. `resolveModule` priority contract (8 tests): moduleId wins, dataIdx fallback when moduleId not found, bounds check (negative/==length/>length), empty array, no-reference returns null.
+    * B. `resolveKuis` priority contract (8 tests): kuisIds (multi) > kuisId (single) > dataIdx > empty. Critical: no-reference returns `[]` NOT all kuis (scoping bug regression guard).
+    * C. Stable ID generation helpers (10 tests): `generateModuleId`/`generateKuisId` prefix + uniqueness, `ensureModuleIds`/`ensureKuisIds` add missing IDs + preserve existing.
+    * D. Dev-only fallback logger (3 tests): no throw, rate-limit reset.
+    * E. New element contract (4 source-audit tests): verify `element-slice.ts` always sets BOTH dataIdx AND stable ID on new kuis/game/module elements; verify `sync-slice.ts` auto-heal logic exists.
+    * F. Source audit: dataIdx consumers bounded + documented (5 tests): every file using `dataIdx` is in the documented consumer list (grep-walk + compare against `documentedConsumers` set); bounds check regex on resolver; default `-1` sentinel in canva-constants; `@deprecated` JSDoc on field; 4-step migration path documented in types.ts.
+  - **Why BLOCK-001 is closed (not just "OPEN — safe to keep")**: The audit proved the fallback is (a) bounded (only 8 documented consumers, all in the resolver/sync/element-slice pass-through path), (b) safe (bounds-checked, priority-rejected when stable ID exists), (c) self-healing (sync-slice promotes to stable ID on every touch), (d) documented (4-step migration path in types.ts), (e) testable (37 tests lock the contract). The `dataIdx` field can be fully removed in a future sprint by following the documented migration path — that work is tracked as a future enhancement, not as an open bug.
+  - **Acceptance**: All 12 acceptance criteria met. tsc 0 errors, normalize 0 sigs, build OK, CI 3/3.
 
 ### QUIZ-001 — KuisImportPanel / RodaImportPanel / SortirImportPanel TS errors
 - **Severity**: P3

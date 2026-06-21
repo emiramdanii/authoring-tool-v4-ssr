@@ -1,18 +1,62 @@
-// ═════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // MODULE RESOLVER — Stable reference resolution for canva elements
 // Replaces fragile dataIdx (array index) with moduleId/kuisId (UUID)
-// ═════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+//
+// Sprint 9.0F (BLOCK-001 closure): The dataIdx fallback is now wrapped
+// in logDataIdxFallback() — a dev-only visibility helper that logs when
+// the legacy fallback is actually exercised. This gives future sprints
+// evidence for when dataIdx can be fully removed (Step 4 of the
+// migration path documented in components/canva/types.ts lines 54-65).
+//
+// The resolver contract is unchanged:
+//   resolveModule:  moduleId > dataIdx (bounds-checked) > null
+//   resolveKuis:    kuisIds (multi) > kuisId (single) > dataIdx (bounds-checked) > []
+//
+// All new elements (created via element-slice.ts) always set BOTH
+// dataIdx AND a stable ID, so the fallback only fires for legacy data
+// that hasn't been touched since the v4 migration.
+// ═══════════════════════════════════════════════════════════════════
 
 import type { CanvaElement } from '@/components/canva/types';
 import type { KuisItem, Module } from '@/store/authoring/types';
 import { logger } from '@/core/utils/logger';
 
 /**
+ * Dev-only visibility helper for the dataIdx legacy fallback.
+ *
+ * Logs a warning when the resolver actually uses dataIdx (not the
+ * preferred stable ID). This is silent in production and rate-limited
+ * per resolver-kind to avoid console spam.
+ *
+ * Sprint 9.0F: this is the "helperize legacy fallback" hardening.
+ * It does NOT change resolver behavior — only adds visibility for
+ * future removal work.
+ */
+const _dataIdxFallbackLogged = new Set<string>();
+function logDataIdxFallback(kind: 'module' | 'kuis', dataIdx: number): void {
+  if (typeof process === 'undefined' || process.env?.NODE_ENV === 'production') return;
+  if (_dataIdxFallbackLogged.has(kind)) return; // log once per kind per session
+  _dataIdxFallbackLogged.add(kind);
+  logger.warn(
+    'module-resolver',
+    `dataIdx fallback used (kind=${kind}, idx=${dataIdx}). This is a legacy code path — ` +
+    `stable moduleId/kuisId was missing or not found. See BLOCK-001 closure in ` +
+    `KNOWN_ISSUES.md and migration path in components/canva/types.ts.`
+  );
+}
+
+/** Test-only helper: reset the rate-limit set between tests. */
+export function _resetDataIdxFallbackLog(): void {
+  _dataIdxFallbackLogged.clear();
+}
+
+/**
  * Resolve a canva element's data reference to actual module data.
  * Supports both moduleId (stable UUID) and dataIdx (legacy array index).
- * 
+ *
  * Priority: moduleId > dataIdx
- * 
+ *
  * @param el - The canva element with moduleId and/or dataIdx
  * @param allModules - Flat array of all modules from authoring store
  * @returns The resolved module data, or null if not found
@@ -26,12 +70,13 @@ export function resolveModule(
     const found = allModules.find(m => m._id === el.moduleId);
     if (found) return found;
   }
-  
-  // Priority 2: dataIdx (legacy fallback)
+
+  // Priority 2: dataIdx (legacy fallback) — bounds-checked
   if (el.dataIdx != null && el.dataIdx >= 0 && el.dataIdx < allModules.length) {
+    logDataIdxFallback('module', el.dataIdx);
     return allModules[el.dataIdx];
   }
-  
+
   return null;
 }
 
@@ -39,9 +84,9 @@ export function resolveModule(
  * Resolve a quiz element to its quiz data.
  * Supports kuisIds (multiple, preferred for template pages), kuisId (single UUID),
  * and dataIdx (legacy fallback).
- * 
+ *
  * Priority: kuisIds (multi) > kuisId (single) > dataIdx > empty
- * 
+ *
  * @param el - The canva element with kuisId/kuisIds and/or dataIdx
  * @param allKuis - Flat array of kuis items from authoring store
  * @returns The resolved kuis data (scoped to referenced items only)
@@ -62,9 +107,10 @@ export function resolveKuis(
     if (found) return [found];
   }
 
-  // Priority 2: dataIdx (legacy fallback)
+  // Priority 2: dataIdx (legacy fallback) — bounds-checked
   const dataIdx = el.dataIdx ?? -1;
   if (dataIdx >= 0 && dataIdx < allKuis.length) {
+    logDataIdxFallback('kuis', dataIdx);
     return [allKuis[dataIdx]!];
   }
 
