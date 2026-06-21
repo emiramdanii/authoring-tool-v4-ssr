@@ -19,6 +19,8 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { DEFAULT_CP, DEFAULT_ATP, DEFAULT_PETUNJUK, DEFAULT_PENUTUP, DEFAULT_SUARA } from '@/store/authoring/initial-state';
 import { useDirtyStore } from '@/store/dirty-store';
 import { logger } from '@/core/utils/logger';
+// Sprint 9.0B: Autosave failure telemetry
+import { recordAutosaveFailure, clearAutosaveTelemetry, type AutosaveFailureReason } from '@/lib/autosave-telemetry';
 
 // ── Migration version for localStorage data ──────────────────
 // Increment when adding new one-time migration logic.
@@ -132,9 +134,17 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       // _saveStatus is now managed by the revision-based state machine.
       // saveToStorage() is a LOCAL backup — durable save is the DB path.
       set({ _lastSavedAt: Date.now(), _pagesHashAtSave: computePagesHash(cleanPages) });
+      // Sprint 9.0B: Clear autosave telemetry on successful save
+      clearAutosaveTelemetry();
     } catch (err) {
       // Storage full, unavailable, or stack overflow from corrupted data
       logger.warn('CanvaStore', 'Failed to save to localStorage: ' + String(err));
+      // Sprint 9.0B: Record telemetry for autosave failure
+      const reason = err instanceof RangeError ? 'stack-overflow'
+        : err instanceof DOMException && err.name === 'QuotaExceededError' ? 'quota-exceeded'
+        : err instanceof TypeError ? 'serialization-error'
+        : 'unknown';
+      recordAutosaveFailure(reason as AutosaveFailureReason, err);
       // If stack overflow, clear localStorage to break the cycle
       if (err instanceof RangeError) {
         logger.warn('CanvaStore', 'Stack overflow detected — clearing corrupted localStorage data');

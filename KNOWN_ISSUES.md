@@ -232,9 +232,9 @@ Closure:      <commit SHA + tanggal | OPEN>
 - **Area**: error-recovery
 - **Reproduction**: `flushDurableSave` retry sampai clean, tetapi bila semua retry gagal, error hanya di-log. Tidak ada notification UI yang persisten.
 - **Workaround**: User harus cek console atau indikator dirty.
-- **Owner**: Sprint 8.5
-- **Target**: Sprint 8.5
-- **Closure**: OPEN
+- **Owner**: Sprint 9.0B
+- **Target**: Sprint 9.0B
+- **Closure**: CLOSED — Sprint 9.0B. Created `src/lib/autosave-telemetry.ts` with `recordAutosaveFailure(reason, error)`, `getAutosaveTelemetry()`, `clearAutosaveTelemetry()`. Wired into `saveToStorage()` in `persistence-slice.ts`: failures record telemetry with reason classification (quota-exceeded, serialization-error, stack-overflow, storage-unavailable, unknown); successes clear telemetry. 18 tests in `src/__tests__/autosave-telemetry.test.ts` verify: recording, read-only snapshot, clear after success, multiple failures increment, no crash on null/undefined/circular, integration pattern (fail → retry → success).
 
 ---
 

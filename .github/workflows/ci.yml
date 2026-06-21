@@ -91,6 +91,7 @@ jobs:
           npx vitest run src/__tests__/addblock-panel-smoke.test.ts
           npx vitest run src/__tests__/addblock-panel-ui-smoke.test.tsx
           npx vitest run src/__tests__/migration-idempotency.test.ts
+          npx vitest run src/__tests__/autosave-telemetry.test.ts
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)
