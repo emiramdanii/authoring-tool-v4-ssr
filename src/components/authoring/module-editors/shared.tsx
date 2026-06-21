@@ -13,8 +13,12 @@ export const MAX_OPTION = 500;
 export const MAX_SHORT_TEXT = 100;
 
 // ── Shared UI components ──────────────────────────────────────
-export function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs font-medium text-app-secondary mb-1.5">{children}</label>;
+// Sprint 9.0D: FieldLabel now accepts optional `htmlFor` to associate
+// with input via id (a11y best practice). Backward compatible —
+// existing callers without htmlFor still render a <label> (without
+// association, same as before).
+export function FieldLabel({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
+  return <label htmlFor={htmlFor} className="block text-xs font-medium text-app-secondary mb-1.5">{children}</label>;
 }
 
 export function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {

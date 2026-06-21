@@ -17,6 +17,11 @@ import React, { useState, useMemo, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
+  // Sprint 9.0D: import DialogTitle + DialogDescription for a11y
+  // (Radix requires DialogTitle inside DialogContent to avoid
+  // "DialogContent requires DialogTitle for accessibility" warning).
+  DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -174,9 +179,14 @@ export default function TemplateWizard({ open, onOpenChange }: TemplateWizardPro
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-app-surface border border-app-border max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto custom-scrollbar p-0">
+        {/* Sprint 9.0D: DialogTitle + DialogDescription for Radix a11y */}
+        <DialogTitle className="sr-only">Buat Project Baru</DialogTitle>
+        <DialogDescription className="sr-only">
+          Wizard 4 langkah untuk membuat project pembelajaran baru.
+        </DialogDescription>
         {/* Header with step indicator */}
         <div className="px-6 pt-6 pb-4 border-b border-app-border/30">
-          <h2 className="text-lg font-bold text-app-primary mb-4">Buat Project Baru</h2>
+          <h2 className="text-lg font-bold text-app-primary mb-4" aria-hidden="true">Buat Project Baru</h2>
           <StepIndicator currentStep={step} />
         </div>
 

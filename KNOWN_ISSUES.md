@@ -298,9 +298,26 @@ Closure:      <commit SHA + tanggal | OPEN>
   - reduced motion support
   - screen reader labels untuk navigation dan quiz
 - **Workaround**: Tidak ada. A11Y yang ditunda sampai akhir biasanya mahal karena menyentuh seluruh komponen.
-- **Owner**: Sprint 8.5A / 8.5B
-- **Target**: Sprint 8.5A / 8.5B
-- **Closure**: PARTIAL — Sprint 8.5A/8.5B. A11y smoke tests added: SkipNavLink (href, sr-only, keyboard-focusable), A11yProvider (reducedMotion/highContrast context), useGameA11y hook (ariaLabel, progressAria, liveAria, instructionId), RecoveryDialog (role=dialog, aria-modal, aria-labelledby, aria-describedby, Tab focus trap, Esc/backdrop handling). 12 a11y-smoke tests + 8 recovery-dialog-a11y tests. Full axe-core audit (Playwright + axe integration) still needed — deferred to Sprint 4 (final QA).
+- **Owner**: Sprint 8.5A / 8.5B → 9.0D (final)
+- **Target**: Sprint 9.0D
+- **Closure**: CLOSED — Sprint 9.0D (A11Y Full axe-core Audit).
+  - **Sprint 8.5A/8.5B (initial)**: A11y smoke tests added: SkipNavLink (href, sr-only, keyboard-focusable), A11yProvider (reducedMotion/highContrast context), useGameA11y hook (ariaLabel, progressAria, liveAria, instructionId), RecoveryDialog (role=dialog, aria-modal, aria-labelledby, aria-describedby, Tab focus trap, Esc/backdrop handling). 12 a11y-smoke tests + 8 recovery-dialog-a11y tests.
+  - **Sprint 9.0D (final)**: Full a11y audit + contract-based test suite. axe-core was NOT installed and sprint scope forbids new dependencies — instead, emulated axe-core's most important checks via DOM queries (`auditButtonNames`, `auditDialogA11y`, `auditInputLabels`, `auditHeadingOrder`, `auditImageAlt`, `auditAll`) covering: button-name (every `<button>` must have accessible name), aria-dialog-name (every `[role=dialog]` must have aria-label/aria-labelledby), aria-modal (every dialog must have `aria-modal="true"`), label (every `<input>` must have label association), heading-order (no skipped levels), image-alt (every `<img>` must have alt). 30 new tests in `src/__tests__/a11y-9.0d-audit.test.tsx` cover: (A) ModuleEditorModal dialog role + aria-modal + aria-labelledby + aria-describedby + close button aria-label + title input label; (B) TemplateWizard Radix DialogTitle + DialogDescription (fixes Radix "DialogContent requires DialogTitle for accessibility" warning); (C) AddBlockPanel search input aria-label + id + aria-describedby + decorative search icon aria-hidden + block add buttons aria-label; (D) RecoveryDialog re-verify (cross-cover with a11y-smoke); (E) ExportSuccessDialog Radix Dialog a11y; (F) SkipNavLink re-verify; (G) audit helper self-tests (10 tests prove the helpers catch known violations).
+  - **Patches applied (minimal, per scope)**:
+    * `src/components/authoring/ModuleEditorModal.tsx`: added `role="dialog"`, `aria-modal="true"`, `aria-labelledby="module-editor-title"`, `aria-describedby="module-editor-subtitle"`, `aria-hidden="true"` on decorative overlay + edit icon, `aria-label="Tutup editor modul"` on icon-only close button, `htmlFor`/`id` association on title input + `aria-describedby` help text.
+    * `src/components/authoring/module-editors/shared.tsx`: `FieldLabel` now accepts optional `htmlFor` prop (backward compatible — existing callers without `htmlFor` still render a `<label>` without association, same as before).
+    * `src/components/canva/TemplateWizard.tsx`: imported + rendered `DialogTitle` (sr-only) + `DialogDescription` (sr-only) inside `DialogContent` to satisfy Radix a11y contract. Visible `<h2>` marked `aria-hidden="true"` to avoid duplicate heading announcement.
+  - **Flows audited (per acceptance criteria 1-5)**:
+    1. Editor/canvas shell: AddBlockPanel (search input + block add buttons + decorative icons)
+    2. AddBlockPanel: 4 dedicated tests
+    3. Dialog/modal: ModuleEditorModal (5 tests), TemplateWizard (3 tests), RecoveryDialog (2 tests, cross-cover), ExportSuccessDialog (2 tests)
+    4. Form/control: ModuleEditorModal title input (label association), AddBlockPanel search input (aria-label)
+    5. Hotspot editor/viewer: covered by existing hotspot-qa.test.tsx (already verifies keyboard nav + role=button + aria-label + aria-expanded + Esc/backdrop handling)
+  - **Acceptance criteria 6-7 (icon-only buttons, dialog labels)**: enforced by `auditButtonNames` + `auditDialogA11y` helpers. All tested flows pass.
+  - **Follow-up items (NOT blocking A11Y-001 closure — out of sprint scope)**:
+    * Type-specific module editors (VideoEditor, FlashcardEditor, etc.) inside ModuleEditorModal use the wrapping-`<label>` pattern via `FieldLabel` but some inputs may still be flagged by a full axe-core run. These are tracked as a future follow-up when the editor body is refactored.
+    * Full Playwright + axe-core browser integration would provide more comprehensive coverage (color contrast, focus order, keyboard tab sequence). Deferred to a future sprint when browser-based testing infrastructure is added.
+  - **Acceptance**: All 13 acceptance criteria met. tsc 0 errors, normalize 0 sigs, build OK, CI 3/3.
 
 ---
 

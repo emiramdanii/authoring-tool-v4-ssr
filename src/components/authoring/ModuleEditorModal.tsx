@@ -67,23 +67,40 @@ export default function ModuleEditorModal({ open, onClose, mod, updateField, add
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-app-overlay backdrop-blur-sm" />
-      <div className="relative bg-app-surface border border-app-border rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div className="absolute inset-0 bg-app-overlay backdrop-blur-sm" aria-hidden="true" />
+      {/* Sprint 9.0D: added role=dialog + aria-modal + aria-labelledby for a11y */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="module-editor-title"
+        aria-describedby="module-editor-subtitle"
+        className="relative bg-app-surface border border-app-border rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-app-border flex-shrink-0">
           <div>
-            <h3 className="text-lg font-bold text-app-primary"><span className="material-symbols-outlined inline" style={ { fontSize: '16px' } }>edit</span> Edit Modul</h3>
-            <p className="text-xs text-app-secondary mt-0.5 capitalize">{t} — {mod.title || '(tanpa judul)'}</p>
+            <h3 id="module-editor-title" className="text-lg font-bold text-app-primary"><span className="material-symbols-outlined inline" style={ { fontSize: '16px' } } aria-hidden="true">edit</span> Edit Modul</h3>
+            <p id="module-editor-subtitle" className="text-xs text-app-secondary mt-0.5 capitalize">{t} — {mod.title || '(tanpa judul)'}</p>
           </div>
-          <button onClick={onClose} className="text-app-muted hover:text-app-primary transition-colors text-xl leading-none p-1">✕</button>
+          {/* Sprint 9.0D: aria-label for icon-only close button */}
+          <button onClick={onClose} aria-label="Tutup editor modul" className="text-app-muted hover:text-app-primary transition-colors text-xl leading-none p-1">✕</button>
         </div>
 
         {/* Body */}
         <div className="overflow-y-auto flex-1 p-6 space-y-4">
           {/* Common title field */}
           <div>
-            <FieldLabel>Judul Modul</FieldLabel>
-            <input className={INPUT_CLS} placeholder="Judul modul…" value={mod.title || ''} onChange={(e) => uf('title', e.target.value)} />
+            <FieldLabel htmlFor="module-editor-title-input">Judul Modul</FieldLabel>
+            <input
+              id="module-editor-title-input"
+              className={INPUT_CLS}
+              placeholder="Judul modul…"
+              value={mod.title || ''}
+              onChange={(e) => uf('title', e.target.value)}
+              aria-describedby="module-editor-title-help"
+            />
+            <span id="module-editor-title-help" className="sr-only">Ubah judul modul</span>
           </div>
 
           {/* Type-specific editors */}

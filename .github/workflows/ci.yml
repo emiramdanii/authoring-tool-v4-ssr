@@ -101,6 +101,11 @@ jobs:
           # Sprint 9.0C-Patch-1: RichText HTML render branch restoration
           # (closes RICH-001 — HTML branch was returning debug placeholder icon).
           npx vitest run src/__tests__/richtext-9.0c-patch1.test.tsx
+          # Sprint 9.0D: A11Y Full axe-core Audit (closes A11Y-001).
+          # Contract-based emulation of axe-core checks (button-name,
+          # aria-dialog-name, aria-modal, label, heading-order, image-alt)
+          # since axe-core is not installed and scope forbids new deps.
+          npx vitest run src/__tests__/a11y-9.0d-audit.test.tsx
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)
