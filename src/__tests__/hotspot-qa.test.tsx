@@ -375,8 +375,8 @@ describe('Sprint 8.9A / 4A — Post-Hotspot QA', () => {
 
   // ── 11. 10 original curated blocks stable ──────────────────
 
-  describe('Regression: 10 original blocks stable', () => {
-    it('all 10 original blocks still have guided editors', () => {
+  describe('Regression: 10 ORIGINAL_TEACHER_BLOCKS stable', () => {
+    it('all 10 ORIGINAL_TEACHER_BLOCKS still have guided editors', () => {
       const original10 = ORIGINAL_TEACHER_BLOCKS;
       for (const blockType of original10) {
         expect(hasGuidedEditor(blockType), `${blockType} should have guided editor`).toBe(true);

@@ -10,10 +10,10 @@
 // These tests verify the CONTRACT (not the UI rendering) — each step
 // of the flow is checked at the store/schema level:
 //
-//   1. 10 curated blocks exist in TEACHER_ADDABLE_BLOCKS
+//   1. 11 curated blocks exist in TEACHER_ADDABLE_BLOCKS (10 original + hotspot-image)
 //   2. Every curated block has a guided editor in GUIDED_EDITOR_REGISTRY
 //   3. Every guided editor has displayName, icon, and at least 1 field
-//   4. hasGuidedEditor() returns true for all 10 curated types
+//   4. hasGuidedEditor() returns true for all 11 curated types
 //   5. Adding a schema block via store mutates pages[].schema.blocks
 //   6. Editing a guided field via applyGuidedSchemaPatch changes schema
 //   7. Preview mode (setAppMode('preview')) doesn't crash
@@ -122,7 +122,10 @@ import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
 import type { CanvaPage, ScreenSchema } from '@/components/canva/types';
 
 // ─────────────────────────────────────────────────────────────────
-// The 10 curated teacher-addable blocks (from AddBlockPanel.tsx)
+// Sprint 8.9B / 4B: TEACHER_ADDABLE_BLOCKS is now imported from
+// @/core/registry/teacher-curated-blocks (single source of truth).
+// No more local copy — eliminates drift.
+// 11 blocks: 10 original + hotspot-image (added in 8.8B).
 // ─────────────────────────────────────────────────────────────────
 
 // Sprint 8.9B / 4B: TEACHER_ADDABLE_BLOCKS is now imported from
@@ -202,7 +205,7 @@ describe('Sprint 8.7A — Flow Guru Manual Gate', () => {
     vi.restoreAllMocks();
   });
 
-  // ── Gate 1: 10 curated blocks exist ──────────────────────────
+  // ── Gate 1: 11 curated blocks exist (10 original + hotspot-image) ──
 
   it('TEACHER_ADDABLE_BLOCKS has exactly 11 block types (10 original + hotspot)', () => {
     expect(TEACHER_ADDABLE_BLOCKS.length).toBe(11);
@@ -217,7 +220,7 @@ describe('Sprint 8.7A — Flow Guru Manual Gate', () => {
     }
   });
 
-  it('hasGuidedEditor() returns true for all 10 curated block types', () => {
+  it('hasGuidedEditor() returns true for all 11 curated block types', () => {
     for (const blockType of TEACHER_ADDABLE_BLOCKS) {
       expect(hasGuidedEditor(blockType), `hasGuidedEditor("${blockType}") should be true`).toBe(true);
     }
@@ -252,7 +255,7 @@ describe('Sprint 8.7A — Flow Guru Manual Gate', () => {
     expect(afterBlocks).toBe(initialBlocks + 1);
   });
 
-  it('addSchemaBlock() works for all 10 curated block types', () => {
+  it('addSchemaBlock() works for all 11 curated block types', () => {
     // Start with a fresh page
     resetCanvaStore([makePage('p1')]);
 

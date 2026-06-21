@@ -1,15 +1,15 @@
 // ═══════════════════════════════════════════════════════════════════
-// SPRINT 8.8A / 3A → 8.8B / 3B — Hotspot Contract + Implementation Guards
+// SPRINT 8.8A/3A → 8.8B/3B → 8.9C/4C — Hotspot Contract + Implementation Guards
 // ═══════════════════════════════════════════════════════════════════
 // Originally created in Sprint 8.8A as pre-implementation guards (asserting
 // hotspot-image was NOT yet implemented). Updated in Sprint 8.8B-Patch-1
-// to verify the implementation IS present.
+// to verify the implementation IS present. Comments cleaned in 8.9C.
 //
-// Current assertions (post 8.8B):
+// Current assertions (post 8.8B, comments synced 8.9C):
 //   1. hotspot-image IS in TEACHER_ADDABLE_BLOCKS (11 blocks total)
 //   2. hotspot-image IS in GUIDED_EDITOR_REGISTRY (has guided editor)
 //   3. HotspotImageBlock type IS exported from schema types
-//   4. Existing 10 curated blocks are still stable (regression)
+//   4. All 11 TEACHER_ADDABLE_BLOCKS are stable (guided editors + schemas)
 //   5. sanitizeHtml() strips dangerous content (security boundary)
 // ═══════════════════════════════════════════════════════════════════
 
@@ -32,32 +32,27 @@ import * as blockTypes from '@/core/schema/types/blocks';
 // Sprint 8.9B / 4B: import shared constant (single source of truth)
 import { TEACHER_ADDABLE_BLOCKS } from '@/core/registry/teacher-curated-blocks';
 
-// The 10 curated blocks (from AddBlockPanel.tsx)
-// Sprint 8.9B / 4B: TEACHER_ADDABLE_BLOCKS is now imported from
-// @/core/registry/teacher-curated-blocks (single source of truth).
-// No more local copy — eliminates drift.
-
 // ─────────────────────────────────────────────────────────────────
 // Tests
 // ─────────────────────────────────────────────────────────────────
 
-describe('Sprint 8.8A / 3A — Pre-Hotspot Contract Guards', () => {
+describe('Sprint 8.8A/3A → 8.8B/3B — Hotspot Contract + Implementation Guards', () => {
 
-  // ── 1. hotspot-image NOT yet addable ─────────────────────────
+  // ── 1. hotspot-image IS in TEACHER_ADDABLE_BLOCKS (Sprint 8.8B) ──
 
-  describe('hotspot-image is NOW in TEACHER_ADDABLE_BLOCKS (Sprint 8.8B)', () => {
+  describe('hotspot-image IS in TEACHER_ADDABLE_BLOCKS (11 blocks)', () => {
     it('TEACHER_ADDABLE_BLOCKS includes hotspot-image', () => {
       expect(TEACHER_ADDABLE_BLOCKS).toContain('hotspot-image');
     });
 
-    it('TEACHER_ADDABLE_BLOCKS now has 11 blocks (10 original + hotspot)', () => {
+    it('TEACHER_ADDABLE_BLOCKS has 11 blocks (10 original + hotspot)', () => {
       expect(TEACHER_ADDABLE_BLOCKS.length).toBe(11);
     });
   });
 
-  // ── 2. hotspot-image NOW in guided editor registry (Sprint 8.8B) ──
+  // ── 2. hotspot-image IS in guided editor registry (Sprint 8.8B) ──
 
-  describe('hotspot-image is NOW in GUIDED_EDITOR_REGISTRY (Sprint 8.8B)', () => {
+  describe('hotspot-image IS in GUIDED_EDITOR_REGISTRY (Sprint 8.8B)', () => {
     it('hasGuidedEditor("hotspot-image") returns true', () => {
       expect(hasGuidedEditor('hotspot-image')).toBe(true);
     });
@@ -67,9 +62,9 @@ describe('Sprint 8.8A / 3A — Pre-Hotspot Contract Guards', () => {
     });
   });
 
-  // ── 3. HotspotImageBlock type NOW exists (Sprint 8.8B) ──────
+  // ── 3. HotspotImageBlock type IS exported (Sprint 8.8B) ──────
 
-  describe('HotspotImageBlock type NOW exists (Sprint 8.8B)', () => {
+  describe('HotspotImageBlock type IS exported (Sprint 8.8B)', () => {
     it('blockTypes module exports HotspotImageBlock', () => {
       // HotspotImageBlock is an interface — at runtime, it doesn't appear as a property.
       // We verify via type-check: if the import doesn't error, the type exists.
@@ -78,16 +73,16 @@ describe('Sprint 8.8A / 3A — Pre-Hotspot Contract Guards', () => {
     });
   });
 
-  // ── 4. Existing 10 curated blocks are stable ────────────────
+  // ── 4. All 11 TEACHER_ADDABLE_BLOCKS are stable (regression) ──
 
-  describe('Existing 10 curated blocks are still stable (regression)', () => {
-    it('all 10 curated blocks still have guided editors', () => {
+  describe('All 11 TEACHER_ADDABLE_BLOCKS are stable (regression)', () => {
+    it('all 11 teacher-addable blocks have guided editors', () => {
       for (const blockType of TEACHER_ADDABLE_BLOCKS) {
         expect(hasGuidedEditor(blockType), `${blockType} should have guided editor`).toBe(true);
       }
     });
 
-    it('all 10 curated blocks have non-null guided editor schemas', () => {
+    it('all 11 teacher-addable blocks have non-null guided editor schemas', () => {
       for (const blockType of TEACHER_ADDABLE_BLOCKS) {
         const schema = getGuidedEditorSchema(blockType);
         expect(schema, `${blockType} schema should not be null`).not.toBeNull();

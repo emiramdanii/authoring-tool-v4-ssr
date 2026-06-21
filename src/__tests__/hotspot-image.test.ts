@@ -214,10 +214,10 @@ describe('Sprint 8.8B / 3B — Hotspot Image Vertical Slice', () => {
     });
   });
 
-  // ── 8. Regression: existing 10 curated blocks still stable ──
+  // ── 8. Regression: 10 original curated blocks still stable ──
 
-  describe('Regression: existing 10 blocks still stable', () => {
-    it('all original 10 curated blocks still have guided editors', () => {
+  describe('Regression: 10 ORIGINAL_TEACHER_BLOCKS still stable', () => {
+    it('all 10 ORIGINAL_TEACHER_BLOCKS still have guided editors', () => {
       const original10 = ORIGINAL_TEACHER_BLOCKS;
       for (const blockType of original10) {
         expect(hasGuidedEditor(blockType), `${blockType} should still have guided editor`).toBe(true);
