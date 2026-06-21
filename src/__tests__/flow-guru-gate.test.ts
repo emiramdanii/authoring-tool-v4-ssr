@@ -4,7 +4,7 @@
 // Automated gate tests for the teacher flow baseline:
 //
 //   Dashboard → pilih template → Edit Media → tambah halaman
-//   → Tambah Isi → tambah 10 blok curated
+//   → Tambah Isi → tambah 11 blok curated (10 original + hotspot-image)
 //   → edit panel kanan → Preview → Export HTML
 //
 // These tests verify the CONTRACT (not the UI rendering) — each step
