@@ -769,3 +769,5 @@ are stubbed to keep module graph loadable) and the REAL `useDirtyStore`
 | CI Run (9.0B-Patch-1) | `PASS_CI` | `27898825800` — 3/3 jobs success (Test / TypeScript gate / Build) |
 | Docs closure SHA (9.0B-Patch-1 evidence matrix) | `PASS_CI` | `ded29e0913d302e650f5b5b7a57c70e891a984ff` |
 | Docs SHA fix (9.0B-Patch-2) | `DOC_SHA_FIX_ACCEPTED` | 9.0B-Patch-1 SHA corrected from `96a5127c0e7d62b13f9ebab2d5b8a3aa93b87c0d` → `96a5127c0ef4d7dea6e81e782248621f2403b5b5` (docs-only, no source/test change) |
+| Exact SHA (9.0B-Patch-2 docs) | `PASS_CI` | `cb64436cb58ba09e99c66cc202addbbd7409e519` |
+| CI Run (9.0B-Patch-2 docs) | `PASS_CI` | `27899673732` — 3/3 jobs success (Test / TypeScript gate / Build) — confirms docs-only change did not regress source/test |
