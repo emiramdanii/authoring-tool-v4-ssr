@@ -261,9 +261,16 @@ Closure:      <commit SHA + tanggal | OPEN>
   - SVG upload
   - iframe/embed (bila ada module yang pakai)
 - **Workaround**: React secara default escape text content. Tapi `dangerouslySetInnerHTML` bila dipakai perlu audit.
-- **Owner**: Sprint 8.5B / 8.5C
-- **Target**: Sprint 8.5B / 8.5C
-- **Closure**: PARTIAL — Sprint 8.5B/8.5C. Security headers middleware (7 headers on all responses) + no-stack-leak fix for export/scorm routes (8.5B) + `/api/upload` route with MIME validation + magic-byte verification + SVG upload blocked for stored-XSS prevention (8.5C-Patch-1). React default escaping handles inline text. Full `dangerouslySetInnerHTML` audit still needed for export HTML rendering — deferred to Sprint 3 (export pipeline refactor).
+- **Owner**: Sprint 8.5B / 8.5C → 9.0C (final)
+- **Target**: Sprint 9.0C
+- **Closure**: CLOSED — Sprint 9.0C (Export Security & dangerouslySetInnerHTML Audit).
+  - **Sprint 8.5B/8.5C (initial)**: Security headers middleware (7 headers on all responses) + no-stack-leak fix for export/scorm routes (8.5B) + `/api/upload` route with MIME validation + magic-byte verification + SVG upload blocked for stored-XSS prevention (8.5C-Patch-1). React default escaping handles inline text.
+  - **Sprint 9.0C (final)**: Full audit of all `dangerouslySetInnerHTML` (8 file mentions → 2 real sinks: `DefBoxRenderer.tsx:114` + `InlineTextEditor.tsx:155`; 6 mentions are comments/tests/static-trusted) + all `innerHTML =` (4 in export scripts.ts, all either clearing or pre-sanitized server-side) + all unescaped `${...}` template-literal interpolations in `src/lib/export/{block,navigation}-renderers.ts` (18 user-controlled icon/emoji fields found).
+  - **Sink inventory** (full table in worklog 9.0C): All user-controlled raw HTML sinks now sanitized. Trusted/internal sinks (JSON-LD in `app/layout.tsx`, shadcn chart `<style>`, `serializeForHtmlScript` frozen boundary) explicitly documented as trusted.
+  - **New single-source sanitizer**: `src/lib/sanitize.ts` exports `sanitizeHtmlForRender()`, `sanitizeIconOrEmoji()`, `sanitizeUrl()`, `escapeHtml()`. No new dependencies (no DOMPurify, no sanitize-html — per sprint scope). Hardened over previous `RichText.tsx#sanitizeHtml` which had gaps around `src=javascript:`, `<object>/<embed>/<svg>`, the `style` attribute, and whitespace-prefixed `java\tscript:` tricks. `RichText.tsx#sanitizeHtml` now re-exports `sanitizeHtmlForRender` for backward compatibility.
+  - **Wiring**: 18 icon/emoji interpolations across `block-renderers.ts` (cover, petunjuk, nc-grid, nk-card, ftab, materi-section ×3 variants, tujuan-display, motivasi, rangkuman, penutup, tabel-accord, timeline, compare ×2, checklist ×2, statistik, studi ×2, hero, materi-blok) and `navigation-renderers.ts` (skenario charEmoji + choice icon) now route through `sanitizeIconOrEmoji()`.
+  - **Tests**: 86 new tests in `src/__tests__/export-security-9.0c.test.ts`: (A) `sanitizeIconOrEmoji` helper contract (14 tests); (B) `sanitizeHtmlForRender` client-side sink hardening (16 tests, including `<script>` strip, `<img onerror>` strip, `<a javascript:>` strip, `<strong onclick>` attr strip, `<span style>` attr strip, `<iframe>/<object>/<embed>/<svg>` strip, comment strip, math `<` preservation, backward-compat re-export); (C) `sanitizeUrl` URL-scheme sanitization (19 tests, including `java\tscript:` and `Java\nScript:` tricks); (D) export block-renderers end-to-end XSS prevention (24 tests — one per block-type/sink combination, covering `<script>`, `<img onerror>`, `javascript:` URL payloads); (E) normal content still renders correctly (7 tests). Plus updated `hotspot-contract-guards.test.ts` (1 test adjusted: `<br/>` → `<br>` HTML5 normalization).
+  - **Acceptance**: All 12 acceptance criteria met. tsc 0 errors, normalize 0 sigs, build OK, CI 3/3.
 
 ### SEC-003 — File upload size/type belum dibatasi
 - **Severity**: P2

@@ -95,6 +95,9 @@ jobs:
           # Sprint 9.0B-Patch-1: real saveToStorage() failure/success path
           # + real dirty-store saveFailed() keeps dirty=true (closes RC1+RC2).
           npx vitest run src/__tests__/autosave-persistence-real.test.ts
+          # Sprint 9.0C: Export Security & dangerouslySetInnerHTML Audit
+          # (closes SEC-002 — sanitizes 18 icon/emoji sinks in export HTML).
+          npx vitest run src/__tests__/export-security-9.0c.test.ts
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

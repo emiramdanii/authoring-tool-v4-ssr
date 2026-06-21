@@ -3,6 +3,8 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 import { escapeHtml, resolveColor, type RenderBlockFn } from './utils';
+// Sprint 9.0C: sanitizeIconOrEmoji for raw ${icon}/${emoji} template-literal sinks.
+import { sanitizeIconOrEmoji } from '@/lib/sanitize';
 
 /**
  * Render a navigation block. Returns null if the block type is not handled here.
@@ -53,7 +55,8 @@ function renderSkenario(b: Record<string, unknown>): string {
       </div>
       ${chapters.map((ch, ci) => {
         const chTitle = (ch.title as string) || `Bab ${ci + 1}`;
-        const charEmoji = (ch.charEmoji as string) || '👤';
+        // Sprint 9.0C: sanitize charEmoji — display text only, no HTML allowed.
+        const charEmoji = sanitizeIconOrEmoji((ch.charEmoji as string) || '👤');
         const setup = (ch.setup as Array<{ speaker: string; text: string }>) || [];
         const choices = (ch.choices as Array<Record<string, unknown>>) || [];
         return `
@@ -63,7 +66,7 @@ function renderSkenario(b: Record<string, unknown>): string {
             ${setup.map(s => `<div class="dialog"><strong>${escapeHtml(s.speaker)}:</strong> ${escapeHtml(s.text)}</div>`).join('')}
             ${choices.map(c => `
               <div class="choice-card">
-                <span class="choice-icon">${c.icon as string || '🔹'}</span>
+                <span class="choice-icon">${sanitizeIconOrEmoji(c.icon as string || '🔹')}</span>
                 <span class="choice-label">${escapeHtml((c.label as string) || '')}</span>
                 ${c.detail ? `<span class="choice-detail">${escapeHtml(c.detail as string)}</span>` : ''}
               </div>`).join('')}

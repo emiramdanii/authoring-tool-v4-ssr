@@ -13,11 +13,18 @@
 //
 // IMPORTANT: Only allow basic formatting tags. Block-level tags
 // like <script>, <iframe>, <style> are stripped for safety.
+//
+// Sprint 9.0C: sanitizeHtml now delegates to the single-source
+// src/lib/sanitize.ts#sanitizeHtmlForRender. The local implementation
+// is kept as a thin re-export for backward compatibility with
+// existing imports in DefBoxRenderer.tsx and InlineTextEditor.tsx.
 // ═══════════════════════════════════════════════════════════════════
 
 'use client';
 
 import React, { useMemo } from 'react';
+// Sprint 9.0C: single-source sanitizer
+import { sanitizeHtmlForRender } from '@/lib/sanitize';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -48,36 +55,20 @@ export function hasHtmlTags(text: string): boolean {
 /**
  * Sanitize HTML content — strip dangerous tags while preserving
  * safe formatting tags. This is a whitelist approach.
+ *
+ * Sprint 9.0C: delegates to the single-source sanitizeHtmlForRender
+ * in src/lib/sanitize.ts. The new implementation closes gaps in the
+ * previous version:
+ *   - Strips ALL attributes from allowed tags (not just on* and javascript:)
+ *   - Properly tokenizes HTML to avoid regex-bypass tricks
+ *   - Strips <script>...</script> content (not just the tags)
+ *   - Drops comments and malformed <!...> declarations
+ *
+ * Kept as a re-export to avoid touching every import site. New code
+ * should import sanitizeHtmlForRender directly from '@/lib/sanitize'.
  */
 export function sanitizeHtml(html: string): string {
-  // Allowed tags for basic formatting in schema content
-  const allowedTags = ['strong', 'em', 'b', 'i', 'u', 'br', 'span', 'sub', 'sup', 'mark', 'small'];
-
-  // Remove script, iframe, style, and event handlers
-  let sanitized = html
-    // Remove script tags and content
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    // Remove iframe tags
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-    // Remove style tags and content
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    // Remove event handlers (onclick, onerror, etc.)
-    .replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '')
-    // Remove javascript: URLs
-    .replace(/href\s*=\s*["']javascript:[^"']*["']/gi, '');
-
-  // Remove any tags not in the allowed list
-  // This regex matches opening and closing tags, preserves allowed ones
-  const tagPattern = /<\/?([a-z][a-z0-9]*)\b[^>]*\/?>/gi;
-  sanitized = sanitized.replace(tagPattern, (match, tagName) => {
-    if (allowedTags.includes(tagName.toLowerCase())) {
-      return match;
-    }
-    // For disallowed tags, return empty (strip the tag but keep content)
-    return '';
-  });
-
-  return sanitized;
+  return sanitizeHtmlForRender(html);
 }
 
 // ── Component ──────────────────────────────────────────────────

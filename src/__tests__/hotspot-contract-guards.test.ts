@@ -135,7 +135,8 @@ describe('Sprint 8.8A/3A → 8.8B/3B — Hotspot Contract + Implementation Guard
       const result = sanitizeHtml(input);
       expect(result).toContain('<strong>bold</strong>');
       expect(result).toContain('<em>italic</em>');
-      expect(result).toContain('<br/>');
+      // Sprint 9.0C: <br/> normalized to HTML5 <br> by sanitizeHtmlForRender
+      expect(result).toContain('<br>');
     });
 
     it('strips disallowed tags but keeps content', () => {

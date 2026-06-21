@@ -14,6 +14,11 @@
 
 import type { SchemaBlock } from '@/core/schema/types';
 import { escapeHtml, resolveColor, type RenderBlockFn } from './utils';
+// Sprint 9.0C: sanitizeIconOrEmoji for raw ${icon}/${emoji} template-literal sinks.
+// Icons/emojis are display text (Unicode codepoints), NOT HTML — they MUST be
+// HTML-escaped so a teacher typing <script>alert(1)</script> into an icon field
+// cannot inject executable HTML into the exported file.
+import { sanitizeIconOrEmoji } from '@/lib/sanitize';
 
 // ═══════════════════════════════════════════════════════════════════════
 // SAFE RICH TEXT — Sprint 6.3-B: Preserve safe HTML formatting in export
@@ -122,7 +127,8 @@ export function renderGenericBlock(b: Record<string, unknown>): string {
 // ── Individual renderers ────────────────────────────────────────────
 
 function renderCover(b: Record<string, unknown>): string {
-  const icon = b.icon as string || '📘';
+  // Sprint 9.0C: sanitize icon — display text only, no HTML allowed.
+  const icon = sanitizeIconOrEmoji(b.icon as string || '📘');
   const title = b.title as string || '';
   const subtitle = b.subtitle as string || '';
   const badges = (b.badges as Array<{ icon?: string; text: string; color: string }>) || [];
@@ -139,7 +145,7 @@ function renderCover(b: Record<string, unknown>): string {
       <h1 class="cover-title">${escapeHtml(title)}</h1>
       <p class="cover-subtitle">${escapeHtml(subtitle)}</p>
       <div class="cover-badges">
-        ${badges.map(bd => `<span class="badge" style="background:${resolveColor(bd.color, '#fbbf24')}22;color:${resolveColor(bd.color, '#fbbf24')};border:1px solid ${resolveColor(bd.color, '#fbbf24')}33;">${bd.icon || ''} ${escapeHtml(bd.text)}</span>`).join('')}
+        ${badges.map(bd => `<span class="badge" style="background:${resolveColor(bd.color, '#fbbf24')}22;color:${resolveColor(bd.color, '#fbbf24')};border:1px solid ${resolveColor(bd.color, '#fbbf24')}33;">${sanitizeIconOrEmoji(bd.icon)} ${escapeHtml(bd.text)}</span>`).join('')}
       </div>
     </div>`;
 }
@@ -159,7 +165,7 @@ function renderPetunjuk(b: Record<string, unknown>): string {
         ${items.map((it, i) => `
           <div class="step-card">
             <div class="step-num">${i + 1}</div>
-            <div class="step-icon">${it.icon}</div>
+            <div class="step-icon">${sanitizeIconOrEmoji(it.icon)}</div>
             <div class="step-content">
               <h3>${escapeHtml(it.title)}</h3>
               <p>${escapeHtml(it.body)}</p>
@@ -211,7 +217,7 @@ function renderNcGrid(b: Record<string, unknown>): string {
       <div class="nc-grid">
         ${cards.map(c => `
           <div class="nc-card" style="border-top: 3px solid ${resolveColor(c.color, '#3ecfcf')};">
-            <div class="nc-icon">${c.icon}</div>
+            <div class="nc-icon">${sanitizeIconOrEmoji(c.icon)}</div>
             <h3 style="color:${resolveColor(c.color, '#3ecfcf')};">${escapeHtml(c.title)}</h3>
             <p>${escapeHtml(c.body)}</p>
           </div>`).join('')}
@@ -220,7 +226,8 @@ function renderNcGrid(b: Record<string, unknown>): string {
 }
 
 function renderNkCard(b: Record<string, unknown>): string {
-  const icon = b.icon as string || '📜';
+  // Sprint 9.0C: sanitize icon — display text only, no HTML allowed.
+  const icon = sanitizeIconOrEmoji(b.icon as string || '📜');
   const title = b.title as string || '';
   const label = b.label as string || '';
   const definition = b.definition as string || '';
@@ -282,7 +289,7 @@ function renderFtab(b: Record<string, unknown>, renderBlock: RenderBlockFn): str
     <div class="block ftab-block">
       <div class="ftab-tabs" id="${tabId}">
         ${tabs.map((t, i) => `
-          <button class="ftab-btn${i === 0 ? ' active' : ''}" onclick="switchFtab('${tabId}',${i})">${t.icon} ${escapeHtml(t.label)}</button>`).join('')}
+          <button class="ftab-btn${i === 0 ? ' active' : ''}" onclick="switchFtab('${tabId}',${i})">${sanitizeIconOrEmoji(t.icon)} ${escapeHtml(t.label)}</button>`).join('')}
       </div>
       ${tabs.map((t, i) => `
         <div class="ftab-panel${i === 0 ? ' active' : ''}" data-ftab="${tabId}" data-idx="${i}">
@@ -294,7 +301,8 @@ function renderFtab(b: Record<string, unknown>, renderBlock: RenderBlockFn): str
 function renderMateriSection(b: Record<string, unknown>, renderBlock: RenderBlockFn): string {
   const title = b.title as string || 'Materi';
   const subtitle = b.subtitle as string || '';
-  const icon = b.icon as string || '📖';
+  // Sprint 9.0C: sanitize icon — display text only, no HTML allowed.
+  const icon = sanitizeIconOrEmoji(b.icon as string || '📖');
   const accentColor = resolveColor(b.accentColor as string, '#a78bfa');
   const variant = (b.variant as string) || 'A'; // Sprint 6.3-B: read variant
   const content = (b.content as SchemaBlock[]) || [];
@@ -320,7 +328,7 @@ function renderMateriSection(b: Record<string, unknown>, renderBlock: RenderBloc
   const tabContentHtml = hasTabs
     ? (tabs as Array<{ id: string; label: string; icon?: string; content: SchemaBlock[] }>).map((tab, i) => `
         <div class="materi-tab-section" style="margin-bottom: 12px;">
-          <div class="materi-tab-label" style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accentColor}; margin-bottom: 6px; padding: 4px 10px; background: ${accentColor}0d; border-radius: 6px; display: inline-block;">${tab.icon ? tab.icon + ' ' : ''}${escapeHtml(tab.label)}</div>
+          <div class="materi-tab-label" style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accentColor}; margin-bottom: 6px; padding: 4px 10px; background: ${accentColor}0d; border-radius: 6px; display: inline-block;">${tab.icon ? sanitizeIconOrEmoji(tab.icon) + ' ' : ''}${escapeHtml(tab.label)}</div>
           <div class="materi-tab-content">
             ${(tab.content || []).map(cb => renderBlock(cb)).join('')}
           </div>
@@ -428,7 +436,7 @@ function renderTujuanDisplay(b: Record<string, unknown>): string {
         ${objectives.map((o, i) => `
           <div class="tujuan-item" style="border-left: 3px solid ${resolveColor(o.color, '#f9c12e')};">
             <span class="tujuan-num">${i + 1}</span>
-            <span class="tujuan-icon">${o.icon}</span>
+            <span class="tujuan-icon">${sanitizeIconOrEmoji(o.icon)}</span>
             <span class="tujuan-text">${escapeHtml(o.text)}</span>
           </div>`).join('')}
       </div>
@@ -456,7 +464,7 @@ function renderMotivasi(b: Record<string, unknown>): string {
         ${bsnpRequired ? '<span class="bsnp-badge">WAJIB</span>' : ''}
       </div>
       <div class="hook-question" style="background: linear-gradient(135deg, ${gradFrom}1a, ${gradTo}0d); border: 2px solid ${gradFrom}40; border-radius: 12px; padding: 16px;">
-        ${visual?.emoji ? `<span class="hook-emoji" style="font-size: 28px;">${visual.emoji}</span>` : ''}
+        ${visual?.emoji ? `<span class="hook-emoji" style="font-size: 28px;">${sanitizeIconOrEmoji(visual.emoji)}</span>` : ''}
         <div>
           <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: ${gradFrom}; margin-bottom: 6px;">Pertanyaan Pemicu</div>
           <div style="font-size: 15px; font-weight: 700; color: #f1f5f9;">${escapeHtml(hookQuestion)}</div>
@@ -467,7 +475,7 @@ function renderMotivasi(b: Record<string, unknown>): string {
           <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 8px;">💡 Koneksi Pengetahuan</div>
           ${connections.map(c => `
             <div class="connection-card" style="border-left: 3px solid ${resolveColor(c.color, '#3ecfcf')};">
-              <span>${c.icon}</span>
+              <span>${sanitizeIconOrEmoji(c.icon)}</span>
               <div>
                 <strong style="color: ${resolveColor(c.color, '#3ecfcf')};">${escapeHtml(c.label)}</strong>
                 <p>${escapeHtml(c.description)}</p>
@@ -498,7 +506,7 @@ function renderRangkuman(b: Record<string, unknown>): string {
         ${concepts.map((c, i) => `
           <div class="rangkuman-card" style="border-left: 3px solid ${resolveColor(c.color, accentColor)}; background: ${resolveColor(c.color, accentColor)}0d; border: 1px solid ${resolveColor(c.color, accentColor)}20; border-radius: 10px; padding: 10px;">
             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-              ${c.icon ? `<span>${c.icon}</span>` : ''}
+              ${c.icon ? `<span>${sanitizeIconOrEmoji(c.icon)}</span>` : ''}
               <strong style="color: ${resolveColor(c.color, accentColor)}; font-size: 12px;">${escapeHtml(c.title)}</strong>
             </div>
             <p style="font-size: 11px; color: #94a3b8; line-height: 1.5;">${escapeHtml(c.body)}</p>
@@ -576,7 +584,7 @@ function renderPenutup(b: Record<string, unknown>): string {
       <div class="penutup-preview">
         ${preview.map(p => `
           <div class="penutup-item" style="border-top: 2px solid ${resolveColor(p.warna, '#34d399')};">
-            <span>${p.icon}</span>
+            <span>${sanitizeIconOrEmoji(p.icon)}</span>
             <strong>${escapeHtml(p.judul)}</strong>
             <p>${escapeHtml(p.isi)}</p>
           </div>`).join('')}
@@ -591,7 +599,7 @@ function renderTabelAccord(b: Record<string, unknown>): string {
       ${rows.map(r => `
         <div class="accord-row" role="button" tabindex="0" onclick="this.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('open')}">
           <div class="accord-header" style="border-left: 3px solid ${resolveColor(r.color, '#3ecfcf')};">
-            <span>${r.icon}</span>
+            <span>${sanitizeIconOrEmoji(r.icon)}</span>
             <strong>${escapeHtml(r.title)}</strong>
             <span class="accord-arrow">▾</span>
           </div>
@@ -625,7 +633,7 @@ function renderTimeline(b: Record<string, unknown>): string {
       <div class="timeline-steps" style="display: flex; flex-direction: column; gap: 8px;">
         ${steps.map((s, i) => `
           <div class="timeline-step" style="display: flex; align-items: flex-start; gap: 10px; padding: 8px; background: ${resolveColor(s.color, accentColor)}0d; border-radius: 8px; border-left: 3px solid ${resolveColor(s.color, accentColor)};">
-            <span style="font-size: 18px;">${s.icon || '📌'}</span>
+            <span style="font-size: 18px;">${sanitizeIconOrEmoji(s.icon || '📌')}</span>
             <div>
               <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; color: ${resolveColor(s.color, accentColor)}; letter-spacing: 0.06em;">Langkah ${i + 1}</div>
               <strong style="font-size: 13px; color: #f1f5f9;">${escapeHtml(s.label)}</strong>
@@ -647,14 +655,14 @@ function renderCompare(b: Record<string, unknown>): string {
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         <div style="background: #3ecfcf0d; border: 1px solid #3ecfcf20; border-radius: 10px; padding: 12px;">
           <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-            <span style="font-size: 18px;">${kiri?.icon || '🔵'}</span>
+            <span style="font-size: 18px;">${sanitizeIconOrEmoji(kiri?.icon || '🔵')}</span>
             <strong style="color: #3ecfcf; font-size: 13px;">${escapeHtml(kiri?.judul || 'Kiri')}</strong>
           </div>
           <p style="font-size: 11px; color: #94a3b8;">${escapeHtml(kiri?.isi || '')}</p>
         </div>
         <div style="background: #fbbf240d; border: 1px solid #fbbf2420; border-radius: 10px; padding: 12px;">
           <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-            <span style="font-size: 18px;">${kanan?.icon || '🔴'}</span>
+            <span style="font-size: 18px;">${sanitizeIconOrEmoji(kanan?.icon || '🔴')}</span>
             <strong style="color: #fbbf24; font-size: 13px;">${escapeHtml(kanan?.judul || 'Kanan')}</strong>
           </div>
           <p style="font-size: 11px; color: #94a3b8;">${escapeHtml(kanan?.isi || '')}</p>
@@ -721,7 +729,7 @@ function renderChecklist(b: Record<string, unknown>): string {
         ${items.map(it => `
           <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:${resolveColor(it.warna, accentColor)}0d;border-radius:8px;">
             <input type="checkbox" ${it.diconteng ? 'checked' : ''} disabled style="accent-color:${resolveColor(it.warna, accentColor)};" />
-            <span style="font-size:12px;color:#f1f5f9;">${it.icon || ''} ${escapeHtml(it.teks)}</span>
+            <span style="font-size:12px;color:#f1f5f9;">${sanitizeIconOrEmoji(it.icon)} ${escapeHtml(it.teks)}</span>
           </div>`).join('')}
       </div>
     </div>`;
@@ -740,7 +748,7 @@ function renderStatistik(b: Record<string, unknown>): string {
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;">
         ${items.map(it => `
           <div style="text-align:center;padding:12px;background:${resolveColor(it.warna, accentColor)}1a;border-radius:10px;border:1px solid ${resolveColor(it.warna, accentColor)}20;">
-            ${it.icon ? `<span style="font-size:18px;">${it.icon}</span>` : ''}
+            ${it.icon ? `<span style="font-size:18px;">${sanitizeIconOrEmoji(it.icon)}</span>` : ''}
             <div style="font-size:22px;font-weight:900;color:${resolveColor(it.warna, accentColor)};">${escapeHtml(it.angka)}</div>
             ${it.satuan ? `<div style="font-size:9px;color:#64748b;">${escapeHtml(it.satuan)}</div>` : ''}
             <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${escapeHtml(it.label)}</div>
@@ -770,7 +778,8 @@ function renderStudi(b: Record<string, unknown>): string {
 }
 
 function renderHero(b: Record<string, unknown>): string {
-  const icon = b.icon as string || '⚡';
+  // Sprint 9.0C: sanitize icon — display text only, no HTML allowed.
+  const icon = sanitizeIconOrEmoji(b.icon as string || '⚡');
   const title = b.title as string || '';
   const subtitle = b.subtitle as string || '';
   const accentColor = resolveColor(b.accentColor as string, '#3b82f6');
@@ -786,7 +795,8 @@ function renderMateriBlok(b: Record<string, unknown>): string {
   const tipe = b.tipe as string || 'teks';
   const judul = b.judul as string || '';
   const isi = b.isi as string || '';
-  const icon = b.icon as string || '';
+  // Sprint 9.0C: sanitize icon — display text only, no HTML allowed.
+  const icon = sanitizeIconOrEmoji(b.icon as string || '');
   const warna = b.warna as string || '';
   const butir = b.butir as string[] || [];
   const baris = b.baris as string[][] || [];
