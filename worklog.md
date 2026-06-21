@@ -3130,3 +3130,71 @@ Stage Summary:
 - Sprint 9.0C: PASS / CLOSED / PASS_CI
 - SEC-002: CLOSED ✅
 - All Sprints 8.1 → 9.0C now CLOSED with PASS_CI status.
+
+---
+Task ID: 9.0C-Patch-1
+Agent: Super Z (main)
+Task: Sprint 9.0C-Patch-1 — RichText HTML Render Branch Restoration
+
+Work Log:
+- Senior follow-up audit identified RICH-001 (P2, renderer/ui): pre-existing
+  bug in src/core/renderer/blocks/RichText.tsx where the hasHtml=true branch
+  returned a debug placeholder icon
+  (<span class="material-symbols-outlined">label</span>) instead of rendering
+  the sanitized HTML.
+- Impact: 22+ block renderers that delegate to <RichText> showed a "label"
+  material icon instead of the actual rich-text content. Bug predated 9.0C
+  (NOT a security regression — sanitizer was already producing correct
+  output, just never being consumed by the render branch).
+- Audit: found RichText imported by DefBoxRenderer, PetunjukRenderer,
+  MotivasiRenderer, TujuanDisplayRenderer, DiskusiRenderer, RefleksiRenderer,
+  ChecklistRenderer, RevealRenderer, SkenarioRenderer, TabelRenderer,
+  TimelineRenderer, AlurRenderer, PenutupRenderer, StudiRenderer, TpRenderer,
+  MateriBlokRenderer, StatistikRenderer, RangkumanRenderer, NormaKartuRenderer,
+  GambarRenderer, MateriSectionRenderer, CompareRenderer.
+- Patch (minimal, per sprint scope):
+  * src/core/renderer/blocks/RichText.tsx — replaced debug icon return in
+    if (hasHtml) branch with:
+      <Tag className={className} style={baselineStyle}
+           dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+  * Sanitizer logic UNCHANGED (per scope)
+  * Export pipeline UNCHANGED (per scope)
+  * Plain text branch UNCHANGED (per scope)
+  * Placeholder behavior UNCHANGED (per scope)
+- Tests: 29 new tests in src/__tests__/richtext-9.0c-patch1.test.tsx
+  covering: HTML branch renders sanitized HTML (not debug icon); mixed
+  HTML+text; allowlist tags preserved; <br/> normalized to <br>;
+  <script> stripped (no live element); <img onerror> stripped;
+  <a javascript:> stripped; <strong onclick> attr stripped;
+  <span style> attr stripped; plain text branch; placeholder behavior
+  (empty/undefined/HTML); tag prop (span/div/p/h1); className + style
+  in both branches; word-break baseline style; custom style overrides
+  merge with baseline; backward-compat sanitizeHtml re-export;
+  hasHtmlTags + stripHtmlTags helpers; complex real-world mixed content.
+- Initial test failures fixed:
+  * Parse error in 3 tests using escaped double-quotes inside JSX string
+    attribute — moved strings to const variables.
+  * 2 tests counted <span> elements but the default Tag is <span>, so
+    wrapper + inner span = 2. Changed those tests to use tag="div" so
+    the inner <span> is the only span counted.
+
+Local verification:
+- 29/29 new tests pass (richtext-9.0c-patch1.test.tsx)
+- 1086/1086 CI-tracked tests pass (49 files) — no regression
+- tsc 0 errors, normalize 0 sigs
+- npm run build exit 0, .next/BUILD_ID generated
+
+CI: 27902173638 — 3/3 jobs success (Test / TypeScript gate / Build)
+RICH-001: CLOSED (Sprint 9.0C-Patch-1)
+
+Stage Summary:
+- Files modified: src/core/renderer/blocks/RichText.tsx (HTML branch
+  restored), .github/workflows/ci.yml (new test added), KNOWN_ISSUES.md
+  (new "Renderer / UI" section + RICH-001 CLOSED entry), SYSTEM_CLOSURE_MATRIX.md
+  (9.0C-Patch-1 closure table), worklog.md
+- Files baru: src/__tests__/richtext-9.0c-patch1.test.tsx (29 tests)
+- Source SHA: 333a493f75a0ed9822e3ff5aab5ebd20e101738a
+- CI run: 27902173638
+- Sprint 9.0C-Patch-1: PASS / CLOSED / PASS_CI
+- RICH-001: CLOSED ✅
+- All Sprints 8.1 → 9.0C-Patch-1 now CLOSED with PASS_CI status.

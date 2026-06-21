@@ -851,3 +851,82 @@ Plus 1 test adjusted in `hotspot-contract-guards.test.ts` (line 138): `<br/>` �
 | 9.0C tests total | `PASS_CI` | 86 new tests (export-security-9.0c.test.ts) + 1 adjusted (hotspot-contract-guards.test.ts) — all CI success |
 | Exact SHA | `PASS_CI` | `3922f974f3e38362454a2609dd71b5f53bde5b18` |
 | CI Run | `PASS_CI` | `27901174370` — 3/3 jobs success |
+
+## Sprint 9.0C-Patch-1 Closure (RichText HTML Render Branch Restoration)
+
+CI run `27902173638` on SHA `333a493f75a0ed9822e3ff5aab5ebd20e101738a` — 3/3 jobs success (Test / TypeScript gate / Build).
+
+Closes RICH-001 (P2, renderer/ui). Pre-existing bug discovered during senior follow-up audit — not a security regression (predates 9.0C).
+
+### Bug summary
+
+`src/core/renderer/blocks/RichText.tsx` — when `hasHtml=true`, the render branch returned a debug placeholder icon (`<span class="material-symbols-outlined">label</span>`) instead of rendering the sanitized HTML. This broke rich-text display for 22+ block renderers that delegate to `<RichText>` (DefBoxRenderer, PetunjukRenderer, MotivasiRenderer, TujuanDisplayRenderer, DiskusiRenderer, RefleksiRenderer, ChecklistRenderer, RevealRenderer, SkenarioRenderer, TabelRenderer, TimelineRenderer, AlurRenderer, PenutupRenderer, StudiRenderer, TpRenderer, MateriBlokRenderer, StatistikRenderer, RangkumanRenderer, NormaKartuRenderer, GambarRenderer, MateriSectionRenderer, CompareRenderer).
+
+### Patch (minimal, per sprint scope)
+
+`src/core/renderer/blocks/RichText.tsx` — the `if (hasHtml)` branch now renders:
+```tsx
+<Tag
+  className={className}
+  style={baselineStyle}
+  dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+/>
+```
+using `sanitizedHtml` produced by `sanitizeHtmlForRender` (the hardened sanitizer from Sprint 9.0C, accessed via the `sanitizeHtml` re-export).
+
+- Sanitizer logic: UNCHANGED (per scope "Jangan mengubah sanitizer logic kecuali ada test gagal yang membuktikan bug nyata").
+- Export pipeline: UNCHANGED (per scope "Jangan refactor export renderer").
+- Plain text branch: UNCHANGED (per scope).
+- Placeholder behavior: UNCHANGED (per scope).
+
+### Test coverage
+
+29 new tests in `src/__tests__/richtext-9.0c-patch1.test.tsx`:
+
+| Section | Tests | Coverage |
+|---|---|---|
+| HTML branch renders sanitized HTML (not debug icon) | 1 | Verify `.material-symbols-outlined` is GONE, `<strong>` is rendered |
+| Mixed HTML + text content | 1 | `<strong>Halo</strong><br/>Dunia` → "Halo" + "Dunia" both visible |
+| Allowlist tags preserved | 2 | strong/em/b/i/u/span + `<br/>` → `<br>` normalization |
+| `<script>` injection | 1 | No live `<script>` element, no `alert(1)` in textContent |
+| `<img onerror>` injection | 1 | No live `<img>`, no live onerror attr |
+| `<a javascript:>` injection | 1 | No live `<a>`, no javascript: scheme |
+| `<strong onclick>` attribute stripping | 1 | Tag kept, onclick attr stripped |
+| `<span style>` attribute stripping | 1 | Tag kept, style attr stripped |
+| Plain text branch | 1 | Renders as React children (no dSIH) |
+| Placeholder behavior | 3 | Empty/undefined content → placeholder shown; HTML content → placeholder NOT used |
+| `tag` prop | 4 | span/div/p/h1 work; HTML branch respects tag prop |
+| `className` + `style` props | 4 | Applied in both HTML + plain text branches |
+| Word-break baseline style | 3 | Applied in both branches; custom overrides merge with baseline |
+| Backward-compat re-export | 1 | `sanitizeHtml` from RichText.tsx still equals `sanitizeHtmlForRender` |
+| Helpers (`hasHtmlTags`, `stripHtmlTags`) | 2 | HTML detection + tag stripping |
+| Complex real-world content | 2 | Mixed safe + unsafe content; safe tags preserved, unsafe stripped |
+
+### No regression
+
+| Test file | Tests | Status |
+|---|---|---|
+| export-security-9.0c.test.ts | 86 | PASS |
+| hotspot-contract-guards.test.ts | 15 | PASS |
+| hotspot-qa.test.tsx | 28 | PASS |
+| hotspot-image.test.ts | 16 | PASS |
+| Full CI-tracked suite | 1086 (49 files) | PASS |
+
+### Closure gates
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| RichText HTML branch uses `sanitizedHtml` | `PASS_CI` | `RichText.tsx:111-126` — `if (hasHtml)` renders `<Tag dangerouslySetInnerHTML={{__html: sanitizedHtml}} />` |
+| Safe HTML (`<strong>`, `<em>`, `<br>`) renders correctly | `PASS_CI` | richtext-9.0c-patch1.test.tsx tests 2-3 |
+| Dangerous HTML still sanitized | `PASS_CI` | richtext-9.0c-patch1.test.tsx tests 5-8 |
+| Plain text branch unchanged | `PASS_CI` | richtext-9.0c-patch1.test.tsx test 9 |
+| Placeholder still works | `PASS_CI` | richtext-9.0c-patch1.test.tsx tests 10-11 |
+| No regression on 9.0C security tests | `PASS_CI` | export-security-9.0c.test.ts 86/86, hotspot-contract-guards.test.ts 15/15, hotspot-qa.test.tsx 28/28, hotspot-image.test.ts 16/16 |
+| `npx tsc --noEmit` = 0 | `PASS_CI` | TypeScript gate job success |
+| `normalize-ts-errors` = 0 sig / 0 occ | `PASS_CI` | TypeScript gate job success |
+| `npm run build` success | `PASS_CI` | Build job success, .next/BUILD_ID generated |
+| CI 3/3 success | `PASS_CI` | CI run `27902173638` — Test / TypeScript gate / Build all success |
+| RICH-001 closed in KNOWN_ISSUES.md | `CLOSED` | KNOWN_ISSUES.md new "Renderer / UI" section + RICH-001 entry with full closure evidence |
+| Patch-1 tests total | `PASS_CI` | 29 new tests (richtext-9.0c-patch1.test.tsx) — all CI success |
+| Exact SHA | `PASS_CI` | `333a493f75a0ed9822e3ff5aab5ebd20e101738a` |
+| CI Run | `PASS_CI` | `27902173638` — 3/3 jobs success |
