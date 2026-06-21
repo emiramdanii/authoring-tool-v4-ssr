@@ -670,3 +670,27 @@ CI run `27888747253` on SHA `1decf84e9188b28fcc41296c245c658a7522e073` — 3/3 j
 | 8.9C tests total | `PASS_CI` | 12 new tests (addblock-panel-smoke.test.ts) — all CI success |
 | Exact SHA | `PASS_CI` | `1decf84e9188b28fcc41296c245c658a7522e073` |
 | CI Run | `PASS_CI` | `27888747253` — 3/3 jobs success |
+
+## Sprint 8.9D / 4D Closure (Real Teacher Add Flow UI Smoke)
+
+CI run `27890037254` on SHA `e7aadc1515e7b58090a85438224bae187ad74a48` — 3/3 jobs success.
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| AddBlockPanel renders in teacher mode | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — panel renders, 'Tambah Isi' header visible |
+| All 11 TEACHER_ADDABLE_BLOCKS appear as add buttons | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — all 11 data-testid buttons verified |
+| hotspot-image appears as clickable button | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — button found + tagName=BUTTON |
+| Page-level blocks excluded from teacher UI | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — cover/tp/petunjuk/etc all null |
+| Popular grid shows 10 blocks (no hotspot) | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — grid.grid-cols-3 has 10 buttons |
+| Search finds hotspot-image | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — 'hotspot' + 'gambar interaktif' both find it |
+| Click hotspot-image calls addSchemaBlock | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — mockAddSchemaBlock called with 'hotspot-image' |
+| Click popular block calls addSchemaBlock | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — materi-section verified |
+| No manual copy of TEACHER_ADDABLE_BLOCKS | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — imports shared constant |
+| Header shows block count = 11 | `PASS_CI` | `addblock-panel-ui-smoke.test.tsx` — header.textContent contains '11' |
+| Source fix: hotspot-image added to RENDERER_MAP | `PASS_CI` | `SceneRegistry.tsx` — was missing from RENDERER_MAP (only in LAZY_RENDERER_MAP) |
+| tsc 0 errors | `PASS_CI` | `npx tsc --noEmit` returns 0 |
+| normalize 0 sigs | `PASS_CI` | baseline 0 signatures |
+| Build success | `PASS_CI` | `npm run build` exit 0 |
+| 8.9D tests total | `PASS_CI` | 11 new tests (addblock-panel-ui-smoke.test.tsx) — all CI success |
+| Exact SHA | `PASS_CI` | `e7aadc1515e7b58090a85438224bae187ad74a48` |
+| CI Run | `PASS_CI` | `27890037254` — 3/3 jobs success |
