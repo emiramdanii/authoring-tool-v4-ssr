@@ -694,3 +694,27 @@ CI run `27890037254` on SHA `e7aadc1515e7b58090a85438224bae187ad74a48` — 3/3 j
 | 8.9D tests total | `PASS_CI` | 11 new tests (addblock-panel-ui-smoke.test.tsx) — all CI success |
 | Exact SHA | `PASS_CI` | `e7aadc1515e7b58090a85438224bae187ad74a48` |
 | CI Run | `PASS_CI` | `27890037254` — 3/3 jobs success |
+
+## Sprint 9.0A Closure (Persistence Migration Idempotency Gate)
+
+CI run `27894538407` on SHA `72ae9dd542cfcd020e0489f123bf13fcaa27d5ef` — 3/3 jobs success.
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Legacy doc idempotency: migrate(migrate(doc)) === migrate(doc) | `PASS_CI` | `migration-idempotency.test.ts` — deep equal verified |
+| Current doc idempotency | `PASS_CI` | `migration-idempotency.test.ts` — deep equal + no unnecessary change |
+| Canvas page schema fields preserved | `PASS_CI` | `migration-idempotency.test.ts` — contractId, pageMode, navConfig, bgColor, overlay, bgDataUrl, templateData.schemaThemeId all verified |
+| Hotspot-image block preserved | `PASS_CI` | `migration-idempotency.test.ts` — type, hotspots, x/y, body all survive |
+| Triple migration stability (4 docs) | `PASS_CI` | `migration-idempotency.test.ts` — legacy, current, hotspot, extra-fields all triple-stable |
+| Unknown/extra fields NOT deleted | `PASS_CI` | `migration-idempotency.test.ts` — page-level + top-level custom fields survive |
+| Invalid/minimal doc handled explicitly | `PASS_CI` | `migration-idempotency.test.ts` — null/array/string rejected, empty object accepted, future/malformed rejected |
+| Real fixtures idempotency (5 fixtures) | `PASS_CI` | `migration-idempotency.test.ts` — legacy-no-schema-version, current-schema-version, golden-pertemuan, fresh-mission-adventure, image-background-large |
+| migrateSchema idempotency (v0, v1, v2) | `PASS_CI` | `migration-idempotency.test.ts` — all 3 versions deep-equal stable |
+| migrateAllSchemas idempotency (multi-page) | `PASS_CI` | `migration-idempotency.test.ts` — second pass has 0 migrations |
+| PERSIST-002 status | `CLOSED` | 34 idempotency tests prove migration is safe and repeatable |
+| tsc 0 errors | `PASS_CI` | `npx tsc --noEmit` returns 0 |
+| normalize 0 sigs | `PASS_CI` | baseline 0 signatures |
+| Build success | `PASS_CI` | `npm run build` exit 0 |
+| 9.0A tests total | `PASS_CI` | 34 new tests (migration-idempotency.test.ts) — all CI success |
+| Exact SHA | `PASS_CI` | `72ae9dd542cfcd020e0489f123bf13fcaa27d5ef` |
+| CI Run | `PASS_CI` | `27894538407` — 3/3 jobs success |

@@ -2841,3 +2841,53 @@ Stage Summary:
 - CI run: 27890037254
 - Sprint 8.9D / 4D overall: ✅ PASS / CLOSED / PASS_CI
 - All Sprints 8.1 → 8.9D now CLOSED with PASS_CI status.
+
+---
+Task ID: 9.0A
+Agent: Super Z (main)
+Task: Sprint 9.0A — Persistence Migration Idempotency Gate
+
+Work Log:
+- Audited migration functions: migrateProjectDocument (project-schema-versioning.ts),
+  migrateSchema + migrateAllSchemas (schema-migration.ts), migrateAllPages (ensure-schema.ts).
+- No bugs found in migration logic — sprint is test-only.
+- Wrote 34 idempotency tests in migration-idempotency.test.ts:
+  * Legacy doc (no schemaVersion): migrate² + migrate³ deep-equal stable
+  * Current doc (schemaVersion=1): migrate² deep-equal + no unnecessary change
+  * Canvas page schema: all style authority fields preserved (contractId, pageMode, navConfig, bgColor, overlay, bgDataUrl, templateData.schemaThemeId)
+  * Hotspot-image block: type, hotspots, x/y, body all survive migration
+  * Triple migration stability: 4 synthetic docs (legacy, current, hotspot, extra-fields)
+  * Unknown/extra fields: page-level + top-level custom fields survive
+  * Invalid/minimal: null/array/string rejected, empty object accepted, future/malformed rejected
+  * Real fixtures: 5 fixtures (legacy-no-schema-version, current-schema-version, golden-pertemuan, fresh-mission-adventure, image-background-large)
+  * Per-page migrateSchema: v0, v1, v2 all deep-equal stable
+  * migrateAllSchemas: multi-page with mixed versions, second pass has 0 migrations
+- Closed PERSIST-002 in KNOWN_ISSUES.md
+- CI workflow updated: migration-idempotency.test.ts added
+- Patch-1 NOT needed — first push CI was green on run 27894538407
+
+Stage Summary:
+- Files baru: src/__tests__/migration-idempotency.test.ts (34 tests)
+- Files modified: KNOWN_ISSUES.md (PERSIST-002 OPEN → CLOSED), .github/workflows/ci.yml
+- Local gates: tsc 0 errors, normalize 0 sigs, build ok, 34 tests pass
+- Sprint 9.0A: PASS / CLOSED / PASS_CI
+
+---
+Task ID: 9.0A-Closure
+Agent: Super Z (main)
+Task: Sprint 9.0A closure documentation sync
+
+Work Log:
+- CI Run ID: 27894538407 — 3/3 jobs success
+- Updated SYSTEM_CLOSURE_MATRIX.md with Sprint 9.0A closure table (17 gates)
+- worklog.md: appended 9.0A + 9.0A-Closure entries
+- Zero source code changes — pure documentation sync
+- Sprint 9.0A: PASS / CLOSED / PASS_CI
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: 72ae9dd542cfcd020e0489f123bf13fcaa27d5ef
+- CI run: 27894538407
+- Sprint 9.0A overall: ✅ PASS / CLOSED / PASS_CI
+- All Sprints 8.1 → 9.0A now CLOSED with PASS_CI status.
+- PERSIST-002: CLOSED ✅
