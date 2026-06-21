@@ -646,3 +646,27 @@ CI run `27876918765` on SHA `a8044cbe5d137bd2c2e18711f496ad7f3a774bff` — 3/3 j
 | 8.9B tests total | `PASS_CI` | 14 new tests (curated-block-registry.test.ts) — all CI success |
 | Exact SHA | `PASS_CI` | `a8044cbe5d137bd2c2e18711f496ad7f3a774bff` |
 | CI Run | `PASS_CI` | `27876918765` — 3/3 jobs success |
+
+## Sprint 8.9C / 4C Closure (Teacher Flow UI Smoke & Comment Cleanup)
+
+CI run `27888747253` on SHA `1decf84e9188b28fcc41296c245c658a7522e073` — 3/3 jobs success.
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| No stale '10 curated' comments for active TEACHER_ADDABLE_BLOCKS | `PASS_CI` | 4 test files cleaned: flow-guru-gate, hotspot-contract-guards, hotspot-image, hotspot-qa |
+| flow-guru-gate.test.ts wording synced (11 blocks) | `PASS_CI` | Header, gate comments, test names all updated to 11 |
+| hotspot-contract-guards.test.ts full rewrite (clear sections) | `PASS_CI` | Removed duplicate comments, synced section names + test names to 11 |
+| ORIGINAL_TEACHER_BLOCKS clearly labeled as regression set (10) | `PASS_CI` | hotspot-image.test.ts + hotspot-qa.test.tsx use ORIGINAL_TEACHER_BLOCKS |
+| AddBlockPanel smoke test: 11 teacher addable | `PASS_CI` | `addblock-panel-smoke.test.ts` — TEACHER_ADDABLE_BLOCKS.length = 11 |
+| hotspot-image available in teacher addable | `PASS_CI` | `addblock-panel-smoke.test.ts` — contains hotspot-image |
+| POPULAR_BLOCK_TYPES = 10 (subset, no hotspot) | `PASS_CI` | `addblock-panel-smoke.test.ts` — 10 blocks, all in addable |
+| No page-level blocks in addable | `PASS_CI` | `addblock-panel-smoke.test.ts` — cover/tp/petunjuk/penutup/etc excluded |
+| All addable have guided editors + in BLOCK_DEFINITIONS | `PASS_CI` | `addblock-panel-smoke.test.ts` — all 11 verified |
+| Helpers (isTeacherAddableBlock, isPopularBlock) correct | `PASS_CI` | `addblock-panel-smoke.test.ts` — both helpers tested |
+| No manual copy of TEACHER_ADDABLE_BLOCKS in test | `PASS_CI` | `addblock-panel-smoke.test.ts` — imports shared constant |
+| tsc 0 errors | `PASS_CI` | `npx tsc --noEmit` returns 0 |
+| normalize 0 sigs | `PASS_CI` | baseline 0 signatures |
+| Build success | `PASS_CI` | `npm run build` exit 0 |
+| 8.9C tests total | `PASS_CI` | 12 new tests (addblock-panel-smoke.test.ts) — all CI success |
+| Exact SHA | `PASS_CI` | `1decf84e9188b28fcc41296c245c658a7522e073` |
+| CI Run | `PASS_CI` | `27888747253` — 3/3 jobs success |
