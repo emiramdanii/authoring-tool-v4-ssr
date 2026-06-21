@@ -3369,3 +3369,65 @@ Stage Summary:
 - Sprint 9.0E: PASS / CLOSED / PASS_CI
 - PERF-001: CLOSED ✅
 - All Sprints 8.1 → 9.0E now CLOSED with PASS_CI status.
+
+---
+Task ID: 9.0F
+Agent: Super Z (main)
+Task: Sprint 9.0F — dataIdx Fallback Cleanup Gate
+
+Work Log:
+- Audited BLOCK-001: CanvaElement.dataIdx (deprecated) used by 10 files
+  (module-resolver, sync-slice, element-slice, GameWidget, QuizWidget,
+  BlockRenderer, ElementProperties, canva-constants, components/canva/types,
+  store/canva/types).
+- Found the architecture was already well-structured before 9.0F:
+  * module-resolver.ts is SINGLE source of truth, priority stable ID > dataIdx
+  * sync-slice.ts auto-heals dataIdx → moduleId/kuisId on every sync
+  * element-slice.ts always sets BOTH dataIdx AND stable ID on new elements
+  * GameWidget/QuizWidget accept dataIdx prop but only pass through
+  * canva-constants.ts default dataIdx: -1 (sentinel)
+  * components/canva/types.ts documents 4-step migration path
+
+- Sprint 9.0F hardening (minimal patch per scope "helperize legacy fallback"):
+  * src/lib/module-resolver.ts: added logDataIdxFallback() dev-only visibility
+    helper. Silent in production, rate-limited per resolver-kind in dev.
+    NO behavior change — only adds visibility for future removal work.
+  * Added _resetDataIdxFallbackLog() test-only helper.
+
+- Wrote 37 tests in src/__tests__/dataidx-9.0f-cleanup.test.ts:
+  * A. resolveModule priority contract (8 tests)
+  * B. resolveKuis priority contract (8 tests) — includes critical scoping
+    bug regression guard (no-reference returns [] NOT all kuis)
+  * C. Stable ID generation helpers (10 tests)
+  * D. Dev-only fallback logger (3 tests)
+  * E. New element contract source audit (4 tests) — verify element-slice
+    always sets BOTH dataIdx AND stable ID; verify sync-slice auto-heal
+  * F. Source audit: dataIdx consumers bounded + documented (5 tests) —
+    grep-walk src/ for dataIdx, compare against documented consumer set,
+    verify bounds check regex, default -1 sentinel, @deprecated JSDoc,
+    4-step migration path
+
+Local verification:
+- 37/37 new tests pass (dataidx-9.0f-cleanup.test.ts)
+- 1190/1190 CI-tracked tests pass (52 files) — no regression
+- tsc 0 errors, normalize 0 sigs
+- npm run build exit 0, .next/BUILD_ID generated
+
+CI: 27908395746 — 3/3 jobs success (Test / TypeScript gate / Build)
+BLOCK-001: CLOSED (Sprint 9.0F)
+
+Stage Summary:
+- Files modified: src/lib/module-resolver.ts (logDataIdxFallback helper +
+  _resetDataIdxFallbackLog test helper), KNOWN_ISSUES.md (BLOCK-001 CLOSED),
+  .github/workflows/ci.yml (new test added), SYSTEM_CLOSURE_MATRIX.md
+  (9.0F closure table), worklog.md
+- Files baru: src/__tests__/dataidx-9.0f-cleanup.test.ts (37 tests)
+- Source SHA: 0690ab0f0c6e364e1c588f776491c50355e73af1
+- CI run: 27908395746
+- Sprint 9.0F: PASS / CLOSED / PASS_CI
+- BLOCK-001: CLOSED ✅
+- All Sprints 8.1 → 9.0F now CLOSED with PASS_CI status.
+
+REMAINING KNOWN_ISSUES (after 9.0F):
+- SEC-001 P0 — user action revoke PAT/token (PENDING USER ACTION)
+- (All other issues CLOSED)

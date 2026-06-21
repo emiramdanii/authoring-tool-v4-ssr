@@ -1103,3 +1103,74 @@ Per scope "Patch source hanya jika ada bug nyata" — no patch applied.
 | 9.0E tests total | `PASS_CI` | 37 new tests (performance-baseline-9.0e.test.ts) — all CI success |
 | Exact SHA | `PASS_CI` | `4bca6ae98a1f1aed02ccd0a1af8415b8d1d69c07` |
 | CI Run | `PASS_CI` | `27905217622` — 3/3 jobs success |
+
+## Sprint 9.0F Closure (dataIdx Fallback Cleanup Gate)
+
+CI run `27908395746` on SHA `0690ab0f0c6e364e1c588f776491c50355e73af1` — 3/3 jobs success (Test / TypeScript gate / Build).
+
+Closes BLOCK-001 (P3, block). The `dataIdx` legacy fallback is now fully audited, helperized, and locked by tests.
+
+### Audit findings (architecture was already clean before 9.0F)
+
+| File | Role | dataIdx handling |
+|---|---|---|
+| `src/lib/module-resolver.ts` | Single source of truth for data resolution | Priority: stable ID > dataIdx (bounds-checked `>= 0 && < array.length`) |
+| `src/store/canva/sync-slice.ts` | Auto-heal on sync | Writes `moduleId`/`kuisId` from `dataIdx` when stable ID missing (lines 73-90) |
+| `src/store/canva/element-slice.ts` | New element factory | Always sets BOTH `dataIdx` AND stable ID (addKuisElement 97-98, addGameElement 125-126, addModuleElement 154-155) |
+| `src/components/canva/QuizWidget.tsx` | Widget | Accepts `dataIdx` prop, passes through to `resolveKuis` |
+| `src/components/canva/GameWidget.tsx` | Widget | Accepts `dataIdx` prop, passes through to `resolveModule` |
+| `src/components/canva/page-renderer/BlockRenderer.tsx` | Renderer | Passes `dataIdx` to widgets (pass-through only) |
+| `src/components/canva/right-panel/ElementProperties.tsx` | Properties UI | `DataIdxSelector` for manual index selection (legacy UX) |
+| `src/lib/canva-constants.ts` | Element factory default | `dataIdx: -1` sentinel for "no fallback" |
+| `src/components/canva/types.ts` | Type definition + docs | `@deprecated` JSDoc + 4-step migration path (lines 42-65) |
+
+### Sprint 9.0F hardening (minimal patch per scope "helperize legacy fallback")
+
+`src/lib/module-resolver.ts`:
+- Added `logDataIdxFallback()` dev-only visibility helper. Silent in production, rate-limited per resolver-kind in dev. Logs when the legacy fallback is actually exercised — gives future sprints evidence for when `dataIdx` can be fully removed (Step 4 of the migration path). **NO behavior change.**
+- Added `_resetDataIdxFallbackLog()` test-only helper for deterministic test setup.
+
+### Test coverage (37 new tests in `src/__tests__/dataidx-9.0f-cleanup.test.ts`)
+
+| Section | Tests | Coverage |
+|---|---|---|
+| A. resolveModule priority contract | 8 | moduleId wins, dataIdx fallback when moduleId not found, bounds check (negative/==length/>length), empty array, no-reference returns null |
+| B. resolveKuis priority contract | 8 | kuisIds (multi) > kuisId (single) > dataIdx > empty. Critical: no-reference returns `[]` NOT all kuis (scoping bug regression guard) |
+| C. Stable ID generation helpers | 10 | generateModuleId/generateKuisId prefix + uniqueness, ensureModuleIds/ensureKuisIds add missing IDs + preserve existing |
+| D. Dev-only fallback logger | 3 | no throw, rate-limit reset |
+| E. New element contract (source audit) | 4 | element-slice always sets BOTH dataIdx AND stable ID; sync-slice auto-heal logic exists |
+| F. Source audit: dataIdx consumers bounded + documented | 5 | every file using dataIdx is in documented consumer list (grep-walk); bounds check regex; default -1 sentinel; @deprecated JSDoc; 4-step migration path |
+
+### Why BLOCK-001 is closed (not "OPEN — safe to keep")
+
+The audit proved the fallback is:
+1. **Bounded** — only 8 documented consumers, all in resolver/sync/element-slice pass-through path
+2. **Safe** — bounds-checked, priority-rejected when stable ID exists
+3. **Self-healing** — sync-slice promotes to stable ID on every touch
+4. **Documented** — 4-step migration path in `components/canva/types.ts` lines 54-65
+5. **Testable** — 37 tests lock the contract
+
+The `dataIdx` field can be fully removed in a future sprint by following the documented migration path. That work is tracked as a future enhancement, not as an open bug.
+
+### No regression
+
+| Test suite | Tests | Status |
+|---|---|---|
+| Full CI-tracked suite | 1190 (52 files) | PASS |
+
+### Closure gates
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Audit semua dataIdx | `PASS_CI` | 10 files found, all in documented consumer list (test F) |
+| Modern block pakai id | `PASS_CI` | element-slice always sets moduleId/kuisId (test E) |
+| Legacy fallback dibatasi/helperized | `PASS_CI` | module-resolver bounds-check + logDataIdxFallback helper (tests A-B, D) |
+| Test + CI hijau | `PASS_CI` | 37 new tests pass, full suite 1190/1190 pass |
+| BLOCK-001 ditutup di KNOWN_ISSUES.md | `CLOSED` | KNOWN_ISSUES.md BLOCK-001 entry updated with full audit + hardening + test evidence |
+| `npx tsc --noEmit` = 0 | `PASS_CI` | TypeScript gate job success |
+| `normalize-ts-errors` = 0 sig / 0 occ | `PASS_CI` | TypeScript gate job success |
+| `npm run build` success | `PASS_CI` | Build job success, .next/BUILD_ID generated |
+| CI 3/3 success | `PASS_CI` | CI run `27908395746` — Test / TypeScript gate / Build all success |
+| 9.0F tests total | `PASS_CI` | 37 new tests (dataidx-9.0f-cleanup.test.ts) — all CI success |
+| Exact SHA | `PASS_CI` | `0690ab0f0c6e364e1c588f776491c50355e73af1` |
+| CI Run | `PASS_CI` | `27908395746` — 3/3 jobs success |
