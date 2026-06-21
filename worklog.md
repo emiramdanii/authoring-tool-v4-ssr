@@ -3059,3 +3059,74 @@ Stage Summary:
 - 9.0B source/test: CLOSED / PASS_CI
 - 9.0B docs patch: DOC_SHA_FIX_ACCEPTED
 - Ready for senior to flip final status: Sprint 9.0B — CLOSED / PASS_CI
+
+---
+Task ID: 9.0C
+Agent: Super Z (main)
+Task: Sprint 9.0C — Export Security & dangerouslySetInnerHTML Audit
+
+Work Log:
+- Audited all `dangerouslySetInnerHTML` usages: 8 file mentions
+  * Real sinks (2): DefBoxRenderer.tsx:114 (block.content), InlineTextEditor.tsx:155 (value from useInlineEditor)
+  * Trusted/internal (2): app/layout.tsx:87 (JSON-LD static schema), components/ui/chart.tsx:84 (THEMES constant <style>)
+  * Comments/tests (4): HotspotImageRenderer.tsx (comments), guided-patch.ts (comment), hotspot-qa.test.tsx (test), hotspot-image.test.ts (test)
+- Audited all `innerHTML =` assignments: 4 in src/lib/export/scripts.ts
+  * Line 39: empty-state fallback (static internal string) — safe
+  * Line 49-57: canvas.innerHTML = data.pagesHtml (pre-sanitized server-side by escapeHtml/safeRichText) — safe
+  * Lines 346, 561, 764, 960, 996, 1033: fb.innerHTML = '' (clearing feedback divs) — safe
+- Audited InlineTextEditor.tsx:80 ref.current.innerHTML = value — editing-mode HTML sync. Saved value goes through sanitizeHtml on next render. Safe.
+- Audited export HTML pipeline (api/export/route.ts, lib/export/*):
+  * escapeHtml(str) in utils.ts — escapes & < > " (not ')
+  * safeRichText(content) in block-renderers.ts — allowlist (strong, b, em, i, u, br, p, ul, ol, li) + strips attrs from safe tags + escapes everything else
+  * serializeForHtmlScript(value) in serialize-html-script.ts — frozen canonical boundary (75 tests)
+- Audited existing security tests: export-serialization-boundary (75), export-validation (16), export-pipeline (28), quiz-security-audit (162), middleware-security (15), api-upload (14), api-no-stack-leak (5)
+
+PRIORITY FINDING (HIGH risk):
+- 18 unescaped ${...} template-literal interpolations in block-renderers.ts + navigation-renderers.ts
+  * cover icon (line 138), cover badges icon (142), petunjuk step icon (162), nc-grid card icon (214), nk-card icon (233), ftab tab icon (285), materi-section tab icon (323), materi-section icon (335/365/389), tujuan-display objective icon (431), motivasi visual.emoji (459), rangkuman concept icon (470/501), penutup preview icon (579), tabel-accord row icon (594), timeline step icon (628), compare kiri/kanan icon (650/657), checklist item icon (724/743), statistik item icon, studi poin icon (579), studi refleksi icon (594), hero icon (779), materi-blok icon (794)
+  * navigation-renderers.ts: skenario charEmoji (61), choice icon (66)
+  * Teacher types <script>alert(1)</script> into guided editor's icon TextField → previously executed in exported HTML
+
+NEW SANITIZER (src/lib/sanitize.ts):
+- sanitizeHtmlForRender(html) — hardened over previous RichText.tsx#sanitizeHtml:
+  * Strips <script>...</script> AND <style>...</style> content entirely
+  * Strips ALL attributes from allowed tags (defense in depth)
+  * Properly tokenizes HTML to handle stray < (math context "5 < 10")
+  * Strips HTML comments <!-- ... -->
+  * Drops declarations <!DOCTYPE ...>
+  * Drops non-allowlisted tags (img, a, iframe, object, embed, svg) entirely
+  * Normalizes <br/> to HTML5 <br>
+- sanitizeIconOrEmoji(value) — HTML-escapes display-text fields. Emoji pass through.
+- sanitizeUrl(url) — strips javascript:, vbscript:, data:text/html. Collapses whitespace/control chars (defeats java\tscript:).
+- escapeHtml(str) — canonical escape (escapes ' in addition to & < > ")
+
+WIRING:
+- RichText.tsx#sanitizeHtml re-exports sanitizeHtmlForRender (backward compat for DefBoxRenderer + InlineTextEditor)
+- 18 icon/emoji interpolations in block-renderers.ts + navigation-renderers.ts now route through sanitizeIconOrEmoji()
+
+TESTS (src/__tests__/export-security-9.0c.test.ts — 86 new tests):
+- A. sanitizeIconOrEmoji helper contract (14 tests)
+- B. sanitizeHtmlForRender client-side sink hardening (16 tests)
+- C. sanitizeUrl URL-scheme sanitization (19 tests)
+- D. escapeHtml canonical (5 tests)
+- E. Export block-renderers end-to-end XSS prevention (24 tests — one per block-type/sink combination)
+- F. Normal content still renders correctly (7 tests)
+
+Updated hotspot-contract-guards.test.ts: 1 test adjusted (line 138) — <br/> → <br> HTML5 normalization by new sanitizer.
+
+Local verification:
+- 1057/1057 CI-tracked tests pass (48 files)
+- tsc 0 errors, normalize 0 sigs
+- npm run build exit 0, .next/BUILD_ID generated
+
+CI: 27901174370 — 3/3 jobs success (Test / TypeScript gate / Build)
+SEC-002: CLOSED (final: Sprint 9.0C)
+
+Stage Summary:
+- Files baru: src/lib/sanitize.ts (267 lines), src/__tests__/export-security-9.0c.test.ts (86 tests)
+- Files modified: src/core/renderer/blocks/RichText.tsx (sanitizeHtml → re-export), src/lib/export/block-renderers.ts (18 sinks sanitized), src/lib/export/navigation-renderers.ts (2 sinks sanitized), src/__tests__/hotspot-contract-guards.test.ts (1 test adjusted), KNOWN_ISSUES.md (SEC-002 closed), .github/workflows/ci.yml (new test added), SYSTEM_CLOSURE_MATRIX.md (9.0C closure table), worklog.md
+- Source SHA: 3922f974f3e38362454a2609dd71b5f53bde5b18
+- CI run: 27901174370
+- Sprint 9.0C: PASS / CLOSED / PASS_CI
+- SEC-002: CLOSED ✅
+- All Sprints 8.1 → 9.0C now CLOSED with PASS_CI status.

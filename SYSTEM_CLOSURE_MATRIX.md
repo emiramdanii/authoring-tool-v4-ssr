@@ -771,3 +771,83 @@ are stubbed to keep module graph loadable) and the REAL `useDirtyStore`
 | Docs SHA fix (9.0B-Patch-2) | `DOC_SHA_FIX_ACCEPTED` | 9.0B-Patch-1 SHA corrected from `96a5127c0e7d62b13f9ebab2d5b8a3aa93b87c0d` → `96a5127c0ef4d7dea6e81e782248621f2403b5b5` (docs-only, no source/test change) |
 | Exact SHA (9.0B-Patch-2 docs) | `PASS_CI` | `cb64436cb58ba09e99c66cc202addbbd7409e519` |
 | CI Run (9.0B-Patch-2 docs) | `PASS_CI` | `27899673732` — 3/3 jobs success (Test / TypeScript gate / Build) — confirms docs-only change did not regress source/test |
+
+## Sprint 9.0C Closure (Export Security & dangerouslySetInnerHTML Audit)
+
+CI run `27901174370` on SHA `3922f974f3e38362454a2609dd71b5f53bde5b18` — 3/3 jobs success (Test / TypeScript gate / Build).
+
+Closes SEC-002 (final). Sprint 8.5B/8.5C had partial closure (security headers + upload MIME validation); Sprint 9.0C closes the remaining audit gap on raw HTML sinks.
+
+### Audit findings (sink inventory)
+
+| Sink type | Count | Risk before | Fix |
+|---|---|---|---|
+| `dangerouslySetInnerHTML` real sinks | 2 (DefBoxRenderer.tsx:114, InlineTextEditor.tsx:155) | LOW (used sanitizeHtml but had gaps) | Hardened via new `sanitizeHtmlForRender` re-export |
+| `dangerouslySetInnerHTML` trusted/internal | 2 (app/layout.tsx JSON-LD, components/ui/chart.tsx `<style>`) | NONE | Documented as trusted, no change |
+| `dangerouslySetInnerHTML` comments/tests | 4 | NONE | N/A |
+| `innerHTML =` in export scripts.ts | 4 | NONE (clearing or pre-sanitized) | Documented, no change |
+| Unescaped `${...}` icon/emoji in block-renderers.ts | 17 | **HIGH** (teacher could inject `<script>` via guided editor icon TextField) | All routed through `sanitizeIconOrEmoji()` |
+| Unescaped `${...}` icon/emoji in navigation-renderers.ts | 2 (skenario charEmoji + choice icon) | **HIGH** | Routed through `sanitizeIconOrEmoji()` |
+| `serializeForHtmlScript` (frozen) | 1 | NONE (frozen boundary, 75 tests) | Untouched |
+
+### New sanitizer module
+
+`src/lib/sanitize.ts` — single source of truth for raw-HTML-sink sanitization.
+
+| Export | Purpose | Used by |
+|---|---|---|
+| `sanitizeHtmlForRender(html)` | Client-side `dangerouslySetInnerHTML` sinks | Re-exported from `RichText.tsx#sanitizeHtml` (used by DefBoxRenderer + InlineTextEditor) |
+| `sanitizeIconOrEmoji(value)` | Export HTML icon/emoji template-literal sinks | 18 call sites in `block-renderers.ts` + `navigation-renderers.ts` |
+| `sanitizeUrl(url)` | URL scheme sanitization (javascript:, vbscript:, data:text/html) | Available for future use; not wired in this sprint (no live raw-URL sink found in audit) |
+| `escapeHtml(str)` | Canonical HTML escape (escapes `'` in addition to `& < > "`) | Available for non-export contexts; export pipeline keeps its own `escapeHtml` in `utils.ts` to avoid regression |
+
+No new dependencies (no DOMPurify, no sanitize-html — per sprint scope "Jangan tambah dependency baru").
+
+### Hardening over previous `sanitizeHtml`
+
+| Gap in old `RichText.tsx#sanitizeHtml` | Fix in new `sanitizeHtmlForRender` |
+|---|---|
+| `<style>` content not stripped (only tag) | `<style>...</style>` content stripped entirely |
+| `<script>` content not stripped (only tag) | `<script>...</script>` content stripped entirely |
+| `<object>/<embed>/<svg>` not specifically handled | Tokenizer drops them (not in allowlist) AND their tag + attrs are fully removed |
+| `src="javascript:..."` not stripped (only `href`) | All attributes stripped from allowed tags (defense in depth) |
+| `style="..."` attribute allowed on safe tags | `style` attr stripped (along with all other attrs) |
+| `java\tscript:` whitespace tricks not handled | (Not directly relevant here — `sanitizeUrl` handles this for URL contexts) |
+| HTML comments not stripped | Comments stripped entirely |
+| Stray `<` in math context ("5 < 10") could be mis-tokenized | Tokenizer explicitly handles stray `<` as text |
+
+### Test coverage
+
+86 new tests in `src/__tests__/export-security-9.0c.test.ts`:
+
+| Section | Tests | Coverage |
+|---|---|---|
+| A. `sanitizeIconOrEmoji` helper contract | 14 | `<script>`/`<img onerror>`/`<a javascript:>`/`onclick` payloads escaped; emoji + short text preserved; null/undefined/empty/number coercion; `&`/`"`/`'` escaped |
+| B. `sanitizeHtmlForRender` client-side sink hardening | 16 | `<script>` strip+content; `<img onerror>` strip; `<a javascript:>` strip; `<strong onclick>` attr strip; `<span style>` attr strip; `<iframe>/<object>/<embed>/<svg>` strip; comment strip; math `<` preservation; `<br/>` → `<br>` normalization; backward-compat re-export |
+| C. `sanitizeUrl` URL-scheme sanitization | 19 | `javascript:`/`vbscript:`/`data:text/html` rejected; `java\tscript:`/`Java\nScript:` whitespace tricks rejected; uppercase `JAVASCRIPT:` rejected; `https:`/`http:`/`mailto:`/`tel:`/`#`/`/relative` preserved; `data:image/*` preserved; null/undefined/empty/non-string → `''` |
+| D. `escapeHtml` canonical | 5 | `& < > " '` escaped; null/undefined/number coercion; `<script>` escaped |
+| E. Export block-renderers end-to-end XSS prevention | 24 | One test per block-type/sink combination: cover `<script>` payload, `<img onerror>` payload, `javascript:` URL payload across cover, cover badges, petunjuk, nc-grid, nk-card, ftab, materi-section (tab + icon), tujuan-display, motivasi, rangkuman, penutup, tabel-accord, timeline, compare (kiri + kanan), checklist, statistik, studi (poin + refleksi), hero, materi-blok, skenario (charEmoji + choice icon) |
+| F. Normal content still renders | 7 | Emoji preserved; `&` in title escaped; `<strong>` in def-box preserved; `<script>` in def-box escaped; plain text preserved; petunjuk emoji preserved; skenario emoji preserved |
+
+Plus 1 test adjusted in `hotspot-contract-guards.test.ts` (line 138): `<br/>` → `<br>` (HTML5 normalization by new sanitizer).
+
+### Closure gates
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| All `dangerouslySetInnerHTML` sinks audited | `PASS_CI` | 8 file mentions → 2 real sinks + 2 trusted + 4 comments/tests |
+| All user-controlled raw HTML sinks sanitized | `PASS_CI` | 18 icon/emoji sinks routed through `sanitizeIconOrEmoji()`; 2 `dangerouslySetInnerHTML` sinks hardened via `sanitizeHtmlForRender` re-export |
+| Trusted/internal sinks documented | `PASS_CI` | JSON-LD in `app/layout.tsx` (static), shadcn chart `<style>` (internal constant), `serializeForHtmlScript` (frozen boundary) — all documented in worklog |
+| `<script>` injection test passes | `PASS_CI` | export-security-9.0c.test.ts section E (24 tests) |
+| Inline event handler injection test passes | `PASS_CI` | export-security-9.0c.test.ts section B test 4 + section E test 2 |
+| `javascript:` URL injection test passes | `PASS_CI` | export-security-9.0c.test.ts section B test 3 + section C + section E test 4 |
+| Export HTML does not contain simple malicious payloads | `PASS_CI` | export-security-9.0c.test.ts section E (24 end-to-end tests) |
+| Normal content renders correctly | `PASS_CI` | export-security-9.0c.test.ts section F (7 tests) |
+| `npx tsc --noEmit` = 0 | `PASS_CI` | TypeScript gate job success |
+| `normalize-ts-errors` = 0 sig / 0 occ | `PASS_CI` | TypeScript gate job success |
+| `npm run build` success | `PASS_CI` | Build job success, .next/BUILD_ID generated |
+| CI 3/3 success | `PASS_CI` | CI run `27901174370` — Test / TypeScript gate / Build all success |
+| SEC-002 closed in KNOWN_ISSUES.md | `CLOSED` | KNOWN_ISSUES.md SEC-002 entry updated with full audit + sanitizer + wiring + test evidence |
+| 9.0C tests total | `PASS_CI` | 86 new tests (export-security-9.0c.test.ts) + 1 adjusted (hotspot-contract-guards.test.ts) — all CI success |
+| Exact SHA | `PASS_CI` | `3922f974f3e38362454a2609dd71b5f53bde5b18` |
+| CI Run | `PASS_CI` | `27901174370` — 3/3 jobs success |
