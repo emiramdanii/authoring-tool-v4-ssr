@@ -359,6 +359,19 @@ Closure:      <commit SHA + tanggal | OPEN>
 
 ---
 
+## Renderer / UI
+
+### RICH-001 — RichText HTML render branch tidak memakai sanitizedHtml
+- **Severity**: P2
+- **Area**: renderer/ui
+- **Reproduction**: `src/core/renderer/blocks/RichText.tsx` — ketika `hasHtml=true` (content mengandung tag HTML), cabang render mengembalikan debug placeholder icon (`<span class="material-symbols-outlined">label</span>`) alih-alih merender HTML yang sudah disanitasi. Akibatnya, semua block renderer yang memakai `<RichText>` (22+ file: DefBoxRenderer, PetunjukRenderer, MotivasiRenderer, TujuanDisplayRenderer, DiskusiRenderer, RefleksiRenderer, ChecklistRenderer, RevealRenderer, SkenarioRenderer, TabelRenderer, TimelineRenderer, AlurRenderer, PenutupRenderer, StudiRenderer, TpRenderer, MateriBlokRenderer, StatistikRenderer, RangkumanRenderer, NormaKartuRenderer, GambarRenderer, MateriSectionRenderer, CompareRenderer) menampilkan ikon "label" alih-alih konten rich text yang sebenarnya.
+- **Workaround**: Block renderers lain (DefBox, InlineTextEditor) sudah punya jalur render HTML masing-masing yang memakai `sanitizeHtml` langsung, sehingga bug ini tidak meng-breaking seluruh editor — tetapi konten yang dilewatkan via `<RichText>` tidak tampil.
+- **Owner**: Sprint 9.0C-Patch-1
+- **Target**: Sprint 9.0C-Patch-1
+- **Closure**: CLOSED — Sprint 9.0C-Patch-1 (RichText HTML Render Branch Restoration). Bug ini sudah ada sebelum 9.0C (bukan regresi security) — ditemukan saat senior follow-up audit. Patch: cabang `if (hasHtml)` di `RichText.tsx` sekarang merender `<Tag className={className} style={baselineStyle} dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />` menggunakan hasil `sanitizeHtmlForRender` (hardened sanitizer dari Sprint 9.0C). 29 new tests in `src/__tests__/richtext-9.0c-patch1.test.tsx` verify: (a) HTML branch renders sanitized HTML bukan debug icon; (b) `<strong>Halo</strong><br/>Dunia` → "Halo" + "Dunia" keduanya terlihat; (c) allowlist tags preserved (strong, em, b, i, u, br, span); (d) `<script>alert(1)</script>` stripped (no live script element); (e) `<img src=x onerror=alert(1)>` stripped (no live img, no onerror attr); (f) `<a href="javascript:alert(1)">` stripped (no live a, no javascript: scheme); (g) `<strong onclick="...">` → tag kept, attr stripped; (h) `<span style="...">` → tag kept, style attr stripped; (i) plain text renders as React children (no dSIH); (j) placeholder works when content is empty/undefined; (k) placeholder NOT used when content has HTML; (l) `tag` prop respected (default span, can be div/p/h1); (m) `className` + `style` applied in both branches; (n) word-break baseline style applied in both branches; (o) custom style overrides merged with baseline; (p) backward-compat `sanitizeHtml` re-export still works; (q) `hasHtmlTags` + `stripHtmlTags` helpers; (r) complex real-world mixed content renders correctly. No regression on `export-security-9.0c.test.ts` (86 tests), `hotspot-contract-guards.test.ts` (15 tests), `hotspot-qa.test.tsx` (28 tests), `hotspot-image.test.ts` (16 tests).
+
+---
+
 ## Cara Memperbarui Ledger Ini
 
 - Setiap sprint WAJIB menambahkan issue baru yang ditemukan.

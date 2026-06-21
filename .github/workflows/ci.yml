@@ -98,6 +98,9 @@ jobs:
           # Sprint 9.0C: Export Security & dangerouslySetInnerHTML Audit
           # (closes SEC-002 — sanitizes 18 icon/emoji sinks in export HTML).
           npx vitest run src/__tests__/export-security-9.0c.test.ts
+          # Sprint 9.0C-Patch-1: RichText HTML render branch restoration
+          # (closes RICH-001 — HTML branch was returning debug placeholder icon).
+          npx vitest run src/__tests__/richtext-9.0c-patch1.test.tsx
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)

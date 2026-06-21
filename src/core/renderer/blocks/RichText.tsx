@@ -18,6 +18,15 @@
 // src/lib/sanitize.ts#sanitizeHtmlForRender. The local implementation
 // is kept as a thin re-export for backward compatibility with
 // existing imports in DefBoxRenderer.tsx and InlineTextEditor.tsx.
+//
+// Sprint 9.0C-Patch-1 (RICH-001): Restored the HTML render branch.
+// Previously, when `hasHtml=true`, the component returned a debug
+// placeholder icon (`<span class="material-symbols-outlined">label</span>`)
+// instead of rendering the sanitized HTML. This bug predated 9.0C
+// (not a security regression) but broke rich-text rendering for
+// 22+ block renderers that delegate to <RichText>. The branch now
+// correctly renders `<Tag dangerouslySetInnerHTML={{__html: sanitizedHtml}} />`
+// using the hardened sanitizeHtmlForRender output.
 // ═══════════════════════════════════════════════════════════════════
 
 'use client';
@@ -95,10 +104,24 @@ export const RichText = React.memo(function RichText({
     ...style,
   };
 
+  // Sprint 9.0C-Patch-1 (RICH-001): HTML branch now renders the
+  // sanitized HTML via dangerouslySetInnerHTML. The previous
+  // implementation returned a debug placeholder icon, which broke
+  // rich-text rendering for 22+ block renderers.
   if (hasHtml) {
-    // Content contains HTML — sanitize and render as HTML
+    // Content contains HTML — sanitize and render as HTML.
+    // sanitizedHtml is produced by sanitizeHtmlForRender which:
+    //   - Strips <script>/<style> content entirely
+    //   - Drops non-allowlisted tags (img, a, iframe, object, embed, svg)
+    //   - Strips ALL attributes from allowed tags (no on*, no style, no href)
+    //   - Strips HTML comments
+    // Allowlist: strong, em, b, i, u, br, span, sub, sup, mark, small
     return (
-      <span className="material-symbols-outlined" style={ { fontSize: '16px' } }>label</span>
+      <Tag
+        className={className}
+        style={baselineStyle}
+        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+      />
     );
   }
 
