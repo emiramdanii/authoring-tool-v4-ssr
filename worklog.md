@@ -3024,3 +3024,38 @@ Stage Summary:
 - Sprint 9.0B-Patch-1: ready for senior review → final CLOSED / PASS_CI
 - RC1 closed: real saveToStorage() failure path now exercised by 8 tests
 - RC2 closed: real useDirtyStore.saveFailed() keeps dirty=true verified by 4 tests
+
+---
+Task ID: 9.0B-Patch-2
+Agent: Super Z (main)
+Task: Sprint 9.0B-Patch-2 — Docs SHA typo fix (closure matrix)
+
+Work Log:
+- Senior Review 9.0B-Patch-1: source/test ACCEPTED, CI 3/3 success,
+  RC1+RC2 closed. Single blocking finding:
+  * DOC-RC1: SYSTEM_CLOSURE_MATRIX.md recorded Patch-1 SHA as
+    `96a5127c0e7d62b13f9ebab2d5b8a3aa93b87c0d` — that SHA cannot be
+    fetched from the GitHub commit API. The hallucinated suffix was
+    wrong; the actual SHA from `git rev-parse 96a5127` is
+    `96a5127c0ef4d7dea6e81e782248621f2403b5b5`.
+- Verified both SHAs locally:
+  * Patch-1 source commit: `git rev-parse 96a5127` →
+    `96a5127c0ef4d7dea6e81e782248621f2403b5b5`
+  * Docs closure commit (HEAD before this patch): `git rev-parse ded29e0` →
+    `ded29e0913d302e650f5b5b7a57c70e891a984ff`
+- Fixed SYSTEM_CLOSURE_MATRIX.md:
+  * Replaced wrong SHA with correct SHA on the "Exact SHA (9.0B-Patch-1)" row.
+  * Added new row: "Docs closure SHA (9.0B-Patch-1 evidence matrix)" =
+    `ded29e0913d302e650f5b5b7a57c70e891a984ff`.
+  * Added new row: "Docs SHA fix (9.0B-Patch-2)" with
+    `DOC_SHA_FIX_ACCEPTED` status, documenting the SHA correction.
+- Source/test: UNCHANGED. Patch-2 is docs-only.
+
+Stage Summary:
+- 1 file modified: SYSTEM_CLOSURE_MATRIX.md
+- 9.0B-Patch-1 SHA corrected: 96a5127c0e7d62b13f9ebab2d5b8a3aa93b87c0d →
+  96a5127c0ef4d7dea6e81e782248621f2403b5b5
+- 9.0B docs closure SHA: ded29e0913d302e650f5b5b7a57c70e891a984ff
+- 9.0B source/test: CLOSED / PASS_CI
+- 9.0B docs patch: DOC_SHA_FIX_ACCEPTED
+- Ready for senior to flip final status: Sprint 9.0B — CLOSED / PASS_CI
