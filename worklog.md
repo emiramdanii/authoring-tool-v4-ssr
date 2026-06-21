@@ -2891,3 +2891,66 @@ Stage Summary:
 - Sprint 9.0A overall: ✅ PASS / CLOSED / PASS_CI
 - All Sprints 8.1 → 9.0A now CLOSED with PASS_CI status.
 - PERSIST-002: CLOSED ✅
+
+---
+Task ID: 9.0B
+Agent: Super Z (main)
+Task: Sprint 9.0B — Autosave Failure Telemetry Gate
+
+Work Log:
+- Audited autosave flow: saveToStorage in persistence-slice.ts catches errors
+  with logger.warn + _saveStatus='error'. No observable telemetry.
+- Audited dirty-store: already has saveFailed(msg) + lastError + saveStatus='error'
+  — good state machine, but no parallel telemetry signal for tests.
+- Created src/lib/autosave-telemetry.ts:
+  * recordAutosaveFailure(reason, error): records with reason classification
+    (quota-exceeded, serialization-error, stack-overflow, storage-unavailable, unknown)
+  * getAutosaveTelemetry(): read-only snapshot
+  * clearAutosaveTelemetry(): reset after success
+  * _resetAutosaveTelemetry(): full reset for tests
+  * No external dependencies — internal observable only
+- Wired into persistence-slice.ts saveToStorage():
+  * Failure path: classifies error type → recordAutosaveFailure()
+  * Success path: clearAutosaveTelemetry()
+  * Existing behavior unchanged (logger.warn, _saveStatus, RangeError handling)
+- Wrote 18 tests in autosave-telemetry.test.ts:
+  * Recording: lastError, lastReason, errorCount, lastFailureAt
+  * Non-Error throwables: string, null, undefined, circular object
+  * Read-only snapshot: mutation doesn't affect internal state
+  * Clear after success: errorCount=0, lastError=null, lastClearedAt set
+  * No-op clear when no errors
+  * Multiple failures increment count
+  * All 5 reason types verified (quota-exceeded, serialization-error, stack-overflow, unknown, storage-unavailable)
+  * Telemetry persists on failure (no auto-clear)
+  * No crash on null/undefined/circular
+  * Full reset via _resetAutosaveTelemetry
+  * Integration pattern: fail → retry → success → cleared
+- Closed RECOV-002 in KNOWN_ISSUES.md
+- CI workflow updated: autosave-telemetry.test.ts added
+- Patch-1 NOT needed — first push CI was green on run 27897850049
+
+Stage Summary:
+- Files baru: src/lib/autosave-telemetry.ts, src/__tests__/autosave-telemetry.test.ts (18 tests)
+- Files modified: src/store/canva/persistence-slice.ts (+7 lines), KNOWN_ISSUES.md, .github/workflows/ci.yml
+- Local gates: tsc 0 errors, normalize 0 sigs, build ok, 18 tests pass
+- Sprint 9.0B: PASS / CLOSED / PASS_CI
+
+---
+Task ID: 9.0B-Closure
+Agent: Super Z (main)
+Task: Sprint 9.0B closure documentation sync
+
+Work Log:
+- CI Run ID: 27897850049 — 3/3 jobs success
+- Updated SYSTEM_CLOSURE_MATRIX.md with Sprint 9.0B closure table (19 gates)
+- worklog.md: appended 9.0B + 9.0B-Closure entries
+- Zero source code changes — pure documentation sync
+- Sprint 9.0B: PASS / CLOSED / PASS_CI
+
+Stage Summary:
+- 2 files modified: SYSTEM_CLOSURE_MATRIX.md, worklog.md
+- Source commit: 44ca23de8f750aa312a392732e6d5f4fccc2bf0a
+- CI run: 27897850049
+- Sprint 9.0B overall: ✅ PASS / CLOSED / PASS_CI
+- RECOV-002: CLOSED ✅
+- All Sprints 8.1 → 9.0B now CLOSED with PASS_CI status.

@@ -718,3 +718,29 @@ CI run `27894538407` on SHA `72ae9dd542cfcd020e0489f123bf13fcaa27d5ef` — 3/3 j
 | 9.0A tests total | `PASS_CI` | 34 new tests (migration-idempotency.test.ts) — all CI success |
 | Exact SHA | `PASS_CI` | `72ae9dd542cfcd020e0489f123bf13fcaa27d5ef` |
 | CI Run | `PASS_CI` | `27894538407` — 3/3 jobs success |
+
+## Sprint 9.0B Closure (Autosave Failure Telemetry Gate)
+
+CI run `27897850049` on SHA `44ca23de8f750aa312a392732e6d5f4fccc2bf0a` — 3/3 jobs success.
+
+| Gate | CI Status | Evidence |
+|---|---|---|
+| Telemetry helper exists | `PASS_CI` | `src/lib/autosave-telemetry.ts` — recordAutosaveFailure, getAutosaveTelemetry, clearAutosaveTelemetry |
+| saveToStorage records failure telemetry | `PASS_CI` | `persistence-slice.ts` — catch block calls recordAutosaveFailure with classified reason |
+| saveToStorage clears telemetry on success | `PASS_CI` | `persistence-slice.ts` — success path calls clearAutosaveTelemetry |
+| Telemetry records quota-exceeded | `PASS_CI` | `autosave-telemetry.test.ts` — DOMException recorded |
+| Telemetry records serialization-error | `PASS_CI` | `autosave-telemetry.test.ts` — TypeError recorded |
+| Telemetry records stack-overflow | `PASS_CI` | `autosave-telemetry.test.ts` — RangeError recorded |
+| Telemetry records unknown error | `PASS_CI` | `autosave-telemetry.test.ts` — generic Error recorded |
+| Multiple failures increment errorCount | `PASS_CI` | `autosave-telemetry.test.ts` — 3 failures → count=3 |
+| getAutosaveTelemetry returns read-only snapshot | `PASS_CI` | `autosave-telemetry.test.ts` — mutation doesn't affect internal |
+| clearAutosaveTelemetry resets after success | `PASS_CI` | `autosave-telemetry.test.ts` — errorCount=0, lastError=null |
+| No crash on null/undefined/circular error | `PASS_CI` | `autosave-telemetry.test.ts` — all 3 verified no throw |
+| Integration pattern (fail → retry → success) | `PASS_CI` | `autosave-telemetry.test.ts` — full cycle verified |
+| RECOV-002 status | `CLOSED` | 18 telemetry tests prove failures are observable |
+| tsc 0 errors | `PASS_CI` | `npx tsc --noEmit` returns 0 |
+| normalize 0 sigs | `PASS_CI` | baseline 0 signatures |
+| Build success | `PASS_CI` | `npm run build` exit 0 |
+| 9.0B tests total | `PASS_CI` | 18 new tests (autosave-telemetry.test.ts) — all CI success |
+| Exact SHA | `PASS_CI` | `44ca23de8f750aa312a392732e6d5f4fccc2bf0a` |
+| CI Run | `PASS_CI` | `27897850049` — 3/3 jobs success |
