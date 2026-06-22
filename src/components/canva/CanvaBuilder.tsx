@@ -29,6 +29,8 @@ import { useHealthMonitor } from '@/hooks/use-health-monitor';
 import { SceneTabBar } from './toolbar/SceneTabBar';
 import { BottomPageStrip } from './BottomPageStrip';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+// EDITOR-RADICAL-RESET-01: MPI Studio shell for teacher mode
+import { MpiEditorShell } from './mpi-editor';
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY-LOADED HEAVY COMPONENTS
@@ -76,6 +78,7 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
   const appMode = useCanvaStore((s) => s.appMode);
+  const teacherMode = useCanvaStore((s) => s.teacherMode);
   const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
   const selectedElId = useCanvaStore((s) => s.selectedElId);
   const commandPalette = useCommandPalette();
@@ -192,6 +195,25 @@ export default function CanvaBuilder() {
           <PlayOverlay />
           <OfflineIndicator />
           {isEnabled('commandPalette') && <CommandPalette open={commandPalette.open} onClose={commandPalette.closePalette} />}
+        </div>
+      </MobileGuard>
+    );
+  }
+
+  // ── EDITOR-RADICAL-RESET-01: Teacher mode → MPI Studio shell ──
+  // When teacherMode is on AND we're in edit mode, route to the new
+  // MpiEditorShell (simple 3-panel: SceneRail | Canvas | Inspector).
+  // The old 3-panel layout (IconRail + Stage + RightPanel + SceneTabBar)
+  // is preserved below for advanced/developer mode (teacherMode === false).
+  if (teacherMode && appMode === 'edit') {
+    return (
+      <MobileGuard>
+        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface" id="main-content" data-testid="mpi-builder">
+          <UndoRedoToast />
+          <CanvaAutoSaveSync />
+          <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
+          <MpiEditorShell />
+          <OfflineIndicator />
         </div>
       </MobileGuard>
     );
