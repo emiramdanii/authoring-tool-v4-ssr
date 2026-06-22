@@ -3,57 +3,58 @@
 // ═══════════════════════════════════════════════════════════════
 // MPI CANVAS PANEL — Center area showing the active page
 // ═══════════════════════════════════════════════════════════════
-// VISUAL-STABILIZATION-01: Fix canvas clipping.
+// PHASE-3B: Fixed 1280×720 base stage + scale wrapper.
 //
-// Before: aspectRatio: 16/9 + maxHeight: 100% + overflow-hidden
-//   → canvas content clipped when container shorter than 16:9 ratio
+// PageRenderer renders at native 1280×720. We scale it down to fit
+// the available container space using CSS transform: scale().
+// This is the SAME approach as PreviewMode.tsx — the design stays
+// at native resolution, only the visual size changes.
 //
-// After: Canvas wrapper uses flex-1 to fill available space, then
-//   PageRenderer scales to fit using object-fit: contain pattern.
-//   The wrapper is relative + overflow-hidden (content stays inside),
-//   but the inner page is allowed to scroll if needed (not clipped).
-//
-// No resizable handles, no zoom controls, no technical chrome.
+// Benefits:
+//   - No clipping (content always at 1280×720)
+//   - No layout shift (scale is visual only)
+//   - Preview/Export match exactly (same native size)
+//   - No zoom confusion (auto-fit, no manual zoom)
 
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { PageRenderer } from '@/components/canva/page-renderer';
+import { RATIOS } from '@/components/canva/types';
 
 export function MpiCanvasPanel() {
   const pages = useCanvaStore((s) => s.pages);
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
   const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
+  const ratioId = useCanvaStore((s) => s.ratioId);
 
   const page = pages[currentPageIndex];
 
-  // VISUAL-STABILIZATION-01: Measure container to compute the best
-  // 16:9 frame that fits WITHOUT clipping. This replaces the old
-  // aspectRatio + maxHeight approach which clipped content.
+  // Get native dimensions from ratio (default 1280×720 for 16:9)
+  const ratio = RATIOS.find((r) => r.id === ratioId) ?? RATIOS[0]!;
+  const nativeW = ratio.w;
+  const nativeH = ratio.h;
+
+  // PHASE-3B: Measure container to compute scale factor
   const containerRef = useRef<HTMLDivElement>(null);
-  const [frameSize, setFrameSize] = useState({ width: 0, height: 0 });
+  const [scale, setScale] = useState(0.5);
 
   useEffect(() => {
-    const updateSize = () => {
+    const updateScale = () => {
       const el = containerRef.current;
       if (!el) return;
       const cw = el.clientWidth - 48; // padding
       const ch = el.clientHeight - 80; // title bar + helper text
-      // Compute 16:9 frame that fits inside container
-      const widthByHeight = ch * (16 / 9);
-      const heightByWidth = cw * (9 / 16);
-      if (widthByHeight <= cw) {
-        // Height-constrained: frame is shorter than container width
-        setFrameSize({ width: widthByHeight, height: ch });
-      } else {
-        // Width-constrained: frame is narrower than container height
-        setFrameSize({ width: cw, height: heightByWidth });
-      }
+      // Compute scale that fits native size into container
+      const scaleW = cw / nativeW;
+      const scaleH = ch / nativeH;
+      const newScale = Math.min(scaleW, scaleH, 1); // never upscale beyond 1:1
+      setScale(Math.max(0.1, newScale)); // floor at 10%
     };
-    updateSize();
-    const ro = new ResizeObserver(updateSize);
+    updateScale();
+    const ro = new ResizeObserver(updateScale);
     if (containerRef.current) ro.observe(containerRef.current);
     return () => ro.disconnect();
-  }, []);
+  }, [nativeW, nativeH]);
 
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -83,6 +84,10 @@ export function MpiCanvasPanel() {
     );
   }
 
+  // Scaled dimensions (what the teacher sees)
+  const scaledW = nativeW * scale;
+  const scaledH = nativeH * scale;
+
   return (
     <main
       ref={containerRef}
@@ -105,25 +110,35 @@ export function MpiCanvasPanel() {
         </div>
       </div>
 
-      {/* VISUAL-STABILIZATION-01: Canvas wrapper computed to fit
-          container WITHOUT clipping. Uses ResizeObserver to recalculate
-          when panel resizes. relative + overflow-hidden keeps content
-          contained, but frame is sized to show ALL content. */}
+      {/* PHASE-3B: Fixed 1280×720 stage scaled to fit container.
+          The outer div is the visible area (scaledW × scaledH).
+          The inner div is at native 1280×720 with transform: scale().
+          This matches PreviewMode's approach exactly. */}
       <div
         className="relative bg-white rounded-lg shadow-md overflow-hidden flex-shrink-0"
         style={{
-          width: frameSize.width > 0 ? `${frameSize.width}px` : '100%',
-          maxWidth: '100%',
-          height: frameSize.height > 0 ? `${frameSize.height}px` : 'auto',
-          maxHeight: '100%',
+          width: `${scaledW}px`,
+          height: `${scaledH}px`,
         }}
       >
-        <PageRenderer
-          mode="canvas"
-          page={page}
-          currentPageIndex={currentPageIndex}
-          totalPages={pages.length}
-        />
+        <div
+          style={{
+            width: `${nativeW}px`,
+            height: `${nativeH}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        >
+          <PageRenderer
+            mode="canvas"
+            page={page}
+            currentPageIndex={currentPageIndex}
+            totalPages={pages.length}
+          />
+        </div>
       </div>
 
       {/* Helper text */}

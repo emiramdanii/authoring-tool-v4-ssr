@@ -1,36 +1,44 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════
-// MPI INSPECTOR — Right panel contextual editor
+// MPI INSPECTOR — Right panel with minimal real editing
 // ═══════════════════════════════════════════════════════════════
-// EDITOR-RADICAL-RESET-01: Right panel for MPI Studio.
+// PHASE-3B: Replaces NOT_IMPLEMENTED_UI with real minimal editing.
 //
-// For sprint 1, this is a PLACEHOLDER that shows contextual hints:
-//   - If a block is selected → "Edit Isi" (will be wired in sprint 2)
-//   - If no block selected → "Pengaturan Halaman" + "Style Media"
+// When a block is selected, shows editable fields for the most
+// common content fields (title, subtitle, content, icon).
+// Uses updateSchemaBlock() — the official schema update route.
 //
-// Per sprint scope: "Jangan bangun seluruh editor detail dulu."
-// The full guided editor integration is deferred to sprint 2.
+// When no block is selected, shows page settings + style hint.
 
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+
+// Block types that have editable title field
+const HAS_TITLE = new Set(['cover', 'petunjuk', 'tp', 'def-box', 'materi-section', 'tujuan-display', 'motivasi', 'rangkuman', 'diskusi', 'refleksi', 'penutup', 'tabel-accord', 'hero', 'materi-blok', 'nk-card', 'nc-grid']);
+const HAS_SUBTITLE = new Set(['cover', 'hero', 'materi-section']);
+const HAS_CONTENT = new Set(['def-box', 'materi-blok']);
+const HAS_ICON = new Set(['cover', 'hero', 'petunjuk', 'materi-section', 'nk-card']);
 
 export function MpiInspector() {
   const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
   const pages = useCanvaStore((s) => s.pages);
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
+  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
 
   const page = pages[currentPageIndex];
 
-  // Find the selected block (if any)
-  const selectedBlock = React.useMemo(() => {
+  const selectedBlock = useMemo(() => {
     if (!selectedBlockId || !page?.schema?.blocks) return null;
     return page.schema.blocks.find((b) => b.id === selectedBlockId) || null;
   }, [selectedBlockId, page]);
 
-  // Safe accessor for block fields (blocks are typed as union, but we
-  // only need a few common fields for display)
   const blockFields = (selectedBlock as unknown as Record<string, unknown>) || {};
+
+  const handleFieldChange = useCallback((field: string, value: string) => {
+    if (!selectedBlockId) return;
+    updateSchemaBlock(selectedBlockId, { [field]: value } as never, { source: 'user' });
+  }, [selectedBlockId, updateSchemaBlock]);
 
   return (
     <aside
@@ -44,50 +52,65 @@ export function MpiInspector() {
         </h2>
       </div>
 
-      {/* Content — contextual based on selection */}
+      {/* Content */}
       <div className="flex-1 p-4">
         {selectedBlock ? (
-          // Block selected — show edit placeholder
           <div className="space-y-4">
+            {/* Block type badge */}
             <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
               <div className="flex items-center gap-2 text-emerald-800">
                 <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '18px' }}>edit</span>
                 <span className="text-sm font-medium capitalize">{selectedBlock.type}</span>
               </div>
-              <p className="text-xs text-emerald-600 mt-1">
-                Bagian dipilih. Editor detail akan tersedia di sprint berikutnya.
-              </p>
             </div>
 
-            {/* Block info */}
-            <div className="space-y-2">
-              <div>
-                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Tipe</label>
-                <p className="text-sm text-slate-800 capitalize">{selectedBlock.type}</p>
-              </div>
-              {blockFields.title != null && (
-                <div>
-                  <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Judul</label>
-                  <p className="text-sm text-slate-800">{String(blockFields.title)}</p>
-                </div>
-              )}
-              <div>
-                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">ID</label>
-                <p className="text-xs text-slate-400 font-mono break-all">{selectedBlock.id}</p>
-              </div>
-            </div>
+            {/* Editable fields — PHASE-3B: real editing via updateSchemaBlock */}
+            {HAS_ICON.has(selectedBlock.type) && (
+              <FieldInput
+                label="Ikon"
+                value={String(blockFields.icon ?? '')}
+                onChange={(v) => handleFieldChange('icon', v)}
+                placeholder="📄"
+              />
+            )}
+
+            {HAS_TITLE.has(selectedBlock.type) && (
+              <FieldInput
+                label="Judul"
+                value={String(blockFields.title ?? '')}
+                onChange={(v) => handleFieldChange('title', v)}
+                placeholder="Judul bagian"
+              />
+            )}
+
+            {HAS_SUBTITLE.has(selectedBlock.type) && (
+              <FieldInput
+                label="Subjudul"
+                value={String(blockFields.subtitle ?? '')}
+                onChange={(v) => handleFieldChange('subtitle', v)}
+                placeholder="Subjudul"
+              />
+            )}
+
+            {HAS_CONTENT.has(selectedBlock.type) && (
+              <FieldTextarea
+                label="Konten"
+                value={String(blockFields.content ?? '')}
+                onChange={(v) => handleFieldChange('content', v)}
+                placeholder="Isi konten"
+              />
+            )}
 
             {/* Hint */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs text-amber-700">
-                <span className="font-medium">Status: NOT_IMPLEMENTED_UI</span> — Editor konten
-                belum tersedia di Mode Guru. Untuk edit lengkap, klik tombol "Lanjutan" di
-                toolbar atas untuk beralih ke Advanced Mode.
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <p className="text-xs text-slate-500">
+                Perubahan otomatis tersimpan. Untuk edit lengkap (warna, varian, dll),
+                klik tombol &quot;Lanjutan&quot; di toolbar atas.
               </p>
             </div>
           </div>
         ) : (
-          // No block selected — show page settings placeholder
+          // No block selected — page settings
           <div className="space-y-4">
             <div className="text-center py-6">
               <span className="material-symbols-outlined text-slate-300" aria-hidden="true" style={{ fontSize: '40px' }}>touch_app</span>
@@ -97,7 +120,6 @@ export function MpiInspector() {
               </p>
             </div>
 
-            {/* Page info */}
             {page && (
               <div className="border-t border-slate-100 pt-4 space-y-2">
                 <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Halaman Aktif</h3>
@@ -116,16 +138,61 @@ export function MpiInspector() {
               </div>
             )}
 
-            {/* Style section */}
             <div className="border-t border-slate-100 pt-4">
               <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Style Media</h3>
               <p className="text-xs text-slate-400">
-                Ubah style via tombol "Style" di toolbar atas. Style berlaku untuk semua halaman.
+                Ubah style via tombol &quot;Style&quot; di toolbar atas. Style berlaku untuk semua halaman.
               </p>
             </div>
           </div>
         )}
       </div>
     </aside>
+  );
+}
+
+// ── Reusable field components ──────────────────────────────────
+
+function FieldInput({ label, value, onChange, placeholder }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+        {label}
+      </label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 transition-colors"
+      />
+    </div>
+  );
+}
+
+function FieldTextarea({ label, value, onChange, placeholder }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+        {label}
+      </label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={4}
+        className="w-full px-3 py-2 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 transition-colors resize-none"
+      />
+    </div>
   );
 }
