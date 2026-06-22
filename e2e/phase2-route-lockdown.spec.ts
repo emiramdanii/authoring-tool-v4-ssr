@@ -117,56 +117,66 @@ test.describe('PHASE-2 — Official Route Lockdown', () => {
   test('3. Export: cover not dark (render export HTML + check bg color)', async ({ page }) => {
     await setupMpiStudio(page);
 
+    // PHASE-3A: Intercept the /api/export response at network level
+    // so we can read the body WITHOUT consuming it (the UI code
+    // calls response.blob() which consumes the stream).
+    let exportHtml = '';
+
+    await page.route('**/api/export', async (route) => {
+      const response = await route.fetch();
+      const body = await response.text();
+      exportHtml = body;
+      // Fulfill with the original response so UI continues normally
+      await route.fulfill({
+        status: response.status(),
+        headers: response.headers(),
+        body,
+      });
+    });
+
     const exportBtn = page.locator('button[aria-label="Export ke HTML"]');
     await exportBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await exportBtn.click();
 
-    const [response] = await Promise.all([
-      page.waitForResponse(
-        resp => resp.url().includes('/api/export') && resp.request().method() === 'POST',
-        { timeout: 120000 }
-      ),
-      exportBtn.click(),
-    ]);
+    // Wait for export to complete (auto-build may take time)
+    await page.waitForTimeout(10000);
 
-    const status = response.status();
-    const html = await response.text();
+    // PHASE-3A: Hardened assertions — no loopholes
+    // 1. Must have HTML content
+    expect(exportHtml.length).toBeGreaterThan(1000);
+    // 2. Must contain <html
+    expect(exportHtml).toContain('<html');
 
-    // PHASE-2A: If export succeeded (200 + HTML body), render it and
-    // check background. If export failed (non-200 or empty body),
-    // verify it's NOT the "template not found" error (which would
-    // mean the dark fallback path is still active).
-    if (status === 200 && html.includes('<html')) {
-      // Export succeeded — render HTML and check background
-      const blobUrl = await page.evaluate((htmlContent) => {
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        return URL.createObjectURL(blob);
-      }, html);
+    // 3. Render HTML in new tab and check background
+    const blobUrl = await page.evaluate((htmlContent) => {
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      return URL.createObjectURL(blob);
+    }, exportHtml);
 
-      const exportPage = await page.context().newPage();
-      await exportPage.goto(blobUrl, { waitUntil: 'domcontentloaded' });
-      await exportPage.waitForTimeout(5000);
+    const exportPage = await page.context().newPage();
+    await exportPage.goto(blobUrl, { waitUntil: 'domcontentloaded' });
+    await exportPage.waitForTimeout(5000);
 
-      const bgInfo = await exportPage.evaluate(() => {
-        const bgLayer = document.querySelector('.absolute.inset-0') as HTMLElement;
-        if (!bgLayer) return { found: false, bg: 'none' };
-        const style = getComputedStyle(bgLayer);
-        return { found: true, bg: style.backgroundColor };
-      });
+    // 4. bgLayer MUST be found — fail if not
+    const bgInfo = await exportPage.evaluate(() => {
+      const bgLayer = document.querySelector('.absolute.inset-0') as HTMLElement;
+      if (!bgLayer) return { found: false, bg: 'none' };
+      const style = getComputedStyle(bgLayer);
+      return { found: true, bg: style.backgroundColor };
+    });
 
-      if (bgInfo.found) {
-        // Background must NOT be dark navy
-        expect(bgInfo.bg).not.toContain('15, 23, 42'); // #0f172a
-        expect(bgInfo.bg).not.toContain('14, 28, 47'); // #0e1c2f
-      }
+    expect(bgInfo.found).toBe(true);
 
-      await exportPage.screenshot({ path: 'test-results/phase2a-export-rendered.png' });
-      await exportPage.close();
-      await page.evaluate((url) => URL.revokeObjectURL(url), blobUrl);
-    } else {
-      // Export failed — verify it's NOT "template not found" (dark path)
-      expect(html).not.toContain('template not found');
-      expect(html).not.toContain('Run "npm run export:build"');
-    }
+    // 5. Background must NOT be dark navy
+    expect(bgInfo.bg).not.toContain('15, 23, 42'); // #0f172a
+    expect(bgInfo.bg).not.toContain('14, 28, 47'); // #0e1c2f
+
+    await exportPage.screenshot({ path: 'test-results/phase3a-export-rendered.png' });
+    await exportPage.close();
+    await page.evaluate((url) => URL.revokeObjectURL(url), blobUrl);
+
+    // Cleanup route interception
+    await page.unroute('**/api/export');
   });
 
   test('4. All pages have modern-interactive themeId (not default/dark)', async ({ page }) => {

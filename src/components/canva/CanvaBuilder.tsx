@@ -219,6 +219,16 @@ export default function CanvaBuilder() {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // @QUARANTINE — PHASE-3A
+  // This is the old 3-panel editor (IconRail + Stage + RightPanel +
+  // SceneTabBar + BottomPageStrip). It is NOT the official route.
+  // Official route = MPI Studio (MpiEditorShell) for teacherMode.
+  // This code is kept for Advanced Mode (teacherMode=false) but
+  // should NOT be improved, tested as primary, or used as visual
+  // proof. Do not patch bugs here — fix them in MPI Studio instead.
+  // Reconnect plan: see RECONNECT-ORDER.md
+  // ═══════════════════════════════════════════════════════════════
   // ── EDIT mode: Fixed header + resizable 3-panel layout (SILSE v4) ──
   return (
     <MobileGuard>

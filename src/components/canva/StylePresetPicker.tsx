@@ -1,6 +1,13 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════
+// @QUARANTINE — PHASE-3A
+// This is the old per-page style picker used in the Advanced editor
+// RightPanel. It calls setSchemaThemeId() which sets theme on CURRENT
+// PAGE only. The official route uses MpiStyleControl (global, all
+// pages). Do NOT use this as style proof. Do NOT improve.
+// Conflict: setSchemaThemeId (per-page) vs applyStyleGlobal (all pages)
+// ═══════════════════════════════════════════════════════════════════
 // STYLE PRESET PICKER — New Style Contract preset selector (Sprint 8.2D)
 // ═══════════════════════════════════════════════════════════════════
 // Sprint 8.2D — Teacher Style Picker

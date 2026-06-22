@@ -1,4 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════
+// @LEGACY_ONLY — PHASE-3A
+// TOKEN_COLORS and resolveColor() in this file are used ONLY by the
+// legacy static HTML export path (renderPageHtml → renderBlockHtml).
+// The official export route uses ExportApp → PageRenderer mode=export
+// → TokenResolver, which reads schema.themeId and uses Style Contract
+// presets. TOKEN_COLORS uses hardcoded dark values (canvasBg=#0e1c2f)
+// and does NOT follow themeId. Do NOT use in official route code.
+// ═══════════════════════════════════════════════════════════════════════
 // EXPORT UTILITIES — Shared helpers for the export pipeline
 // ═══════════════════════════════════════════════════════════════════════
 

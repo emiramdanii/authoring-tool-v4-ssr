@@ -1,4 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════════
+// @LEGACY_EXPORT_PATH — PHASE-3A
+// This is the STATIC HTML export renderer. It is NOT the official
+// export route. The official export route is:
+//   /api/export → Vite SSR template → ExportApp → PageRenderer mode=export
+// This static path (renderPageHtml/renderBlockHtml) uses hardcoded
+// TOKEN_COLORS (dark) and does NOT read schema.themeId.
+// Do NOT use this as source of truth for export visuals.
+// Do NOT improve this — fix export visuals in ExportApp/PageRenderer.
+// Deprecation plan: see OFFICIAL-ROUTE-PROPOSAL.md
+// ═══════════════════════════════════════════════════════════════════════
 // HTML TEMPLATES — Page rendering and HTML shell generation
 // ═══════════════════════════════════════════════════════════════════════
 //

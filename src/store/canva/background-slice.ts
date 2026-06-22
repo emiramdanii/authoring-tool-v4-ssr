@@ -145,6 +145,11 @@ export const createBackgroundSlice: StateCreator<CanvaState, [], [], BackgroundS
   },
 
   // ── Schema Theme ID action ────────────────────────────────
+  // @QUARANTINE_CONFLICT — PHASE-3A
+  // This sets theme on CURRENT PAGE only. The official MPI Studio
+  // route uses MpiStyleControl.applyStyleGlobal() which sets theme
+  // on ALL pages. Using both creates inconsistency. Do NOT call this
+  // from MPI Studio code. Only used by old StylePresetPicker.
   // Changes the theme preset for the current page.
   // D-P0B.1 fix: Writes to BOTH schema.themeId AND templateData.schemaThemeId.
   // schema.themeId is the canonical source for schema pages.
