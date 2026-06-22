@@ -126,17 +126,24 @@ export async function applyTemplateToStore(
     // ── Step 2: Apply theme IMMUTABLY ────────────────────────────
     // Schemas may be deepFrozen in dev mode, so we create new page
     // objects instead of mutating in place.
-    // PATCH-2D: Write themeId to BOTH schema.themeId AND templateData.schemaThemeId.
-    // Previously only templateData was written, causing PageRenderer to fall back
-    // to 'default' (dark navy) instead of the intended theme.
-    const themeId = getTemplateThemeId(templateId);
+    //
+    // PATCH-2E: Single source of truth for themeId.
+    // Previously (PATCH-2D): schema.themeId = page.schema.themeId || themeId,
+    // but templateData.schemaThemeId = themeId (raw). If schema already had
+    // 'modern-interactive' but template theme was 'default', the two fields
+    // would be different — a time bomb for save/load/export/legacy bridge.
+    //
+    // Now: compute ONE finalThemeId, write it to BOTH fields.
+    // Priority: schema.themeId (already set by schema-factory) > template
+    // theme > 'modern-interactive' (light default for teacher mode).
+    const templateThemeId = getTemplateThemeId(templateId);
 
     const pages = rawPages.map(page => {
       if (!page.schema) return page;
+      const finalThemeId = page.schema.themeId || templateThemeId || 'modern-interactive';
       const updatedSchema = {
         ...page.schema,
-        // PATCH-2D: Sync schema.themeId so PageRenderer reads the correct theme
-        themeId: page.schema.themeId || themeId,
+        themeId: finalThemeId,
         background: {
           ...(page.schema.background ?? {}),
           type: page.schema.background?.type ?? 'gradient',
@@ -145,7 +152,7 @@ export async function applyTemplateToStore(
       return {
         ...page,
         schema: updatedSchema,
-        templateData: { ...page.templateData, schemaThemeId: themeId },
+        templateData: { ...page.templateData, schemaThemeId: finalThemeId },
       };
     });
 

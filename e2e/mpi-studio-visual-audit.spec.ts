@@ -96,41 +96,40 @@ test.describe('MPI Studio Visual Audit (PATCH-2D)', () => {
   test('3. Export button succeeds in dev mode (auto-build)', async ({ page }) => {
     await setupMpiStudio(page);
 
-    // Delete existing export template to test auto-build
-    await page.evaluate(() => {
-      // Can't delete files from browser, but we can verify the export
-      // button triggers the API which will auto-build if needed
-    });
-
-    // Click Export button
+    // Click Export button and capture the API response
     const exportBtn = page.locator('button[aria-label="Export ke HTML"]');
     await exportBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await exportBtn.click();
 
-    // Wait for export to complete (auto-build may take up to 60s)
-    // Check for either success (file download) or error
-    await page.waitForTimeout(5000);
+    // PATCH-2E: Use waitForResponse to capture the actual HTTP response
+    // Auto-build may take up to 60s, so timeout 120s
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        resp => resp.url().includes('/api/export') && resp.request().method() === 'POST',
+        { timeout: 120000 }
+      ),
+      exportBtn.click(),
+    ]);
 
-    // Check console for export errors
-    const exportErrors: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.type() === 'error' && msg.text().includes('Export')) {
-        exportErrors.push(msg.text());
-      }
-    });
+    const status = response.status();
+    const contentType = response.headers()['content-type'] || '';
 
-    // Wait a bit more for auto-build
-    await page.waitForTimeout(10000);
-
-    // The export should either succeed (no "template not found" error)
-    // or show "auto-building" in console (which means it's working)
-    const hasTemplateNotFound = exportErrors.some(e =>
-      e.includes('template not found') || e.includes('Run "npm run export:build"')
-    );
-
-    // If we see "template not found" that means auto-build didn't kick in
-    // (which could be because template already exists from previous build)
-    // The key assertion: export should NOT fail with "template not found"
-    expect(hasTemplateNotFound).toBe(false);
+    // PATCH-2E: The export API may return 200 (success) or 400/500 (error).
+    // The key assertion: it should NOT return "template not found" (500
+    // with that specific message). If auto-build worked, we get 200 or
+    // at worst a validation error (400) — but NOT "template not found".
+    //
+    // If status is 200: export succeeded, content-type must be text/html
+    // If status is 400/500: check body for "template not found" error
+    if (status === 200) {
+      expect(contentType).toContain('text/html');
+      const body = await response.text();
+      expect(body.length).toBeGreaterThan(1000);
+      expect(body).toContain('<html');
+    } else {
+      // Non-200 — check it's NOT the "template not found" error
+      const body = await response.text();
+      expect(body).not.toContain('template not found');
+      expect(body).not.toContain('Run "npm run export:build"');
+    }
   });
 });
