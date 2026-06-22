@@ -24,6 +24,9 @@ const MAX_EXPORT_SIZE = 20_000_000;
 let _templateCache: Buffer | null = null;
 let _templateMtime: number = 0;
 
+// PATCH-2D: Dev-mode auto-build lock — prevents concurrent builds
+let _devBuildLock = false;
+
 function getTemplateBuffer(): Buffer | null {
   try {
     const stat = fs.statSync(TEMPLATE_PATH);
@@ -37,6 +40,64 @@ function getTemplateBuffer(): Buffer | null {
     _templateCache = null;
     _templateMtime = 0;
     return null;
+  }
+}
+
+/**
+ * PATCH-2D: In development mode, auto-build the export template if it
+ * doesn't exist. This fixes the regression from OPTIMIZE-LAST-01 where
+ * `npm run dev` no longer runs `vite build` before starting Next.js.
+ *
+ * Constraints (per senior audit):
+ *   - Dev only (NODE_ENV !== 'production')
+ *   - Static command, no user input
+ *   - Timeout 60s
+ *   - Lock prevents double build
+ *   - If build fails, return error clearly
+ *
+ * Production behavior is unchanged — prebuilt template is required.
+ */
+async function ensureDevTemplate(): Promise<{ ok: boolean; error?: string }> {
+  if (process.env.NODE_ENV === 'production') {
+    return { ok: false, error: 'Production mode requires prebuilt template. Run "npm run build" before "npm start".' };
+  }
+
+  // Check if template already exists
+  if (getTemplateBuffer()) return { ok: true };
+
+  // Lock — prevent concurrent builds
+  if (_devBuildLock) {
+    // Wait for existing build to finish (poll up to 60s)
+    for (let i = 0; i < 120; i++) {
+      await new Promise(r => setTimeout(r, 500));
+      if (getTemplateBuffer()) return { ok: true };
+      if (!_devBuildLock) break;
+    }
+    return { ok: false, error: 'Export template build timed out (another build in progress).' };
+  }
+
+  _devBuildLock = true;
+  try {
+    console.log('[Export API] Dev mode: auto-building export template...');
+    const { execSync } = await import('child_process');
+    execSync('npx vite build --config vite.export.config.ts', {
+      cwd: process.cwd(),
+      timeout: 60000,
+      stdio: 'pipe',
+    });
+    // Reload template cache
+    _templateCache = null;
+    _templateMtime = 0;
+    if (getTemplateBuffer()) {
+      console.log('[Export API] Dev mode: export template built successfully.');
+      return { ok: true };
+    }
+    return { ok: false, error: 'Export template build completed but file not found.' };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `Export template build failed: ${msg}` };
+  } finally {
+    _devBuildLock = false;
   }
 }
 
@@ -56,12 +117,23 @@ export async function POST(request: NextRequest) {
     const body = parsed.data;
 
     // Get cached template
-    const templateBuf = getTemplateBuffer();
+    let templateBuf = getTemplateBuffer();
     if (!templateBuf) {
-      return NextResponse.json(
-        { error: 'Export template not found. Run "npm run export:build" first.' },
-        { status: 500 }
-      );
+      // PATCH-2D: In dev mode, auto-build the export template
+      const devBuild = await ensureDevTemplate();
+      if (!devBuild.ok) {
+        return NextResponse.json(
+          { error: devBuild.error || 'Export template not found.' },
+          { status: 500 }
+        );
+      }
+      templateBuf = getTemplateBuffer();
+      if (!templateBuf) {
+        return NextResponse.json(
+          { error: 'Export template still not found after auto-build.' },
+          { status: 500 }
+        );
+      }
     }
 
     // Build export data JSON string

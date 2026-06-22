@@ -126,12 +126,17 @@ export async function applyTemplateToStore(
     // ── Step 2: Apply theme IMMUTABLY ────────────────────────────
     // Schemas may be deepFrozen in dev mode, so we create new page
     // objects instead of mutating in place.
+    // PATCH-2D: Write themeId to BOTH schema.themeId AND templateData.schemaThemeId.
+    // Previously only templateData was written, causing PageRenderer to fall back
+    // to 'default' (dark navy) instead of the intended theme.
     const themeId = getTemplateThemeId(templateId);
 
     const pages = rawPages.map(page => {
       if (!page.schema) return page;
       const updatedSchema = {
         ...page.schema,
+        // PATCH-2D: Sync schema.themeId so PageRenderer reads the correct theme
+        themeId: page.schema.themeId || themeId,
         background: {
           ...(page.schema.background ?? {}),
           type: page.schema.background?.type ?? 'gradient',

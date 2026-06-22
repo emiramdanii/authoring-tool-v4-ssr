@@ -166,6 +166,11 @@ export function createDefaultSchemaForTemplateType(
     id: pageId,
     version: SCHEMA_VERSION,
     templateType,
+    // PATCH-2D: Default themeId = 'modern-interactive' (light background
+    // #F5F7FB) so new pages are teacher-friendly. Without this, themeId
+    // is undefined and PageRenderer falls back to 'default' (dark navy
+    // #0f172a) which looks "broken" to teachers.
+    themeId: 'modern-interactive',
     sectionLabel: SECTION_LABELS[templateType],
     sectionColor: getSectionColor(templateType),
     sceneType,
