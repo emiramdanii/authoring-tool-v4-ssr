@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useCanvaStore } from '@/store/canva-store';
 import { getAllStylePresets, type StylePresetDefinition } from '@/core/style/preset-registry';
@@ -18,6 +18,20 @@ const STYLE_LABELS: Record<string, string> = {
 export function WorkspaceStyleMenu() {
   const pages = useCanvaStore((s) => s.pages);
   const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+
+  // V3-1A: Compute menu position from button rect — appears below button
+  useLayoutEffect(() => {
+    if (open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      // Position: below the button, right-aligned to button's right edge
+      const menuWidth = 224; // w-56 = 14rem = 224px
+      const left = Math.max(8, rect.right - menuWidth);
+      const top = rect.bottom + 8;
+      setMenuPos({ top, left });
+    }
+  }, [open]);
 
   const currentThemeId = React.useMemo(() => {
     for (const page of pages) {
@@ -45,19 +59,13 @@ export function WorkspaceStyleMenu() {
     toast.success(`Style diterapkan: ${STYLE_LABELS[presetId] || presetId}`);
   };
 
-  // V3: Use createPortal to render dropdown at document.body level.
-  // This avoids z-index/overflow-hidden issues from parent containers.
+  // V3-1A: Portal at document.body with position from buttonRef rect
   const dropdown = open ? createPortal(
     <>
       <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} aria-hidden="true" />
       <div
         className="fixed z-[9999] bg-white border border-slate-200 rounded-lg shadow-xl py-1 w-56"
-        style={{
-          // Position will be set by JS — for now, center it
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-        }}
+        style={{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }}
         role="menu"
         aria-label="Pilih style media"
       >
@@ -91,6 +99,7 @@ export function WorkspaceStyleMenu() {
   return (
     <div className="flex-shrink-0">
       <button
+        ref={buttonRef}
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
         aria-label="Pilih style media"

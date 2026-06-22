@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useCanvaStore } from '@/store/canva-store';
 import type { PageTemplateType } from '@/components/canva/types';
@@ -28,6 +28,20 @@ export function WorkspaceContentPalette() {
   const pages = useCanvaStore((s) => s.pages);
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
   const [showPageMenu, setShowPageMenu] = useState(false);
+  const pageBtnRef = useRef<HTMLButtonElement>(null);
+  const [pageMenuPos, setPageMenuPos] = useState({ top: 0, left: 0 });
+
+  // V3-1A: Position menu above the Tambah Halaman button
+  useLayoutEffect(() => {
+    if (showPageMenu && pageBtnRef.current) {
+      const rect = pageBtnRef.current.getBoundingClientRect();
+      const menuWidth = 288; // w-72 = 18rem = 288px
+      const left = Math.max(8, rect.left + rect.width / 2 - menuWidth / 2);
+      // Position above the button (bottom-up menu)
+      const top = rect.top - 8; // will be adjusted by bottom positioning
+      setPageMenuPos({ top: Math.max(8, top - 400), left }); // 400px ~ menu height
+    }
+  }, [showPageMenu]);
 
   const handleAddPage = (templateType: PageTemplateType) => {
     if (templateType === 'custom') {
@@ -53,7 +67,7 @@ export function WorkspaceContentPalette() {
       <div className="fixed inset-0 z-[9998]" onClick={() => setShowPageMenu(false)} aria-hidden="true" />
       <div
         className="fixed z-[9999] bg-white border border-slate-200 rounded-lg shadow-xl py-1 w-72"
-        style={{ top: 'auto', bottom: '60px', left: '50%', transform: 'translateX(-50%)' }}
+        style={{ top: `${pageMenuPos.top}px`, left: `${pageMenuPos.left}px` }}
         role="menu"
         aria-label="Pilih tipe halaman"
       >
@@ -82,6 +96,7 @@ export function WorkspaceContentPalette() {
     <footer className="flex items-center justify-center gap-3 px-6 py-3 bg-white border-t border-slate-200 shadow-sm" role="toolbar" aria-label="Tambah konten">
       <div className="relative">
         <button
+          ref={pageBtnRef}
           onClick={() => setShowPageMenu(!showPageMenu)}
           className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
           aria-label="Tambah halaman baru"

@@ -54,62 +54,48 @@ test.describe('V3-PHASE-1 — MPI Workspace V2 Acceptance Gate', () => {
     await expect(page.locator('[data-testid="mpi-workspace-v2"]')).toBeVisible();
   });
 
-  test('3-4. Natural block selection — click canvas → inspector shows fields', async ({ page }) => {
+  test('3-6. Natural selection: real click → inspector → edit → verify', async ({ page }) => {
     await setupWorkspace(page);
 
-    // Click on the cover block area in canvas
-    // PageRenderer renders blocks with data-block-id attributes
+    // V3-1A: NO STORE HACK. Click a real [data-block-id] element on canvas.
     const canvasArea = page.locator('#mpi-canvas-v2');
     await canvasArea.waitFor({ state: 'visible', timeout: 5000 });
 
-    // Try clicking a block — look for elements with data-block-id
+    // Wait for blocks to render (PageRenderer renders with data-block-id)
+    await page.waitForTimeout(2000);
+
+    // Find and click the first block with data-block-id
     const blockEl = page.locator('[data-block-id]').first();
-    if (await blockEl.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await blockEl.click();
-      await page.waitForTimeout(1000);
-    } else {
-      // Fallback: click center of canvas (may hit a block)
-      await canvasArea.click({ position: { x: 300, y: 200 } });
-      await page.waitForTimeout(1000);
-    }
+    await blockEl.waitFor({ state: 'visible', timeout: 10000 });
+    await blockEl.click();
+    await page.waitForTimeout(1500);
 
-    // Verify inspector shows "Edit" header (not "Pengaturan Halaman")
-    const editHeader = page.locator('aside h2:has-text("Edit")');
-    const pageHeader = page.locator('aside h2:has-text("Pengaturan")');
-
-    // One of them should be visible
-    const editVisible = await editHeader.isVisible().catch(() => false);
-    const pageVisible = await pageHeader.isVisible().catch(() => false);
-    expect(editVisible || pageVisible).toBe(true);
-  });
-
-  test('5-6. Edit title from inspector → verify store updated', async ({ page }) => {
-    await setupWorkspace(page);
-
-    // Select cover block via store (for reliable test setup)
-    await page.evaluate(() => {
-      const s = (window as any).__useCanvaStore.getState();
-      const block = s.pages[0]?.schema?.blocks?.find((b: any) => b.type === 'cover');
-      if (block) s.setState({ selectedBlockId: block.id });
+    // Assert: selectedBlockId changed (not null) — proves natural selection worked
+    const selectedId = await page.evaluate(() => {
+      return (window as any).__useCanvaStore.getState().selectedBlockId;
     });
-    await page.waitForTimeout(1000);
+    expect(selectedId).not.toBeNull();
 
-    // Find title input
+    // Assert: inspector shows "Edit" header (not "Pengaturan Halaman")
+    const editHeader = page.locator('aside h2:has-text("Edit")');
+    await expect(editHeader).toBeVisible({ timeout: 5000 });
+
+    // Assert: inspector has at least one input field (title or similar)
     const titleInput = page.locator('aside input[type="text"]').first();
     await titleInput.waitFor({ state: 'visible', timeout: 5000 });
 
-    // Edit title
+    // Edit title — type new value
     await titleInput.fill('');
-    await titleInput.fill('Judul Test V3 Phase 1');
+    await titleInput.fill('Judul Test V3 Phase 1A');
     await page.waitForTimeout(1000);
 
-    // Verify store
+    // Assert: store title changed
     const title = await page.evaluate(() => {
       const s = (window as any).__useCanvaStore.getState();
-      const block = s.pages[0]?.schema?.blocks?.find((b: any) => b.type === 'cover');
+      const block = s.pages[0]?.schema?.blocks?.find((b: any) => b.id === selectedId);
       return block?.title ?? 'NONE';
     });
-    expect(title).toBe('Judul Test V3 Phase 1');
+    expect(title).toBe('Judul Test V3 Phase 1A');
   });
 
   test('7-8. Style menu opens via portal — not blocked by canvas', async ({ page }) => {
