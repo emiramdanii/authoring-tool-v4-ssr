@@ -60,6 +60,7 @@ import {
   DENSITY_SPACING,
   FONT_SCALE_MULTIPLIER,
   MAX_OVERLAY_OPACITY,
+  DEFAULT_PRESET_ID,
   isTokenKey,
 } from './defaults';
 import { getPreset } from './preset-registry';
@@ -525,7 +526,7 @@ export function resolvePresetTokens(
 ): ResolvedStyleTokens {
   return resolveStyleContract({
     document: {
-      presetId: (presetId ?? 'academic-clean') as StylePresetId,
+      presetId: (presetId ?? DEFAULT_PRESET_ID) as StylePresetId,
     },
   });
 }

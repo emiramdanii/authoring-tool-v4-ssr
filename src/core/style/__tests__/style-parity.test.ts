@@ -29,6 +29,7 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveStyleContract,
   resolveLegacyStyle,
+  DEFAULT_PRESET_ID,
   type LegacyStyleInput,
   type ResolvedStyleTokens,
   type StyleContract,
@@ -251,9 +252,11 @@ describe('Style Resolver Consistency Contract (Sprint 8.1 — READY FOR INTEGRAT
       for (let i = 1; i < tokens.length; i++) {
         expect(tokens[i]).toEqual(tokens[0]);
       }
+      // PHASE-2: DEFAULT_PRESET_ID changed from 'academic-clean' to
+      // 'modern-interactive'. Invalid presetId falls back to DEFAULT_PRESET_ID.
       expect(tokens[0].colors.background).toBe(
         resolveStyleContract({
-          document: { presetId: 'academic-clean' },
+          document: { presetId: DEFAULT_PRESET_ID },
         }).colors.background,
       );
     });
