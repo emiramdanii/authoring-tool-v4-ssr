@@ -1003,7 +1003,11 @@ export async function createProjectFromTemplate(
  */
 export function getTemplateThemeId(templateId: string): string {
   const template = _registry.get(templateId);
-  return template?.theme ?? 'default';
+  // PHASE-2: Changed fallback from 'default' (dark navy) to
+  // 'modern-interactive' (light) so all templates produce light
+  // pages by default. apply-template-to-store.ts uses this as
+  // finalThemeId when schema.themeId is not already set.
+  return template?.theme ?? 'modern-interactive';
 }
 
 /**

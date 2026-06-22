@@ -25,11 +25,12 @@ import type {
  *   - The stored presetId is invalid / unknown
  *   - The legacy adapter cannot derive a preset
  *
- * 'academic-clean' is chosen because it is the most conservative visual
- * identity and maps cleanly to the existing 'golden-presentation' theme
- * already used as the project default.
+ * PHASE-2: Changed from 'academic-clean' (dark navy #0f172a) to
+ * 'modern-interactive' (light #F5F7FB) so new projects and undefined
+ * themeId fallbacks produce a teacher-friendly light canvas, NOT a
+ * dark/black cover that looks broken to teachers.
  */
-export const DEFAULT_PRESET_ID: StylePresetId = 'academic-clean';
+export const DEFAULT_PRESET_ID: StylePresetId = 'modern-interactive';
 
 /**
  * Default DocumentStyle. Always carries a valid presetId.

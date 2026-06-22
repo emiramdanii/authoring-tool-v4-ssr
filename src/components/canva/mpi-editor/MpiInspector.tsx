@@ -80,8 +80,9 @@ export function MpiInspector() {
             {/* Hint */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <p className="text-xs text-amber-700">
-                <span className="font-medium">Tip:</span> Untuk edit lengkap, switch ke Advanced Mode
-                (toggle "Mode Guru" di sidebar kiri). Editor detail akan terbuka.
+                <span className="font-medium">Status: NOT_IMPLEMENTED_UI</span> — Editor konten
+                belum tersedia di Mode Guru. Untuk edit lengkap, klik tombol "Lanjutan" di
+                toolbar atas untuk beralih ke Advanced Mode.
               </p>
             </div>
           </div>

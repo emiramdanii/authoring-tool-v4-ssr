@@ -252,10 +252,41 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // Remove it before the purity check so we don't throw on old data.
         const cleanPages = stripRuntimeFieldsFromPages(migratedPages);
 
+        // ── PHASE-2: Theme migration guard for old projects ──
+        // Old projects may have schema.themeId = undefined or 'default'
+        // (dark navy). This guard ensures all loaded pages get a
+        // teacher-friendly light theme by default.
+        const themeMigratedPages = cleanPages.map(page => {
+          if (!page.schema) return page;
+          const currentThemeId = page.schema.themeId;
+          const legacyThemeId = page.templateData?.schemaThemeId as string | undefined;
+          // If themeId is missing or 'default' (dark), migrate to 'modern-interactive'
+          const needsMigration =
+            !currentThemeId ||
+            currentThemeId === 'default' ||
+            currentThemeId === 'academic-clean';
+          if (needsMigration) {
+            const finalThemeId = 'modern-interactive';
+            return {
+              ...page,
+              schema: { ...page.schema, themeId: finalThemeId },
+              templateData: { ...page.templateData, schemaThemeId: finalThemeId },
+            };
+          }
+          // Sync: ensure schema.themeId and templateData.schemaThemeId match
+          if (currentThemeId && legacyThemeId && currentThemeId !== legacyThemeId) {
+            return {
+              ...page,
+              templateData: { ...page.templateData, schemaThemeId: currentThemeId },
+            };
+          }
+          return page;
+        });
+
         // ── Purity Guard: Check loaded data for runtime state leakage ──
         // WRAPPED: Skip purity check if it throws (e.g., stack overflow from deep/corrupted schema)
         try {
-          for (const page of cleanPages) {
+          for (const page of themeMigratedPages) {
             if (page.schema) {
               assertDocumentPurity(page.schema, `loadFromStorage page=${page.id}`);
             }
@@ -268,7 +299,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // Validate all page schemas after migration and BEFORE setting state.
         // This catches corruption early and auto-repairs if possible.
         try {
-          const validationResult = validateAndRepairPages(cleanPages, { autoRepair: true });
+          const validationResult = validateAndRepairPages(themeMigratedPages, { autoRepair: true });
           if (validationResult.repairedPages > 0) {
             logger.warn('Recovery', `Proactive repair: ${validationResult.repairedPages}/${validationResult.totalPages} pages repaired`);
             // Set safe mode flag — some data was corrupted
@@ -286,7 +317,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         // ── FASE 6: Hash verification on load ──────────────────
         // Verify stored hash matches computed hash (detects in-transit corruption)
         if (data._schemaHash) {
-          const currentHash = computePagesHash(cleanPages);
+          const currentHash = computePagesHash(themeMigratedPages);
           if (currentHash !== data._schemaHash) {
             logger.warn('Recovery', 'Schema hash mismatch on load — data may have been corrupted');
             try { sessionStorage.setItem('silse_safe_mode', '1'); } catch {}
