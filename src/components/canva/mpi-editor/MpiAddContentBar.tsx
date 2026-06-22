@@ -15,30 +15,32 @@
 
 import React, { useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import type { PageTemplateType } from '@/components/canva/types';
 import { toast } from 'sonner';
 
 export function MpiAddContentBar() {
   const addPage = useCanvaStore((s) => s.addPage);
+  const addTemplatePage = useCanvaStore((s) => s.addTemplatePage);
   const addSchemaBlock = useCanvaStore((s) => s.addSchemaBlock);
   const pages = useCanvaStore((s) => s.pages);
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
 
   const [showPageMenu, setShowPageMenu] = useState(false);
 
-  const handleAddPage = (templateType?: string) => {
-    addPage();
-    // If a templateType is specified, set it on the new page
-    if (templateType) {
-      const state = useCanvaStore.getState();
-      const newIdx = state.pages.length - 1;
-      useCanvaStore.setState({
-        pages: state.pages.map((p, i) =>
-          i === newIdx ? { ...p, templateType: templateType as never, label: templateType } : p
-        ),
-      });
+  // PATCH-1: Typed pages use addTemplatePage() — creates schema-native
+  // page from PresetRegistry (cover→cover block, materi→materi-section,
+  // kuis→kuis block, game→sortir-game block, etc). Only "Halaman Kosong"
+  // uses addPage() (blank canvas, no preset schema).
+  const handleAddPage = (templateType: string) => {
+    if (templateType === 'custom') {
+      // Halaman Kosong — blank canvas, no preset schema
+      addPage();
+      toast.success('Halaman kosong ditambahkan');
+    } else {
+      // Typed page — use preset registry for proper schema creation
+      addTemplatePage(templateType as PageTemplateType);
     }
     setShowPageMenu(false);
-    toast.success('Halaman baru ditambahkan');
   };
 
   const handleAddBlock = () => {
@@ -47,18 +49,11 @@ export function MpiAddContentBar() {
     toast.success('Bagian materi ditambahkan ke halaman ini');
   };
 
+  // PATCH-1: Tambah Game uses addTemplatePage('game') — creates
+  // schema-native game page with sortir-game block, not a blank page
+  // with mutated templateType.
   const handleAddGame = () => {
-    // Add a new game page
-    addPage();
-    const state = useCanvaStore.getState();
-    const newIdx = state.pages.length - 1;
-    useCanvaStore.setState({
-      pages: state.pages.map((p, i) =>
-        i === newIdx ? { ...p, templateType: 'game' as never, label: 'Game' } : p
-      ),
-      currentPageIndex: newIdx,
-    });
-    toast.success('Halaman game ditambahkan');
+    addTemplatePage('game');
   };
 
   const pageOptions = [
