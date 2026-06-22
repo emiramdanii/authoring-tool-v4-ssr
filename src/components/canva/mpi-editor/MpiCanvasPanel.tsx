@@ -56,14 +56,14 @@ export function MpiCanvasPanel() {
 
   return (
     <main
-      className="flex-1 flex flex-col items-center justify-center bg-slate-100 overflow-auto p-6"
+      className="flex-1 flex flex-col items-center justify-center bg-slate-100 overflow-hidden p-6 min-w-0 min-h-0"
       onClick={handleCanvasClick}
       role="region"
       aria-label="Area kanvas — halaman aktif"
       id="mpi-canvas"
     >
       {/* Page title bar (teacher-friendly, not technical) */}
-      <div className="w-full max-w-4xl mb-3 flex items-center justify-between">
+      <div className="w-full max-w-4xl mb-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '16px' }}>crop_landscape</span>
           <span>Halaman {currentPageIndex + 1} dari {pages.length}</span>
@@ -75,10 +75,15 @@ export function MpiCanvasPanel() {
         </div>
       </div>
 
-      {/* PageRenderer — the existing engine renders the page */}
+      {/* PageRenderer — relative wrapper so absolute-positioned
+          children inside PageRenderer stay contained. overflow-hidden
+          clips anything that would escape the 16:9 frame.
+          PATCH-2A: max-h-full + aspect-ratio keeps the canvas from
+          growing taller than available space; relative + overflow-hidden
+          prevents PageRenderer from leaking outside. */}
       <div
-        className="w-full max-w-4xl bg-white rounded-lg shadow-md overflow-hidden"
-        style={{ aspectRatio: '16 / 9' }}
+        className="relative w-full max-w-4xl bg-white rounded-lg shadow-md overflow-hidden"
+        style={{ aspectRatio: '16 / 9', maxHeight: '100%' }}
       >
         <PageRenderer
           mode="canvas"
@@ -89,7 +94,7 @@ export function MpiCanvasPanel() {
       </div>
 
       {/* Helper text below canvas */}
-      <p className="text-xs text-slate-400 mt-4 text-center max-w-md">
+      <p className="text-xs text-slate-400 mt-4 text-center max-w-md flex-shrink-0">
         Klik bagian pada halaman untuk mengedit isi. Gunakan panel kanan untuk mengubah konten.
       </p>
     </main>

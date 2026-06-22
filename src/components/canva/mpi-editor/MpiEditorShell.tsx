@@ -38,14 +38,15 @@ import { MpiAddContentBar } from './MpiAddContentBar';
 export function MpiEditorShell() {
   return (
     <div
-      className="flex flex-col h-screen w-full bg-slate-100 overflow-hidden"
+      className="flex flex-col h-full w-full bg-slate-100 overflow-hidden"
       id="mpi-editor-shell"
       data-testid="mpi-editor-shell"
     >
       {/* Top bar — title, style, preview, export */}
       <MpiTopBar />
 
-      {/* Main 3-panel row */}
+      {/* Main 3-panel row — flex-1 + min-h-0 so it fills remaining
+          height between TopBar and AddContentBar without overflow */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left: Scene rail (page list) */}
         <MpiSceneRail />

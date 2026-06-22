@@ -40,15 +40,18 @@ export function MpiStyleControl() {
   const [open, setOpen] = useState(false);
 
   // Get current global style (from first page that has themeId)
+  // PATCH-2A: default is 'modern-interactive' (light background #F5F7FB)
+  // NOT 'academic-clean' (dark navy #0f172a) — teachers need a light,
+  // friendly default, not a dark academic theme.
   const currentThemeId = React.useMemo(() => {
     for (const page of pages) {
       const tid = page?.schema?.themeId || (page?.templateData?.schemaThemeId as string | undefined);
       if (tid) return tid;
     }
-    return 'academic-clean'; // default
+    return 'modern-interactive'; // light, friendly default for teachers
   }, [pages]);
 
-  const currentLabel = STYLE_LABELS[currentThemeId] || 'Akademik Bersih';
+  const currentLabel = STYLE_LABELS[currentThemeId] || 'Modern Interaktif';
 
   const presets = getAllStylePresets();
 
