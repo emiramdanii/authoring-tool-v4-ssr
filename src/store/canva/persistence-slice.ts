@@ -347,7 +347,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
           leftTab = TAB_MIGRATION[data.leftTab] || 'pages';
         }
         set({
-          pages: cleanPages,
+          pages: themeMigratedPages,
           ratioId: data.ratioId || '16:9',
           currentPageIndex: 0,
           kontenTabRequest: null, // Phase 3: reset ephemeral nav
@@ -498,9 +498,35 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       // Strip derived runtime fields from legacy data
       const cleanPages = stripRuntimeFieldsFromPages(migratedPages);
 
+      // PHASE-2A: Theme migration guard for DB-loaded projects (same as localStorage)
+      const themeMigratedPages = cleanPages.map(page => {
+        if (!page.schema) return page;
+        const currentThemeId = page.schema.themeId;
+        const legacyThemeId = page.templateData?.schemaThemeId as string | undefined;
+        const needsMigration =
+          !currentThemeId ||
+          currentThemeId === 'default' ||
+          currentThemeId === 'academic-clean';
+        if (needsMigration) {
+          const finalThemeId = 'modern-interactive';
+          return {
+            ...page,
+            schema: { ...page.schema, themeId: finalThemeId },
+            templateData: { ...page.templateData, schemaThemeId: finalThemeId },
+          };
+        }
+        if (currentThemeId && legacyThemeId && currentThemeId !== legacyThemeId) {
+          return {
+            ...page,
+            templateData: { ...page.templateData, schemaThemeId: currentThemeId },
+          };
+        }
+        return page;
+      });
+
       // Purity Guard (non-fatal — just logs)
       try {
-        for (const page of cleanPages) {
+        for (const page of themeMigratedPages) {
           if (page.schema) {
             assertDocumentPurity(page.schema, `loadFromDB page=${page.id}`);
           }
@@ -537,7 +563,7 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       try {
         // Commit canva store
         set({
-          pages: cleanPages,
+          pages: themeMigratedPages,
           ratioId: data.ratioId || '16:9',
           currentPageIndex: 0,
           kontenTabRequest: null,
