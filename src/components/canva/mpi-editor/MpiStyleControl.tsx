@@ -105,13 +105,13 @@ export function MpiStyleControl() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-40"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
           {/* Dropdown */}
           <div
-            className="absolute top-full right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-1"
+            className="absolute top-full right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-50 py-1"
             role="menu"
             aria-label="Pilih style media"
           >
