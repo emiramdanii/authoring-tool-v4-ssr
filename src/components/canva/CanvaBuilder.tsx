@@ -31,6 +31,8 @@ import { BottomPageStrip } from './BottomPageStrip';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 // EDITOR-RADICAL-RESET-01: MPI Studio shell for teacher mode
 import { MpiEditorShell } from './mpi-editor';
+// V3-PHASE-1: MPI Workspace V2 — rebuild with proper architecture
+import { MpiWorkspaceV2 } from './mpi-workspace-v2';
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY-LOADED HEAVY COMPONENTS
@@ -200,19 +202,20 @@ export default function CanvaBuilder() {
     );
   }
 
-  // ── EDITOR-RADICAL-RESET-01: Teacher mode → MPI Studio shell ──
-  // When teacherMode is on AND we're in edit mode, route to the new
-  // MpiEditorShell (simple 3-panel: SceneRail | Canvas | Inspector).
-  // The old 3-panel layout (IconRail + Stage + RightPanel + SceneTabBar)
-  // is preserved below for advanced/developer mode (teacherMode === false).
+  // ── V3-PHASE-1: Teacher mode → MPI Workspace V2 ──
+  // V3 replaces V1 (MpiEditorShell) with MpiWorkspaceV2 which has:
+  //   - Natural block selection (click canvas → select block)
+  //   - Schema-driven inspector (registry, not hardcoded)
+  //   - Portal-based style menu (no z-index issues)
+  //   - Content palette with descriptions
   if (teacherMode && appMode === 'edit') {
     return (
       <MobileGuard>
-        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface" id="main-content" data-testid="mpi-builder">
+        <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface" id="main-content" data-testid="mpi-workspace-v2-builder">
           <UndoRedoToast />
           <CanvaAutoSaveSync />
           <div id="a11y-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
-          <MpiEditorShell />
+          <MpiWorkspaceV2 />
           <OfflineIndicator />
         </div>
       </MobileGuard>

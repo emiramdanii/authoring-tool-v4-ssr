@@ -108,12 +108,12 @@ export function MpiTopBar() {
           </span>
           <span className="hidden xs:inline sm:inline">{isExporting ? '…' : 'Export'}</span>
         </button>
-        {/* VISUAL-STABILIZATION-01: Mode Advanced toggle — always visible */}
+        {/* V3-PHASE-1: Mode Lanjutan disabled — old editor quarantined */}
         <button
-          onClick={handleAdvancedMode}
-          className="flex items-center gap-1 px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400/30"
-          aria-label="Beralih ke mode editor lanjutan"
-          title="Mode Editor Lanjutan (3-panel)"
+          disabled
+          className="flex items-center gap-1 px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-300 bg-slate-50 border border-slate-100 rounded-lg cursor-not-allowed"
+          aria-label="Mode Lanjutan sedang dikarantina"
+          title="Mode Lanjutan sedang dikarantina"
           type="button"
         >
           <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '18px' }}>tune</span>
