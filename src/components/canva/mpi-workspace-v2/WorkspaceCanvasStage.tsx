@@ -112,6 +112,11 @@ export function WorkspaceCanvasStage() {
             position: 'absolute',
             top: 0,
             left: 0,
+            // V3-PHASE-4: Clip content at scene boundary — no content escapes
+            // the 1280×720 native canvas. Without this, blocks that overflow
+            // their estimated height visually escape the wrapper's overflow:hidden
+            // because the transform: scale creates a new stacking context.
+            overflow: 'hidden',
           }}
         >
           <PageRenderer

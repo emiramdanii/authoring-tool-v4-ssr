@@ -154,7 +154,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
         const qColor = q.warna || 'p';
         const hasResponse = responses[i]!?.trim().length > 0;
         return (
-          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl mb-10 min-w-0"
+          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className={`rounded-xl min-w-0 ${isCompact ? 'mb-3' : 'mb-10'}`}
             style={{
               ...edu.componentPadding(),
               background: edu.cardBg(),
@@ -164,7 +164,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
               ...edu.entrance(i),
             }}>
             <label className={`font-bold block mb-2 ${isCompact ? 'canvas-truncate-2' : ''}`}
-              style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color(qColor), lineHeight: '1.8' }}>
+              style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color(qColor), lineHeight: isCompact ? '1.4' : '1.8' }}>
               {q.icon && <span className="mr-1">{q.icon}</span>} <RichText content={q.teks ?? ''} />
             </label>
             {interactive ? (
@@ -174,7 +174,8 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
                     ...edu.body(), color: edu.textColor(),
                     background: edu.cardBg(),
                     border: `1px solid ${tokens.subtleBorder(0.12)}`,
-                    minHeight: isCompact ? '40px' : '50px',
+                    minHeight: isCompact ? '32px' : '50px',
+                    maxHeight: isCompact ? '60px' : undefined,
                     ...edu.transition('border-color, box-shadow', 'fast'),
                   }}
                   placeholder={q.petunjuk}
@@ -188,7 +189,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
                 )}
               </div>
             ) : (
-              <div className="w-full mt-1 rounded-lg p-2.5 min-h-[40px]"
+              <div className={`w-full mt-1 rounded-lg p-2.5 ${isCompact ? 'min-h-[28px]' : 'min-h-[40px]'}`}
                 style={{
                   ...edu.caption(), color: edu.mutedText(0.65),
                   background: edu.cardBg(),
@@ -221,7 +222,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       )}
 
       {block.penugasan && !isCompressed && (
-        <div className="mt-4 rounded-xl ios-entrance-card"
+        <div className={`rounded-xl ios-entrance-card ${isCompact ? 'mt-2' : 'mt-4'}`}
           style={{
             ...tokens.nestedCardStyle(),
             ...edu.nestedPadding(),
@@ -231,8 +232,11 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
             <PenLine size={14} style={{ color: edu.accent() }} />
             <div className="font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: edu.accent() }}>{block.penugasan.judul}</div>
           </div>
-          <RichText content={block.penugasan.isi ?? ''} className={`leading-relaxed ${isCompact ? 'canvas-truncate-3' : ''}`} style={{ ...edu.body(), color: edu.mutedText(0.8) }} />
-          {block.penugasan.contoh && (
+          <RichText content={block.penugasan.isi ?? ''} className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: edu.mutedText(0.8) }} />
+          {/* V3-PHASE-4: Hide "Contoh" in compact mode to save vertical space.
+              In canvas mode, teachers edit content but don't need to see the
+              example. In preview/export mode (non-compact), the example shows. */}
+          {block.penugasan.contoh && !isCompact && (
             <div className="mt-2 italic p-2 rounded-lg"
               style={{ ...edu.caption(), color: tokens.textSubtle(0.5), background: edu.accentAlpha(0.06) }}>
               Contoh: <RichText content={block.penugasan.contoh ?? ''} />

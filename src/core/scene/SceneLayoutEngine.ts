@@ -379,10 +379,23 @@ export function estimateBlockHeight(
       break;
     }
     case 'refleksi': {
+      // V3-PHASE-4: More accurate height estimate.
+      // Real measurement (PPKn template, 4 questions + penugasan) = 733px.
+      // Old estimate was 60 + 4*70 + 100 = 440px — way too low, causing
+      // layout engine to think block fits when it doesn't.
+      //
+      // New estimate breakdown:
+      //   - Header (icon + title): 60px
+      //   - Intro text: 40px
+      //   - Per question card: 130px (label + textarea + mb-10 margin)
+      //     Old was 70px — too low; question cards have label, textarea
+      //     (min 40-50px), and 40px bottom margin.
+      //   - Penugasan card with contoh: 220px (was 100px)
+      //     Real measurement: 198px for the card alone.
       const ref = block as { questions?: unknown[]; penugasan?: unknown };
       const numQ = ref.questions?.length || 1;
       const hasPenugasan = !!ref.penugasan;
-      contentHeight = 60 + numQ * 70 + (hasPenugasan ? 100 : 0);
+      contentHeight = 100 + numQ * 130 + (hasPenugasan ? 220 : 0);
       break;
     }
     case 'penutup': {
