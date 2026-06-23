@@ -124,9 +124,6 @@ const TOUR_STEPS = [
 
 // ── Inner Component (needs ProjectProvider context) ─────────────
 function AuthoringToolInner() {
-  // V3-1B: Boot logging
-  if (typeof window !== 'undefined') console.info('[APP_BOOT] AuthoringToolInner mounted');
-
   const [showTour, setShowTour] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('at_tour_done') === null;
@@ -153,11 +150,12 @@ function AuthoringToolInner() {
   // which derives projection from schema and writes to AuthoringStore.
   // Calling it here would cause a double-load race condition.
   useEffect(() => {
+    console.info('[APP_BOOT] AuthoringToolInner mounted');
     console.info('[APP_BOOT] loadFromStorage start, activePanel:', activePanel);
     loadFromStorage();
     clearDirtyExitFlag();
     console.info('[APP_BOOT] loadFromStorage done');
-  }, [loadFromStorage]);
+  }, [loadFromStorage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sprint 8.5A: Run boot recovery orchestrator once after stores load.
   // The orchestrator is fault-tolerant (never throws, never returns null)

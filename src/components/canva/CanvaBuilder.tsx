@@ -241,13 +241,14 @@ export default function CanvaBuilder() {
   // reference snapshot until it is deleted in a future cleanup.
 
   // ═══════════════════════════════════════════════════════════════
-  // @QUARANTINE — PHASE-3A
+  // LEGACY_EDITOR_QUARANTINED_NOT_USER_ROUTE
+  // @QUARANTINE — PHASE-3A / V3-PHASE-1B
   // This is the old 3-panel editor (IconRail + Stage + RightPanel +
   // SceneTabBar + BottomPageStrip). It is NOT the official route.
-  // Official route = MPI Studio (MpiEditorShell) for teacherMode.
-  // This code is kept for Advanced Mode (teacherMode=false) but
-  // should NOT be improved, tested as primary, or used as visual
-  // proof. Do not patch bugs here — fix them in MPI Studio instead.
+  // V3-PHASE-1B: Route lock removed teacherMode gate — ALL edit mode
+  // now goes to MpiWorkspaceV2. This old editor code is UNREACHABLE
+  // from normal app flow. It exists only as dead code until cleanup.
+  // Do NOT improve, test, or use as visual proof.
   // Reconnect plan: see RECONNECT-ORDER.md
   // ═══════════════════════════════════════════════════════════════
   // ── EDIT mode: Fixed header + resizable 3-panel layout (SILSE v4) ──

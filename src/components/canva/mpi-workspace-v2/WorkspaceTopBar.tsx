@@ -55,6 +55,14 @@ export function WorkspaceSceneList() {
           );
         })}
       </ul>
+
+      {pages.length === 0 && (
+        <div className="px-4 py-8 text-center">
+          <span className="material-symbols-outlined text-slate-300" aria-hidden="true" style={{ fontSize: '40px' }}>folder_open</span>
+          <p className="text-xs text-slate-400 mt-2">Belum ada halaman</p>
+          <p className="text-xs text-slate-400">Gunakan tombol "Tambah Halaman" di bawah</p>
+        </div>
+      )}
     </nav>
   );
 }

@@ -79,6 +79,20 @@ const CONTENT_FIELD: FieldDefinition = {
   placeholder: 'Isi konten',
 };
 
+const INTRO_FIELD: FieldDefinition = {
+  key: 'intro',
+  label: 'Pengantar',
+  type: 'textarea',
+  placeholder: 'Teks pengantar',
+};
+
+const HOOK_QUESTION_FIELD: FieldDefinition = {
+  key: 'hookQuestion',
+  label: 'Pertanyaan Pemicu',
+  type: 'textarea',
+  placeholder: 'Pertanyaan yang memicu rasa ingin tahu',
+};
+
 // ── Block registrations ───────────────────────────────────────
 
 registerBlockFields({
@@ -108,7 +122,7 @@ registerBlockFields({
 registerBlockFields({
   blockType: 'motivasi',
   displayName: 'Motivasi',
-  fields: [TITLE_FIELD],
+  fields: [TITLE_FIELD, HOOK_QUESTION_FIELD],
 });
 
 registerBlockFields({
@@ -132,7 +146,7 @@ registerBlockFields({
 registerBlockFields({
   blockType: 'diskusi',
   displayName: 'Diskusi',
-  fields: [TITLE_FIELD],
+  fields: [TITLE_FIELD, INTRO_FIELD],
 });
 
 registerBlockFields({
@@ -150,7 +164,7 @@ registerBlockFields({
 registerBlockFields({
   blockType: 'refleksi',
   displayName: 'Refleksi',
-  fields: [TITLE_FIELD],
+  fields: [TITLE_FIELD, INTRO_FIELD],
 });
 
 registerBlockFields({

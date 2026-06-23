@@ -18,6 +18,7 @@ export function WorkspaceCanvasStage() {
   const nativeH = ratio.h;
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
 
   useEffect(() => {
@@ -35,6 +36,27 @@ export function WorkspaceCanvasStage() {
     if (containerRef.current) ro.observe(containerRef.current);
     return () => ro.disconnect();
   }, [nativeW, nativeH]);
+
+  // V3-PHASE-2: Selection visual feedback — outline ring on selected block.
+  // After each render/selection change, find the [data-block-id] element
+  // matching selectedBlockId and apply an outline. Remove outline from
+  // previously selected block. This does NOT change layout — only visual.
+  useEffect(() => {
+    if (!innerRef.current) return;
+    // Remove all existing selection rings
+    innerRef.current.querySelectorAll('[data-block-id]').forEach((el) => {
+      (el as HTMLElement).style.outline = '';
+      (el as HTMLElement).style.outlineOffset = '';
+    });
+    // Add ring to selected block
+    if (selectedBlockId) {
+      const el = innerRef.current.querySelector(`[data-block-id="${selectedBlockId}"]`) as HTMLElement | null;
+      if (el) {
+        el.style.outline = '3px solid #10b981';
+        el.style.outlineOffset = '2px';
+      }
+    }
+  }, [selectedBlockId, page, scale]);
 
   const onCanvasClick = useCallback((e: React.MouseEvent) => {
     handleCanvasClick(e);
@@ -81,6 +103,7 @@ export function WorkspaceCanvasStage() {
         style={{ width: `${scaledW}px`, height: `${scaledH}px` }}
       >
         <div
+          ref={innerRef}
           style={{
             width: `${nativeW}px`,
             height: `${nativeH}px`,

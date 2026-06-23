@@ -28,20 +28,30 @@ export function WorkspaceContentPalette() {
   const pages = useCanvaStore((s) => s.pages);
   const currentPageIndex = useCanvaStore((s) => s.currentPageIndex);
   const [showPageMenu, setShowPageMenu] = useState(false);
+  const [showBlockMenu, setShowBlockMenu] = useState(false);
   const pageBtnRef = useRef<HTMLButtonElement>(null);
+  const blockBtnRef = useRef<HTMLButtonElement>(null);
   const [pageMenuPos, setPageMenuPos] = useState({ top: 0, left: 0 });
+  const [blockMenuPos, setBlockMenuPos] = useState({ top: 0, left: 0 });
 
-  // V3-1A: Position menu above the Tambah Halaman button
   useLayoutEffect(() => {
     if (showPageMenu && pageBtnRef.current) {
       const rect = pageBtnRef.current.getBoundingClientRect();
-      const menuWidth = 288; // w-72 = 18rem = 288px
+      const menuWidth = 288;
       const left = Math.max(8, rect.left + rect.width / 2 - menuWidth / 2);
-      // Position above the button (bottom-up menu)
-      const top = rect.top - 8; // will be adjusted by bottom positioning
-      setPageMenuPos({ top: Math.max(8, top - 400), left }); // 400px ~ menu height
+      setPageMenuPos({ top: Math.max(8, rect.top - 400), left });
     }
   }, [showPageMenu]);
+
+  // V3-PHASE-2: Block menu positioning
+  useLayoutEffect(() => {
+    if (showBlockMenu && blockBtnRef.current) {
+      const rect = blockBtnRef.current.getBoundingClientRect();
+      const menuWidth = 256;
+      const left = Math.max(8, rect.left + rect.width / 2 - menuWidth / 2);
+      setBlockMenuPos({ top: Math.max(8, rect.top - 300), left });
+    }
+  }, [showBlockMenu]);
 
   const handleAddPage = (templateType: PageTemplateType) => {
     if (templateType === 'custom') {
@@ -53,14 +63,51 @@ export function WorkspaceContentPalette() {
     setShowPageMenu(false);
   };
 
-  const handleAddBlock = () => {
-    addSchemaBlock('materi-section');
-    toast.success('Bagian materi ditambahkan');
+  const handleAddBlock = (blockType: string) => {
+    addSchemaBlock(blockType);
+    toast.success('Bagian ditambahkan');
+    setShowBlockMenu(false);
   };
 
   const handleAddGame = () => {
     addTemplatePage('game');
   };
+
+  // V3-PHASE-2: Block palette — 5 block types via addSchemaBlock
+  const BLOCK_OPTIONS: Array<{ type: string; label: string; icon: string }> = [
+    { type: 'materi-section', label: 'Materi', icon: 'menu_book' },
+    { type: 'def-box', label: 'Definisi', icon: 'menu_book' },
+    { type: 'diskusi', label: 'Pertanyaan Diskusi', icon: 'forum' },
+    { type: 'refleksi', label: 'Refleksi', icon: 'psychology' },
+    { type: 'rangkuman', label: 'Rangkuman', icon: 'summarize' },
+  ];
+
+  const blockMenu = showBlockMenu ? createPortal(
+    <>
+      <div className="fixed inset-0 z-[9998]" onClick={() => setShowBlockMenu(false)} aria-hidden="true" />
+      <div
+        className="fixed z-[9999] bg-white border border-slate-200 rounded-lg shadow-xl py-1 w-64"
+        style={{ top: `${blockMenuPos.top}px`, left: `${blockMenuPos.left}px` }}
+        role="menu"
+        aria-label="Pilih tipe blok"
+      >
+        <div className="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">Tambah Blok</div>
+        {BLOCK_OPTIONS.map((opt) => (
+          <button
+            key={opt.type}
+            onClick={() => handleAddBlock(opt.type)}
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors text-left"
+            role="menuitem"
+            type="button"
+          >
+            <span className="material-symbols-outlined text-slate-400 flex-shrink-0" aria-hidden="true" style={{ fontSize: '18px' }}>{opt.icon}</span>
+            <span className="font-medium">{opt.label}</span>
+          </button>
+        ))}
+      </div>
+    </>,
+    document.body,
+  ) : null;
 
   const pageMenu = showPageMenu ? createPortal(
     <>
@@ -108,16 +155,21 @@ export function WorkspaceContentPalette() {
         </button>
         {pageMenu}
       </div>
-      <button
-        onClick={handleAddBlock}
-        disabled={!pages[currentPageIndex]}
-        className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-        aria-label="Tambah bagian materi"
-        type="button"
-      >
-        <span className="material-symbols-outlined text-emerald-600" aria-hidden="true" style={{ fontSize: '18px' }}>add</span>
-        Tambah Blok
-      </button>
+      <div className="relative">
+        <button
+          ref={blockBtnRef}
+          onClick={() => setShowBlockMenu(!showBlockMenu)}
+          disabled={!pages[currentPageIndex]}
+          className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+          aria-label="Tambah blok"
+          aria-expanded={showBlockMenu}
+          type="button"
+        >
+          <span className="material-symbols-outlined text-emerald-600" aria-hidden="true" style={{ fontSize: '18px' }}>add</span>
+          Tambah Blok
+        </button>
+        {blockMenu}
+      </div>
       <button
         onClick={handleAddGame}
         className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
