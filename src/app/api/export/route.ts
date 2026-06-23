@@ -7,6 +7,11 @@
 // template components used in preview mode.
 //
 // SECURITY: Rate limited (10 req/min via middleware), Zod-validated input
+//
+// V5-BLOCKER-FIX-01B: Added freshness gate. In dev mode, the API now
+// detects stale export bundle (source files newer than template) and
+// rebuilds before serving. This prevents the V5-003 regression where
+// `npm run dev` served a stale bundle after source changes.
 // ═══════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -27,6 +32,29 @@ let _templateMtime: number = 0;
 // PATCH-2D: Dev-mode auto-build lock — prevents concurrent builds
 let _devBuildLock = false;
 
+// V5-BLOCKER-FIX-01B: Source files whose mtime determines export bundle
+// freshness. If ANY of these is newer than export-output/index.html,
+// the bundle is stale and must be rebuilt in dev mode.
+//
+// This list is intentionally focused on files that directly affect the
+// export bundle's runtime behavior. Adding every source file would
+// cause excessive rebuilds; we only include files that, when changed,
+// could break the export render.
+const EXPORT_SOURCE_PATHS = [
+  'src/export/entry-client.tsx',
+  'src/export/ExportApp.tsx',
+  'src/export/export.css',
+  'vite.export.config.ts',
+  'src/components/canva/page-renderer/PageRenderer.tsx',
+  'src/components/canva/page-renderer/PageFrame.tsx',
+  'src/components/canva/page-renderer/BlockRenderer.tsx',
+  'src/core/renderer/SchemaRenderer.tsx',
+  'src/core/scene/SceneLayoutEngine.ts',
+  'src/store/canva-store.ts',
+  'src/store/learning-media-store.ts',
+  'src/store/interactive-store.ts',
+];
+
 function getTemplateBuffer(): Buffer | null {
   try {
     const stat = fs.statSync(TEMPLATE_PATH);
@@ -44,9 +72,56 @@ function getTemplateBuffer(): Buffer | null {
 }
 
 /**
- * PATCH-2D: In development mode, auto-build the export template if it
- * doesn't exist. This fixes the regression from OPTIMIZE-LAST-01 where
- * `npm run dev` no longer runs `vite build` before starting Next.js.
+ * V5-BLOCKER-FIX-01B: Check if the export bundle is stale.
+ *
+ * Returns the latest source mtime among EXPORT_SOURCE_PATHS, or 0 if
+ * no source files are found. The caller compares this against the
+ * template's mtime to decide whether a rebuild is needed.
+ *
+ * Stale condition: any source file's mtime > template's mtime.
+ *
+ * In production this function is NOT called (ensureDevTemplate is
+ * dev-only). Production requires a prebuilt template via `npm run build`.
+ */
+function getLatestSourceMtime(): number {
+  let latest = 0;
+  for (const rel of EXPORT_SOURCE_PATHS) {
+    try {
+      const full = path.resolve(process.cwd(), rel);
+      const stat = fs.statSync(full);
+      if (stat.mtimeMs > latest) latest = stat.mtimeMs;
+    } catch {
+      // Source file missing — skip (can't be newer than template)
+    }
+  }
+  return latest;
+}
+
+/**
+ * V5-BLOCKER-FIX-01B: Check if export template is stale.
+ *
+ * Stale = any source file's mtime > template's mtime.
+ * Fresh = template exists and no source is newer than template.
+ */
+function isTemplateStale(): boolean {
+  try {
+    const templateStat = fs.statSync(TEMPLATE_PATH);
+    const templateMtime = templateStat.mtimeMs;
+    const sourceMtime = getLatestSourceMtime();
+    return sourceMtime > templateMtime;
+  } catch {
+    // Template missing — not "stale" per se, but missing (handled elsewhere)
+    return false;
+  }
+}
+
+/**
+ * PATCH-2D + V5-BLOCKER-FIX-01B: In development mode, auto-build the
+ * export template if it doesn't exist OR if it's stale (source files
+ * are newer than the bundle).
+ *
+ * This fixes the V5-003 regression where `npm run dev` served a stale
+ * bundle after source changes, causing exported HTML to render blank.
  *
  * Constraints (per senior audit):
  *   - Dev only (NODE_ENV !== 'production')
@@ -57,20 +132,34 @@ function getTemplateBuffer(): Buffer | null {
  *
  * Production behavior is unchanged — prebuilt template is required.
  */
-async function ensureDevTemplate(): Promise<{ ok: boolean; error?: string }> {
+async function ensureDevTemplate(): Promise<{ ok: boolean; error?: string; rebuilt?: boolean }> {
   if (process.env.NODE_ENV === 'production') {
     return { ok: false, error: 'Production mode requires prebuilt template. Run "npm run build" before "npm start".' };
   }
 
-  // Check if template already exists
-  if (getTemplateBuffer()) return { ok: true };
+  // V5-BLOCKER-FIX-01B: Check freshness — rebuild if stale
+  const templateExists = !!getTemplateBuffer();
+  const stale = isTemplateStale();
+
+  if (templateExists && !stale) {
+    // Fresh — use cache
+    return { ok: true, rebuilt: false };
+  }
+
+  if (stale) {
+    console.log('[Export API] Dev mode: export template is STALE (source files newer than bundle). Rebuilding...');
+  } else if (!templateExists) {
+    console.log('[Export API] Dev mode: export template MISSING. Building...');
+  }
 
   // Lock — prevent concurrent builds
   if (_devBuildLock) {
     // Wait for existing build to finish (poll up to 60s)
     for (let i = 0; i < 120; i++) {
       await new Promise(r => setTimeout(r, 500));
-      if (getTemplateBuffer()) return { ok: true };
+      // After another build finishes, recheck freshness — it might
+      // still be stale if source changed again during build
+      if (getTemplateBuffer() && !isTemplateStale()) return { ok: true, rebuilt: false };
       if (!_devBuildLock) break;
     }
     return { ok: false, error: 'Export template build timed out (another build in progress).' };
@@ -78,7 +167,6 @@ async function ensureDevTemplate(): Promise<{ ok: boolean; error?: string }> {
 
   _devBuildLock = true;
   try {
-    console.log('[Export API] Dev mode: auto-building export template...');
     const { execSync } = await import('child_process');
     execSync('npx vite build --config vite.export.config.ts', {
       cwd: process.cwd(),
@@ -89,8 +177,14 @@ async function ensureDevTemplate(): Promise<{ ok: boolean; error?: string }> {
     _templateCache = null;
     _templateMtime = 0;
     if (getTemplateBuffer()) {
-      console.log('[Export API] Dev mode: export template built successfully.');
-      return { ok: true };
+      // Verify freshness after rebuild (source shouldn't be newer now)
+      const stillStale = isTemplateStale();
+      if (stillStale) {
+        console.warn('[Export API] Dev mode: template rebuilt but still stale — source mtime may be in future.');
+      } else {
+        console.log('[Export API] Dev mode: export template rebuilt successfully (fresh).');
+      }
+      return { ok: true, rebuilt: true };
     }
     return { ok: false, error: 'Export template build completed but file not found.' };
   } catch (err) {
@@ -118,8 +212,12 @@ export async function POST(request: NextRequest) {
 
     // Get cached template
     let templateBuf = getTemplateBuffer();
-    if (!templateBuf) {
-      // PATCH-2D: In dev mode, auto-build the export template
+    // V5-BLOCKER-FIX-01B: Check freshness even when template exists.
+    // Previously, ensureDevTemplate was only called when template was
+    // missing — stale bundles were served without rebuild.
+    if (!templateBuf || (process.env.NODE_ENV !== 'production' && isTemplateStale())) {
+      // PATCH-2D + V5-BLOCKER-FIX-01B: In dev mode, auto-build the export
+      // template if missing OR stale (source files newer than bundle).
       const devBuild = await ensureDevTemplate();
       if (!devBuild.ok) {
         return NextResponse.json(
