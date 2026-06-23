@@ -16,6 +16,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "audit:phase3c": "tsx scripts/audit-phase3c-screenshots.ts",
+    "guard:no-legacy-runtime": "node scripts/guard-no-legacy-runtime.js",
     "export:build": "vite build --config vite.export.config.ts",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",

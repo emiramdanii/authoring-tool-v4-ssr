@@ -225,14 +225,16 @@ class AppBootErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 }
 
 // ── 3. Dynamic import with chunk-load error path ─────────────
+// V5: ProductShell is the official runtime route. AuthoringTool
+// (legacy) is no longer imported by the home route.
 // next/dynamic propagates chunk-load failures through React's render
 // path, so the AppBootErrorBoundary above will catch them. We add a
 // thin wrapper around the import to also log the failure for debug.
-const AuthoringTool = dynamic(
+const ProductShell = dynamic(
   () =>
-    import('@/components/authoring/AuthoringTool').catch((err: unknown) => {
+    import('@/components/product-v5').then((mod) => mod.ProductShell).catch((err: unknown) => {
       // eslint-disable-next-line no-console
-      console.error('[APP_BOOT] AuthoringTool chunk load failed:', err);
+      console.error('[APP_BOOT] ProductShell chunk load failed:', err);
       // Re-throw so the error boundary can render the recovery screen.
       throw err;
     }),
@@ -244,7 +246,7 @@ const AuthoringTool = dynamic(
 
 // ── Home (default export) ────────────────────────────────────
 export default function Home() {
-  // resetKey lets us force-remount AuthoringTool when the user clicks
+  // resetKey lets us force-remount ProductShell when the user clicks
   // "Coba Lagi" inside the error boundary (without a full page reload).
   const [resetKey, setResetKey] = useState(0);
 
@@ -254,7 +256,7 @@ export default function Home() {
 
   return (
     <AppBootErrorBoundary onReset={handleReset}>
-      <AuthoringTool key={resetKey} />
+      <ProductShell key={resetKey} />
     </AppBootErrorBoundary>
   );
 }
