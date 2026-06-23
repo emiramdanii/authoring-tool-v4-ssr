@@ -3507,3 +3507,74 @@ Stage Summary:
 - Source SHA: fa5959ee75d487f431d8093903157e90ca75787e
 - CI run: 27912133985
 - Sprint OPTIMIZE-LAST-01: PASS / CLOSED / PASS_CI
+
+---
+Task ID: V3-PHASE-1B
+Agent: main
+Task: EDITOR-RESET-V3-PHASE-1B — Force Official Workspace Route
+
+Work Log:
+- Repo identity audit revealed local main was stale (50af012) while
+  remote actual main had advanced to 79a557e (containing V3 + Phase-1A).
+- Backed up local 09d1e91 to branch backup/local-09d1e91.
+- Fetched origin --prune; verified origin/main = 79a557e.
+- Reset --hard local main to origin/main (79a557e).
+- Verified V3 exists: MpiWorkspaceV2 import in CanvaBuilder.tsx,
+  mpi-workspace-v2/ folder with 9 files, workspace-selection.ts present.
+- Confirmed Phase-1A already in 79a557e (selection proof + portal
+  positioning). Did NOT touch selection proof or portal code.
+- Phase-1B code changes (3 files):
+  1. src/components/canva/CanvaBuilder.tsx:
+     - Replaced `if (teacherMode && appMode === 'edit')` with
+       `if (appMode === 'edit')` — V2 is now the unconditional
+       official editor route.
+     - Removed unused `teacherMode` selector from CanvaBuilder
+       (no longer needed for routing).
+     - Legacy 3-panel editor block below is now unreachable from
+       any normal route. Documented as quarantine reference only.
+  2. src/store/canva/teacher-mode-slice.ts:
+     - getInitialTeacherMode() now ALWAYS returns true.
+     - Removed branch `if (stored === 'lengkap' || stored === 'false')
+       return false` that allowed stale advanced-mode preference to
+       flip teacherMode to false.
+     - Migration: stale 'lengkap' / 'false' in localStorage is
+       rewritten to 'sederhana' on first read so persisted state
+       matches the new contract.
+     - toggleTeacherMode/setTeacherMode API preserved (still used
+       for terminology label toggling inside V2 — NOT for routing).
+  3. e2e/v3-workspace-acceptance.spec.ts:
+     - Removed `setTeacherMode(true)` store hack in setupWorkspace.
+     - V2 route no longer requires the hack; selector reaches V2
+       directly because appMode === 'edit' is sufficient.
+- New test files (2):
+  1. e2e/phase-1b-route-lock.spec.ts (2 E2E tests):
+     - Stale teacherMode=false (lengkap in localStorage) still opens
+       Workspace V2 + asserts legacy editor hidden + asserts teacherMode
+       migrated to true + asserts localStorage rewritten to 'sederhana'.
+     - Fresh user (no teacherMode key) also lands in V2.
+  2. src/__tests__/phase-1b-route-lock.test.ts (7 unit tests):
+     - 5 migration contract tests (empty, lengkap, false, sederhana,
+       throw-on-access).
+     - 2 source contract tests: CanvaBuilder gates V2 on appMode alone
+       (no teacherMode in route condition); teacher-mode-slice does
+       not return false from getInitialTeacherMode.
+- Verification:
+  * TypeScript gate: 0 errors (npx tsc --noEmit + normalize-ts-errors --check)
+    Note: 2 pre-existing errors in route.ts files were due to stale
+    Prisma client; resolved by `npx prisma generate`. Not from Phase-1B.
+  * Core tests: 514/514 pass (npx vitest run src/core)
+  * CI-listed tests: 43/43 pass (mode-lifecycle-smoke, store-init-bootstrap,
+    flow-guru-gate)
+  * Phase-1B unit tests: 7/7 pass
+  * Build: npm run build succeeds, .next/BUILD_ID generated
+- Frozen boundary respected: no changes to persistence, renderer,
+  export pipeline, or TemplateAdapter. Only CanvaBuilder route gate,
+  teacher-mode-slice migration, and tests.
+
+Stage Summary:
+- Phase-1B route lock: `appMode === 'edit'` → MpiWorkspaceV2 (unconditional)
+- teacherMode no longer gates routing; only toggles terminology labels
+- Stale 'lengkap'/'false' localStorage migrated to 'sederhana' on boot
+- Legacy 3-panel editor unreachable from any normal user route
+- CI 3/3 green locally (test + types + build)
+- Ready for senior audit

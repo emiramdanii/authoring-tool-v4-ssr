@@ -39,9 +39,11 @@ async function setupWorkspace(page: Page) {
   await useTemplateBtn.click();
   await page.waitForTimeout(4000);
 
-  await page.evaluate(() => {
-    (window as any).__useCanvaStore.getState().setTeacherMode(true);
-  });
+  // V3-PHASE-1B: No store hack. The route lock `appMode === 'edit'`
+  // guarantees MpiWorkspaceV2 is rendered regardless of teacherMode.
+  // Previously this block called setTeacherMode(true) to force the
+  // V2 route — that hack is removed because the route no longer
+  // depends on teacherMode.
   await page.waitForTimeout(3000);
   await page.waitForSelector('[data-testid="mpi-workspace-v2"]', { timeout: 15000 });
 }

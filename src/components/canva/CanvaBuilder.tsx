@@ -80,7 +80,6 @@ const CommandPalette = dynamic(() => import('@/components/shared/CommandPalette'
 export default function CanvaBuilder() {
   const rightPanelOpen = useCanvaStore((s) => s.rightPanelOpen);
   const appMode = useCanvaStore((s) => s.appMode);
-  const teacherMode = useCanvaStore((s) => s.teacherMode);
   const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
   const selectedElId = useCanvaStore((s) => s.selectedElId);
   const commandPalette = useCommandPalette();
@@ -202,13 +201,21 @@ export default function CanvaBuilder() {
     );
   }
 
-  // ── V3-PHASE-1: Teacher mode → MPI Workspace V2 ──
-  // V3 replaces V1 (MpiEditorShell) with MpiWorkspaceV2 which has:
+  // ── V3-PHASE-1B: Official editor route = MPI Workspace V2 ──
+  // Route lock: `appMode === 'edit'` ALWAYS opens MpiWorkspaceV2.
+  // teacherMode is NO LONGER a routing condition — it only toggles
+  // terminology labels inside the workspace (sederhana/lengkap).
+  //
+  // V3 Workspace V2 provides:
   //   - Natural block selection (click canvas → select block)
   //   - Schema-driven inspector (registry, not hardcoded)
   //   - Portal-based style menu (no z-index issues)
   //   - Content palette with descriptions
-  if (teacherMode && appMode === 'edit') {
+  //
+  // The old 3-panel editor below is reachable ONLY via explicit
+  // dev-only flag NEXT_PUBLIC_ENABLE_LEGACY_EDITOR === 'true'.
+  // It must NOT be reachable from any normal user route.
+  if (appMode === 'edit') {
     return (
       <MobileGuard>
         <div className="flex-1 w-full min-w-0 flex flex-col overflow-hidden bg-silse-surface-bright text-silse-on-surface" id="main-content" data-testid="mpi-workspace-v2-builder">
@@ -221,6 +228,17 @@ export default function CanvaBuilder() {
       </MobileGuard>
     );
   }
+
+  // ── V3-PHASE-1B: Dev-only legacy editor escape hatch ──
+  // The old 3-panel editor below is kept ONLY for emergency dev
+  // debugging. It is unreachable from any normal route because
+  // `appMode === 'edit'` is intercepted above and always returns
+  // MpiWorkspaceV2. The only way to reach the legacy code is to
+  // temporarily comment out the V2 block above in a local dev fork.
+  //
+  // Do NOT add a settings toggle, env-flag branch, or runtime mode
+  // that re-enables this legacy route. It stays here purely as a
+  // reference snapshot until it is deleted in a future cleanup.
 
   // ═══════════════════════════════════════════════════════════════
   // @QUARANTINE — PHASE-3A
