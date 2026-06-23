@@ -102,6 +102,7 @@ export const RefleksiScreen = React.memo(function RefleksiScreen({
 
   return (
     <ScreenShell
+      hideCompletionBadge={mode === 'preview'}
       screenType="refleksi"
       screenConfig={config}
       tokens={tokens}

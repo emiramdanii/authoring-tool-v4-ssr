@@ -103,6 +103,7 @@ export const DiskusiScreen = React.memo(function DiskusiScreen({
 
   return (
     <ScreenShell
+      hideCompletionBadge={mode === 'preview'}
       screenType="diskusi"
       screenConfig={config}
       tokens={tokens}

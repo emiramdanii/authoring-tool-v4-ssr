@@ -1,0 +1,419 @@
+[
+  {
+    "page": "01-cover",
+    "pageIndex": 0,
+    "screenshot": "01-cover.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 0,
+          "h": 0,
+          "id": "norma-golden-1",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 0,
+          "type": "cover"
+        }
+      ],
+      "maxBottom": 0,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "02-petunjuk",
+    "pageIndex": 1,
+    "screenshot": "02-petunjuk.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 644,
+          "h": 608,
+          "id": "norma-golden-3",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "petunjuk"
+        }
+      ],
+      "maxBottom": 644,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "03-tujuan",
+    "pageIndex": 2,
+    "screenshot": "03-tujuan.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 487,
+          "h": 451,
+          "id": "norma-golden-5",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "tujuan-display"
+        }
+      ],
+      "maxBottom": 487,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "04-motivasi",
+    "pageIndex": 3,
+    "screenshot": "04-motivasi.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 545,
+          "h": 509,
+          "id": "norma-golden-7",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "motivasi"
+        }
+      ],
+      "maxBottom": 545,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "05-skenario",
+    "pageIndex": 4,
+    "screenshot": "05-skenario.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 567,
+          "h": 531,
+          "id": "norma-golden-9",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "skenario"
+        }
+      ],
+      "maxBottom": 567,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "06-materi-1",
+    "pageIndex": 5,
+    "screenshot": "06-materi-1.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 162,
+          "h": 126,
+          "id": "norma-golden-11",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "def-box"
+        },
+        {
+          "bottom": 571,
+          "h": 363,
+          "id": "norma-golden-12",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 208,
+          "type": "nc-grid"
+        }
+      ],
+      "maxBottom": 571,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 2,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "07-materi-2",
+    "pageIndex": 6,
+    "screenshot": "07-materi-2.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 453,
+          "h": 417,
+          "id": "norma-golden-14",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "nc-grid"
+        }
+      ],
+      "maxBottom": 453,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "08-materi-3",
+    "pageIndex": 7,
+    "screenshot": "08-materi-3.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 243,
+          "h": 207,
+          "id": "norma-golden-16",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "def-box"
+        }
+      ],
+      "maxBottom": 243,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "09-diskusi",
+    "pageIndex": 8,
+    "screenshot": "09-diskusi.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 513,
+          "h": 477,
+          "id": "norma-golden-18",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "diskusi"
+        }
+      ],
+      "maxBottom": 513,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "10-kuis-1",
+    "pageIndex": 9,
+    "screenshot": "10-kuis-1.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 297,
+          "h": 261,
+          "id": "norma-golden-20",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "kuis"
+        }
+      ],
+      "maxBottom": 297,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "11-kuis-2",
+    "pageIndex": 10,
+    "screenshot": "11-kuis-2.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 330,
+          "h": 294,
+          "id": "norma-golden-22",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "kuis"
+        }
+      ],
+      "maxBottom": 330,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "12-kuis-3",
+    "pageIndex": 11,
+    "screenshot": "12-kuis-3.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 330,
+          "h": 294,
+          "id": "norma-golden-24",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "kuis"
+        }
+      ],
+      "maxBottom": 330,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "13-kuis-4",
+    "pageIndex": 12,
+    "screenshot": "13-kuis-4.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 330,
+          "h": 294,
+          "id": "norma-golden-26",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "kuis"
+        }
+      ],
+      "maxBottom": 330,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "14-kuis-5",
+    "pageIndex": 13,
+    "screenshot": "14-kuis-5.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 330,
+          "h": 294,
+          "id": "norma-golden-28",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "kuis"
+        }
+      ],
+      "maxBottom": 330,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "15-refleksi",
+    "pageIndex": 14,
+    "screenshot": "15-refleksi.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 609,
+          "h": 573,
+          "id": "norma-golden-30",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "refleksi"
+        }
+      ],
+      "maxBottom": 609,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "16-rangkuman",
+    "pageIndex": 15,
+    "screenshot": "16-rangkuman.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 582,
+          "h": 546,
+          "id": "norma-golden-32",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 36,
+          "type": "rangkuman"
+        }
+      ],
+      "maxBottom": 582,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  },
+  {
+    "page": "17-penutup",
+    "pageIndex": 16,
+    "screenshot": "17-penutup.png",
+    "audit": {
+      "allBlocks": [
+        {
+          "bottom": 315,
+          "h": 315,
+          "id": "norma-golden-34",
+          "overflowBy": 0,
+          "overflows": false,
+          "top": 0,
+          "type": "penutup"
+        }
+      ],
+      "maxBottom": 315,
+      "overflowAmount": 0,
+      "overflowingBlocks": [],
+      "scale": 0.6625,
+      "totalBlocks": 1,
+      "truncatedBlocks": []
+    }
+  }
+]

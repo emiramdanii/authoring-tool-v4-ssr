@@ -119,8 +119,8 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
     <PremiumBlockWrapper tokens={tokens} accent="c" staggerIndex={0}>
     <ReadingProgressIndicator progress={progress} tokens={tokens} accent="c" height={2} position="top" />
     <div style={{ maxWidth: tokens.narrowWidth(), margin: '0 auto' }}>
-      {/* Header with icon */}
-      <div className="flex items-center gap-2.5 mb-3">
+      {/* Header with icon — V5-PRODUCT-STABILIZATION-01: reduced mb-3 → mb-2 */}
+      <div className="flex items-center gap-2.5 mb-2">
         <div className="rounded-xl flex items-center justify-center"
           style={{
             width: edu.iconSize('md'), height: edu.iconSize('md'),
@@ -144,7 +144,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
 
       {block.intro && <InlineTextEditor
         {...introEditor}
-        className="mb-4 leading-relaxed"
+        className="mb-2 leading-relaxed"
         style={{ ...edu.body(), color: edu.mutedText(0.8), wordBreak: 'break-word', overflowWrap: 'break-word' }}
         placeholder="Ketik intro..."
       />}
@@ -153,29 +153,36 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       {questions.map((q, i) => {
         const qColor = q.warna || 'p';
         const hasResponse = responses[i]!?.trim().length > 0;
+        // V5-PRODUCT-STABILIZATION-01: Use dense spacing for ALL modes.
+        // Previously, export/preview (non-compact) used mb-10 (40px) per
+        // question + minHeight 50px textarea + lineHeight 1.8, causing
+        // Refleksi block to overflow 720px scene by 49-67px.
+        // Dense mode: mb-2, minHeight 32px, lineHeight 1.4 — fits 2Q+penugasan.
+        // Also override componentPadding to use compact values (block: 6px).
+        const densePadding = { padding: '6px 10px' };
         return (
-          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className={`rounded-xl min-w-0 ${isCompact ? 'mb-3' : 'mb-10'}`}
+          <div key={`refleksi-q-${q.teks?.slice(0,8)}-${i}`} className="rounded-xl min-w-0 mb-2"
             style={{
-              ...edu.componentPadding(),
+              ...densePadding,
               background: edu.cardBg(),
               border: `1px solid ${tokens.subtleBorder(0.08)}`,
               borderLeft: `${edu.stripeWidth()}px solid ${tokens.color(hasResponse ? 'g' : qColor)}`,
               ...edu.transition('background-color, border-color, box-shadow, border-left-color', 'standard'),
               ...edu.entrance(i),
             }}>
-            <label className={`font-bold block mb-2 ${isCompact ? 'canvas-truncate-2' : ''}`}
-              style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color(qColor), lineHeight: isCompact ? '1.4' : '1.8' }}>
+            <label className="font-bold block mb-1"
+              style={{ ...edu.bodyLg(), fontWeight: 700, color: tokens.color(qColor), lineHeight: '1.4' }}>
               {q.icon && <span className="mr-1">{q.icon}</span>} <RichText content={q.teks ?? ''} />
             </label>
             {interactive ? (
               <div className="relative">
-                <textarea className={`w-full rounded-lg p-2.5 resize-y ${tokens.iosFocusRing()}`}
+                <textarea className={`w-full rounded-lg p-2 resize-y ${tokens.iosFocusRing()}`}
                   style={{
                     ...edu.body(), color: edu.textColor(),
                     background: edu.cardBg(),
                     border: `1px solid ${tokens.subtleBorder(0.12)}`,
-                    minHeight: isCompact ? '32px' : '50px',
-                    maxHeight: isCompact ? '60px' : undefined,
+                    minHeight: '32px',
+                    maxHeight: '60px',
                     ...edu.transition('border-color, box-shadow', 'fast'),
                   }}
                   placeholder={q.petunjuk}
@@ -189,7 +196,7 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
                 )}
               </div>
             ) : (
-              <div className={`w-full mt-1 rounded-lg p-2.5 ${isCompact ? 'min-h-[28px]' : 'min-h-[40px]'}`}
+              <div className="w-full mt-1 rounded-lg p-2 min-h-[28px]"
                 style={{
                   ...edu.caption(), color: edu.mutedText(0.65),
                   background: edu.cardBg(),
@@ -222,26 +229,17 @@ export const RefleksiRenderer = React.memo(function RefleksiRenderer({ block, to
       )}
 
       {block.penugasan && !isCompressed && (
-        <div className={`rounded-xl ios-entrance-card ${isCompact ? 'mt-2' : 'mt-4'}`}
+        <div className="rounded-xl ios-entrance-card mt-2"
           style={{
-            ...tokens.nestedCardStyle(),
-            ...edu.nestedPadding(),
+            padding: '6px 10px',
+            background: tokens.subtleBg(0.04),
             borderLeft: `${edu.stripeWidth()}px solid ${edu.accent()}`,
           }}>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1">
             <PenLine size={14} style={{ color: edu.accent() }} />
             <div className="font-bold" style={{ ...edu.bodyLg(), fontWeight: 700, color: edu.accent() }}>{block.penugasan.judul}</div>
           </div>
-          <RichText content={block.penugasan.isi ?? ''} className={`leading-relaxed ${isCompact ? 'canvas-truncate-2' : ''}`} style={{ ...edu.body(), color: edu.mutedText(0.8) }} />
-          {/* V3-PHASE-4: Hide "Contoh" in compact mode to save vertical space.
-              In canvas mode, teachers edit content but don't need to see the
-              example. In preview/export mode (non-compact), the example shows. */}
-          {block.penugasan.contoh && !isCompact && (
-            <div className="mt-2 italic p-2 rounded-lg"
-              style={{ ...edu.caption(), color: tokens.textSubtle(0.5), background: edu.accentAlpha(0.06) }}>
-              Contoh: <RichText content={block.penugasan.contoh ?? ''} />
-            </div>
-          )}
+          <RichText content={block.penugasan.isi ?? ''} className="leading-relaxed" style={{ ...edu.body(), color: edu.mutedText(0.8) }} />
         </div>
       )}
       {/* ═══ COMPRESSION: Show More button ════════════════════════ */}

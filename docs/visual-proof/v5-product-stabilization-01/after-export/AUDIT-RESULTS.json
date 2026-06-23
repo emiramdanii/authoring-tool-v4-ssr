@@ -1,0 +1,223 @@
+[
+  {
+    "page": "01-cover",
+    "pageIndex": 0,
+    "screenshot": "01-cover.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Cover\n6%\n🏠\nCover\nHalaman 1 dari 17\n⚖️\nPANCASILA · KELAS D\nMacam-Macam Norma\n\nPPKn Kelas VII — Semester 1\n\n📚\nModul PPKn Kelas VII — Hakikat Norma\n🏫\n"
+    }
+  },
+  {
+    "page": "02-petunjuk",
+    "pageIndex": 1,
+    "screenshot": "02-petunjuk.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Petunjuk\n12%\n📌\nPetunjuk\nHalaman 2 dari 17\n📌 PETUNJUK\ninfo\nPetunjuk\nshield\nBSNP Wajib\nPetunjuk Penggunaan\n📖\n1\nBaca Materi\nPelajari penjelasan tentan"
+    }
+  },
+  {
+    "page": "03-tujuan",
+    "pageIndex": 2,
+    "screenshot": "03-tujuan.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Tujuan Pembelajaran\n18%\n🎯\nTujuan\nHalaman 3 dari 17\n🎯 TUJUAN PEMBELAJARAN\ntarget\nTujuan Pembelajaran\nshield\nWAJIB\n1\n🎯\nMenjelaskan pengertian norma s"
+    }
+  },
+  {
+    "page": "04-motivasi",
+    "pageIndex": 3,
+    "screenshot": "04-motivasi.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Motivasi\n24%\n💡\nMotivasi\nHalaman 4 dari 17\n💡 MOTIVASI\nlightbulb\nMotivasi / Apersepsi\nshield\nWAJIB\nauto_awesome\n💡\nPERTANYAAN PEMICU\nPernahkah kamu me"
+    }
+  },
+  {
+    "page": "05-skenario",
+    "pageIndex": 4,
+    "screenshot": "05-skenario.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Skenario\n29%\n🎭\nSkenario\nHalaman 5 dari 17\n🎭 SKENARIO\n🎭 Skenario: Norma di Sekitar Kita\nstar\n0\nBabak 1/1\nRizki:\nHari ini ada siswa baru yang tidak m"
+    }
+  },
+  {
+    "page": "06-materi-1",
+    "pageIndex": 5,
+    "screenshot": "06-materi-1.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Materi 1: Pengertian Norma\n35%\n📖\nMateri\nHalaman 6 dari 17\n📖 MATERI 1\nmenu_book\nDEFINISI\nNorma adalah peraturan atau ketentuan yang mengatur tingkah "
+    }
+  },
+  {
+    "page": "07-materi-2",
+    "pageIndex": 6,
+    "screenshot": "07-materi-2.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Materi 2: 4 Jenis Norma\n41%\n📖\nMateri\nHalaman 7 dari 17\n📖 MATERI 2\nNorma\n1\nNorma 1-2\n2\nNorma 3-4\n🙏\n1. Norma Agama\nPeraturan yang berasal dari Tuhan "
+    }
+  },
+  {
+    "page": "08-materi-3",
+    "pageIndex": 7,
+    "screenshot": "08-materi-3.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Materi 3: Sumber & Sanksi\n47%\n📖\nMateri\nHalaman 8 dari 17\n📖 MATERI 3\nmenu_book\nDEFINISI\n1\nDefinisi\n2\nPenjelasan\nPerbedaan Utama: Sumber norma menentu"
+    }
+  },
+  {
+    "page": "09-diskusi",
+    "pageIndex": 8,
+    "screenshot": "09-diskusi.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Diskusi\n47%\n💬\nDiskusi\nHalaman 9 dari 17\n💬 DISKUSI\nchat_bubble\nDiskusi: Norma di Sekitar Kita\n0/2\n\nDiskusikan pertanyaan berikut dengan teman sekelom"
+    }
+  },
+  {
+    "page": "10-kuis-1",
+    "pageIndex": 9,
+    "screenshot": "10-kuis-1.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Kuis 1\n47%\n📝\nKuis\nHalaman 10 dari 17\n📝 KUIS 1/5\nPilih jawaban yang benar untuk setiap soal kuis\nsports_esports\nKuis: Macam-Macam Norma (1/5)\n1/1\nNor"
+    }
+  },
+  {
+    "page": "11-kuis-2",
+    "pageIndex": 10,
+    "screenshot": "11-kuis-2.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Kuis 2\n47%\n📝\nKuis\nHalaman 11 dari 17\n📝 KUIS 2/5\nPilih jawaban yang benar untuk setiap soal kuis\nsports_esports\nKuis: Macam-Macam Norma (2/5)\n1/1\nSes"
+    }
+  },
+  {
+    "page": "12-kuis-3",
+    "pageIndex": 11,
+    "screenshot": "12-kuis-3.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Kuis 3\n47%\n📝\nKuis\nHalaman 12 dari 17\n📝 KUIS 3/5\nPilih jawaban yang benar untuk setiap soal kuis\nsports_esports\nKuis: Macam-Macam Norma (3/5)\n1/1\nPel"
+    }
+  },
+  {
+    "page": "13-kuis-4",
+    "pageIndex": 12,
+    "screenshot": "13-kuis-4.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Kuis 4\n47%\n📝\nKuis\nHalaman 13 dari 17\n📝 KUIS 4/5\nPilih jawaban yang benar untuk setiap soal kuis\nsports_esports\nKuis: Macam-Macam Norma (4/5)\n1/1\nNor"
+    }
+  },
+  {
+    "page": "14-kuis-5",
+    "pageIndex": 13,
+    "screenshot": "14-kuis-5.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Kuis 5\n47%\n📝\nKuis\nHalaman 14 dari 17\n📝 KUIS 5/5\nPilih jawaban yang benar untuk setiap soal kuis\nsports_esports\nKuis: Macam-Macam Norma (5/5)\n1/1\nMan"
+    }
+  },
+  {
+    "page": "15-refleksi",
+    "pageIndex": 14,
+    "screenshot": "15-refleksi.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Refleksi\n47%\n🪞\nRefleksi\nHalaman 15 dari 17\n📝 REFLEKSI\nRefleksi Macam-Macam Norma\n\nRenungkan pertanyaan berikut untuk memperdalam pemahamanmu!\n\n🪞 Ha"
+    }
+  },
+  {
+    "page": "16-rangkuman",
+    "pageIndex": 15,
+    "screenshot": "16-rangkuman.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Rangkuman\n53%\n📋\nRangkuman\nHalaman 16 dari 17\n📋 RANGKUMAN\nmenu_book\nRangkuman\nshield\nWAJIB\n1\nKonsep 1-2\n2\nKonsep 3-4\n📖\nNorma\nPeraturan yang mengatur"
+    }
+  },
+  {
+    "page": "17-penutup",
+    "pageIndex": 16,
+    "screenshot": "17-penutup.png",
+    "audit": {
+      "maxOverflow": 0,
+      "overflowCount": 0,
+      "scale": 1,
+      "sceneFound": true,
+      "topOverflows": [],
+      "visibleText": "Penutup\n59%\n🏁\nPenutup\nHalaman 17 dari 17\n🏁 PENUTUP\ncheck_circle\nPenutup Pertemuan Selesai\nmenu_book\nRINGKASAN PEMBELAJARAN\nMateri — Macam-macam norm"
+    }
+  }
+]

@@ -35,6 +35,12 @@ import { generateBlockId } from './ensure-schema';
 import { assertDocumentPurity } from './session-state';
 import { logger } from '@/core/utils/logger';
 
+// V5-PRODUCT-STABILIZATION-01: Track which schema IDs have already been
+// warned about. Prevents console spam when templates with v0 schemas are
+// re-migrated on every render (the migration is pure, but the warning
+// was logged each time).
+const WARNED_SCHEMA_IDS = new Set<string>();
+
 // ── Migration Type ──────────────────────────────────────────────
 
 export interface SchemaMigration {
@@ -139,18 +145,32 @@ export function migrateSchema(schema: ScreenSchema): ScreenSchema {
 
   // Future version — don't touch
   if (currentVersion > SCHEMA_VERSION) {
-    logger.warn(
-      'SCHEMA-MIGRATION',
-      `Schema version ${currentVersion} is newer than runtime version ${SCHEMA_VERSION}. ` +
-      `Some features may not work correctly.`
-    );
+    // V5-PRODUCT-STABILIZATION-01: Suppress repeated warnings for the same
+    // schema ID. Previously, every render of a future-version schema logged
+    // a warning, spamming the console. Now we only warn once per schema ID.
+    const schemaId = current.id || 'unknown';
+    if (!WARNED_SCHEMA_IDS.has(schemaId)) {
+      WARNED_SCHEMA_IDS.add(schemaId);
+      logger.warn(
+        'SCHEMA-MIGRATION',
+        `Schema version ${currentVersion} is newer than runtime version ${SCHEMA_VERSION}. ` +
+        `Some features may not work correctly.`
+      );
+    }
     return current;
   }
+
+  // V5-PRODUCT-STABILIZATION-01: Suppress repeated migration warnings for
+  // the same schema ID. Templates store v0 schemas, so migration runs on
+  // every render. The migration is pure (returns new schema), but logging
+  // every time spams the console. Now we only log once per schema ID.
+  const schemaId = current.id || 'unknown';
+  const shouldLog = !WARNED_SCHEMA_IDS.has(schemaId);
 
   // Apply migrations sequentially
   for (const migration of MIGRATION_CHAIN) {
     if (currentVersion === migration.fromVersion) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (process.env.NODE_ENV !== 'production' && shouldLog) {
         logger.warn(
           'SCHEMA-MIGRATION',
           `Migrating schema v${migration.fromVersion} → v${migration.toVersion}: ${migration.description}`
@@ -159,6 +179,11 @@ export function migrateSchema(schema: ScreenSchema): ScreenSchema {
       current = migration.migrate(current);
       currentVersion = current.version || migration.toVersion;
     }
+  }
+
+  // Mark this schema as warned (after migrations complete)
+  if (shouldLog) {
+    WARNED_SCHEMA_IDS.add(schemaId);
   }
 
   // Final version should match CURRENT_VERSION

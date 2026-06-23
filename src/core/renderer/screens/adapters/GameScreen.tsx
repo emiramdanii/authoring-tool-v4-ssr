@@ -101,6 +101,7 @@ export const GameScreen = React.memo(function GameScreen({
 
   return (
     <ScreenShell
+      hideCompletionBadge={mode === 'preview'}
       screenType="game"
       screenConfig={config}
       tokens={tokens}

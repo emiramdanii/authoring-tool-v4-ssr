@@ -103,6 +103,7 @@ export const QuizScreen = React.memo(function QuizScreen({
 
   return (
     <ScreenShell
+      hideCompletionBadge={mode === 'preview'}
       screenType="kuis"
       screenConfig={config}
       tokens={tokens}

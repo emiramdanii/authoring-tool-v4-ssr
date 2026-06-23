@@ -45,6 +45,11 @@ export interface ScreenShellProps {
   totalPages?: number;
   /** Whether inline editing is enabled for this screen (teacher mode) */
   editable?: boolean;
+  /** V5-PRODUCT-STABILIZATION-01: Hide "Selesaikan dulu" badge.
+   *  In preview mode, guru should be able to browse freely without
+   *  the badge suggesting they must complete the kuis first.
+   *  In export/student mode, the badge stays to guide learning. */
+  hideCompletionBadge?: boolean;
   /** The rendered content (from SchemaScreenRenderer) */
   children: React.ReactNode;
 }
@@ -64,6 +69,7 @@ export const ScreenShell = React.memo(function ScreenShell({
   pageIndex = 0,
   totalPages = 1,
   editable = false,
+  hideCompletionBadge = false,
   children,
 }: ScreenShellProps) {
   const config = externalConfig ?? getScreenConfig(screenType);
@@ -102,7 +108,9 @@ export const ScreenShell = React.memo(function ScreenShell({
   const progress = totalPages > 1 ? (pageIndex + 1) / totalPages : 0;
 
   // Navigation hint text based on screen type
-  const navHint = config.isInteractive
+  // V5-PRODUCT-STABILIZATION-01: In preview mode (hideCompletionBadge=true),
+  // don't show "Selesaikan dulu" — guru can browse freely.
+  const navHint = config.isInteractive && !hideCompletionBadge
     ? (isCompleted ? 'Tekan Selanjutnya untuk lanjut' : 'Selesaikan dulu untuk lanjut')
     : 'Tekan Selanjutnya untuk lanjut';
 
@@ -183,8 +191,9 @@ export const ScreenShell = React.memo(function ScreenShell({
           <span style={{ textTransform: 'uppercase' }}>{displayLabel}</span>
         </div>
 
-        {/* "Selesaikan dulu" badge for incomplete interactive screens */}
-        {config.isInteractive && !isCompleted && (
+        {/* "Selesaikan dulu" badge for incomplete interactive screens
+            V5-PRODUCT-STABILIZATION-01: Hidden in preview mode (hideCompletionBadge) */}
+        {config.isInteractive && !isCompleted && !hideCompletionBadge && (
           <div
             style={{
               display: 'flex',
