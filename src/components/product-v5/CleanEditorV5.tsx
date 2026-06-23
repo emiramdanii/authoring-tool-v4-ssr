@@ -37,6 +37,7 @@ export interface CleanEditorV5Props {
 export function CleanEditorV5({ onBack, onPreview, onExport }: CleanEditorV5Props) {
   const pages = useCanvaStore((s) => s.pages);
   const saveStatus = useCanvaStore((s) => s._saveStatus);
+  const lastSavedAt = useCanvaStore((s) => s._lastSavedAt);
   const meta = useAuthoringStore((s) => s.meta) as { judulPertemuan?: string };
   const paketTitle = meta?.judulPertemuan || 'Media Pembelajaran';
 
@@ -57,20 +58,30 @@ export function CleanEditorV5({ onBack, onPreview, onExport }: CleanEditorV5Prop
   // in ExportPanelV5). The actual export happens exclusively in
   // ExportPanelV5 when the user explicitly clicks "Export Sekarang".
 
+  // V5-BLOCKER-FIX-01: Save status label + color.
+  // The canva store's _saveStatus auto-reverts from 'saved' to 'unsaved'
+  // after 3 seconds (HIDE_SAVED_MS in save-utils.ts). This is intentional
+  // — the "saved" indicator shouldn't stay green forever. But the label
+  // "Belum simpan" (unsaved) is misleading after data HAS been saved.
+  //
+  // Fix: when _saveStatus is 'unsaved' but _lastSavedAt > 0 (data was
+  // previously saved), show "Tersimpan" instead of "Belum simpan".
+  // Only show "Belum simpan" when _lastSavedAt === 0 (never saved).
   const statusLabel = (() => {
     switch (saveStatus) {
       case 'saved': return 'Tersimpan';
       case 'saving': return 'Menyimpan…';
-      case 'unsaved': return 'Belum simpan';
       case 'error': return 'Gagal simpan';
-      default: return 'Tersimpan';
+      case 'unsaved': return lastSavedAt > 0 ? 'Tersimpan' : 'Belum simpan';
+      default: return lastSavedAt > 0 ? 'Tersimpan' : 'Belum simpan';
     }
   })();
 
   const statusColor = saveStatus === 'saved' ? 'text-emerald-600'
     : saveStatus === 'saving' ? 'text-amber-600'
     : saveStatus === 'error' ? 'text-red-600'
-    : 'text-slate-500';
+    : lastSavedAt > 0 ? 'text-emerald-600'  // 'unsaved' but previously saved → green
+    : 'text-slate-500';  // never saved → gray
 
   if (pages.length === 0) {
     return (
@@ -132,7 +143,8 @@ export function CleanEditorV5({ onBack, onPreview, onExport }: CleanEditorV5Prop
                   background: saveStatus === 'saved' ? '#10b981'
                     : saveStatus === 'saving' ? '#f59e0b'
                     : saveStatus === 'error' ? '#ef4444'
-                    : '#94a3b8',
+                    : lastSavedAt > 0 ? '#10b981'  // 'unsaved' but previously saved → green
+                    : '#94a3b8',  // never saved → gray
                 }}
                 aria-hidden="true"
               />

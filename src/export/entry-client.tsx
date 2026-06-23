@@ -169,12 +169,31 @@ if (exportData) {
 
 // ── Render the Export App with Error Boundary ────────────────────
 // Note: No React.StrictMode — unnecessary in standalone export HTML
+// V5-BLOCKER-FIX-01: Wrap render in try-catch to surface hidden errors.
+// Previously, if the render threw synchronously, the error was swallowed
+// and #root stayed empty with no diagnostic. Now we catch + display.
 const rootEl = document.getElementById('root');
 if (rootEl) {
-  const root = createRoot(rootEl);
-  root.render(
-    <ExportErrorBoundary>
-      <ExportApp />
-    </ExportErrorBoundary>
-  );
+  try {
+    const root = createRoot(rootEl);
+    root.render(
+      <ExportErrorBoundary>
+        <ExportApp />
+      </ExportErrorBoundary>
+    );
+  } catch (err) {
+    // V5-BLOCKER-FIX-01: Surface the error so we can diagnose blank export.
+    const msg = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : '';
+    logger.error('Export', 'Render threw synchronously:', msg, stack);
+    // Display error directly in DOM as fallback
+    rootEl.innerHTML = `
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;font-family:monospace;background:#1a1a2e;color:#e94560;">
+        <div style="max-width:600px;">
+          <h2 style="margin-bottom:1rem;">Export Render Error</h2>
+          <pre style="white-space:pre-wrap;word-break:break-word;font-size:0.85rem;">${msg}\n\n${stack || ''}</pre>
+        </div>
+      </div>
+    `;
+  }
 }
