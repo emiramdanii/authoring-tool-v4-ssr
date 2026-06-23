@@ -65,7 +65,8 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
   const rebalanceCurrentPage = useCanvaStore(s => s.rebalanceCurrentPage);
   const promoteSceneSplit = useCanvaStore(s => s.promoteSceneSplit);
   const sceneTotal = useCanvaStore(s => s.sceneTotal);
-  const teacherMode = useCanvaStore(s => s.teacherMode);
+  // V5-HARDENING-01: teacherMode removed — V5 has no advanced mode,
+  // all labels are always teacher-friendly Indonesian.
 
   const definition = getBlockMeta(blockType);
   const isEditing = editingBlockId === blockId;
@@ -152,13 +153,13 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
     // Order
     { type: 'item', label: 'Pindah Atas', shortcut: 'Alt+↑', action: () => handleAction(() => moveBlockUp(blockId)) },
     { type: 'item', label: 'Pindah Bawah', shortcut: 'Alt+↓', action: () => handleAction(() => moveBlockDown(blockId)) },
-    { type: 'item', label: teacherMode ? 'Gandakan' : 'Duplikat', shortcut: 'Ctrl+D', action: () => handleAction(() => duplicateBlock(blockId)) },
+    { type: 'item', label: 'Gandakan', shortcut: 'Ctrl+D', action: () => handleAction(() => duplicateBlock(blockId)) }, // V5-HARDENING-01: teacherMode always true in V5 — label is teacher-friendly Indonesian
     { type: 'divider' },
     // Variant submenu — only show when block has > 1 variant (no point switching if only A)
     ...(definition && definition.capabilities.variants.length > 1
       ? [{
           type: 'submenu' as const,
-          label: teacherMode ? 'Ganti Gaya Tampilan' : 'Ganti Varian',
+          label: 'Ganti Gaya Tampilan', // V5-HARDENING-01: teacherMode always true in V5
           items: definition.capabilities.variants.map((v) => ({
             label: v === 'A' ? 'Varian A — Bawaan' : v === 'B' ? 'Varian B — Ringkas' : 'Varian C — Lebar',
             action: () => handleAction(() => updateSchemaBlock(blockId, { variant: v })),
@@ -200,13 +201,13 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
       action: () => handleAction(() => rebalanceCurrentPage()),
     },
     ...(sceneTotal > 1
-      ? [{ type: 'item' as const, label: teacherMode ? 'Pisahkan ke Halaman Baru' : 'Promosi Scene ke Halaman', action: () => handleAction(() => promoteSceneSplit(1)) }]
+      ? [{ type: 'item' as const, label: 'Pisahkan ke Halaman Baru', action: () => handleAction(() => promoteSceneSplit(1)) }] // V5-HARDENING-01: teacherMode always true in V5
       : []),
     { type: 'divider' },
     // AI actions submenu
     {
       type: 'submenu' as const,
-      label: teacherMode ? 'Sempurnakan dengan AI' : 'AI Refine',
+      label: 'Sempurnakan dengan AI', // V5-HARDENING-01: teacherMode always true in V5
       items: [
         { label: 'Lebih Menarik', action: () => { window.dispatchEvent(new CustomEvent('ai-refine', { detail: { mode: 'menarik', blockId } })); onClose(); } },
         { label: 'Lebih Detail', action: () => { window.dispatchEvent(new CustomEvent('ai-refine', { detail: { mode: 'detail', blockId } })); onClose(); } },
@@ -230,7 +231,7 @@ export function BlockContextMenu({ blockId, blockType, x, y, onClose }: BlockCon
     // Delete — use bulk delete for multi-select
     {
       type: 'item',
-      label: isMultiSelect ? `Hapus ${selectedBlockIds.length} ${teacherTerm('Block', teacherMode)}` : `Hapus ${teacherTerm('Block', teacherMode)}`,
+      label: isMultiSelect ? `Hapus ${selectedBlockIds.length} ${teacherTerm('Block', true)}` : `Hapus ${teacherTerm('Block', true)}`, // V5-HARDENING-01: teacherMode always true in V5
       shortcut: 'Del',
       danger: true,
       action: () => handleAction(() => {

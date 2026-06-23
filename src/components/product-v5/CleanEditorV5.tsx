@@ -22,7 +22,6 @@
 import React, { useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { useExportActions } from '@/components/canva/toolbar/use-export-actions';
 import { WorkspaceSceneList } from '@/components/canva/mpi-workspace-v2/WorkspaceTopBar';
 import { WorkspaceCanvasStage } from '@/components/canva/mpi-workspace-v2/WorkspaceCanvasStage';
 import { WorkspaceInspector } from '@/components/canva/mpi-workspace-v2/WorkspaceInspector';
@@ -40,7 +39,6 @@ export function CleanEditorV5({ onBack, onPreview, onExport }: CleanEditorV5Prop
   const saveStatus = useCanvaStore((s) => s._saveStatus);
   const meta = useAuthoringStore((s) => s.meta) as { judulPertemuan?: string };
   const paketTitle = meta?.judulPertemuan || 'Media Pembelajaran';
-  const { exportHtml, isExporting } = useExportActions();
 
   const handleBack = useCallback(() => {
     if (pages.length > 0) {
@@ -53,11 +51,11 @@ export function CleanEditorV5({ onBack, onPreview, onExport }: CleanEditorV5Prop
     onBack();
   }, [pages.length, onBack]);
 
-  const handleExport = useCallback(() => {
-    onExport();
-    // Also trigger the official export pipeline immediately
-    exportHtml();
-  }, [onExport, exportHtml]);
+  // V5-HARDENING-01 AUDIT-003: Export button in editor ONLY navigates
+  // to ExportPanelV5. It does NOT call exportHtml() — that would cause
+  // double export (one here + one when user clicks "Export Sekarang"
+  // in ExportPanelV5). The actual export happens exclusively in
+  // ExportPanelV5 when the user explicitly clicks "Export Sekarang".
 
   const statusLabel = (() => {
     switch (saveStatus) {
@@ -155,16 +153,13 @@ export function CleanEditorV5({ onBack, onPreview, onExport }: CleanEditorV5Prop
             <span className="hidden sm:inline">Preview</span>
           </button>
           <button
-            onClick={handleExport}
-            disabled={isExporting}
+            onClick={onExport}
             type="button"
-            className="flex items-center gap-1 px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-            aria-label="Export ke HTML"
+            className="flex items-center gap-1 px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+            aria-label="Buka panel export"
           >
-            <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '18px' }}>
-              {isExporting ? 'hourglass_empty' : 'download'}
-            </span>
-            <span className="hidden sm:inline">{isExporting ? '…' : 'Export'}</span>
+            <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '18px' }}>download</span>
+            <span className="hidden sm:inline">Export</span>
           </button>
         </div>
       </header>

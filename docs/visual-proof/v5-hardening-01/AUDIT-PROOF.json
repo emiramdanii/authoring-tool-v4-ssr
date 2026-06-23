@@ -1,0 +1,177 @@
+{
+  "audit_id": "V5-HARDENING-01",
+  "timestamp": "2026-06-23T14:30:00+07:00",
+  "url_tested": "http://localhost:3000/",
+  "browser": "agent-browser 0.27.3 (Chromium 1440×900)",
+  "template_tested": "Modul PPKn Kelas VII — Hakikat Norma",
+
+  "audit_002_save_reload_proof": {
+    "status": "PASS",
+    "steps": [
+      {
+        "step": 1,
+        "action": "Pilih template PPKn",
+        "result": "17 pages loaded, view=editor",
+        "screenshot": "01-dashboard.png"
+      },
+      {
+        "step": 2,
+        "action": "Edit judul Cover",
+        "before": "Macam-Macam Norma",
+        "after": "PROOF V5 HARDENING - Judul Persisted",
+        "canvas_update_live": true,
+        "screenshot": "02-after-edit-title.png"
+      },
+      {
+        "step": 3,
+        "action": "Edit isi Definisi block di Materi 1",
+        "before": "<strong>Norma</strong> adalah peraturan atau ketentuan yang mengatur tingkah laku manusia...",
+        "after": "PROOF V5 HARDENING: Definisi block content yang diedit dan harus tetap ada setelah reload.",
+        "canvas_update_live": true,
+        "screenshot": "03-after-edit-materi.png"
+      },
+      {
+        "step": 4,
+        "action": "Ubah style/theme (clicked 'Sekolah Ceria')",
+        "result": "Style menu click registered. Note: PPKn template uses contractId=golden-pertemuan which overrides themeId visual enforcement — see known_limitations.theme_override_by_contract.",
+        "screenshot": "06-export-panel.png"
+      },
+      {
+        "step": 5,
+        "action": "Reload browser",
+        "result": "DashboardV5 mounted, 'Lanjut Edit' enabled (pages.length=17>0)"
+      },
+      {
+        "step": 6,
+        "action": "Klik Lanjut Edit",
+        "result": "CleanEditorV5 mounted, view=editor, 17 pages preserved"
+      },
+      {
+        "step": 7,
+        "action": "Verify Cover title persisted",
+        "expected": "PROOF V5 HARDENING - Judul Persisted",
+        "actual": "PROOF V5 HARDENING - Judul Persisted",
+        "match": true,
+        "screenshot": "04-after-reload-cover.png"
+      },
+      {
+        "step": 8,
+        "action": "Verify Definisi block content persisted",
+        "expected": "PROOF V5 HARDENING: Definisi block content yang diedit dan harus tetap ada setelah reload.",
+        "actual": "PROOF V5 HARDENING: Definisi block content yang diedit dan harus tetap ada setelah reload.",
+        "match": true,
+        "inspector_textarea_value_matches": true,
+        "screenshot": "05-after-reload-materi.png"
+      }
+    ],
+    "root_cause_before_fix": "CanvaAutoSaveSync (which wires useAutoSave → scheduleAutoSave → saveToStorage) was only rendered inside CanvaBuilder (legacy editor). V5's CleanEditorV5 did not render it, so schema edits existed only in memory and were lost on reload.",
+    "fix_applied": "ProductShell now wraps children in ProjectProvider and renders CanvaAutoSaveSync. This connects the dirty store subscription to the debounced auto-save scheduler.",
+    "files_changed": [
+      "src/components/product-v5/ProductShell.tsx"
+    ],
+    "verification_method": "localStorage.getItem('canva_state_v2') before reload — both fields present. After reload + Lanjut Edit, both fields verified via DOM textContent + inspector textarea value."
+  },
+
+  "audit_003_export_single_path_proof": {
+    "status": "PASS",
+    "steps": [
+      {
+        "step": 1,
+        "action": "Click 'Export' button in CleanEditorV5 top bar",
+        "expected": "Navigate to ExportPanelV5, NO /api/export call",
+        "actual": "view=export, ExportPanelV5 mounted, 0 POST /api/export requests",
+        "match": true
+      },
+      {
+        "step": 2,
+        "action": "Click 'Export Sekarang' button in ExportPanelV5",
+        "expected": "Exactly 1 POST /api/export call, HTTP 200",
+        "actual": "1 POST /api/export call, HTTP 200, response received",
+        "match": true,
+        "verification_method": "performance.getEntriesByType('resource').filter(name contains 'api/export').length === 1"
+      }
+    ],
+    "root_cause_before_fix": "CleanEditorV5's Export button called both onExport() AND exportHtml() (via useExportActions), causing double export when user subsequently clicked 'Export Sekarang' in ExportPanelV5.",
+    "fix_applied": "CleanEditorV5's Export button now ONLY calls onExport() (navigate). useExportActions is no longer imported. Export pipeline runs exclusively when user clicks 'Export Sekarang' in ExportPanelV5.",
+    "files_changed": [
+      "src/components/product-v5/CleanEditorV5.tsx"
+    ]
+  },
+
+  "audit_001_recursive_guard_proof": {
+    "status": "PASS",
+    "guard_command": "npm run guard:no-legacy-runtime",
+    "entry_point": "src/app/page.tsx",
+    "runtime_import_graph_size": 328,
+    "violations_before_fix": 4,
+    "violations_after_fix": 0,
+    "violations_detail_before_fix": [
+      {
+        "file": "src/core/editor/overlay/BlockContextMenu.tsx",
+        "line": 155,
+        "rule": "teacherMode-branch",
+        "snippet": "label: teacherMode ? 'Gandakan' : 'Duplikat'"
+      },
+      {
+        "file": "src/core/editor/overlay/BlockContextMenu.tsx",
+        "line": 161,
+        "rule": "teacherMode-branch",
+        "snippet": "label: teacherMode ? 'Ganti Gaya Tampilan' : 'Ganti Varian'"
+      },
+      {
+        "file": "src/core/editor/overlay/BlockContextMenu.tsx",
+        "line": 203,
+        "rule": "teacherMode-branch",
+        "snippet": "label: teacherMode ? 'Pisahkan ke Halaman Baru' : 'Promosi Scene ke Halaman'"
+      },
+      {
+        "file": "src/core/editor/overlay/BlockContextMenu.tsx",
+        "line": 209,
+        "rule": "teacherMode-branch",
+        "snippet": "label: teacherMode ? 'Sempurnakan dengan AI' : 'AI Refine'"
+      }
+    ],
+    "fix_applied": "All teacherMode ternaries in BlockContextMenu.tsx replaced with the teacherMode=true branch (Indonesian labels). V5 has no advanced mode, so teacherMode is always true. teacherMode variable declaration removed.",
+    "files_changed": [
+      "src/core/editor/overlay/BlockContextMenu.tsx"
+    ],
+    "guard_output_after_fix": "✅ PASS — recursive guard found no legacy runtime imports. Runtime import graph (328 files) is clean."
+  },
+
+  "audit_005_dead_useeffect_cleanup": {
+    "status": "PASS",
+    "description": "Removed dead useEffect in ProductShell that only checked pages.length > 0 && view === 'dashboard' without any side effect. The 'Lanjut Edit' enable/disable state is already handled by DashboardV5 via the hasProject prop.",
+    "files_changed": [
+      "src/components/product-v5/ProductShell.tsx"
+    ]
+  },
+
+  "audit_004_metadata_template_limitation": {
+    "status": "DOCUMENTED_AS_KNOWN_LIMITATION",
+    "description": "Template metadata (judulPertemuan, guru, sekolah, kelas) is currently set to template defaults. V5 does not provide a metadata edit form. Teachers cannot customize the cover title's subtitle, guru name, or school name from the UI.",
+    "workaround": "Teachers can edit individual block fields via the inspector (Cover title, Cover subtitle) but the global metadata that populates cover badges (Guru, Sekolah, Mapel, Kelas) is not editable in V5.",
+    "deferred_to": "Future batch — needs a small metadata form in CleanEditorV5 top bar or DashboardV5 'Project Info' card. Senior instruction: 'Jangan buat form besar dulu.'"
+  },
+
+  "theme_override_by_contract": {
+    "status": "KNOWN_LIMITATION",
+    "description": "PPKn template applies contractId='golden-pertemuan' to every page. PageRenderer's contract enforcement (resolveContractStyle + shouldUseGoldenLegacyFallback) overrides the schema.themeId set by WorkspaceStyleMenu. As a result, clicking 'Sekolah Ceria' or 'Modern Interaktif' in the style menu does not change the visual appearance of PPKn template pages.",
+    "affected_templates": ["modul-ppkn-vii", "macam-macam-norma", "misi-penjelajah-pancasila"],
+    "non_affected_templates": ["materi-kuis", "materi-aktivitas", "skenario-diskusi", "game-sortir-kuis", "pertemuan-lengkap"],
+    "deferred_to": "Future batch — needs either (a) strip contractId when user changes style, or (b) make style menu aware of contract and remove contractId on apply."
+  },
+
+  "ci_status": {
+    "typecheck": "0 errors (npx tsc --noEmit)",
+    "build": "EXIT 0 (.next/BUILD_ID generated)",
+    "vitest": "17 pre-existing failures (not from V5 — verified via git stash on clean HEAD)",
+    "guard": "PASS (328 files, 0 violations)"
+  },
+
+  "files_changed_in_this_batch": [
+    "src/components/product-v5/ProductShell.tsx (ProjectProvider + CanvaAutoSaveSync + dead useEffect removed)",
+    "src/components/product-v5/CleanEditorV5.tsx (Export button only navigates, no exportHtml call)",
+    "src/core/editor/overlay/BlockContextMenu.tsx (removed teacherMode ternaries)",
+    "scripts/guard-no-legacy-runtime.js (recursive import graph traversal)"
+  ]
+}
