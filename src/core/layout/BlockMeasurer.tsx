@@ -137,12 +137,18 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
     if (!el) return;
 
     // Create ResizeObserver for this block
-    // V5-RELEASE-HARDENING-02 (V5-006): Track observation count to suppress
-    // transient zero-height warnings. The first ResizeObserver callback often
-    // reports 0 height before the element is fully laid out. Only warn if
-    // the SECOND observation also reports 0 — that indicates a real layout
-    // problem, not a transient measurement.
+    // V5-P3-FIX (V5-006): Suppress transient zero-height warnings using
+    // BOTH observation count AND time-based guard. The first few
+    // ResizeObserver callbacks (within 500ms of observation start) often
+    // report 0 height before the element is fully laid out by the browser.
+    // Only warn if:
+    //   - observation count > 3 (at least 4th observation)
+    //   - AND more than 500ms have passed since observation started
+    // This catches real layout bugs while suppressing transient noise.
     let observationCount = 0;
+    const observationStartTime = Date.now();
+    const MIN_OBSERVATIONS_BEFORE_WARN = 3;
+    const MIN_TIME_BEFORE_WARN_MS = 500;
 
     observerRef.current = new ResizeObserver((entries) => {
       observationCount++;
@@ -152,8 +158,14 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
           ?? entry.contentRect.height;
 
         // ── DIAGNOSTIC: Warn on zero height measurement ──
-        // V5-006: Only warn after 2nd observation (skip transient first measure)
-        if (process.env.NODE_ENV !== 'production' && height <= 0 && observationCount > 1) {
+        // V5-P3-FIX: Only warn if both conditions met:
+        //   1. At least 4 observations (skip first 3 transient frames)
+        //   2. At least 500ms since observation started (skip initial layout)
+        if (process.env.NODE_ENV !== 'production'
+          && height <= 0
+          && observationCount > MIN_OBSERVATIONS_BEFORE_WARN
+          && (Date.now() - observationStartTime) > MIN_TIME_BEFORE_WARN_MS
+        ) {
           logger.warn('MeasuredBlock',
             `ZERO HEIGHT: ${blockId} borderBoxSize: ${entry.borderBoxSize?.[0]?.blockSize} ` +
             `contentRect: ${entry.contentRect.height} element: ${el.tagName} ` +

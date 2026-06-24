@@ -198,8 +198,15 @@ export function applyMetadataToCoverBlocks(meta: Partial<MetaState>): void {
     };
   });
 
-  // Step 3: Set new pages in canva store if any cover block was updated
+  // Step 3: Set new pages in canva store if any cover block was updated.
+  // V5-P3-FIX: Push history BEFORE setState so undo/redo works for
+  // metadata changes. Previously, direct setState bypassed _pushHistory,
+  // meaning guru couldn't undo a metadata save. Now history is captured.
   if (anyPageChanged) {
+    const canvaStateForHistory = useCanvaStore.getState();
+    if (typeof canvaStateForHistory._pushHistory === 'function') {
+      canvaStateForHistory._pushHistory();
+    }
     useCanvaStore.setState({ pages: newPages });
   }
 }

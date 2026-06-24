@@ -235,6 +235,9 @@ export const DefBoxRenderer = React.memo(function DefBoxRenderer({ block, tokens
                 overflow: isContentCollapsed ? 'hidden' : undefined,
                 ...edu.emotionalMotion('accordionExpand'),
                 position: 'relative',
+                // V5-P3-FIX: Add title attribute for tooltip in compact mode
+                // so guru can hover to see full text that's truncated by canvas-truncate-3
+                ...(isCompact ? { title: block.content ?? '' } : {}),
               }}>
                 <InlineTextEditor
                   {...contentEditor}
