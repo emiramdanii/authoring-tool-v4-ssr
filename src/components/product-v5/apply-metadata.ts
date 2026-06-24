@@ -27,6 +27,13 @@ interface CoverBlock {
   title?: string;
   subtitle?: string;
   badges?: CoverBadge[];
+  meta?: {
+    durasi?: string;
+    fase?: string;
+    elemen?: string;
+    kelas?: string;
+    [key: string]: unknown;
+  };
 }
 
 /**
@@ -109,14 +116,24 @@ export function applyMetadataToCoverBlocks(meta: Partial<MetaState>): void {
       let badgesChanged = false;
       const patch: Record<string, unknown> = {};
 
-      // V5-METADATA-FINAL (P1): Handle title — update if non-empty, clear if empty.
-      // Previously, empty judulPertemuan was skipped, leaving old title on cover.
+      // V5-METADATA-FINAL-10PASS-PATCH-02 (P1-1): Handle title — update if non-empty, clear if empty.
       if (meta.judulPertemuan !== undefined) {
-        if (meta.judulPertemuan !== '') {
-          patch.title = meta.judulPertemuan;
-        } else {
-          patch.title = ''; // Clear title when judulPertemuan is empty
-        }
+        patch.title = meta.judulPertemuan !== '' ? meta.judulPertemuan : '';
+      }
+
+      // V5-PATCH-02 (P1-1): Handle mapel → cover.subtitle.
+      // mapel is stored in cover.subtitle. Clear if empty.
+      if (meta.mapel !== undefined) {
+        patch.subtitle = meta.mapel !== '' ? meta.mapel : '';
+      }
+
+      // V5-PATCH-02 (P1-1): Handle kelas → cover.meta.kelas.
+      // kelas is stored in cover.meta.kelas (deterministic, not badge-based).
+      // Clear if empty.
+      if (meta.kelas !== undefined) {
+        const existingMeta = coverBlock.meta ? { ...coverBlock.meta } : {};
+        existingMeta.kelas = meta.kelas !== '' ? meta.kelas : '';
+        patch.meta = existingMeta;
       }
 
       // V5-METADATA-FINAL (P1): Handle badges — upsert if non-empty, REMOVE if empty.

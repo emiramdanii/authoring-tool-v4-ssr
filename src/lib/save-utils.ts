@@ -146,10 +146,16 @@ export function buildSyncPayload(): SyncPayload {
   return {
     pages: canvaPagesToSavePages(canvaState.pages),
     ratioId: canvaState.ratioId,
+    // V5-PATCH-02 (P2): Include metadata-only fields in top-level DB meta.
+    // Previously only title/subject/grade were sent. Now semester,
+    // teacherName, schoolName are included for project listing / DB metadata.
     meta: {
       title: authoringState.meta.judulPertemuan || 'Proyek Baru',
       subject: authoringState.meta.mapel,
       grade: authoringState.meta.kelas,
+      semester: authoringState.meta.semester || '',
+      teacherName: authoringState.meta.namaGuru || '',
+      schoolName: authoringState.meta.namaSekolah || '',
     },
     authoringData: {
       meta: authoringState.meta,

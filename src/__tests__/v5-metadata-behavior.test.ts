@@ -51,8 +51,9 @@ function makeCoverBlock(id: string, title: string, badges: Array<{ icon?: string
     id,
     type: 'cover',
     title,
-    subtitle: 'Test Subtitle',
+    subtitle: 'Old Mapel',
     badges: badges.map((b) => ({ ...b })),
+    meta: { durasi: '2 × 40 menit', fase: 'D', elemen: 'Pancasila' },
   };
 }
 
@@ -200,5 +201,82 @@ describe('V5-METADATA-FINAL: applyMetadataToCoverBlocks behavior', () => {
     expect(cover1.badges.find((b: any) => b.icon === '🏫')?.text).toBe('Updated SMP');
     const cover2 = newPages[6].schema.blocks.find((b: any) => b.type === 'cover');
     expect(cover2.badges.find((b: any) => b.icon === '🏫')?.text).toBe('Updated SMP');
+  });
+
+  // V5-PATCH-02 tests: mapel → subtitle, kelas → cover.meta.kelas
+
+  it('P1-1: mapel → cover.subtitle updated', () => {
+    applyMetadataToCoverBlocks({
+      mapel: 'Matematika',
+    });
+
+    const newPages = sharedState.setStateCalls[0].pages;
+    const coverBlock = newPages[0].schema.blocks.find((b: any) => b.type === 'cover');
+    expect(coverBlock.subtitle).toBe('Matematika');
+  });
+
+  it('P1-1: clear mapel → cover.subtitle cleared to empty', () => {
+    applyMetadataToCoverBlocks({
+      mapel: '',
+    });
+
+    const newPages = sharedState.setStateCalls[0].pages;
+    const coverBlock = newPages[0].schema.blocks.find((b: any) => b.type === 'cover');
+    expect(coverBlock.subtitle).toBe('');
+  });
+
+  it('P1-1: kelas → cover.meta.kelas updated', () => {
+    applyMetadataToCoverBlocks({
+      kelas: '8',
+    });
+
+    const newPages = sharedState.setStateCalls[0].pages;
+    const coverBlock = newPages[0].schema.blocks.find((b: any) => b.type === 'cover');
+    expect(coverBlock.meta?.kelas).toBe('8');
+  });
+
+  it('P1-1: clear kelas → cover.meta.kelas cleared to empty', () => {
+    applyMetadataToCoverBlocks({
+      kelas: '',
+    });
+
+    const newPages = sharedState.setStateCalls[0].pages;
+    const coverBlock = newPages[0].schema.blocks.find((b: any) => b.type === 'cover');
+    expect(coverBlock.meta?.kelas).toBe('');
+  });
+
+  it('P1-1: mapel change from non-cover page → cover.subtitle changes', () => {
+    // currentPageIndex is 5 (materi, non-cover) in mock setup
+    applyMetadataToCoverBlocks({
+      mapel: 'IPA',
+    });
+
+    const newPages = sharedState.setStateCalls[0].pages;
+    const coverBlock = newPages[0].schema.blocks.find((b: any) => b.type === 'cover');
+    expect(coverBlock.subtitle).toBe('IPA');
+  });
+
+  it('P1-1: kelas change from non-cover page → cover.meta.kelas changes', () => {
+    applyMetadataToCoverBlocks({
+      kelas: '9',
+    });
+
+    const newPages = sharedState.setStateCalls[0].pages;
+    const coverBlock = newPages[0].schema.blocks.find((b: any) => b.type === 'cover');
+    expect(coverBlock.meta?.kelas).toBe('9');
+  });
+
+  it('P1-1: existing cover.meta fields preserved when kelas changes', () => {
+    // Cover block has meta: { durasi: '2 × 40 menit', fase: 'D', elemen: 'Pancasila' }
+    applyMetadataToCoverBlocks({
+      kelas: '8',
+    });
+
+    const newPages = sharedState.setStateCalls[0].pages;
+    const coverBlock = newPages[0].schema.blocks.find((b: any) => b.type === 'cover');
+    expect(coverBlock.meta?.kelas).toBe('8');
+    // Other meta fields should be preserved
+    expect(coverBlock.meta?.durasi).toBeDefined();
+    expect(coverBlock.meta?.fase).toBeDefined();
   });
 });

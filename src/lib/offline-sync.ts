@@ -27,6 +27,10 @@ export interface SyncPayload {
     title: string;
     subject?: string;
     grade?: string;
+    // V5-PATCH-02 (P2): Added metadata-only fields for project listing / DB metadata.
+    semester?: string;
+    teacherName?: string;
+    schoolName?: string;
   };
   authoringData: Record<string, unknown>;
 }

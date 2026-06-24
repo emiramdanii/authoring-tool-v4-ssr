@@ -158,7 +158,7 @@ function deriveCoverToProjection(block: SchemaBlock, projection: SchemaProjectio
     title?: string;
     subtitle?: string;
     icon?: string;
-    meta?: { durasi?: string; fase?: string; elemen?: string };
+    meta?: { durasi?: string; fase?: string; elemen?: string; kelas?: string };
     badges?: Array<{ text: string }>;
   };
 
@@ -169,10 +169,19 @@ function deriveCoverToProjection(block: SchemaBlock, projection: SchemaProjectio
   if (cover.meta?.durasi) projection.meta.durasi = cover.meta.durasi;
   if (cover.icon) projection.meta.ikon = cover.icon;
 
-  // Extract namaBab and kelas from first badge if present
-  if (cover.badges && cover.badges.length > 0) {
+  // V5-PATCH-02 (P1-2): Read kelas from cover.meta.kelas (deterministic).
+  // Previously, kelas was extracted from the FIRST badge via regex
+  // (badgeText.split(' • ') + match /Kelas\s+(\S+)/). This was fragile —
+  // if badges were reordered or the first badge wasn't the namaBab/kelas
+  // badge, kelas would be wrong or missing.
+  // Now: read kelas from cover.meta.kelas first (set by applyMetadataToCoverBlocks).
+  // Fall back to badge-based extraction ONLY if cover.meta.kelas is not set
+  // (backward compat with old schemas that don't have cover.meta.kelas).
+  if (cover.meta?.kelas) {
+    projection.meta.kelas = cover.meta.kelas;
+  } else if (cover.badges && cover.badges.length > 0) {
+    // Legacy fallback: extract from first badge
     const badgeText = cover.badges[0]!.text;
-    // Badge format: "NamaBab • Kelas VII" or just "NamaBab"
     const parts = badgeText.split(' • ');
     if (parts[0]) projection.meta.namaBab = parts[0];
     const kelasMatch = parts[1]?.match(/Kelas\s+(\S+)/);

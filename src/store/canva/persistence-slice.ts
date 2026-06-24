@@ -16,7 +16,7 @@ import { migrateAllSchemas } from '@/core/schema/schema-migration';
 import { assertDocumentPurity, clearCompressedHeightCache } from '@/core/schema/session-state';
 import { clearMeasurementCache } from '@/core/layout/BlockMeasurer';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { DEFAULT_CP, DEFAULT_ATP, DEFAULT_PETUNJUK, DEFAULT_PENUTUP, DEFAULT_SUARA } from '@/store/authoring/initial-state';
+import { DEFAULT_CP, DEFAULT_ATP, DEFAULT_PETUNJUK, DEFAULT_PENUTUP, DEFAULT_SUARA, DEFAULT_META } from '@/store/authoring/initial-state';
 import { useDirtyStore } from '@/store/dirty-store';
 import { logger } from '@/core/utils/logger';
 // Sprint 9.0B: Autosave failure telemetry
@@ -589,6 +589,24 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         if (parsedAuthoring) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- parsedAuthoring is dynamic JSON from DB
           const auth = parsedAuthoring as any;
+          // V5-PATCH-02 (P1-3): Restore metadata-only fields from authoringData.meta.
+          // These fields (namaGuru, namaSekolah, semester, tahunAjaran, kurikulum)
+          // are NOT in schema blocks — they're only in authoring store meta.
+          // Without this restore, loading a project from DB would lose metadata
+          // that was saved via MetadataFormV5.
+          // Schema-backed fields (judulPertemuan, mapel, kelas, durasi, ikon, namaBab)
+          // are derived from schema via projection sync — do NOT override them here.
+          const storedMeta = (auth.meta && typeof auth.meta === 'object') ? auth.meta : {};
+          const currentMeta = useAuthoringStore.getState().meta;
+          const restoredMeta = {
+            ...currentMeta, // Start with projection-derived fields (will be set by projection sync)
+            // Restore metadata-only fields from DB
+            namaGuru: storedMeta.namaGuru || '',
+            namaSekolah: storedMeta.namaSekolah || '',
+            semester: storedMeta.semester || '',
+            tahunAjaran: storedMeta.tahunAjaran || '',
+            kurikulum: storedMeta.kurikulum || '',
+          };
           useAuthoringStore.setState({
             // Non-schema fields — use B's data or empty default, NEVER store.cp (Project A)
             cp: auth.cp && typeof auth.cp === 'object' && !Array.isArray(auth.cp) ? auth.cp : { ...DEFAULT_CP },
@@ -596,18 +614,23 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
             petunjuk: auth.petunjuk && typeof auth.petunjuk === 'object' && !Array.isArray(auth.petunjuk) ? auth.petunjuk : { ...DEFAULT_PETUNJUK },
             penutup: auth.penutup && typeof auth.penutup === 'object' && !Array.isArray(auth.penutup) ? auth.penutup : { ...DEFAULT_PENUTUP },
             suara: auth.suara && typeof auth.suara === 'object' && !Array.isArray(auth.suara) ? auth.suara : { ...DEFAULT_SUARA },
+            // V5-PATCH-02: Restore metadata-only fields from DB
+            meta: restoredMeta,
             dirty: false,
             // Schema-backed fields — already loaded via deriveProjectionFromPages()
           });
         } else {
           // No authoring data at all — reset ALL non-schema fields to defaults.
           // This prevents Project A's authoring data from leaking into Project B.
+          // V5-PATCH-02 (P1-3): Also reset meta to DEFAULT_META to prevent
+          // cross-project metadata contamination.
           useAuthoringStore.setState({
             cp: { ...DEFAULT_CP },
             atp: { ...DEFAULT_ATP },
             petunjuk: { ...DEFAULT_PETUNJUK },
             penutup: { ...DEFAULT_PENUTUP },
             suara: { ...DEFAULT_SUARA },
+            meta: { ...DEFAULT_META }, // Reset to prevent Project A metadata leaking
             dirty: false,
           });
         }
