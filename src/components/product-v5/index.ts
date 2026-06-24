@@ -6,3 +6,4 @@ export { TemplatePickerV5 } from './TemplatePickerV5';
 export { CleanEditorV5 } from './CleanEditorV5';
 export { PreviewV5 } from './PreviewV5';
 export { ExportPanelV5 } from './ExportPanelV5';
+export { MetadataFormV5 } from './MetadataFormV5';

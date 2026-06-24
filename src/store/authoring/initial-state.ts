@@ -19,6 +19,8 @@ export const DEFAULT_PANEL: PanelId = 'dashboard';
 export const DEFAULT_META: MetaState = {
   judulPertemuan: '', subjudul: '', ikon: '\uD83D\uDCDA', durasi: '',
   namaBab: '', mapel: '', kelas: '', kurikulum: '',
+  // V5-RELEASE-CANDIDATE-01: new metadata fields
+  namaGuru: '', namaSekolah: '', semester: '', tahunAjaran: '',
 };
 
 export const DEFAULT_CP: CpState = {

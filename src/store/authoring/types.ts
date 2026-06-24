@@ -83,6 +83,12 @@ export interface MetaState {
   mapel: string;
   kelas: string;
   kurikulum: string;
+  // V5-RELEASE-CANDIDATE-01: Added metadata fields for MetadataFormV5.
+  // These are editable via the metadata form and propagate to cover badges.
+  namaGuru: string;
+  namaSekolah: string;
+  semester: string;
+  tahunAjaran: string;
 }
 
 export interface CpState {
@@ -254,6 +260,11 @@ export interface MetaPreset {
   ikon: string;
   durasi: string;
   namaBab: string;
+  // V5-RELEASE-CANDIDATE-01: Added to match MetaState fields.
+  namaGuru?: string;
+  namaSekolah?: string;
+  semester?: string;
+  tahunAjaran?: string;
 }
 
 export interface CpPreset {

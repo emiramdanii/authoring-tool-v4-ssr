@@ -19,7 +19,7 @@
 // + bottom palette. That's it.
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { WorkspaceSceneList } from '@/components/canva/mpi-workspace-v2/WorkspaceTopBar';
@@ -27,6 +27,7 @@ import { WorkspaceCanvasStage } from '@/components/canva/mpi-workspace-v2/Worksp
 import { WorkspaceInspector } from '@/components/canva/mpi-workspace-v2/WorkspaceInspector';
 import { WorkspaceContentPalette } from '@/components/canva/mpi-workspace-v2/WorkspaceContentPalette';
 import { WorkspaceStyleMenu } from '@/components/canva/mpi-workspace-v2/WorkspaceStyleMenu';
+import { MetadataFormV5 } from './MetadataFormV5';
 
 export interface CleanEditorV5Props {
   onBack: () => void;
@@ -40,6 +41,9 @@ export function CleanEditorV5({ onBack, onPreview, onExport }: CleanEditorV5Prop
   const lastSavedAt = useCanvaStore((s) => s._lastSavedAt);
   const meta = useAuthoringStore((s) => s.meta) as { judulPertemuan?: string };
   const paketTitle = meta?.judulPertemuan || 'Media Pembelajaran';
+
+  // V5-RELEASE-CANDIDATE-01: Metadata form state
+  const [metadataOpen, setMetadataOpen] = useState(false);
 
   const handleBack = useCallback(() => {
     if (pages.length > 0) {
@@ -154,6 +158,16 @@ export function CleanEditorV5({ onBack, onPreview, onExport }: CleanEditorV5Prop
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          {/* V5-RELEASE-CANDIDATE-01: Metadata form button */}
+          <button
+            onClick={() => setMetadataOpen(true)}
+            type="button"
+            className="flex items-center gap-1 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+            aria-label="Edit informasi media"
+          >
+            <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '18px' }}>info</span>
+            <span className="hidden sm:inline">Info</span>
+          </button>
           <WorkspaceStyleMenu />
           <button
             onClick={onPreview}
@@ -185,6 +199,9 @@ export function CleanEditorV5({ onBack, onPreview, onExport }: CleanEditorV5Prop
 
       {/* Bottom palette: Tambah Halaman + Tambah Blok + Tambah Game */}
       <WorkspaceContentPalette />
+
+      {/* V5-RELEASE-CANDIDATE-01: Metadata form modal */}
+      <MetadataFormV5 open={metadataOpen} onClose={() => setMetadataOpen(false)} />
     </div>
   );
 }

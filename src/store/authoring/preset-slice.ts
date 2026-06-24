@@ -1,7 +1,7 @@
 // ── Preset Slice ──────────────────────────────────────────────────
 import type { StateCreator } from 'zustand';
 import { toast } from 'sonner';
-import type { AuthoringState, KuisItem, MateriBlok, Module, SkenarioChapter } from './types';
+import type { AuthoringState, KuisItem, MateriBlok, Module, SkenarioChapter, MetaState } from './types';
 import { deepClone } from './types';
 import { ensureModuleIds, ensureKuisIds } from '@/lib/module-resolver';
 import { GAME_TYPES } from '@/lib/canva-constants';
@@ -79,7 +79,7 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
 
     set({
       activePreset: presetKey === 'blank' ? null : presetKey,
-      meta: mp ? deepClone(mp) : get().meta,
+      meta: mp ? { ...deepClone(mp), namaGuru: '', namaSekolah: '', semester: '', tahunAjaran: '' } as MetaState : get().meta,
       cp: cp ? deepClone(cp) : get().cp,
       tp: tp ? deepClone(tp.items) : [],
       atp: atp ? deepClone(atp) : get().atp,
@@ -155,7 +155,7 @@ export const createPresetSlice: StateCreator<AuthoringState, [], [], PresetSlice
   applyMetaPreset: (presetKey: string) => {
     const p = PRESETS_META[presetKey];
     if (!p) return;
-    set({ meta: deepClone(p), dirty: true });
+    set({ meta: { ...deepClone(p), namaGuru: '', namaSekolah: '', semester: '', tahunAjaran: '' } as MetaState, dirty: true });
     toast.success(`✅ Preset meta diterapkan: ${p.label}`);
   },
 

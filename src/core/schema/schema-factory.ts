@@ -110,6 +110,9 @@ export interface ProjectCreationMetadata {
   sekolah?: string;
   mapel?: string;
   kelas?: string;
+  // V5-RELEASE-CANDIDATE-01: Added semester + tahunAjaran for metadata form.
+  semester?: string;
+  tahunAjaran?: string;
 }
 
 /**
