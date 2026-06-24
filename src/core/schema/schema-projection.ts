@@ -164,20 +164,18 @@ function deriveCoverToProjection(block: SchemaBlock, projection: SchemaProjectio
 
   if (!projection.meta) projection.meta = {};
 
-  if (cover.title) projection.meta.judulPertemuan = cover.title;
-  if (cover.subtitle) projection.meta.mapel = cover.subtitle;
-  if (cover.meta?.durasi) projection.meta.durasi = cover.meta.durasi;
-  if (cover.icon) projection.meta.ikon = cover.icon;
+  // V5-PATCH-03: Use !== undefined instead of truthy check.
+  // Previously, if (cover.title) would skip empty string '' — meaning
+  // a cleared title/subtitle/kelas would NOT propagate to projection,
+  // leaving stale values in authStore.meta.
+  if (cover.title !== undefined) projection.meta.judulPertemuan = cover.title;
+  if (cover.subtitle !== undefined) projection.meta.mapel = cover.subtitle;
+  if (cover.meta?.durasi !== undefined) projection.meta.durasi = cover.meta.durasi;
+  if (cover.icon !== undefined) projection.meta.ikon = cover.icon;
 
   // V5-PATCH-02 (P1-2): Read kelas from cover.meta.kelas (deterministic).
-  // Previously, kelas was extracted from the FIRST badge via regex
-  // (badgeText.split(' • ') + match /Kelas\s+(\S+)/). This was fragile —
-  // if badges were reordered or the first badge wasn't the namaBab/kelas
-  // badge, kelas would be wrong or missing.
-  // Now: read kelas from cover.meta.kelas first (set by applyMetadataToCoverBlocks).
-  // Fall back to badge-based extraction ONLY if cover.meta.kelas is not set
-  // (backward compat with old schemas that don't have cover.meta.kelas).
-  if (cover.meta?.kelas) {
+  // V5-PATCH-03: Use !== undefined for kelas too.
+  if (cover.meta?.kelas !== undefined) {
     projection.meta.kelas = cover.meta.kelas;
   } else if (cover.badges && cover.badges.length > 0) {
     // Legacy fallback: extract from first badge

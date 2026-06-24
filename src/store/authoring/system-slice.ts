@@ -88,15 +88,25 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
       // restoring metadata-only fields from storage.
       const storedMeta = data.meta || {};
       const currentMeta = get().meta;
+      // V5-PATCH-03: Use hasOwnProperty instead of || to preserve empty strings.
+      // Previously, storedMeta.namaGuru || currentMeta.namaGuru would fall
+      // through to currentMeta if storedMeta had '' (empty string is falsy).
+      // This meant cleared metadata would be resurrected from currentMeta.
+      // Now: if the key EXISTS in storedMeta (even as ''), use it.
+      // If the key does NOT exist in storedMeta, fall back to currentMeta.
+      const pick = (key: string): string => {
+        if (Object.prototype.hasOwnProperty.call(storedMeta, key)) {
+          return String((storedMeta as Record<string, unknown>)[key] ?? '');
+        }
+        return String((currentMeta as unknown as Record<string, unknown>)[key] ?? '');
+      };
       const mergedMeta = {
         ...currentMeta, // Keep schema-derived fields from projection
-        // Restore metadata-only fields from storage (not in schema)
-        namaGuru: storedMeta.namaGuru || currentMeta.namaGuru || '',
-        namaSekolah: storedMeta.namaSekolah || currentMeta.namaSekolah || '',
-        semester: storedMeta.semester || currentMeta.semester || '',
-        tahunAjaran: storedMeta.tahunAjaran || currentMeta.tahunAjaran || '',
-        // Also restore kurikulum (not in schema blocks)
-        kurikulum: storedMeta.kurikulum || currentMeta.kurikulum || '',
+        namaGuru: pick('namaGuru'),
+        namaSekolah: pick('namaSekolah'),
+        semester: pick('semester'),
+        tahunAjaran: pick('tahunAjaran'),
+        kurikulum: pick('kurikulum'),
       };
       set({
         activePreset: null,
