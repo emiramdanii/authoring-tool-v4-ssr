@@ -75,7 +75,7 @@ const BADGE_RULES: Array<{
  *      - Updates title if judulPertemuan is set
  *      - Upserts badges for guru, sekolah, judul
  *      - Preserves all other badges
- *   4. Triggers canva store update via updateSchemaBlock
+ *   4. Triggers canva store update via useCanvaStore.setState (immutable pages patch)
  *
  * This helper is template-agnostic — works with PPKn (which has
  * pre-existing badges) and non-PPKn templates (which may have no badges).
@@ -90,10 +90,9 @@ export function applyMetadataToCoverBlocks(meta: Partial<MetaState>): void {
   }
 
   // Step 2: Patch ALL cover blocks across ALL pages directly.
-  // V5-RC2 (P1-2): Do NOT use updateSchemaBlock() — it only searches
-  // currentPageIndex, so cover blocks on other pages are missed.
-  // Instead, build a new pages array with immutable updates and
-  // set it via useCanvaStore.setState().
+  // V5-RC2 (P1-2): Patch pages directly via useCanvaStore.setState().
+  // The previous approach used updateSchemaBlock() which only searches
+  // currentPageIndex — cover blocks on other pages were missed.
   const canvaState = useCanvaStore.getState();
   const oldPages: CanvaPage[] = canvaState.pages;
   let anyPageChanged = false;
