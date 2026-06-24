@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,46784,t=>{"use strict";var i=t.i(82716);t.i(67797),t.s(["instantiateTemplateWithConfig",()=>i.instantiateTemplateWithConfig])}]);

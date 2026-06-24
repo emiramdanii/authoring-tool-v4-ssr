@@ -1,0 +1,17 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/ai/lesson/route": "/api/ai/lesson",
+  "/api/ai/refine/route": "/api/ai/refine",
+  "/api/ai/route": "/api/ai",
+  "/api/export/route": "/api/export",
+  "/api/export/scorm/route": "/api/export/scorm",
+  "/api/projects/[id]/export/route": "/api/projects/[id]/export",
+  "/api/projects/[id]/route": "/api/projects/[id]",
+  "/api/projects/[id]/save/route": "/api/projects/[id]/save",
+  "/api/projects/route": "/api/projects",
+  "/api/route": "/api",
+  "/api/templates/route": "/api/templates",
+  "/mockup/page": "/mockup",
+  "/page": "/"
+}

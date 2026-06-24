@@ -1,0 +1,17 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/ai/lesson/route": "app/api/ai/lesson/route.js",
+  "/api/ai/refine/route": "app/api/ai/refine/route.js",
+  "/api/ai/route": "app/api/ai/route.js",
+  "/api/export/route": "app/api/export/route.js",
+  "/api/export/scorm/route": "app/api/export/scorm/route.js",
+  "/api/projects/[id]/export/route": "app/api/projects/[id]/export/route.js",
+  "/api/projects/[id]/route": "app/api/projects/[id]/route.js",
+  "/api/projects/[id]/save/route": "app/api/projects/[id]/save/route.js",
+  "/api/projects/route": "app/api/projects/route.js",
+  "/api/route": "app/api/route.js",
+  "/api/templates/route": "app/api/templates/route.js",
+  "/mockup/page": "app/mockup/page.js",
+  "/page": "app/page.js"
+}

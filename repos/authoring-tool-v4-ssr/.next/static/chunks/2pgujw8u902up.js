@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,51986,e=>{"use strict";e.i(22880);var t=e.i(59263);e.i(63037),e.s(["useCanvaStore",()=>t.useCanvaStore])}]);
