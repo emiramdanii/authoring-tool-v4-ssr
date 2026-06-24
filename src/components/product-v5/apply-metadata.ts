@@ -14,6 +14,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useAuthoringStore } from '@/store/authoring-store';
 import type { MetaState } from '@/store/authoring/types';
 import type { CanvaPage } from '@/components/canva/types';
+import { notifyMutation } from '@/lib/notify-mutation';
 
 interface CoverBadge {
   icon?: string;
@@ -95,6 +96,13 @@ export function applyMetadataToCoverBlocks(meta: Partial<MetaState>): void {
       authoringStore.updateMeta(key as keyof MetaState, String(value));
     }
   }
+
+  // V5-PATCH-02-FIX: ALWAYS call notifyMutation after metadata update.
+  // Even if updateMeta's equality guard skipped (authStore.meta already
+  // had the same value), the cover schema might have STALE values that
+  // need to be saved. Without notifyMutation, auto-save won't fire and
+  // the cover changes won't persist to localStorage.
+  notifyMutation();
 
   // Step 2: Patch ALL cover blocks across ALL pages directly.
   // V5-RC2 (P1-2): Patch pages directly via useCanvaStore.setState().
