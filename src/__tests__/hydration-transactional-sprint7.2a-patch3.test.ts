@@ -63,12 +63,18 @@ vi.mock('@/core/utils/logger', () => ({
 
 // Authoring initial-state mock — loadFromDB imports DEFAULT_CP etc.
 // These must be available as mock values for the "no authoringData" path.
-const { DEFAULT_CP, DEFAULT_ATP, DEFAULT_PETUNJUK, DEFAULT_PENUTUP, DEFAULT_SUARA } = vi.hoisted(() => ({
+// V5-PATCH-02: Added DEFAULT_META for metadata-only field reset.
+const { DEFAULT_CP, DEFAULT_ATP, DEFAULT_PETUNJUK, DEFAULT_PENUTUP, DEFAULT_SUARA, DEFAULT_META } = vi.hoisted(() => ({
   DEFAULT_CP: { elemen: '', subElemen: '', capaianFase: '', profil: [], fase: 'D', kelas: '' },
   DEFAULT_ATP: { namaBab: '', jumlahPertemuan: 3, pertemuan: [] },
   DEFAULT_PETUNJUK: { title: '', intro: '', langkah: [] },
   DEFAULT_PENUTUP: { title: '', subjudul: '', preview: [] },
   DEFAULT_SUARA: { navigasi: true, benar: true, salah: true, selesai: true, klik: true, skor: true },
+  DEFAULT_META: {
+    judulPertemuan: '', subjudul: '', ikon: '📚', durasi: '',
+    namaBab: '', mapel: '', kelas: '', kurikulum: '',
+    namaGuru: '', namaSekolah: '', semester: '', tahunAjaran: '',
+  },
 }));
 
 vi.mock('@/store/authoring/initial-state', () => ({
@@ -77,6 +83,7 @@ vi.mock('@/store/authoring/initial-state', () => ({
   DEFAULT_PETUNJUK,
   DEFAULT_PENUTUP,
   DEFAULT_SUARA,
+  DEFAULT_META,
 }));
 
 // Authoring store mock — we need to track setState calls.
@@ -368,6 +375,7 @@ describe('Patch-3: Successful load commits both stores atomically', () => {
       petunjuk: DEFAULT_PETUNJUK,
       penutup: DEFAULT_PENUTUP,
       suara: DEFAULT_SUARA,
+      meta: DEFAULT_META, // V5-PATCH-02: meta reset to prevent cross-project contamination
       dirty: false,
     });
   });
@@ -503,6 +511,7 @@ describe('Patch-4: authoringData=null resets all non-schema fields', () => {
       petunjuk: DEFAULT_PETUNJUK,
       penutup: DEFAULT_PENUTUP,
       suara: DEFAULT_SUARA,
+      meta: DEFAULT_META, // V5-PATCH-02: meta reset to prevent cross-project contamination
       dirty: false,
     });
 
