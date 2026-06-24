@@ -46,12 +46,15 @@ export function StoreInit() {
     // from localStorage. Previously this was only called in AuthoringTool
     // (legacy), so V5 never restored metadata-only fields (namaGuru,
     // namaSekolah, semester, tahunAjaran) on boot.
-    // Wrapped in try-catch for test environments where the store may
-    // be mocked without loadFromStorage.
-    try {
-      useAuthoringStore.getState().loadFromStorage();
-    } catch {
-      // Non-critical — metadata-only fields will use defaults
+    // V5-RC2 (P2): Use method-existence guard instead of broad try/catch.
+    // If the method exists but throws, log the error — don't swallow it.
+    const authLoadFn = useAuthoringStore.getState().loadFromStorage;
+    if (typeof authLoadFn === 'function') {
+      try {
+        authLoadFn();
+      } catch (err) {
+        console.warn('[StoreInit] Authoring loadFromStorage failed:', err);
+      }
     }
 
     // 2. Wire up subscriptions (auto-sync, auto-save, etc.)

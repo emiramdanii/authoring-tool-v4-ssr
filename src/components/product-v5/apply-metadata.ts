@@ -65,30 +65,6 @@ const BADGE_RULES: Array<{
 ];
 
 /**
- * Upsert a badge in the badges array. If a matching badge (by icon or
- * keyword) exists, update its text. Otherwise, append a new badge.
- * Preserves all non-matching badges.
- */
-function upsertBadge(
-  badges: CoverBadge[],
-  icon: string,
-  keywords: string[],
-  text: string,
-  color: string,
-): CoverBadge[] {
-  const result = [...badges];
-  const idx = result.findIndex(
-    (b) => b.icon === icon || keywords.some((kw) => b.text.includes(kw)),
-  );
-  if (idx >= 0) {
-    result[idx] = { ...result[idx]!, text, icon };
-  } else {
-    result.push({ icon, text, color });
-  }
-  return result;
-}
-
-/**
  * Apply metadata to ALL cover blocks across ALL pages in the canva store.
  * This is the single official entry point for metadata → cover propagation.
  *
@@ -105,7 +81,7 @@ function upsertBadge(
  * pre-existing badges) and non-PPKn templates (which may have no badges).
  */
 export function applyMetadataToCoverBlocks(meta: Partial<MetaState>): void {
-  // Step 1: Update authoring store meta
+  // Step 1: Update authoring store meta (also triggers notifyMutation via updateMeta)
   const authoringStore = useAuthoringStore.getState();
   for (const [key, value] of Object.entries(meta)) {
     if (value !== undefined) {
@@ -113,43 +89,46 @@ export function applyMetadataToCoverBlocks(meta: Partial<MetaState>): void {
     }
   }
 
-  // Step 2: Find ALL pages with cover blocks
+  // Step 2: Patch ALL cover blocks across ALL pages directly.
+  // V5-RC2 (P1-2): Do NOT use updateSchemaBlock() — it only searches
+  // currentPageIndex, so cover blocks on other pages are missed.
+  // Instead, build a new pages array with immutable updates and
+  // set it via useCanvaStore.setState().
   const canvaState = useCanvaStore.getState();
-  const pages: CanvaPage[] = canvaState.pages;
+  const oldPages: CanvaPage[] = canvaState.pages;
+  let anyPageChanged = false;
 
-  for (const page of pages) {
-    if (!page.schema?.blocks) continue;
+  const newPages = oldPages.map((page) => {
+    if (!page.schema?.blocks) return page;
 
-    for (const block of page.schema.blocks) {
-      if (block.type !== 'cover') continue;
+    let pageBlocksChanged = false;
+    const newBlocks = page.schema.blocks.map((block) => {
+      if (block.type !== 'cover') return block;
 
       const coverBlock = block as unknown as CoverBlock;
-      if (!coverBlock.id) continue;
-
-      const existingBadges: CoverBadge[] = coverBlock.badges ? [...coverBlock.badges] : [];
+      const existingBadges: CoverBadge[] = coverBlock.badges ? coverBlock.badges.map((b) => ({ ...b })) : [];
       let badgesChanged = false;
-      let patch: Record<string, unknown> = {};
+      const patch: Record<string, unknown> = {};
 
-      // Step 3a: Update title if judulPertemuan is provided
+      // Update title if judulPertemuan is provided
       if (meta.judulPertemuan !== undefined && meta.judulPertemuan !== '') {
         patch.title = meta.judulPertemuan;
       }
 
-      // Step 3b: Upsert badges for each metadata field
+      // Upsert badges for each metadata field
       for (const rule of BADGE_RULES) {
         const value = meta[rule.field];
         if (value !== undefined && value !== '') {
-          const newBadges = upsertBadge(
-            existingBadges,
-            rule.icon,
-            rule.keywords,
-            value,
-            rule.color,
+          const idx = existingBadges.findIndex(
+            (b) => b.icon === rule.icon || rule.keywords.some((kw) => b.text.includes(kw)),
           );
-          if (newBadges.length !== existingBadges.length ||
-              newBadges.some((b, i) => b.text !== existingBadges[i]?.text)) {
-            existingBadges.length = 0;
-            existingBadges.push(...newBadges);
+          if (idx >= 0) {
+            if (existingBadges[idx]!.text !== value) {
+              existingBadges[idx] = { ...existingBadges[idx]!, text: value, icon: rule.icon };
+              badgesChanged = true;
+            }
+          } else {
+            existingBadges.push({ icon: rule.icon, text: value, color: rule.color });
             badgesChanged = true;
           }
         }
@@ -159,10 +138,23 @@ export function applyMetadataToCoverBlocks(meta: Partial<MetaState>): void {
         patch.badges = existingBadges;
       }
 
-      // Step 4: Update canva store if anything changed
-      if (Object.keys(patch).length > 0) {
-        canvaState.updateSchemaBlock(coverBlock.id, patch as never, { source: 'user' });
-      }
-    }
+      if (Object.keys(patch).length === 0) return block;
+
+      pageBlocksChanged = true;
+      return { ...block, ...patch };
+    });
+
+    if (!pageBlocksChanged) return page;
+
+    anyPageChanged = true;
+    return {
+      ...page,
+      schema: { ...page.schema, blocks: newBlocks },
+    };
+  });
+
+  // Step 3: Set new pages in canva store if any cover block was updated
+  if (anyPageChanged) {
+    useCanvaStore.setState({ pages: newPages });
   }
 }
