@@ -137,14 +137,23 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
     if (!el) return;
 
     // Create ResizeObserver for this block
+    // V5-RELEASE-HARDENING-02 (V5-006): Track observation count to suppress
+    // transient zero-height warnings. The first ResizeObserver callback often
+    // reports 0 height before the element is fully laid out. Only warn if
+    // the SECOND observation also reports 0 — that indicates a real layout
+    // problem, not a transient measurement.
+    let observationCount = 0;
+
     observerRef.current = new ResizeObserver((entries) => {
+      observationCount++;
       for (const entry of entries) {
         // Use borderBoxSize for accurate height including padding+border
         const height = entry.borderBoxSize?.[0]?.blockSize
           ?? entry.contentRect.height;
 
         // ── DIAGNOSTIC: Warn on zero height measurement ──
-        if (process.env.NODE_ENV !== 'production' && height <= 0) {
+        // V5-006: Only warn after 2nd observation (skip transient first measure)
+        if (process.env.NODE_ENV !== 'production' && height <= 0 && observationCount > 1) {
           logger.warn('MeasuredBlock',
             `ZERO HEIGHT: ${blockId} borderBoxSize: ${entry.borderBoxSize?.[0]?.blockSize} ` +
             `contentRect: ${entry.contentRect.height} element: ${el.tagName} ` +

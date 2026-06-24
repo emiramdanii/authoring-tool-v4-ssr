@@ -73,6 +73,23 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
       { equalityFn: shallow },
     );
 
+    // V5-RELEASE-HARDENING-02 (RC-META-001): Subscribe to authoring store
+    // so metadata-only changes (judulPertemuan, namaGuru, namaSekolah, etc.)
+    // trigger auto-save independently of canva store changes.
+    // Previously, metadata changes only persisted if canva store also
+    // changed (e.g., cover badge update). Now any authoring meta change
+    // triggers debounced auto-save which saves BOTH stores.
+    // Note: authoring store doesn't have subscribeWithSelector, so we
+    // use plain subscribe with manual shallow comparison.
+    let prevMeta = JSON.stringify(useAuthoringStore.getState().meta);
+    const unsubscribeAuthoring = useAuthoringStore.subscribe((state) => {
+      const currMeta = JSON.stringify(state.meta);
+      if (currMeta !== prevMeta) {
+        prevMeta = currMeta;
+        scheduleAutoSave(dbSaveFnRef.current);
+      }
+    });
+
     // Subscribe to dirty store — fires when editRevision changes
     let prevRevision = useDirtyStore.getState().editRevision;
     const unsubscribeDirty = useDirtyStore.subscribe((state) => {
@@ -85,6 +102,7 @@ export function useAutoSave(projectId?: string | null, saveProject?: () => Promi
     // Cleanup subscriptions and debounce timer
     return () => {
       unsubscribeCanva();
+      unsubscribeAuthoring();
       unsubscribeDirty();
       clearTimeout(maxWaitTimer);
       cancelAutoSaveTimers();

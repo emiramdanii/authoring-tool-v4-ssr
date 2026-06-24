@@ -19,6 +19,7 @@
 
 import { useEffect } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
+import { useAuthoringStore } from '@/store/authoring-store';
 import { initCanvaStoreSubscriptions, cleanupCanvaStoreSubscriptions } from '@/store/canva/init';
 import { preloadSounds } from '@/lib/sounds';
 import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
@@ -40,6 +41,12 @@ export function StoreInit() {
     if (restored) {
       useCanvaStore.setState({ _saveStatus: 'saved' });
     }
+
+    // V5-RELEASE-HARDENING-02 (RC-META-001): Also restore authoring store
+    // from localStorage. Previously this was only called in AuthoringTool
+    // (legacy), so V5 never restored metadata-only fields (namaGuru,
+    // namaSekolah, semester, tahunAjaran) on boot.
+    useAuthoringStore.getState().loadFromStorage();
 
     // 2. Wire up subscriptions (auto-sync, auto-save, etc.)
     initCanvaStoreSubscriptions();

@@ -21,8 +21,7 @@
 import React, { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuthoringStore } from '@/store/authoring-store';
-import { useCanvaStore } from '@/store/canva-store';
-import type { MetaState } from '@/store/authoring/types';
+import { applyMetadataToCoverBlocks } from './apply-metadata';
 import { toast } from 'sonner';
 
 export interface MetadataFormV5Props {
@@ -42,9 +41,6 @@ const FIELD_DEFS: Array<{ key: string; label: string; placeholder: string; type?
 
 export function MetadataFormV5({ open, onClose }: MetadataFormV5Props) {
   const meta = useAuthoringStore((s) => s.meta) as unknown as Record<string, string>;
-  const updateMeta = useAuthoringStore((s) => s.updateMeta);
-  const pages = useCanvaStore((s) => s.pages);
-  const updateSchemaBlock = useCanvaStore((s) => s.updateSchemaBlock);
 
   const [localMeta, setLocalMeta] = useState<Record<string, string>>({});
 
@@ -68,53 +64,26 @@ export function MetadataFormV5({ open, onClose }: MetadataFormV5Props) {
   }, []);
 
   const handleSave = useCallback(() => {
-    // V5-RC-POLISH-01: Write all metadata fields to authoring store.
-    for (const field of FIELD_DEFS) {
-      const key = field.key as keyof MetaState;
-      const value = localMeta[field.key] || '';
-      updateMeta(key, value);
-    }
-
-    // V5-RC-POLISH-01: Update cover block badges so changes propagate to
-    // canvas + preview + export immediately. If the cover doesn't have
-    // badges for guru/sekolah/judul, auto-add them (Non-blocker 1 fix).
-    const coverPage = pages.find((p) => p.schema?.blocks?.some((b) => b.type === 'cover'));
-    if (coverPage) {
-      const coverBlock = coverPage.schema?.blocks?.find((b) => b.type === 'cover') as
-        | { id?: string; badges?: Array<{ icon?: string; text: string; color: string }> }
-        | undefined;
-      if (coverBlock?.id) {
-        const existingBadges = coverBlock.badges ? [...coverBlock.badges] : [];
-
-        // Helper: find badge by icon or keyword, update text. If not found, add.
-        const upsertBadge = (
-          icon: string,
-          keywords: string[],
-          text: string,
-          color: string,
-        ) => {
-          if (!text) return; // Don't add/update if metadata field is empty
-          const idx = existingBadges.findIndex(
-            (b) => b.icon === icon || keywords.some((kw) => b.text.includes(kw)),
-          );
-          if (idx >= 0) {
-            existingBadges[idx] = { ...existingBadges[idx]!, text, icon };
-          } else {
-            existingBadges.push({ icon, text, color });
-          }
-        };
-
-        upsertBadge('👨‍🏫', ['Guru', 'guru'], localMeta.namaGuru || '', 'g');
-        upsertBadge('🏫', ['SMP', 'Sekolah', 'sekolah'], localMeta.namaSekolah || '', 'c');
-        upsertBadge('📚', ['Modul', 'Bab'], localMeta.judulPertemuan || '', 'y');
-
-        updateSchemaBlock(coverBlock.id, { badges: existingBadges } as never, { source: 'user' });
-      }
-    }
+    // V5-RELEASE-HARDENING-02 (RC-META-002): Use official helper instead
+    // of inline badge-matching. The helper handles:
+    //   - authoring store meta update (all fields)
+    //   - cover block badge upsert across ALL pages (not just first)
+    //   - title update from judulPertemuan
+    //   - preserving unknown badges
+    //   - working with any template (PPKn or non-PPKn)
+    applyMetadataToCoverBlocks({
+      judulPertemuan: localMeta.judulPertemuan || '',
+      mapel: localMeta.mapel || '',
+      kelas: localMeta.kelas || '',
+      namaGuru: localMeta.namaGuru || '',
+      namaSekolah: localMeta.namaSekolah || '',
+      semester: localMeta.semester || '',
+      tahunAjaran: localMeta.tahunAjaran || '',
+    });
 
     toast.success('Metadata tersimpan');
     onClose();
-  }, [localMeta, updateMeta, pages, updateSchemaBlock, onClose]);
+  }, [localMeta, onClose]);
 
   if (!open) return null;
 

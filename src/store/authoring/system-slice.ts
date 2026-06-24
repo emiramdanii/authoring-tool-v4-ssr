@@ -78,6 +78,26 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
       // refleksi, motivasi, rangkuman, modules, meta) are derived from
       // schema via startProjectionSync() — writing them here would
       // overwrite the schema-derived projection with stale data.
+      //
+      // V5-RELEASE-HARDENING-02 (RC-META-001): HOWEVER, metadata fields
+      // that have NO schema representation (namaGuru, namaSekolah, semester,
+      // tahunAjaran) MUST be restored from storage. These fields are only
+      // editable via MetadataFormV5 and have no corresponding schema block.
+      // We merge stored meta with current meta, preserving schema-derived
+      // fields (judulPertemuan, mapel, kelas) from projection sync while
+      // restoring metadata-only fields from storage.
+      const storedMeta = data.meta || {};
+      const currentMeta = get().meta;
+      const mergedMeta = {
+        ...currentMeta, // Keep schema-derived fields from projection
+        // Restore metadata-only fields from storage (not in schema)
+        namaGuru: storedMeta.namaGuru || currentMeta.namaGuru || '',
+        namaSekolah: storedMeta.namaSekolah || currentMeta.namaSekolah || '',
+        semester: storedMeta.semester || currentMeta.semester || '',
+        tahunAjaran: storedMeta.tahunAjaran || currentMeta.tahunAjaran || '',
+        // Also restore kurikulum (not in schema blocks)
+        kurikulum: storedMeta.kurikulum || currentMeta.kurikulum || '',
+      };
       set({
         activePreset: null,
         // Non-schema fields — these have no schema block representation
@@ -87,10 +107,9 @@ export const createSystemSlice: StateCreator<AuthoringState, [], [], SystemSlice
         penutup: data.penutup || get().penutup,
         suara: data.suara || get().suara,
         guruPw: data.guruPw || 'guru123',
+        // V5-RELEASE-HARDENING-02: Restore metadata-only fields
+        meta: mergedMeta,
         dirty: false,
-        // Schema-backed fields — loaded by persistence-slice + startProjectionSync()
-        // (tp, alur, kuis, skenario, materi, diskusi, refleksi, motivasi,
-        //  rangkuman, modules, games, meta — all derived from schema)
       });
       return true;
     } catch {

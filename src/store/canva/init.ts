@@ -68,7 +68,18 @@ function startProjectionSync() {
           // Only update fields that have values in the projection
           // This preserves authoring-only fields (CP, ATP, petunjuk, etc.)
           const updates: Record<string, unknown> = {};
-          if (projection.meta) updates.meta = projection.meta;
+          // V5-RELEASE-HARDENING-02 (RC-META-001): Merge projection meta
+          // with existing meta instead of overwriting. Projection only
+          // derives schema-backed fields (judulPertemuan, mapel, kelas).
+          // Metadata-only fields (namaGuru, namaSekolah, semester,
+          // tahunAjaran) must be preserved from the existing store state.
+          if (projection.meta) {
+            const existingMeta = useAuthoringStore.getState().meta;
+            updates.meta = {
+              ...existingMeta,           // Preserve metadata-only fields
+              ...projection.meta,         // Override with schema-derived fields
+            };
+          }
           if (projection.tp) updates.tp = projection.tp;
           if (projection.alur) updates.alur = projection.alur;
           if (projection.kuis) updates.kuis = projection.kuis;
