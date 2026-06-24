@@ -109,15 +109,25 @@ export function applyMetadataToCoverBlocks(meta: Partial<MetaState>): void {
       let badgesChanged = false;
       const patch: Record<string, unknown> = {};
 
-      // Update title if judulPertemuan is provided
-      if (meta.judulPertemuan !== undefined && meta.judulPertemuan !== '') {
-        patch.title = meta.judulPertemuan;
+      // V5-METADATA-FINAL (P1): Handle title — update if non-empty, clear if empty.
+      // Previously, empty judulPertemuan was skipped, leaving old title on cover.
+      if (meta.judulPertemuan !== undefined) {
+        if (meta.judulPertemuan !== '') {
+          patch.title = meta.judulPertemuan;
+        } else {
+          patch.title = ''; // Clear title when judulPertemuan is empty
+        }
       }
 
-      // Upsert badges for each metadata field
+      // V5-METADATA-FINAL (P1): Handle badges — upsert if non-empty, REMOVE if empty.
+      // Previously, empty values were skipped, leaving old badges on cover.
+      // Now: if field is empty string, remove matching badge entirely.
       for (const rule of BADGE_RULES) {
         const value = meta[rule.field];
-        if (value !== undefined && value !== '') {
+        if (value === undefined) continue; // Field not provided — skip
+
+        if (value !== '') {
+          // Non-empty: upsert badge (update existing or add new)
           const idx = existingBadges.findIndex(
             (b) => b.icon === rule.icon || rule.keywords.some((kw) => b.text.includes(kw)),
           );
@@ -128,6 +138,17 @@ export function applyMetadataToCoverBlocks(meta: Partial<MetaState>): void {
             }
           } else {
             existingBadges.push({ icon: rule.icon, text: value, color: rule.color });
+            badgesChanged = true;
+          }
+        } else {
+          // Empty: REMOVE matching badge entirely
+          const beforeLen = existingBadges.length;
+          const filtered = existingBadges.filter(
+            (b) => b.icon !== rule.icon && !rule.keywords.some((kw) => b.text.includes(kw)),
+          );
+          if (filtered.length !== beforeLen) {
+            existingBadges.length = 0;
+            existingBadges.push(...filtered);
             badgesChanged = true;
           }
         }
