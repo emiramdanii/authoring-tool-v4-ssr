@@ -176,9 +176,22 @@ export const saveProjectSchema = z.object({
     description: z.string().max(5000).optional(),
     subject: z.string().max(100).optional(),
     grade: z.string().max(50).optional(),
-    // V5-PATCH-03: semester is a string from MetadataFormV5 ("1 (Ganjil)" etc.)
-    // Previously z.number().int() which would reject string values from the form.
-    semester: z.string().max(50).optional(),
+    // V5-PATCH-04: Coerce semester string → number for Prisma Int? compatibility.
+    // MetadataFormV5 sends "1 (Ganjil)" or "2 (Genap)" as string.
+    // Prisma Project.semester is Int?. Save route writes body.meta.semester
+    // directly to DB, so we must transform to number here.
+    // "1 (Ganjil)" → parseInt → 1
+    // "2 (Genap)"  → parseInt → 2
+    // ""           → parseInt → NaN → undefined
+    semester: z.union([z.number().int().min(1).max(2), z.string().max(50)])
+      .optional()
+      .transform((v) => {
+        if (typeof v === 'string') {
+          const parsed = parseInt(v, 10);
+          return Number.isNaN(parsed) ? undefined : parsed;
+        }
+        return v;
+      }),
     teacherName: z.string().max(200).optional(),
     schoolName: z.string().max(300).optional(),
     templateId: z.string().max(100).optional(),
