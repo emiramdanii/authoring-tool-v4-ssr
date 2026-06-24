@@ -18,7 +18,7 @@
 // propagate to canvas + preview + export immediately.
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useState, useCallback, useLayoutEffect, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuthoringStore } from '@/store/authoring-store';
 import { useCanvaStore } from '@/store/canva-store';
@@ -68,40 +68,47 @@ export function MetadataFormV5({ open, onClose }: MetadataFormV5Props) {
   }, []);
 
   const handleSave = useCallback(() => {
-    // V5-RELEASE-CANDIDATE-01: Write all metadata fields to authoring store.
-    // Use explicit key casting to ensure TypeScript + runtime correctness.
-    const metaUpdates: Partial<Record<string, string>> = { ...localMeta };
+    // V5-RC-POLISH-01: Write all metadata fields to authoring store.
     for (const field of FIELD_DEFS) {
       const key = field.key as keyof MetaState;
       const value = localMeta[field.key] || '';
       updateMeta(key, value);
     }
 
-    // V5-RELEASE-CANDIDATE-01: Update cover block badges so changes
-    // propagate to canvas + preview + export immediately.
-    // Find cover page (first page with a cover block) and update badges.
+    // V5-RC-POLISH-01: Update cover block badges so changes propagate to
+    // canvas + preview + export immediately. If the cover doesn't have
+    // badges for guru/sekolah/judul, auto-add them (Non-blocker 1 fix).
     const coverPage = pages.find((p) => p.schema?.blocks?.some((b) => b.type === 'cover'));
     if (coverPage) {
-      const coverBlock = coverPage.schema?.blocks?.find((b) => b.type === 'cover');
-      if (coverBlock) {
-        const updatedBadges = (coverBlock as { badges?: Array<{ icon?: string; text: string; color: string }> }).badges?.map((badge) => {
-          // Update guru badge
-          if (badge.icon === '👨‍🏫' || badge.text.includes('Guru')) {
-            return { ...badge, text: localMeta.namaGuru || badge.text };
+      const coverBlock = coverPage.schema?.blocks?.find((b) => b.type === 'cover') as
+        | { id?: string; badges?: Array<{ icon?: string; text: string; color: string }> }
+        | undefined;
+      if (coverBlock?.id) {
+        const existingBadges = coverBlock.badges ? [...coverBlock.badges] : [];
+
+        // Helper: find badge by icon or keyword, update text. If not found, add.
+        const upsertBadge = (
+          icon: string,
+          keywords: string[],
+          text: string,
+          color: string,
+        ) => {
+          if (!text) return; // Don't add/update if metadata field is empty
+          const idx = existingBadges.findIndex(
+            (b) => b.icon === icon || keywords.some((kw) => b.text.includes(kw)),
+          );
+          if (idx >= 0) {
+            existingBadges[idx] = { ...existingBadges[idx]!, text, icon };
+          } else {
+            existingBadges.push({ icon, text, color });
           }
-          // Update sekolah badge
-          if (badge.icon === '🏫' || badge.text.includes('SMP') || badge.text.includes('Sekolah')) {
-            return { ...badge, text: localMeta.namaSekolah || badge.text };
-          }
-          // Update judul badge (📚 icon usually = module title)
-          if (badge.icon === '📚') {
-            return { ...badge, text: localMeta.judulPertemuan || badge.text };
-          }
-          return badge;
-        });
-        if (coverBlock?.id) {
-          updateSchemaBlock(coverBlock.id, { badges: updatedBadges } as never, { source: 'user' });
-        }
+        };
+
+        upsertBadge('👨‍🏫', ['Guru', 'guru'], localMeta.namaGuru || '', 'g');
+        upsertBadge('🏫', ['SMP', 'Sekolah', 'sekolah'], localMeta.namaSekolah || '', 'c');
+        upsertBadge('📚', ['Modul', 'Bab'], localMeta.judulPertemuan || '', 'y');
+
+        updateSchemaBlock(coverBlock.id, { badges: existingBadges } as never, { source: 'user' });
       }
     }
 
