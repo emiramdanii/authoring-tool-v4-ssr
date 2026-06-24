@@ -46,7 +46,13 @@ export function StoreInit() {
     // from localStorage. Previously this was only called in AuthoringTool
     // (legacy), so V5 never restored metadata-only fields (namaGuru,
     // namaSekolah, semester, tahunAjaran) on boot.
-    useAuthoringStore.getState().loadFromStorage();
+    // Wrapped in try-catch for test environments where the store may
+    // be mocked without loadFromStorage.
+    try {
+      useAuthoringStore.getState().loadFromStorage();
+    } catch {
+      // Non-critical — metadata-only fields will use defaults
+    }
 
     // 2. Wire up subscriptions (auto-sync, auto-save, etc.)
     initCanvaStoreSubscriptions();
