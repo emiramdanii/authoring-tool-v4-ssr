@@ -62,12 +62,12 @@ describe('BATCH-01: Save honesty', () => {
     // Must check return values
     expect(source).toContain('canvaSaveOk');
     expect(source).toContain('authSaveOk');
-    // Must abort if both fail and no DB fallback
-    expect(source).toContain('!canvaSaveOk && !authSaveOk');
+    // Must abort if canvaSaveOk fails and no DB fallback
+    expect(source).toContain('!canvaSaveOk');
     expect(source).toContain('hasDbFallback');
     // Must set error status on failure
     expect(source).toContain("_saveStatus: 'error'");
-    expect(source).toContain("saveFailed('localStorage save failed");
+    expect(source).toContain("saveFailed(");
   });
 
   it('authoringStore.saveToStorage returns boolean', () => {

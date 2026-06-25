@@ -32,6 +32,9 @@ export function useExportActions() {
     } catch {
       // BATCH-01: Export failed — exportWithFallback already shows error toast.
       // Do NOT dispatch success event. isExporting reset in finally.
+      // PATCH-01B: Re-throw so callers (ExportPanelV5) know export failed
+      // and do NOT set lastExportAt.
+      throw new Error('Export gagal');
     } finally {
       setIsExporting(false);
     }

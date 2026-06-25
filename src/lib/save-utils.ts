@@ -218,21 +218,38 @@ export async function executeDurableSave(
     useCanvaStore.setState({ _saveStatus: 'saving' });
 
     // ── Step 2: Always save to localStorage as a backup ──
-    // BATCH-01: Check return values for save honesty.
+    // BATCH-01/PATCH-01B: Check return values for save honesty.
     // If localStorage save fails AND there's no DB fallback, the save
     // is NOT successful. Guru must not see "Tersimpan" if storage failed.
     const canvaSaveOk = useCanvaStore.getState().saveToStorage();
     const authSaveOk = useAuthoringStore.getState().saveToStorage();
 
-    // BATCH-01: If localStorage failed and no DB save will happen,
-    // mark as error and abort — do NOT proceed to saveSucceeded().
+    // PATCH-01B: If canvaStore save failed (even partially), that's a real
+    // failure — canvaStore contains the page schema which is the source of truth.
+    // Previously only checked (!canvaSaveOk && !authSaveOk) — both had to fail.
+    // Now: if canvaSaveOk is false, the primary data (pages) didn't save.
+    // This is a hard failure unless DB fallback will cover it.
     const hasDbFallback = saveToken.projectId && dbSaveFn && !(typeof navigator !== 'undefined' && !navigator.onLine);
-    if (!canvaSaveOk && !authSaveOk && !hasDbFallback) {
-      // Both localStorage saves failed, no DB fallback available.
-      // Mark as error and abort — guru must know the save failed.
+
+    if (!canvaSaveOk && !hasDbFallback) {
+      // canvaStore save failed — primary data (pages) not persisted.
+      // No DB fallback available. This is a hard failure.
       useCanvaStore.setState({ _saveStatus: 'error' });
-      useDirtyStore.getState().saveFailed('localStorage save failed (no DB fallback)');
-      toast.error('Gagal menyimpan. Penyimpanan lokal penuh atau bermasalah.');
+      useDirtyStore.getState().saveFailed('canvaStore saveToStorage failed (pages not persisted, no DB fallback)');
+      toast.error('Gagal menyimpan data halaman. Penyimpanan lokal penuh atau bermasalah.');
+      return false;
+    }
+
+    if (!authSaveOk && !hasDbFallback) {
+      // authoringStore save failed — metadata not persisted.
+      // No DB fallback available. This is a soft warning — pages saved
+      // but metadata (namaGuru, semester, etc.) may be lost on reload.
+      logger.warn('DurableSave', 'authoringStore saveToStorage failed — metadata may not persist on reload');
+      // Don't abort entirely — pages are saved, just metadata is at risk.
+      // But DO set error status so guru knows something went wrong.
+      useCanvaStore.setState({ _saveStatus: 'error' });
+      useDirtyStore.getState().saveFailed('authoringStore saveToStorage failed (metadata not persisted, no DB fallback)');
+      toast.error('Data halaman tersimpan, tetapi metadata gagal tersimpan. Periksa penyimpanan lokal.');
       return false;
     }
 
