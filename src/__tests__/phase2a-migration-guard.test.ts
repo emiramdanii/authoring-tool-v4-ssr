@@ -209,9 +209,12 @@ describe('PHASE-2A — source audit', () => {
     );
     // loadFromStorage set() must use themeMigratedPages
     // Find the first set() after themeMigratedPages definition (loadFromStorage path)
+    // BATCH-01: saveToStorage now also returns true, so we need to find
+    // the return true; that belongs to loadFromStorage, not saveToStorage.
+    const themeMigratedStart = src.indexOf('const themeMigratedPages = cleanPages.map');
     const loadFromStorageSection = src.substring(
-      src.indexOf('const themeMigratedPages = cleanPages.map'),
-      src.indexOf('return true;') // end of loadFromStorage success path
+      themeMigratedStart,
+      src.indexOf('return true;', themeMigratedStart) // find return true AFTER themeMigratedPages
     );
     expect(loadFromStorageSection).toContain('pages: themeMigratedPages');
     expect(loadFromStorageSection).not.toContain('pages: cleanPages');
