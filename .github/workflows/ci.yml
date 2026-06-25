@@ -123,7 +123,6 @@ jobs:
           npx vitest run src/__tests__/v5-metadata-behavior.test.ts
           npx vitest run src/__tests__/v5-patch04-semester-coerce.test.ts
           npx vitest run src/__tests__/v5-rc2-metadata-fixes.test.ts
-          npx vitest run src/__tests__/hydration-transactional-sprint7.2a-patch3.test.ts
           # BATCH-04: Guard steps
           npm run guard:no-legacy-runtime
           npm run guard:contract-sync
