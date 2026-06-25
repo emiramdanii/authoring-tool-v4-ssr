@@ -57,6 +57,30 @@ export function StoreInit() {
       }
     }
 
+    // BATCH-02: Run initial projection sync IMMEDIATELY after loadFromStorage.
+    // Previously, projection sync only fired 300ms after initCanvaStoreSubscriptions()
+    // (debounced). During those 300ms, authStore.meta had stale schema-backed fields
+    // (judulPertemuan, mapel, kelas) because they hadn't been derived from the
+    // loaded pages yet. If guru opened the Info form during that window, they'd
+    // see old metadata. Now: derive projection synchronously before subscriptions.
+    try {
+      const { deriveProjectionFromPages } = require('@/core/schema/schema-projection');
+      const pages = useCanvaStore.getState().pages;
+      if (pages.length > 0) {
+        const projection = deriveProjectionFromPages(pages);
+        if (projection.meta) {
+          const existingMeta = useAuthoringStore.getState().meta;
+          const mergedMeta = {
+            ...existingMeta,
+            ...projection.meta,
+          };
+          useAuthoringStore.setState({ meta: mergedMeta });
+        }
+      }
+    } catch (err) {
+      console.warn('[StoreInit] Initial projection sync failed:', err);
+    }
+
     // 2. Wire up subscriptions (auto-sync, auto-save, etc.)
     initCanvaStoreSubscriptions();
 
