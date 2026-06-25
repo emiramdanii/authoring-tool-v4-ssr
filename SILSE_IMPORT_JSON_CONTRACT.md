@@ -2,7 +2,7 @@
 
 **Status**: CONTRACT v1.0
 **Date**: 2026-06-25
-**HEAD**: `402f385`
+**HEAD**: `25f8602`
 
 ---
 
@@ -143,12 +143,12 @@ Every block has these base fields:
 | `roda-game` | Roda Berputar | title, segments[], questions[] | Yes (spin) |
 | `memory-game` | Memory | title, pairs[] | Yes (match) |
 | `matching-game` | Matching | title, leftItems[], rightItems[] | Yes (match) |
-| `fillblank-game` | Isian Kosong | title, sentences[], answers[] | Yes (type) |
-| `wordsearch-game` | Cari Kata | title, grid[][], words[] | Yes (find) |
-| `truefalse-game` | Benar/Salah | title, statements[] | Yes (answer) |
-| `dragdrop-game` | Drag & Drop | title, zones[], items[] | Yes (drag) |
+| `fill-blank-game` | Isian Kosong | title, sentences[], answers[] | Yes (type) |
+| `word-search-game` | Cari Kata | title, grid[][], words[] | Yes (find) |
+| `true-false-game` | Benar/Salah | title, statements[] | Yes (answer) |
+| `drag-drop-game` | Drag & Drop | title, zones[], items[] | Yes (drag) |
 | `crossword-game` | Teka Silang | title, grid[][], clues[] | Yes (fill) |
-| `teambuzzer-game` | Buzzer Tim | title, teams[], questions[] | Yes (buzzer) |
+| `team-buzzer-game` | Buzzer Tim | title, teams[], questions[] | Yes (buzzer) |
 
 ### Advanced Blocks
 
@@ -156,8 +156,8 @@ Every block has these base fields:
 |---|---|---|
 | `ftab` | Tab Interaktif | tabs[] (icon, label, content[]) |
 | `flashcard-set` | Flashcard | title, cards[] (front, back, color) |
-| `norma-kartu` | Norma Kartu | title, items[] (icon, judul, isi, poin[], refleksi, warna) |
-| `tp-display` | Tujuan Pembelajaran | title, items[] (num, verb, desc, color) |
+| `nk-card` | Norma Kartu | title, items[] (icon, judul, isi, poin[], refleksi, warna) |
+| `tp` | Tujuan Pembelajaran | title, items[] (num, verb, desc, color) |
 
 ---
 
@@ -222,3 +222,11 @@ AI (external LLM) produces JSON conforming to this contract. The app:
 - Modify style tokens or theme
 - Create new block types
 - Bypass validation
+
+## Runtime Status (BATCH-03)
+
+| Component | Document Status | Runtime Status |
+|---|---|---|
+| Import JSON Contract | COMPLETE | Validator not yet implemented (Batch 08) |
+| Style Contract | FOUNDATION | Global layout/interaction style = future (Batch 09) |
+| Interaction Registry | DOCUMENTED | Formal registerInteraction() API = future |

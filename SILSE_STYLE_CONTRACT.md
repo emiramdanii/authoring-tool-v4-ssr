@@ -2,7 +2,7 @@
 
 **Status**: CONTRACT v1.0
 **Date**: 2026-06-25
-**HEAD**: `402f385`
+**HEAD**: `25f8602`
 
 ---
 
@@ -221,3 +221,11 @@ Target state: A **Global Style Contract** that also controls:
 - Navigation chrome (which nav elements are visible)
 
 This is a **future batch** — not implemented yet. The current contract defines the foundation.
+
+## Runtime Status (BATCH-03)
+
+| Component | Document Status | Runtime Status |
+|---|---|---|
+| Import JSON Contract | COMPLETE | Validator not yet implemented (Batch 08) |
+| Style Contract | FOUNDATION | Global layout/interaction style = future (Batch 09) |
+| Interaction Registry | DOCUMENTED | Formal registerInteraction() API = future |

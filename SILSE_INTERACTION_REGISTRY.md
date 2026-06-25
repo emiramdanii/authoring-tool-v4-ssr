@@ -2,7 +2,7 @@
 
 **Status**: CONTRACT v1.0
 **Date**: 2026-06-25
-**HEAD**: `402f385`
+**HEAD**: `25f8602`
 
 ---
 
@@ -242,12 +242,12 @@ Sounds are triggered by interaction events:
 | `roda-game` | game | Yes | Yes | Game |
 | `memory-game` | game | Yes | Yes | Game |
 | `matching-game` | game | Yes | Yes | Game |
-| `fillblank-game` | game | Yes | Yes | Game |
-| `wordsearch-game` | game | Yes | Yes | Game |
-| `truefalse-game` | game | Yes | Yes | Game |
-| `dragdrop-game` | game | Yes | Yes | Game |
+| `fill-blank-game` | game | Yes | Yes | Game |
+| `word-search-game` | game | Yes | Yes | Game |
+| `true-false-game` | game | Yes | Yes | Game |
+| `drag-drop-game` | game | Yes | Yes | Game |
 | `crossword-game` | game | Yes | Yes | Game |
-| `teambuzzer-game` | game | Yes | Yes | Game |
+| `team-buzzer-game` | game | Yes | Yes | Game |
 | `refleksi` | reflection | Yes (text) | No (completion only) | Reflection |
 | `rangkuman` | scroll | No | — | — |
 | `penutup` | view | No | — | — |
@@ -280,3 +280,11 @@ This would allow:
 - Generating interaction-aware UI (navigation lock, score display) automatically
 
 This is a **future batch** — not implemented yet. The current registry documents the existing patterns.
+
+## Runtime Status (BATCH-03)
+
+| Component | Document Status | Runtime Status |
+|---|---|---|
+| Import JSON Contract | COMPLETE | Validator not yet implemented (Batch 08) |
+| Style Contract | FOUNDATION | Global layout/interaction style = future (Batch 09) |
+| Interaction Registry | DOCUMENTED | Formal registerInteraction() API = future |

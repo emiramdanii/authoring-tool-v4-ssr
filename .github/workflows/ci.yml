@@ -115,6 +115,18 @@ jobs:
           # bounds checks, auto-heal, new-element contract, and source
           # audit that all dataIdx consumers are documented.
           npx vitest run src/__tests__/dataidx-9.0f-cleanup.test.ts
+          # BATCH-01/02/03: V5 honesty + state-load + contract-sync tests
+          npx vitest run src/__tests__/batch01-export-persistence-honesty.test.ts
+          npx vitest run src/__tests__/patch01b-behavior.test.ts
+          npx vitest run src/__tests__/batch02-state-load-projection.test.ts
+          npx vitest run src/__tests__/batch03-contract-sync.test.ts
+          npx vitest run src/__tests__/v5-metadata-behavior.test.ts
+          npx vitest run src/__tests__/v5-patch04-semester-coerce.test.ts
+          npx vitest run src/__tests__/v5-rc2-metadata-fixes.test.ts
+          npx vitest run src/__tests__/hydration-transactional-sprint7.2a-patch3.test.ts
+          # BATCH-04: Guard steps
+          npm run guard:no-legacy-runtime
+          npm run guard:contract-sync
 
   types:
     name: TypeScript gate (normalize-ts-errors.js --check)
@@ -174,16 +186,6 @@ jobs:
 
       - name: Verify build artifacts
         run: |
-          # Build is considered successful only if:
-          #   1. `npm run build` exited 0 (above step)
-          #   2. .next/ directory exists with BUILD_ID
-          #
-          # Sprint 8.2S-2-Patch-5: build script no longer includes
-          # the standalone cp steps that caused false failures.
-          # output:'standalone' is disabled in next.config.ts —
-          # the app uses `next start` (not standalone server.js).
-          # We verify .next/BUILD_ID which Next.js generates on
-          # successful compile.
           if [ ! -f ".next/BUILD_ID" ]; then
             echo "❌ .next/BUILD_ID missing — build did not complete"
             exit 1
@@ -191,3 +193,7 @@ jobs:
           echo "✅ Build artifacts verified (.next/BUILD_ID exists)"
           echo "--- .next/ size ---"
           du -sh .next/
+
+      - name: BATCH-04: Export template freshness guard
+        # Verify export bundle is fresh after build (build includes export:build)
+        run: npm run guard:export-template-fresh
