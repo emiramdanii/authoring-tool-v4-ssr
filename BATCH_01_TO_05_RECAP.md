@@ -1,8 +1,9 @@
 # SILSE BATCH-01 to BATCH-05 — Comprehensive Recap
 
 **Generated**: 2026-06-25
-**HEAD**: `cb3f670` (BATCH-05 EXPORT-BROWSER-PROOF-01)
-**Status**: All 5 batches CLOSED. CI green.
+**Last updated**: 2026-06-25 (P3 doc fix — HEAD reference corrected)
+**HEAD**: `42502d18c8e19e687923e853a5e10acc39f3329f` (this recap commit; previous HEAD was `cb3f670` for Batch 05)
+**Status**: All 5 batches CLOSED. CI green. All commits pushed to origin/main.
 **Audit arc**: 5 batches closing the "export honesty + state integrity + contract sync + release gate + browser proof" gap discovered during SILSE Audit Sesi 8.
 
 ---
