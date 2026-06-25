@@ -3728,3 +3728,156 @@ Stage Summary:
   integrity surfaces preserved)
 - No new dependencies added
 - Ready for senior audit
+
+---
+Task ID: BATCH-06B
+Agent: Super Z (main)
+Task: SILSE Batch 06B — TEACHER-WORKFLOW-UX-CLOSEOUT
+
+Work Log:
+- Senior audit Batch 06 = PARTIAL ACCEPTED. Resume card + template
+  page count accepted, but 2 scope items missing:
+  P1: persist/restore last V5 view (ProductShell masih pakai useState
+      internal, no localStorage persistence)
+  P2: workflow guidance 5 langkah (Info → Edit Isi → Style → Preview → Export)
+- Read worklog + git log to confirm Batch 06 closure at 980348f
+- Created src/lib/v5-view-persistence.ts (new helper module):
+  * STORAGE_KEY = 'silse_v5_last_view'
+  * SAFE_VIEWS = ['dashboard', 'template', 'editor', 'preview', 'export']
+  * VIEWS_REQUIRING_PAGES = ['editor', 'preview', 'export']
+  * persistLastView(view): writes to localStorage, refuses invalid/
+    legacy view names (no-op, no throw)
+  * restoreLastView(pagesCount): reads localStorage, validates against
+    SAFE_VIEWS, clears bad values, falls back to 'dashboard' if:
+      - localStorage unavailable (SSR/private mode)
+      - no stored value
+      - stored value invalid (legacy names like 'lengkap', 'mpi-editor',
+        garbage strings)
+      - stored value is editor/preview/export but pagesCount === 0
+        (fresh user with stale localStorage)
+  * clearLastView(): removes the stored value
+  * isLocalStorageAvailable(): safe detection (try/catch on setItem test)
+  * __TEST__ export: exposes internals for unit tests
+- Patched src/components/product-v5/ProductShell.tsx:
+  * Removed default initialView = 'dashboard' (now: restoreLastView
+    handles it with safe fallback)
+  * Lazy useState initializer: reads canvaStore.getState().pages.length
+    synchronously via pagesRef, then calls restoreLastView(pagesCount)
+    ONCE on first render
+  * initialView prop override preserved (for test injection)
+  * useEffect persists current view to localStorage on every view change
+    (persistLastView called inside useEffect with [view] dep)
+  * Safety net useEffect: if pages.length === 0 while in editor/preview/
+    export, fall back to dashboard automatically (GUARD, not normal
+    navigation — handles edge case where pages drop to 0 via future
+    "reset" action)
+  * NO references to legacy editor names (MpiEditorShell, CanvaBuilder,
+    AdvancedEditor, teacherMode, 'lengkap') in actual code paths
+    (comments still document what was removed, but tests strip comments
+    before checking)
+- Patched src/components/product-v5/DashboardV5.tsx:
+  * Added workflow guidance <nav aria-label="Alur kerja"> with 5 steps
+    rendered as <ol> with numbered indicators (1-5)
+  * Steps in order: Info → Edit Isi → Style → Preview → Export
+  * data-testid="dashboard-workflow-guidance" for E2E
+  * Position: between hero subtitle and resume/empty-state section
+  * Compact pill design (px-2.5 py-1, rounded-full, border) —
+    non-intrusive, doesn't push other content down
+- Created src/__tests__/batch06b-view-persistence.test.ts (49 tests):
+  * Section 1: v5-view-persistence contract (27 tests)
+    - persistLastView: writes valid views, refuses invalid/legacy
+    - restoreLastView happy path: dashboard/template restore regardless
+      of pages, editor/preview/export restore when pages > 0
+    - restoreLastView safe fallback: editor/preview/export → dashboard
+      when pages = 0 (does NOT clear stored value, so it can restore
+      later if pages load)
+    - restoreLastView invalid view fallback: legacy names, garbage
+      strings → dashboard (CLEARS bad value)
+    - Boundary cases: pages = 1 (boundary), pages = 1000 (large)
+    - clearLastView: removes value, no-throw when nothing stored
+    - isProductView guard: true for safe views, false for legacy/garbage
+    - VIEWS_REQUIRING_PAGES contract: exactly editor/preview/export,
+      does NOT include dashboard/template
+  * Section 2: ProductShell source audit (7 tests)
+    - imports restoreLastView + persistLastView
+    - lazy useState initializer calls restoreLastView with pagesRef
+    - initialView prop override takes precedence
+    - persists view on change via useEffect
+    - safety net: falls back to dashboard if pages.length === 0
+    - NO legacy editor/route references in code (comments stripped)
+    - default initialView is undefined (not hardcoded)
+  * Section 3: DashboardV5 workflow guidance (5 tests)
+    - has data-testid="dashboard-workflow-guidance"
+    - has aria-label="Alur kerja"
+    - lists all 5 steps in order (Info, Edit Isi, Style, Preview, Export)
+    - uses <ol> for ordered list
+    - numbered step indicators 1-5
+  * Section 4: No legacy references in V5 product route (8 tests)
+    - 7 V5 files checked: ProductShell, DashboardV5, TemplatePickerV5,
+      CleanEditorV5, PreviewV5, ExportPanelV5, v5-view-persistence
+    - All must NOT reference MpiEditorShell/CanvaBuilder/AdvancedEditor/
+      AuthoringTool/teacherMode in code (comments stripped)
+    - v5-view-persistence.ts has correct STORAGE_KEY
+    - v5-view-persistence.ts exports the 3 functions
+- Created e2e/v5-view-persistence.spec.ts (8 Playwright tests):
+  * Smoke 1: Dashboard → Template → Editor → Dashboard (back btn) →
+    Resume card → Lanjutkan → Editor (verifies view persisted at each
+    step: editor → dashboard → editor)
+  * Smoke 2: Apply template → reload → restored to editor (canvas
+    region has rendered content, not blank)
+  * Smoke 3: localStorage has 'editor' but no canva_state → reload →
+    fallback to dashboard (empty state, no resume card)
+  * Contract 4: Apply template → Preview → reload → restored to Preview
+  * Contract 5: localStorage has 'lengkap' (corrupt) → reload →
+    fallback to dashboard, stored value normalized (not 'lengkap')
+  * Contract 6: localStorage has 'editor' but no canva_state → reload
+    → fallback to dashboard (editor not safe without pages)
+  * Contract 7: Workflow guidance text visible in dashboard, all 5
+    steps present, aria-label correct, uses <ol>, has 5 <li>
+  * No legacy: data-view attribute only ever shows safe V5 views
+    across full navigation (dashboard → template → editor → preview →
+    export → editor → dashboard)
+  * All tests skipped in CI via test.skip(process.env.CI === 'true', ...)
+- Test iteration: initial run had 3 failures (h1:visible too strict,
+  button text mismatch, .satisfies not a Playwright matcher). All
+  fixed by using aria-label selectors, checking canvas region
+  children count, and using boolean expression with .toBe(true).
+- Final test results:
+  * Unit: 49/49 PASS (npx vitest run batch06b-view-persistence.test.ts)
+  * E2E: 8/8 PASS (verified one by one due to dev server slow
+    template application — full suite times out at 60s worker)
+  * Batch 01 + 06 regression: 73/73 PASS (no regression)
+  * guard:no-legacy-runtime PASS (328 files, 0 legacy symbols)
+  * guard:contract-sync PASS (block types match)
+- Agent Browser end-to-end verification:
+  * Dashboard empty state: workflow guidance visible
+    ("1 Info → 2 Edit Isi → 3 Style → 4 Preview → 5 Export")
+  * Apply PPKn template → editor: localStorage.silse_v5_last_view='editor',
+    data-view='editor'
+  * Reload on editor: data-view='editor' restored (Smoke 2 ✓)
+  * Clear localStorage + set 'editor' + reload: data-view='dashboard'
+    fallback (Smoke 3 ✓)
+  * Set 'lengkap' (corrupt) + reload: data-view='dashboard', stored
+    normalized to 'dashboard' (Contract 5 ✓)
+  * No page errors throughout
+
+Stage Summary:
+- Files modified: 2 (ProductShell.tsx, DashboardV5.tsx)
+- Files baru: 3 (v5-view-persistence.ts, batch06b-view-persistence.test.ts,
+  v5-view-persistence.spec.ts)
+- Tests added: 49 unit + 8 E2E = 57 new tests
+- No source code in save/export/load paths touched (Batch 01-05
+  integrity surfaces preserved)
+- No new dependencies added
+- View persistence contract documented in v5-view-persistence.ts
+  with explicit SAFE_VIEWS + VIEWS_REQUIRING_PAGES lists
+- All senior audit scope items closed:
+  ✅ Persist/restore last V5 view safely (with fallback guards)
+  ✅ Workflow guidance 5 langkah (Info → Edit Isi → Style → Preview → Export)
+  ✅ Tests: valid view restored, invalid fallback, pages-empty fallback,
+    guidance text, no legacy refs
+  ✅ Smoke flow: Dashboard → Template → Editor → Dashboard → Resume →
+    Lanjutkan → Editor verified
+  ✅ Refresh on editor → safe (restored)
+  ✅ Refresh without pages → not blank (fallback dashboard)
+- Ready for senior audit

@@ -55,10 +55,44 @@ export function DashboardV5({ onPickTemplate, onResumeEdit, hasProject, pageCoun
         <h1 className="text-3xl font-bold text-slate-800 mb-3">
           Media Pembelajaran Interaktif
         </h1>
-        <p className="text-base text-slate-500 mb-10 max-w-md mx-auto">
+        <p className="text-base text-slate-500 mb-6 max-w-md mx-auto">
           Buat media pembelajaran cantik untuk siswa dalam beberapa menit. Pilih template,
           edit konten, pratinjau, lalu export ke HTML.
         </p>
+
+        {/* BATCH-06B: Workflow guidance 5 langkah */}
+        <nav
+          aria-label="Alur kerja"
+          className="mb-10 max-w-xl mx-auto"
+          data-testid="dashboard-workflow-guidance"
+        >
+          <ol className="flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
+            <li className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full border border-slate-200">
+              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-semibold flex items-center justify-center" aria-hidden="true">1</span>
+              <span>Info</span>
+            </li>
+            <span aria-hidden="true" className="text-slate-300">→</span>
+            <li className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full border border-slate-200">
+              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-semibold flex items-center justify-center" aria-hidden="true">2</span>
+              <span>Edit Isi</span>
+            </li>
+            <span aria-hidden="true" className="text-slate-300">→</span>
+            <li className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full border border-slate-200">
+              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-semibold flex items-center justify-center" aria-hidden="true">3</span>
+              <span>Style</span>
+            </li>
+            <span aria-hidden="true" className="text-slate-300">→</span>
+            <li className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full border border-slate-200">
+              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-semibold flex items-center justify-center" aria-hidden="true">4</span>
+              <span>Preview</span>
+            </li>
+            <span aria-hidden="true" className="text-slate-300">→</span>
+            <li className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full border border-slate-200">
+              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-semibold flex items-center justify-center" aria-hidden="true">5</span>
+              <span>Export</span>
+            </li>
+          </ol>
+        </nav>
 
         {hasProject ? (
           // ── BATCH-06: Resume Card ────────────────────────────────

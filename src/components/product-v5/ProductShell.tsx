@@ -11,9 +11,13 @@
 //
 // All legacy editors (MpiEditorShell, CanvaBuilder old, Advanced)
 // are disconnected from runtime. ProductShell is the ONLY entry.
+//
+// BATCH-06B: view now persists to localStorage via
+// `silse_v5_last_view` key and restores on boot with safe fallback.
+// See src/lib/v5-view-persistence.ts for the safety contract.
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { DashboardV5 } from './DashboardV5';
 import { TemplatePickerV5 } from './TemplatePickerV5';
 import { CleanEditorV5 } from './CleanEditorV5';
@@ -22,22 +26,82 @@ import { ExportPanelV5 } from './ExportPanelV5';
 import { useCanvaStore } from '@/store/canva-store';
 import { ProjectProvider } from '@/hooks/use-project-manager';
 import { CanvaAutoSaveSync } from '@/components/canva/CanvaAutoSaveSync';
+import { restoreLastView, persistLastView } from '@/lib/v5-view-persistence';
 
 export type ProductView = 'dashboard' | 'template' | 'editor' | 'preview' | 'export';
 
 export interface ProductShellProps {
-  /** Initial view (default: 'dashboard') */
+  /** Initial view (default: 'dashboard'). Override for tests only. */
   initialView?: ProductView;
 }
 
-export function ProductShell({ initialView = 'dashboard' }: ProductShellProps) {
-  const [view, setView] = useState<ProductView>(initialView);
+export function ProductShell({ initialView }: ProductShellProps) {
+  // BATCH-06B: We need access to the canva store's pages BEFORE
+  // initializing useState so we can call restoreLastView(pages.length)
+  // synchronously. The canva store loads from localStorage in
+  // StoreInit.tsx (a parent), so by the time ProductShell mounts,
+  // pages is already populated.
+  //
+  // Use a lazy initializer so restoreLastView runs ONCE on first render,
+  // not on every re-render. This is the recommended React pattern for
+  // "compute initial state from external source".
+  const pagesRef = useRef<number | null>(null);
+  if (pagesRef.current === null) {
+    // Read once synchronously — do NOT subscribe (we subscribe below
+    // for reactivity, this is just for the initial view decision).
+    try {
+      const snapshot = useCanvaStore.getState();
+      pagesRef.current = snapshot.pages.length;
+    } catch {
+      pagesRef.current = 0;
+    }
+  }
+
+  // Decide the initial view:
+  //   - If caller passed initialView prop, use it (test override)
+  //   - Otherwise, restore from localStorage with safe fallback
+  const [view, setView] = useState<ProductView>(() => {
+    if (initialView) return initialView;
+    return restoreLastView(pagesRef.current);
+  });
+
+  // Subscribe to pages changes (for reactivity — affects DashboardV5
+  // hasProject/pageCount props).
   const pages = useCanvaStore((s) => s.pages);
 
-  // V5-HARDENING-01 AUDIT-005: removed dead useEffect that only
-  // checked pages.length === 0 + view === 'dashboard' without any
-  // side effect. The "Lanjut Edit" button enable/disable state is
-  // already handled by DashboardV5 via the `hasProject` prop below.
+  // BATCH-06B: Persist current view to localStorage whenever it changes.
+  // Uses a ref guard to skip the very first effect run (the restore
+  // already wrote that value, no need to write it again).
+  const isFirstRun = useRef(true);
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      // Even on first run, ensure the restored view IS persisted
+      // (in case localStorage had a stale value that was cleared
+      // by restoreLastView due to invalid view). This makes the
+      // stored value always reflect reality.
+      persistLastView(view);
+      return;
+    }
+    persistLastView(view);
+  }, [view]);
+
+  // BATCH-06B: Safety net — if user is in editor/preview/export and
+  // pages becomes empty (e.g., they cleared the canvas via some
+  // future "reset" action), fall back to dashboard. Without this,
+  // they'd be stuck on an editor view with nothing to render.
+  //
+  // This is a GUARD, not normal navigation. It only fires on the
+  // edge case where pages.length drops to 0 while in a pages-required
+  // view. Normal flow (clearing all pages via UI) should never happen
+  // because the editor doesn't expose a "delete all pages" button.
+  useEffect(() => {
+    if (pages.length === 0) {
+      if (view === 'editor' || view === 'preview' || view === 'export') {
+        setView('dashboard');
+      }
+    }
+  }, [pages.length, view]);
 
   const goDashboard = useCallback(() => setView('dashboard'), []);
   const goTemplate = useCallback(() => setView('template'), []);
