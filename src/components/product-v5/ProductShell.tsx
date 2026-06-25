@@ -63,6 +63,7 @@ export function ProductShell({ initialView = 'dashboard' }: ProductShellProps) {
             onPickTemplate={goTemplate}
             onResumeEdit={goEditor}
             hasProject={pages.length > 0}
+            pageCount={pages.length}
           />
         )}
         {view === 'template' && (

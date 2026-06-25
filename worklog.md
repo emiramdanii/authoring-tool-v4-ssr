@@ -3634,3 +3634,97 @@ Stage Summary:
     Batch 01 — export/save success is honest (no false success)
     Batch 05 — export result is honest (no false "rendered")
 - READY for Batch 06+ (Teacher UX / Interaction editor / etc.)
+
+---
+Task ID: BATCH-06
+Agent: Super Z (main)
+Task: SILSE Batch 06 — TEACHER-WORKFLOW-UX-01
+
+Work Log:
+- Read worklog + git log to confirm Batch 01-05 closure (HEAD: b896131)
+- Identified Teacher UX gaps in DashboardV5 + TemplatePickerV5:
+  * Dashboard had only 2 generic buttons — teacher had no context
+    about WHAT project they were resuming (judul? mapel? kelas? how
+    many pages?)
+  * "Lanjut Edit" button was disabled when no project, but when
+    project existed, clicking it jumped blindly into editor with no
+    preview of what was saved
+  * Template picker cards all used generic auto_stories icon — no
+    visual differentiation between 6 templates
+  * Template cards had no page count — teacher couldn't tell if a
+    template was a quick 5-page mini or a full 17-page course
+- Patched DashboardV5.tsx (full rewrite of body section):
+  * Added useAuthoringStore subscription to read meta (judulPertemuan,
+    mapel, kelas, namaGuru, namaSekolah)
+  * Added optional pageCount prop (passed from ProductShell which
+    already reads canvaStore.pages)
+  * When hasProject=true: renders "Proyek Tersimpan" resume card with:
+    - Page count badge (top-right corner)
+    - Project title (with "Tanpa Judul" fallback)
+    - Subject + grade + guru metadata row (with "—" fallbacks)
+    - "Lanjutkan Edit" primary button (emerald, full-width)
+    - "Mulai dari Template Lain" secondary button (white, full-width)
+    - Optional school name footer
+  * When hasProject=false: renders single "Mulai dari Template"
+    button (original empty-state behavior preserved)
+  * All interactive elements have data-testid for E2E + aria-label
+    with full context (e.g., "Lanjutkan proyek Macam-Macam Norma")
+- Patched ProductShell.tsx:
+  * Pass pageCount={pages.length} to DashboardV5
+- Patched TemplatePickerV5.tsx:
+  * Compute pageCount from t.scenes?.length (with ?? 0 fallback)
+  * Use t.metadata?.icon || 'auto_stories' for template-specific icon
+  * Render page count badge ("{pageCount} hal") in top-right of each
+    template card (replaced the loading spinner position — spinner
+    now shows in same slot when applying === t.id)
+  * Updated aria-label to include page count: "Pilih template {name},
+    {pageCount} halaman"
+  * Added data-testid={`template-card-${t.id}`} and
+    data-testid={`template-page-count-${t.id}`} for E2E
+- Created src/__tests__/batch06-teacher-workflow-ux.test.ts (18 tests):
+  * DashboardV5: 11 source-audit tests (reads useAuthoringStore,
+    accepts pageCount prop, renders resume section, shows page count
+    badge, title with fallback, mapel+kelas, conditional namaGuru,
+    Lanjutkan button, Mulai Baru button, empty state, safe fallbacks)
+  * TemplatePickerV5: 6 source-audit tests (computes pageCount from
+    scenes, uses template-specific icon, renders page count badge,
+    template card testid, aria-label with page count, loading state
+    exclusive with badge)
+  * ProductShell: 1 source-audit test (passes pageCount to DashboardV5)
+- Created e2e/v5-dashboard-resume.spec.ts (4 Playwright tests):
+  * Phase 1: fresh boot (clearCookies) → empty state shows single
+    "Mulai dari Template" button, resume card NOT visible
+  * Phase 2: apply template → editor opens (verifies template picker
+    flow still works end-to-end)
+  * Phase 3: back to dashboard → resume card visible with title +
+    page count + Lanjutkan/Mulai Baru buttons → click Lanjutkan →
+    editor reopens
+  * Phase 4: template picker shows page count badge per card,
+    badge text contains "hal"
+  * Skipped in CI via test.skip(process.env.CI === 'true', ...) —
+    same pattern as Batch 04/05 V5 e2e tests
+
+Local verification:
+- 18/18 unit tests pass (npx vitest run batch06-teacher-workflow-ux.test.ts)
+- 4/4 Playwright tests pass (npx playwright test v5-dashboard-resume)
+- guard:no-legacy-runtime PASS (328 files, 0 legacy symbols)
+- guard:contract-sync PASS (block type names match)
+- Batch 01 tests still PASS (no regression)
+- Agent Browser end-to-end verification:
+  * Dashboard empty state: single "Mulai dari template" button
+  * Template picker: 6 cards with page count badges (10/5/6/6/6/8 hal)
+  * Apply PPKn template → editor opens with 17 pages
+  * Back to dashboard → resume card shows "Macam-Macam Norma" +
+    "Lanjutkan proyek Macam-Macam Norma" button
+  * Click Lanjutkan → editor reopens with same project
+  * No page errors throughout
+- Screenshot saved: download/batch06-dashboard-resume-card.png (46 KB)
+
+Stage Summary:
+- Files modified: 3 (DashboardV5.tsx, ProductShell.tsx, TemplatePickerV5.tsx)
+- Files baru: 2 (batch06-teacher-workflow-ux.test.ts, v5-dashboard-resume.spec.ts)
+- Tests added: 18 unit + 4 E2E = 22 new tests
+- No source code in save/export/load paths touched (Batch 01-05
+  integrity surfaces preserved)
+- No new dependencies added
+- Ready for senior audit

@@ -100,32 +100,46 @@ export function TemplatePickerV5({ onBack, onTemplateApplied }: TemplatePickerV5
           </p>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => handlePick(t)}
-                disabled={applying !== null}
-                type="button"
-                className="group p-5 bg-white rounded-2xl border-2 border-slate-200 hover:border-emerald-400 hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/30 text-left disabled:opacity-60 disabled:cursor-wait"
-                aria-label={`Pilih template ${t.name}`}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 group-hover:bg-emerald-200 flex items-center justify-center transition-colors">
-                    <span className="material-symbols-outlined text-emerald-700" aria-hidden="true" style={{ fontSize: '20px' }}>auto_stories</span>
+            {templates.map((t) => {
+              // BATCH-06: Show page count + template-specific icon
+              const pageCount = t.scenes?.length ?? 0;
+              const templateIcon = t.metadata?.icon || 'auto_stories';
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => handlePick(t)}
+                  disabled={applying !== null}
+                  type="button"
+                  className="group p-5 bg-white rounded-2xl border-2 border-slate-200 hover:border-emerald-400 hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/30 text-left disabled:opacity-60 disabled:cursor-wait"
+                  aria-label={`Pilih template ${t.name}, ${pageCount} halaman`}
+                  data-testid={`template-card-${t.id}`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 group-hover:bg-emerald-200 flex items-center justify-center transition-colors">
+                      <span className="material-symbols-outlined text-emerald-700" aria-hidden="true" style={{ fontSize: '20px' }}>{templateIcon}</span>
+                    </div>
+                    {applying === t.id ? (
+                      <span className="text-xs text-emerald-600 font-medium animate-pulse">Memuat...</span>
+                    ) : (
+                      <span
+                        className="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-medium"
+                        aria-label={`${pageCount} halaman`}
+                        data-testid={`template-page-count-${t.id}`}
+                      >
+                        {pageCount} hal
+                      </span>
+                    )}
                   </div>
-                  {applying === t.id && (
-                    <span className="text-xs text-emerald-600 font-medium animate-pulse">Memuat...</span>
-                  )}
-                </div>
-                <div className="text-base font-semibold text-slate-800 mb-1 line-clamp-2">{t.name}</div>
-                <div className="text-xs text-slate-500 mb-3">
-                  {t.subject === '*' ? 'Semua Mapel' : t.subject}
-                  {' · '}
-                  {t.grade === '*' ? 'Semua Kelas' : `Kelas ${t.grade}`}
-                </div>
-                <p className="text-xs text-slate-500 line-clamp-3">{t.description}</p>
-              </button>
-            ))}
+                  <div className="text-base font-semibold text-slate-800 mb-1 line-clamp-2">{t.name}</div>
+                  <div className="text-xs text-slate-500 mb-3">
+                    {t.subject === '*' ? 'Semua Mapel' : t.subject}
+                    {' · '}
+                    {t.grade === '*' ? 'Semua Kelas' : `Kelas ${t.grade}`}
+                  </div>
+                  <p className="text-xs text-slate-500 line-clamp-3">{t.description}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
