@@ -3578,3 +3578,59 @@ Stage Summary:
 - Legacy 3-panel editor unreachable from any normal user route
 - CI 3/3 green locally (test + types + build)
 - Ready for senior audit
+
+---
+Task ID: BATCH-05
+Agent: Super Z (main)
+Task: SILSE Batch 05 — EXPORT-BROWSER-PROOF-01
+
+Work Log:
+- Read worklog + git log to confirm Batch 04 closure (commit d504f11,
+  CI green, working tree clean)
+- Identified gap: smoke-export-render.js does HTML structure regex
+  checks but never opens the file in a real browser. This means a
+  broken export bundle (React fails to mount, runtime error in
+  entry-client, schema mismatch) could pass structural checks while
+  producing a blank screen when a teacher opens the file.
+- Created e2e/v5-export-browser-proof.spec.ts (Playwright, 3 tests):
+  * Phase A — POST /api/export with multi-page payload (cover + refleksi).
+    Asserts HTTP 200, response > 50KB, contains __EXPORT_DATA__, #root
+    div, bundle <script type=module>, and the injected title text.
+    Saves HTML to download/batch05-export-proof/batch05-export.html
+    (1.97 MB) for human inspection.
+  * Phase B-E — page.goto('file://...') opens the exported HTML:
+    - Waits for #root.children.length > 0 (React mounted)
+    - Asserts #root.innerHTML.length > 500 (substantial render)
+    - Asserts window.__EXPORT_DATA__ exists with 2 pages + meta
+    - Asserts window.__quizXss is undefined (no XSS escape)
+    - Captures console + page errors, filters font/favicon/DevTools
+      noise, asserts real errors = [] and page errors = []
+    - Asserts cover title text "Batch 05 Browser Proof" is visible
+  * Phase F — soft navigation test: clicks "Mulai" (force:true to
+    bypass top-navbar pointer intercept) and logs whether refleksi
+    page becomes visible. Test passes regardless — the goal is to
+    prove the export HTML renders and is interactive, not to assert
+    hard navigation semantics (which belong in app-level e2e).
+- Skipped in CI via test.skip(process.env.CI === 'true', ...) because
+  the dev-server + file:// URL mix is flaky in CI. Guards
+  (no-legacy-runtime + contract-sync) continue to run in CI from
+  Batch 04. The browser-proof test is a local-only release gate:
+    npx playwright test v5-export-browser-proof
+- Local verification:
+  * Installed chromium via `npx playwright install chromium`
+    (Chrome for Testing 148.0.7778.96 + Headless Shell)
+  * All 3 tests pass: 3 passed in 10.5s
+  * Exported HTML artifact: download/batch05-export-proof/batch05-export.html
+    (1,968,770 bytes — full Vite bundle + injected data)
+- Commit: cb3f670
+
+Stage Summary:
+- Files baru: e2e/v5-export-browser-proof.spec.ts (291 lines, 3 tests)
+- Files modified: none (test-only addition, no source code changes)
+- Pipeline verified end-to-end:
+    /api/export → export-output/index.html → entry-client.tsx →
+    ExportApp → PageRenderer mode="export" → SchemaBlockRenderer
+- Batch 05 closes the "export honesty" arc that started in Batch 01:
+    Batch 01 — export/save success is honest (no false success)
+    Batch 05 — export result is honest (no false "rendered")
+- READY for Batch 06+ (Teacher UX / Interaction editor / etc.)
