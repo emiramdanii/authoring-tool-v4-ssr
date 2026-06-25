@@ -70,6 +70,11 @@ vi.mock('@/lib/offline-sync', () => ({
   initAutoFlush: () => () => {},  // returns cleanup function
 }));
 
+// BATCH-04: Mock schema-projection (StoreInit imports deriveProjectionFromPages)
+vi.mock('@/core/schema/schema-projection', () => ({
+  deriveProjectionFromPages: () => ({ meta: {} }),
+}));
+
 // Import stores AFTER mocks
 const { useCanvaStore } = await import('@/store/canva-store');
 const { useInteractiveStore } = await import('@/store/interactive-store');
