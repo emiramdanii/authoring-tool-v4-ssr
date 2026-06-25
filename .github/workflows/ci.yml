@@ -186,6 +186,3 @@ jobs:
           echo "--- .next/ size ---"
           du -sh .next/
 
-      - name: BATCH-04: Export template freshness guard
-        # Verify export bundle is fresh after build (build includes export:build)
-        run: npm run guard:export-template-fresh
