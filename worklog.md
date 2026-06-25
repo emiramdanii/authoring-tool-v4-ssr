@@ -3991,3 +3991,169 @@ Stage Summary:
 - Kuis block now fully editable inline in V5 inspector (no need to
   use legacy KuisTab)
 - Ready for senior audit
+
+---
+Task ID: BATCH-07B
+Agent: Super Z (main)
+Task: SILSE Batch 07B — INTERACTION-EDITOR-CLOSEOUT
+
+Work Log:
+- Senior audit Batch 07A ACCEPTED (kuis inline editor). 2 P2 notes:
+  P2-1: E2E masih soft fallback (test pass bahkan jika inspector tidak
+        terbuka — hanya console.log)
+  P2-2: Scope Batch 07 belum lengkap — sortir game + diskusi/refleksi
+        editor belum dikerjakan
+- Riset schema untuk 3 block types:
+  * sortir-game: pool[{id,text,category}] + kolom[{id,label,color}]
+  * diskusi: questions[{label,icon,teks,petunjuk,color?}]
+  * refleksi: questions[{teks,petunjuk,warna?,icon?}]
+  Catatan: diskusi/refleksi pakai field name 'questions' sama seperti
+  kuis, tapi shape berbeda. Jadi butuh field types terpisah.
+- Patched inspector-field-registry.ts:
+  * Added 3 new FieldTypes: 'sortItems', 'discussionQuestions',
+    'reflectionQuestions'
+  * Created SORT_ITEMS_FIELD, DISCUSSION_QUESTIONS_FIELD,
+    REFLECTION_QUESTIONS_FIELD constants
+  * Updated registrations:
+    - diskusi: [TITLE, INTRO, DISCUSSION_QUESTIONS] (was [TITLE, INTRO])
+    - sortir-game: [TITLE, SORT_ITEMS] (was [TITLE])
+    - refleksi: [TITLE, INTRO, REFLECTION_QUESTIONS] (was [TITLE, INTRO])
+  * kuis registration unchanged (TITLE + QUESTIONS from 07A)
+- Created SortItemsFieldEditor.tsx (new component, 258 lines):
+  * 2 sections: Kategori (kolom) + Item (pool)
+  * Per kolom: label input + color select (6 color tokens y/c/g/p/o/r)
+    + delete (disabled when only 1)
+  * Per item: text input + category dropdown (populated from kolom) +
+    delete
+  * handleDeleteKolom: clears category on items referencing deleted
+    kolom (orphan prevention)
+  * normalizeValue: safely handles non-array pool/kolom, missing id
+    (generates unique id via Date.now()+random), missing fields
+  * All writes via onChange({pool, kolom})
+  * data-testid: sortitems-field-editor, sortitems-add-kolom-btn,
+    sortitems-add-item-btn, sortitems-kolom-card-{idx},
+    sortitems-kolom-label-{idx}, sortitems-kolom-color-{idx},
+    sortitems-kolom-delete-{idx}, sortitems-item-card-{idx},
+    sortitems-item-text-{idx}, sortitems-item-category-{idx},
+    sortitems-item-delete-{idx}, sortitems-summary
+- Created ReflectionQuestionsFieldEditor.tsx (new component, 296 lines):
+  * Handles BOTH diskusi (mode='discussion') and refleksi
+    (mode='reflection') via single `mode` prop
+  * Discussion mode: per question has label (A/B/C) + icon + color +
+    teks + petunjuk
+  * Reflection mode: per question has icon + warna + teks + petunjuk
+    (no label)
+  * Discussion uses 'color' field name, reflection uses 'warna' —
+    editor handles both via mode-aware patch
+  * normalizeDiscussionQuestions + normalizeReflectionQuestions:
+    safely handle non-array, missing fields
+  * makeBlankQuestion: returns different shape per mode
+  * handleDelete keeps at least 1 question (replaces with blank)
+  * All writes via onChange(questions[])
+  * data-testid: discussion-questions-editor / reflection-questions-editor,
+    reflection-question-card-{idx}, reflection-question-number-{idx},
+    reflection-question-label-{idx} (discussion only),
+    reflection-question-icon-{idx}, reflection-question-color-{idx},
+    reflection-question-text-{idx}, reflection-question-hint-{idx},
+    reflection-question-delete-{idx}, reflection-questions-add-btn,
+    reflection-questions-summary
+- Patched WorkspaceInspector.tsx:
+  * Imported SortItemsFieldEditor + SortItemsValue +
+    ReflectionQuestionsFieldEditor
+  * Added handleSortItemsChange callback: patches both pool + kolom
+    in one updateSchemaBlock call (single write path preserved)
+  * Added handleReflectionQuestionsChange callback (routes through
+    updateSchemaBlock)
+  * 3 new rendering branches:
+    - field.type === 'sortItems' → <SortItemsFieldEditor
+      value={selectedBlock} onChange={handleSortItemsChange} />
+      (passes entire block so editor can read pool + kolom)
+    - field.type === 'discussionQuestions' →
+      <ReflectionQuestionsFieldEditor mode="discussion" ... />
+    - field.type === 'reflectionQuestions' →
+      <ReflectionQuestionsFieldEditor mode="reflection" ... />
+  * Existing questions (kuis) + text/textarea rendering preserved
+- Strengthened E2E tests (P2-1 fix):
+  * Created e2e/v7b-interaction-editor-closeout.spec.ts (5 tests)
+  * REMOVED all soft fallback patterns (no more "if inspectorVisible
+    then test else console.log")
+  * All tests now use HARD ASSERT: await expect(locator).toBeVisible()
+    with timeout — test FAILS if editor doesn't appear
+  * Helper functions: setupAndNavigateToPage (apply template + nav to
+    page), clickBlockByType (hard-assert block exists via
+    data-block-type selector, then click)
+  * 5 tests:
+    1. kuis editor: hard assert QuestionsFieldEditor + question cards
+       + Tambah button + summary
+    2. kuis Tambah Pertanyaan: hard assert count increases + 4 option
+       inputs + 4 radio buttons exist
+    3. sortir game editor: hard assert SortItemsFieldEditor + kolom
+       cards + add item + new item has text + category inputs + summary
+    4. diskusi editor: hard assert discussion-questions-editor +
+       question cards + edit text persists + Tambah button + summary
+    5. refleksi editor: hard assert reflection-questions-editor +
+       question cards + edit hint persists + Tambah button
+- Created src/__tests__/batch07b-interaction-editor-closeout.test.ts
+  (79 unit tests):
+  * inspector-field-registry: 10 tests (3 new field types, 3 new
+    constants, 3 new registrations, kuis unchanged)
+  * SortItemsFieldEditor: 21 tests (exports, interfaces, data-testids,
+    normalizeValue, handleDeleteKolom keeps ≥1, COLOR_OPTIONS 6 tokens,
+    all writes via onChange, no legacy refs)
+  * ReflectionQuestionsFieldEditor: 22 tests (exports, interfaces,
+    mode prop, data-testids per mode, normalize functions,
+    makeBlankQuestion shape per mode, handleDelete keeps ≥1,
+    discussion uses 'color' reflection uses 'warna', all writes via
+    onChange, no legacy refs)
+  * WorkspaceInspector: 11 tests (imports, 3 new handlers, 3 new
+    rendering branches, passes selectedBlock to SortItemsFieldEditor,
+    existing kuis/text/textarea preserved)
+  * E2E spec audit: 15 tests (no soft fallback patterns, uses
+    toBeVisible with timeout, has all 4 editor test names, uses
+    helper functions, clickBlockByType hard-asserts block exists)
+- Fixed 07A test regression: FieldType union changed from single-line
+  to multi-line (9 lines now), so regex /export type FieldType = [^;]*/
+  no longer matches. Updated to /export type FieldType =[\s\S]*?'...'/
+  pattern. 31/31 07A tests still pass.
+
+Local verification:
+- 79/79 unit tests PASS (batch07b-interaction-editor-closeout)
+- 31/31 07A tests still PASS (regex fix applied)
+- 49/49 06B tests still PASS (no regression)
+- 18/18 06 tests still PASS (no regression)
+- 6/6 01 tests still PASS (no regression)
+- Total regression: 79 + 31 + 49 + 18 + 6 = 183 tests PASS
+- 5/5 Playwright E2E tests PASS (all with HARD ASSERT):
+  * kuis editor: 24.4s
+  * kuis Tambah: 25.3s
+  * sortir game editor: 24.6s
+  * diskusi editor: 24.2s
+  * refleksi editor: 24.7s
+- guard:no-legacy-runtime PASS (328 files, 0 legacy symbols)
+- guard:contract-sync PASS (block types match)
+- Agent Browser end-to-end verification:
+  * Sortir game: apply Game Sortir template → Game page → click
+    sortir-game block → "Edit Game Sortir" + "Tambah kategori" +
+    "Tambah item" + Item 1 with text + category dropdown (Kolom 1)
+  * Refleksi: apply PPKn template → Refleksi page → click refleksi
+    block → "Edit Refleksi" + "Tambah pertanyaan refleksi"
+  * Diskusi: → Diskusi page → click diskusi block → "Edit Diskusi"
+    + 2 question cards with label "A" + "Tambah pertanyaan diskusi"
+  * No page errors throughout
+- Screenshot: download/batch07b-diskusi-editor.png
+
+Stage Summary:
+- Files modified: 3 (inspector-field-registry.ts, WorkspaceInspector.tsx,
+  batch07-interaction-editor.test.ts — regex fix for 07A)
+- Files baru: 4 (SortItemsFieldEditor.tsx,
+  ReflectionQuestionsFieldEditor.tsx,
+  batch07b-interaction-editor-closeout.test.ts,
+  v7b-interaction-editor-closeout.spec.ts)
+- Tests added: 79 unit + 5 E2E = 84 new tests
+- No source code in save/export/load paths touched (Batch 01-05
+  integrity surfaces preserved)
+- No new dependencies added
+- P2-1 (E2E soft fallback) FIXED — all 5 E2E tests now hard-assert
+- P2-2 (sortir + diskusi/refleksi editor) CLOSED — all 3 editors
+  implemented + tested
+- Ready for senior audit

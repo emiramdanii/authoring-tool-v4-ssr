@@ -21,7 +21,8 @@ describe('BATCH-07: inspector-field-registry — questions field type', () => {
     );
 
   it('FieldType union includes "questions"', () => {
-    expect(src()).toMatch(/export type FieldType = [^;]*'questions'/);
+    // BATCH-07B: FieldType is now multi-line union; use [\s\S] to match across lines
+    expect(src()).toMatch(/export type FieldType =[\s\S]*?'questions'/);
   });
 
   it('defines QUESTIONS_FIELD constant with key "questions" and type "questions"', () => {

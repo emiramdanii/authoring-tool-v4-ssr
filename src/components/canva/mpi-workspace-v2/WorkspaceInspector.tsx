@@ -4,6 +4,8 @@ import React, { useMemo, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { getBlockFields, FALLBACK_FIELDS } from './inspector-field-registry';
 import { QuestionsFieldEditor, type KuisQuestion } from './QuestionsFieldEditor';
+import { SortItemsFieldEditor, type SortItemsValue } from './SortItemsFieldEditor';
+import { ReflectionQuestionsFieldEditor } from './ReflectionQuestionsFieldEditor';
 
 export function WorkspaceInspector() {
   const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
@@ -28,10 +30,27 @@ export function WorkspaceInspector() {
     updateSchemaBlock(selectedBlockId, { [key]: value } as never, { source: 'user' });
   }, [selectedBlockId, updateSchemaBlock]);
 
-  // BATCH-07: Specialized handler for questions field — value is an
+  // BATCH-07A: Specialized handler for questions field — value is an
   // array of KuisQuestion, not a string. Routes through the same
   // updateSchemaBlock to keep single write path.
   const handleQuestionsChange = useCallback((questions: KuisQuestion[]) => {
+    if (!selectedBlockId) return;
+    updateSchemaBlock(selectedBlockId, { questions } as never, { source: 'user' });
+  }, [selectedBlockId, updateSchemaBlock]);
+
+  // BATCH-07B: Handler for sortir-game sortItems field. The editor
+  // returns { pool, kolom } — we patch BOTH fields in one call by
+  // passing them as a single object (updateSchemaBlock merges the
+  // patch into the block).
+  const handleSortItemsChange = useCallback((value: SortItemsValue) => {
+    if (!selectedBlockId) return;
+    updateSchemaBlock(selectedBlockId, { pool: value.pool, kolom: value.kolom } as never, { source: 'user' });
+  }, [selectedBlockId, updateSchemaBlock]);
+
+  // BATCH-07B: Handler for diskusi/refleksi questions field. Same
+  // shape as kuis questions (array of objects) but different item
+  // structure. Routes through the same updateSchemaBlock.
+  const handleReflectionQuestionsChange = useCallback((questions: unknown[]) => {
     if (!selectedBlockId) return;
     updateSchemaBlock(selectedBlockId, { questions } as never, { source: 'user' });
   }, [selectedBlockId, updateSchemaBlock]);
@@ -60,7 +79,7 @@ export function WorkspaceInspector() {
             </div>
 
             {fieldConfig.fields.map((field) => {
-              // BATCH-07: questions field type renders inline editor
+              // BATCH-07A: questions field type renders kuis inline editor
               if (field.type === 'questions') {
                 return (
                   <div key={field.key}>
@@ -70,6 +89,57 @@ export function WorkspaceInspector() {
                     <QuestionsFieldEditor
                       value={blockFields[field.key]}
                       onChange={handleQuestionsChange}
+                    />
+                    {field.helpText && <p className="text-xs text-slate-400 mt-1.5">{field.helpText}</p>}
+                  </div>
+                );
+              }
+
+              // BATCH-07B: sortItems field type renders sortir-game editor
+              if (field.type === 'sortItems') {
+                return (
+                  <div key={field.key}>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+                      {field.label}
+                    </label>
+                    {/* Pass the entire block so editor can read pool + kolom */}
+                    <SortItemsFieldEditor
+                      value={selectedBlock}
+                      onChange={handleSortItemsChange}
+                    />
+                    {field.helpText && <p className="text-xs text-slate-400 mt-1.5">{field.helpText}</p>}
+                  </div>
+                );
+              }
+
+              // BATCH-07B: discussionQuestions field type (diskusi)
+              if (field.type === 'discussionQuestions') {
+                return (
+                  <div key={field.key}>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+                      {field.label}
+                    </label>
+                    <ReflectionQuestionsFieldEditor
+                      value={blockFields[field.key]}
+                      onChange={handleReflectionQuestionsChange}
+                      mode="discussion"
+                    />
+                    {field.helpText && <p className="text-xs text-slate-400 mt-1.5">{field.helpText}</p>}
+                  </div>
+                );
+              }
+
+              // BATCH-07B: reflectionQuestions field type (refleksi)
+              if (field.type === 'reflectionQuestions') {
+                return (
+                  <div key={field.key}>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+                      {field.label}
+                    </label>
+                    <ReflectionQuestionsFieldEditor
+                      value={blockFields[field.key]}
+                      onChange={handleReflectionQuestionsChange}
+                      mode="reflection"
                     />
                     {field.helpText && <p className="text-xs text-slate-400 mt-1.5">{field.helpText}</p>}
                   </div>

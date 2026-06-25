@@ -8,13 +8,27 @@
 // New block types just register their fields here — no need to
 // modify the Inspector component.
 //
-// BATCH-07 INTERACTION-EDITOR-01: Added 'questions' field type for
-// editing kuis block questions inline in the V5 inspector. Each
-// question has: q (text), opts[] (4 options), ans (index 0-3), ex
-// (explanation). The inspector renders an add/remove + per-question
-// editor UI for this field type.
+// BATCH-07A INTERACTION-EDITOR-01: Added 'questions' field type for
+// editing kuis block questions inline in the V5 inspector.
+//
+// BATCH-07B INTERACTION-EDITOR-CLOSEOUT: Added 3 more field types:
+//   - 'sortItems' for sortir-game (pool + kolom editor)
+//   - 'discussionQuestions' for diskusi (label/icon/teks/petunjuk)
+//   - 'reflectionQuestions' for refleksi (teks/petunjuk/warna/icon)
+// Each has its own editor component because the question shapes
+// differ between block types (kuis has opts/ans/ex, diskusi has
+// label/icon, refleksi has warna/icon).
 
-export type FieldType = 'text' | 'textarea' | 'icon' | 'color' | 'select' | 'questions';
+export type FieldType =
+  | 'text'
+  | 'textarea'
+  | 'icon'
+  | 'color'
+  | 'select'
+  | 'questions'               // BATCH-07A: kuis
+  | 'sortItems'               // BATCH-07B: sortir-game
+  | 'discussionQuestions'     // BATCH-07B: diskusi
+  | 'reflectionQuestions';    // BATCH-07B: refleksi
 
 export interface FieldDefinition {
   /** Schema field key (e.g., 'title', 'subtitle', 'content', 'icon') */
@@ -99,7 +113,7 @@ const HOOK_QUESTION_FIELD: FieldDefinition = {
   placeholder: 'Pertanyaan yang memicu rasa ingin tahu',
 };
 
-// BATCH-07: Questions field for kuis block.
+// BATCH-07A: Questions field for kuis block.
 // The inspector renders an inline editor: add/remove question,
 // edit q/opts[4]/ans/ex per question.
 const QUESTIONS_FIELD: FieldDefinition = {
@@ -107,6 +121,34 @@ const QUESTIONS_FIELD: FieldDefinition = {
   label: 'Pertanyaan Kuis',
   type: 'questions',
   helpText: 'Klik "Tambah Pertanyaan" untuk menambah. Setiap pertanyaan punya 4 opsi (A-D); pilih opsi yang benar.',
+};
+
+// BATCH-07B: Sort items field for sortir-game block.
+// Editor: kolom (categories) + pool (items with category assignment).
+// Each item is sorted to its category at runtime.
+const SORT_ITEMS_FIELD: FieldDefinition = {
+  key: 'sortItems',
+  label: 'Item & Kategori Sortir',
+  type: 'sortItems',
+  helpText: 'Tambah kategori (kolom) lalu tambah item. Setiap item punya teks dan kategori tujuan. Siswa menyortir item ke kategori yang benar.',
+};
+
+// BATCH-07B: Discussion questions field for diskusi block.
+// Editor: questions with label/icon/teks/petunjuk.
+const DISCUSSION_QUESTIONS_FIELD: FieldDefinition = {
+  key: 'questions',
+  label: 'Pertanyaan Diskusi',
+  type: 'discussionQuestions',
+  helpText: 'Setiap pertanyaan punya label (A/B/C), ikon, teks, dan petunjuk untuk siswa.',
+};
+
+// BATCH-07B: Reflection questions field for refleksi block.
+// Editor: questions with teks/petunjuk/warna/icon.
+const REFLECTION_QUESTIONS_FIELD: FieldDefinition = {
+  key: 'questions',
+  label: 'Pertanyaan Refleksi',
+  type: 'reflectionQuestions',
+  helpText: 'Setiap pertanyaan punya teks, petunjuk, warna (token: y/c/g/p/o/r), dan ikon.',
 };
 
 // ── Block registrations ───────────────────────────────────────
@@ -162,10 +204,10 @@ registerBlockFields({
 registerBlockFields({
   blockType: 'diskusi',
   displayName: 'Diskusi',
-  fields: [TITLE_FIELD, INTRO_FIELD],
+  fields: [TITLE_FIELD, INTRO_FIELD, DISCUSSION_QUESTIONS_FIELD],
 });
 
-// BATCH-07: Kuis block now has questions field (inline editor).
+// BATCH-07A: Kuis block now has questions field (inline editor).
 // Title still editable, plus full question bank inline.
 registerBlockFields({
   blockType: 'kuis',
@@ -173,16 +215,17 @@ registerBlockFields({
   fields: [TITLE_FIELD, QUESTIONS_FIELD],
 });
 
+// BATCH-07B: Sortir game block now has sortItems field (pool + kolom).
 registerBlockFields({
   blockType: 'sortir-game',
   displayName: 'Game Sortir',
-  fields: [TITLE_FIELD],
+  fields: [TITLE_FIELD, SORT_ITEMS_FIELD],
 });
 
 registerBlockFields({
   blockType: 'refleksi',
   displayName: 'Refleksi',
-  fields: [TITLE_FIELD, INTRO_FIELD],
+  fields: [TITLE_FIELD, INTRO_FIELD, REFLECTION_QUESTIONS_FIELD],
 });
 
 registerBlockFields({
