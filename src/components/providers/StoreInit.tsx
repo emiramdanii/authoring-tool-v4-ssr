@@ -23,6 +23,7 @@ import { useAuthoringStore } from '@/store/authoring-store';
 import { initCanvaStoreSubscriptions, cleanupCanvaStoreSubscriptions } from '@/store/canva/init';
 import { preloadSounds } from '@/lib/sounds';
 import { BlockCapabilityRegistry } from '@/core/schema/capability-registry';
+import { deriveProjectionFromPages } from '@/core/schema/schema-projection';
 import { useServiceWorker } from '@/hooks/use-service-worker';
 import { initAutoFlush } from '@/lib/offline-sync';
 
@@ -64,7 +65,6 @@ export function StoreInit() {
     // loaded pages yet. If guru opened the Info form during that window, they'd
     // see old metadata. Now: derive projection synchronously before subscriptions.
     try {
-      const { deriveProjectionFromPages } = require('@/core/schema/schema-projection');
       const pages = useCanvaStore.getState().pages;
       if (pages.length > 0) {
         const projection = deriveProjectionFromPages(pages);
