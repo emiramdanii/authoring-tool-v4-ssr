@@ -1,0 +1,27 @@
+{
+  "_fixture": {
+    "name": "silse-import-invalid-block-missing-type",
+    "description": "Reject: block has no 'type' field. Should FAIL with reason='block-missing-type'.",
+    "expectedResult": "invalid",
+    "expectedReason": "block-missing-type"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Test",
+    "mapel": "PPKn",
+    "kelas": "7"
+  },
+  "canva": {
+    "pages": [
+      {
+        "id": "p1",
+        "templateType": "cover",
+        "schema": {
+          "blocks": [
+            { "id": "b1", "title": "Block tanpa type" }
+          ]
+        }
+      }
+    ]
+  }
+}

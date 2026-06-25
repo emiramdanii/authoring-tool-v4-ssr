@@ -1,0 +1,22 @@
+{
+  "_fixture": {
+    "name": "silse-import-invalid-missing-meta",
+    "description": "Reject: no meta field. Should FAIL with reason='missing-meta'.",
+    "expectedResult": "invalid",
+    "expectedReason": "missing-meta"
+  },
+  "schemaVersion": 1,
+  "canva": {
+    "pages": [
+      {
+        "id": "p1",
+        "templateType": "cover",
+        "schema": {
+          "blocks": [
+            { "id": "b1", "type": "cover", "title": "Test" }
+          ]
+        }
+      }
+    ]
+  }
+}

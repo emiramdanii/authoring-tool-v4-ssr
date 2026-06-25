@@ -1,0 +1,31 @@
+{
+  "_fixture": {
+    "name": "silse-import-invalid-eval",
+    "description": "Reject: block.content contains eval() call. Should FAIL with reason='dangerous-eval'.",
+    "expectedResult": "invalid",
+    "expectedReason": "dangerous-eval"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Test",
+    "mapel": "PPKn",
+    "kelas": "7"
+  },
+  "canva": {
+    "pages": [
+      {
+        "id": "p1",
+        "templateType": "materi",
+        "schema": {
+          "blocks": [
+            {
+              "id": "b1",
+              "type": "def-box",
+              "content": "Script: eval('alert(1)') akan dieksekusi."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

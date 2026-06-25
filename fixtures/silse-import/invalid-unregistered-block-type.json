@@ -1,0 +1,27 @@
+{
+  "_fixture": {
+    "name": "silse-import-invalid-unregistered-block-type",
+    "description": "Reject: block.type='evil-custom-block' is not in registered block types. Should FAIL with reason='unregistered-block-type'.",
+    "expectedResult": "invalid",
+    "expectedReason": "unregistered-block-type"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Test",
+    "mapel": "PPKn",
+    "kelas": "7"
+  },
+  "canva": {
+    "pages": [
+      {
+        "id": "p1",
+        "templateType": "cover",
+        "schema": {
+          "blocks": [
+            { "id": "b1", "type": "evil-custom-block", "title": "Malicious" }
+          ]
+        }
+      }
+    ]
+  }
+}

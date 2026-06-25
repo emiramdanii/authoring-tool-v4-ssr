@@ -1,0 +1,31 @@
+{
+  "_fixture": {
+    "name": "silse-import-invalid-script-tag",
+    "description": "Reject: block.content contains <script>alert(1)</script>. Should FAIL with reason='dangerous-html-script'.",
+    "expectedResult": "invalid",
+    "expectedReason": "dangerous-html-script"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Test",
+    "mapel": "PPKn",
+    "kelas": "7"
+  },
+  "canva": {
+    "pages": [
+      {
+        "id": "p1",
+        "templateType": "materi",
+        "schema": {
+          "blocks": [
+            {
+              "id": "b1",
+              "type": "def-box",
+              "content": "Norma adalah <script>alert('XSS')</script> peraturan..."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "_fixture": {
+    "name": "silse-import-invalid-future-version",
+    "description": "Reject: schemaVersion=99 (future version). Should FAIL with reason='future-schemaversion'.",
+    "expectedResult": "invalid",
+    "expectedReason": "future-schemaversion"
+  },
+  "schemaVersion": 99,
+  "meta": {
+    "judulPertemuan": "Test",
+    "mapel": "PPKn",
+    "kelas": "7"
+  },
+  "canva": {
+    "pages": [
+      {
+        "id": "p1",
+        "templateType": "cover",
+        "schema": {
+          "blocks": [
+            { "id": "b1", "type": "cover", "title": "Test" }
+          ]
+        }
+      }
+    ]
+  }
+}

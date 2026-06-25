@@ -1,0 +1,32 @@
+{
+  "_fixture": {
+    "name": "silse-import-invalid-event-handler",
+    "description": "Reject: block.content contains onerror= event handler. Should FAIL with reason='dangerous-event-handler'.",
+    "expectedResult": "invalid",
+    "expectedReason": "dangerous-event-handler"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Test",
+    "mapel": "PPKn",
+    "kelas": "7"
+  },
+  "canva": {
+    "pages": [
+      {
+        "id": "p1",
+        "templateType": "materi",
+        "schema": {
+          "blocks": [
+            {
+              "id": "b1",
+              "type": "materi-blok",
+              "title": "Test",
+              "content": "<img src=x onerror=alert(1)>"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "_fixture": {
+    "name": "silse-import-invalid-javascript-url",
+    "description": "Reject: block.href contains javascript: URL. Should FAIL with reason='dangerous-javascript-url'.",
+    "expectedResult": "invalid",
+    "expectedReason": "dangerous-javascript-url"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Test",
+    "mapel": "PPKn",
+    "kelas": "7"
+  },
+  "canva": {
+    "pages": [
+      {
+        "id": "p1",
+        "templateType": "materi",
+        "schema": {
+          "blocks": [
+            {
+              "id": "b1",
+              "type": "materi-blok",
+              "title": "Test",
+              "content": "Klik <a href='javascript:alert(1)'>di sini</a> untuk info."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

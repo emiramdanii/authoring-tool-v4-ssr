@@ -1,0 +1,17 @@
+{
+  "_fixture": {
+    "name": "silse-import-invalid-empty-pages",
+    "description": "Reject: canva.pages is empty array. Should FAIL with reason='empty-pages'.",
+    "expectedResult": "invalid",
+    "expectedReason": "empty-pages"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Test",
+    "mapel": "PPKn",
+    "kelas": "7"
+  },
+  "canva": {
+    "pages": []
+  }
+}

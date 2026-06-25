@@ -1,0 +1,94 @@
+{
+  "_fixture": {
+    "name": "silse-import-valid-multi-page",
+    "description": "Valid SILSE import with 3 pages (cover + kuis + refleksi) and multiple block types. Should PASS validation. Tests that all registered block types pass the registry check.",
+    "expectedResult": "valid"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Pertemuan Lengkap: Norma dalam Masyarakat",
+    "mapel": "PPKn",
+    "kelas": "8"
+  },
+  "canva": {
+    "ratioId": "16:9",
+    "currentPageIndex": 0,
+    "pages": [
+      {
+        "id": "page-cover-001",
+        "label": "Cover",
+        "templateType": "cover",
+        "bgColor": "#0f172a",
+        "overlay": 0,
+        "elements": [],
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-cover-001",
+          "blocks": [
+            {
+              "id": "block-cover-001",
+              "type": "cover",
+              "title": "Norma dalam Masyarakat",
+              "subtitle": "PPKn Kelas 8"
+            }
+          ]
+        }
+      },
+      {
+        "id": "page-kuis-001",
+        "label": "Kuis",
+        "templateType": "kuis",
+        "bgColor": "#1e293b",
+        "overlay": 0,
+        "elements": [],
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-kuis-001",
+          "blocks": [
+            {
+              "id": "block-kuis-001",
+              "type": "kuis",
+              "title": "Kuis Norma",
+              "questions": [
+                {
+                  "q": "Norma yang sanksinya berupa dosa disebut norma...",
+                  "opts": ["Norma Agama", "Norma Kesusilaan", "Norma Kesopanan", "Norma Hukum"],
+                  "ans": 0,
+                  "ex": "Norma agama berasal dari Tuhan YME."
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "page-refleksi-001",
+        "label": "Refleksi",
+        "templateType": "refleksi",
+        "bgColor": "#1e293b",
+        "overlay": 0,
+        "elements": [],
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-refleksi-001",
+          "blocks": [
+            {
+              "id": "block-refleksi-001",
+              "type": "refleksi",
+              "title": "Refleksi Pembelajaran",
+              "intro": "Renungkan apa yang telah dipelajari",
+              "questions": [
+                {
+                  "teks": "Hal baru apa yang kamu pelajari hari ini?",
+                  "petunjuk": "Tuliskan minimal 2 hal baru.",
+                  "warna": "c",
+                  "icon": "🪞"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

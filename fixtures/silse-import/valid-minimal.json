@@ -1,0 +1,79 @@
+{
+  "_fixture": {
+    "name": "silse-import-valid-minimal",
+    "description": "Minimal valid SILSE import JSON. Has schemaVersion=1, meta with all required fields, canva with 1 page containing 1 cover block. Should PASS validation.",
+    "expectedResult": "valid"
+  },
+  "schemaVersion": 1,
+  "meta": {
+    "judulPertemuan": "Pertemuan 1: Hakikat Norma",
+    "mapel": "PPKn",
+    "kelas": "7",
+    "namaGuru": "Budi Santoso, S.Pd.",
+    "namaSekolah": "SMP Negeri 1 Indonesia",
+    "semester": "1 (Ganjil)",
+    "tahunAjaran": "2024/2025"
+  },
+  "canva": {
+    "ratioId": "16:9",
+    "currentPageIndex": 0,
+    "pages": [
+      {
+        "id": "page-cover-001",
+        "label": "Cover",
+        "templateType": "cover",
+        "bgColor": "#0f172a",
+        "overlay": 0,
+        "elements": [],
+        "navConfig": {
+          "showNavbar": true,
+          "showPrevNext": true,
+          "showScore": true,
+          "showProgress": true,
+          "navbarStyle": "colorful"
+        },
+        "templateData": { "schemaThemeId": "modern-interactive" },
+        "pageMode": "schema",
+        "schema": {
+          "id": "schema-cover-001",
+          "version": 2,
+          "templateType": "cover",
+          "themeId": "modern-interactive",
+          "sceneType": "intro",
+          "background": { "type": "gradient" },
+          "blocks": [
+            {
+              "id": "block-cover-001",
+              "type": "cover",
+              "icon": "📚",
+              "title": "Hakikat Norma",
+              "subtitle": "PPKn Kelas 7 — Pertemuan 1",
+              "badges": [
+                { "id": "b1", "label": "Budi Santoso, S.Pd.", "icon": "👨‍🏫" },
+                { "id": "b2", "label": "SMP Negeri 1", "icon": "🏫" }
+              ],
+              "meta": { "kelas": "7" },
+              "cta": { "label": "Mulai", "action": "next" },
+              "layout": { "position": "absolute", "x": 0, "y": 0, "width": "auto", "height": "auto" },
+              "variant": "A"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "kuis": [],
+  "modules": [],
+  "games": [],
+  "skenario": [],
+  "materi": { "blok": [] },
+  "cp": {},
+  "tp": [],
+  "atp": { "namaBab": "", "jumlahPertemuan": 0, "pertemuan": [] },
+  "alur": [],
+  "petunjuk": { "title": "", "intro": "", "langkah": [] },
+  "diskusi": { "title": "", "intro": "", "pertanyaan": [] },
+  "refleksi": { "title": "", "intro": "", "pertanyaan": [] },
+  "penutup": { "title": "", "subjudul": "", "preview": [] },
+  "suara": { "navigasi": true, "benar": true, "salah": true, "selesai": true, "klik": true, "skor": true }
+}

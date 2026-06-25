@@ -4157,3 +4157,134 @@ Stage Summary:
 - P2-2 (sortir + diskusi/refleksi editor) CLOSED — all 3 editors
   implemented + tested
 - Ready for senior audit
+
+---
+Task ID: BATCH-08
+Agent: Super Z (main)
+Task: SILSE Batch 08 — IMPORT-JSON-VALIDATOR-01
+
+Work Log:
+- Senior audit Batch 07 CLOSED. Next: Batch 08 with scope:
+  1. Typed SilseImportJson
+  2. Validator 6 layers: version/metadata/pages/block-types/no-html/no-js
+  3. Sample valid JSON
+  4. Sample invalid JSON
+  5. Unit tests for valid/reject cases
+  Batasan: no import UI, no full adapter, no AI API, no renderer/export/
+  save/load changes, no style engine.
+- Riset existing infrastructure:
+  * CURRENT_PROJECT_SCHEMA_VERSION = 1 (src/core/schema/project-schema-versioning.ts)
+  * REGISTERED_BLOCK_TYPES set with 40+ types (src/core/schema/validation.ts)
+  * getRegisteredBlockTypes() exported for reuse
+  * sanitizeHtmlForRender/sanitizeIconOrEmoji/sanitizeUrl existing sanitizers
+- ENVIRONMENT RESET detected: local workspace reset to older state (HEAD
+  at 08fa893 UUID commit). All batch test files (01-07B) gone locally.
+  Remote origin/main intact at 27ab0ce (Batch 07B). Fix: git stash + git
+  reset --hard origin/main. All batch files restored. Batch 08 files
+  (validator + tests + fixtures) survived as untracked.
+- Created src/lib/silse-import-validator.ts (372 lines):
+  * SilseImportJson typed interface (schemaVersion, meta, canva.pages,
+    optional authoring fields)
+  * SilseImportPage + SilseImportBlock interfaces
+  * SilseImportRejectReason union (25 reasons covering all 6 layers)
+  * SilseImportValidationResult interface (valid, reason, message,
+    path, document, errors[])
+  * 9 DANGEROUS_PATTERNS with regex + reason + label:
+    - <script> tag (any case)
+    - </script> close tag
+    - <style> tag
+    - on*= event handlers (onclick=, onerror=, etc.)
+    - javascript: URL scheme
+    - eval() call
+    - new Function() constructor
+    - setTimeout("string") / setInterval("string")
+  * scanStringForDangerousContent: scans single string for patterns
+  * scanTreeForDangerousContent: recursively walks object/array tree,
+    stops at first match, returns path + reason + label
+  * validateSilseImport(raw): main validator, 6 layers:
+    Layer 0: must be plain object (not-object reject)
+    Layer 1: schemaVersion (future-version/invalid-schemaversion reject;
+             missing/null/0 accepted as legacy)
+    Layer 2: meta with required fields (missing-meta, missing-meta-judul/
+             mapel/kelas reject)
+    Layer 3: canva + pages (missing-canva, missing-pages, empty-pages,
+             invalid-page-shape, page-missing-schema, page-missing-blocks
+             reject)
+    Layer 4: block type registry check (block-missing-type, block-missing-id,
+             unregistered-block-type reject)
+    Layer 5+6: dangerous content scan (all 9 patterns)
+  * validateSilseImportJsonString: convenience wrapper (JSON.parse +
+    validate, invalid-json reject on parse failure)
+  * __TEST__ export: DANGEROUS_PATTERNS, scan functions, helpers
+  * Fail-safe: when in doubt REJECT. Multi-error reporting (all errors
+    collected, first one is result.reason)
+  * Does NOT mutate input document (security)
+- Created 11 fixture files in fixtures/silse-import/:
+  * valid-minimal.json: single cover page, full meta
+  * valid-multi-page.json: 3 pages (cover + kuis + refleksi)
+  * invalid-future-version.json: schemaVersion=99
+  * invalid-missing-meta.json: no meta field
+  * invalid-empty-pages.json: canva.pages=[]
+  * invalid-unregistered-block-type.json: block.type='evil-custom-block'
+  * invalid-script-tag.json: <script>alert('XSS')</script> in content
+  * invalid-event-handler.json: <img onerror=alert(1)> in content
+  * invalid-javascript-url.json: javascript:alert(1) in href
+  * invalid-eval.json: eval('alert(1)') in content
+  * invalid-block-missing-type.json: block without type field
+  Each fixture has _fixture metadata (name, description, expectedResult,
+  expectedReason) — stripped before validation by test helper.
+- Created SILSE_IMPORT_JSON_CONTRACT.md (was missing from repo):
+  * Documents typed shape, 6 validation layers, reject reasons
+  * Usage examples
+  * Sample fixtures list
+  * Runtime status table
+  * Future work (import UI, per-type block content validation, etc.)
+- Created src/__tests__/batch08-import-json-validator.test.ts (70 tests):
+  * Section A: source audit (11 tests) — exports correct API, imports
+    CURRENT_PROJECT_SCHEMA_VERSION + getRegisteredBlockTypes, all 18+
+    reject reasons present
+  * Section B: valid fixtures (4 tests) — valid-minimal, valid-multi-page,
+    empty optional fields, legacy (no schemaVersion)
+  * Section C: invalid fixtures (9 tests) — one per reject reason,
+    verify correct reason returned
+  * Section D: edge cases (15 tests) — non-object inputs (string/array/
+    null/number), NaN/negative/string schemaVersion, boundary version
+    (=CURRENT accepts), whitespace judulPertemuan, empty kelas,
+    non-array pages, page without schema, blocks non-array, block
+    without id, page not object
+  * Section E: dangerous patterns (16 tests) — all 9 patterns detected,
+    safe content NOT flagged (plain text, allowed HTML <p>/<b>/<em>,
+    "evaluation" word, "online" word)
+  * Section F: recursive scan (5 tests) — nested object, array element,
+    top-level meta field, safe tree returns null, stops at first match
+  * Section G: JSON string validator (5 tests) — malformed JSON, valid
+    parse+validate, dangerous JSON, empty string, number input
+  * Section H: fixture end-to-end (2 tests) — load raw string, strip
+    _fixture, validate
+  * Section I: multi-error reporting (2 tests) — multiple issues all
+    reported, reason = first error
+  * Section J: security (1 test) — validator does NOT mutate input
+
+Local verification:
+- 70/70 unit tests PASS (batch08-import-json-validator)
+- 31/31 07A tests still PASS (no regression)
+- 79/79 07B tests still PASS (no regression)
+- 6/6 01 tests still PASS (no regression)
+- Total: 186 tests PASS
+- guard:no-legacy-runtime PASS (328 files, 0 legacy symbols)
+- guard:contract-sync PASS (block types match)
+- Agent Browser: app still works (Dashboard V5 renders, workflow
+  guidance nav visible, no crash from validator module existing)
+- No source code in save/export/load paths touched (validator is a
+  NEW module, doesn't modify any existing surface)
+
+Stage Summary:
+- Files modified: 1 (SILSE_IMPORT_JSON_CONTRACT.md — was missing, now created)
+- Files baru: 13 (silse-import-validator.ts,
+  batch08-import-json-validator.test.ts, 11 fixture JSONs)
+- Tests added: 70 unit tests
+- No new dependencies added
+- Validator is SECURITY GATE between untrusted JSON and runtime store
+- Fail-safe: REJECT when in doubt (false negative recoverable, false
+  positive = security incident)
+- Ready for senior audit
