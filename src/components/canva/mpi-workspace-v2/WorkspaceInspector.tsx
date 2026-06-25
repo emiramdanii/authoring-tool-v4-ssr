@@ -3,6 +3,7 @@
 import React, { useMemo, useCallback } from 'react';
 import { useCanvaStore } from '@/store/canva-store';
 import { getBlockFields, FALLBACK_FIELDS } from './inspector-field-registry';
+import { QuestionsFieldEditor, type KuisQuestion } from './QuestionsFieldEditor';
 
 export function WorkspaceInspector() {
   const selectedBlockId = useCanvaStore((s) => s.selectedBlockId);
@@ -25,6 +26,14 @@ export function WorkspaceInspector() {
   const handleFieldChange = useCallback((key: string, value: string) => {
     if (!selectedBlockId) return;
     updateSchemaBlock(selectedBlockId, { [key]: value } as never, { source: 'user' });
+  }, [selectedBlockId, updateSchemaBlock]);
+
+  // BATCH-07: Specialized handler for questions field — value is an
+  // array of KuisQuestion, not a string. Routes through the same
+  // updateSchemaBlock to keep single write path.
+  const handleQuestionsChange = useCallback((questions: KuisQuestion[]) => {
+    if (!selectedBlockId) return;
+    updateSchemaBlock(selectedBlockId, { questions } as never, { source: 'user' });
   }, [selectedBlockId, updateSchemaBlock]);
 
   const blockFields = (selectedBlock as unknown as Record<string, unknown>) || {};
@@ -51,6 +60,22 @@ export function WorkspaceInspector() {
             </div>
 
             {fieldConfig.fields.map((field) => {
+              // BATCH-07: questions field type renders inline editor
+              if (field.type === 'questions') {
+                return (
+                  <div key={field.key}>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+                      {field.label}
+                    </label>
+                    <QuestionsFieldEditor
+                      value={blockFields[field.key]}
+                      onChange={handleQuestionsChange}
+                    />
+                    {field.helpText && <p className="text-xs text-slate-400 mt-1.5">{field.helpText}</p>}
+                  </div>
+                );
+              }
+
               const value = String(blockFields[field.key] ?? '');
               if (field.type === 'textarea') {
                 return (

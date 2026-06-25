@@ -7,8 +7,14 @@
 //
 // New block types just register their fields here — no need to
 // modify the Inspector component.
+//
+// BATCH-07 INTERACTION-EDITOR-01: Added 'questions' field type for
+// editing kuis block questions inline in the V5 inspector. Each
+// question has: q (text), opts[] (4 options), ans (index 0-3), ex
+// (explanation). The inspector renders an add/remove + per-question
+// editor UI for this field type.
 
-export type FieldType = 'text' | 'textarea' | 'icon' | 'color' | 'select';
+export type FieldType = 'text' | 'textarea' | 'icon' | 'color' | 'select' | 'questions';
 
 export interface FieldDefinition {
   /** Schema field key (e.g., 'title', 'subtitle', 'content', 'icon') */
@@ -93,6 +99,16 @@ const HOOK_QUESTION_FIELD: FieldDefinition = {
   placeholder: 'Pertanyaan yang memicu rasa ingin tahu',
 };
 
+// BATCH-07: Questions field for kuis block.
+// The inspector renders an inline editor: add/remove question,
+// edit q/opts[4]/ans/ex per question.
+const QUESTIONS_FIELD: FieldDefinition = {
+  key: 'questions',
+  label: 'Pertanyaan Kuis',
+  type: 'questions',
+  helpText: 'Klik "Tambah Pertanyaan" untuk menambah. Setiap pertanyaan punya 4 opsi (A-D); pilih opsi yang benar.',
+};
+
 // ── Block registrations ───────────────────────────────────────
 
 registerBlockFields({
@@ -149,10 +165,12 @@ registerBlockFields({
   fields: [TITLE_FIELD, INTRO_FIELD],
 });
 
+// BATCH-07: Kuis block now has questions field (inline editor).
+// Title still editable, plus full question bank inline.
 registerBlockFields({
   blockType: 'kuis',
   displayName: 'Kuis',
-  fields: [TITLE_FIELD],
+  fields: [TITLE_FIELD, QUESTIONS_FIELD],
 });
 
 registerBlockFields({
