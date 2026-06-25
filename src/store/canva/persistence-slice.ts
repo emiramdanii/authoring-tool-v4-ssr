@@ -86,7 +86,7 @@ function stripRuntimeFieldsFromPages(pages: CanvaPage[]): CanvaPage[] {
 
 export const createPersistenceSlice: StateCreator<CanvaState, [], [], PersistenceSlice> = (set, get) => ({
   // ── Persistence ──────────────────────────────────────────────
-  saveToStorage: () => {
+  saveToStorage: (): boolean => {
     try {
       const { pages, ratioId } = get();
 
@@ -136,6 +136,8 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
       set({ _lastSavedAt: Date.now(), _pagesHashAtSave: computePagesHash(cleanPages) });
       // Sprint 9.0B: Clear autosave telemetry on successful save
       clearAutosaveTelemetry();
+      // BATCH-01: Return true for save honesty — executeDurableSave checks this.
+      return true;
     } catch (err) {
       // Storage full, unavailable, or stack overflow from corrupted data
       logger.warn('CanvaStore', 'Failed to save to localStorage: ' + String(err));
@@ -151,6 +153,8 @@ export const createPersistenceSlice: StateCreator<CanvaState, [], [], Persistenc
         try { localStorage.removeItem(CANVA_STORAGE_KEY); } catch {}
       }
       set({ _saveStatus: 'error' });
+      // BATCH-01: Return false for save honesty.
+      return false;
     }
   },
 

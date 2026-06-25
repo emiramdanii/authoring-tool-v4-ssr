@@ -218,8 +218,23 @@ export async function executeDurableSave(
     useCanvaStore.setState({ _saveStatus: 'saving' });
 
     // ── Step 2: Always save to localStorage as a backup ──
-    useCanvaStore.getState().saveToStorage();
-    useAuthoringStore.getState().saveToStorage();
+    // BATCH-01: Check return values for save honesty.
+    // If localStorage save fails AND there's no DB fallback, the save
+    // is NOT successful. Guru must not see "Tersimpan" if storage failed.
+    const canvaSaveOk = useCanvaStore.getState().saveToStorage();
+    const authSaveOk = useAuthoringStore.getState().saveToStorage();
+
+    // BATCH-01: If localStorage failed and no DB save will happen,
+    // mark as error and abort — do NOT proceed to saveSucceeded().
+    const hasDbFallback = saveToken.projectId && dbSaveFn && !(typeof navigator !== 'undefined' && !navigator.onLine);
+    if (!canvaSaveOk && !authSaveOk && !hasDbFallback) {
+      // Both localStorage saves failed, no DB fallback available.
+      // Mark as error and abort — guru must know the save failed.
+      useCanvaStore.setState({ _saveStatus: 'error' });
+      useDirtyStore.getState().saveFailed('localStorage save failed (no DB fallback)');
+      toast.error('Gagal menyimpan. Penyimpanan lokal penuh atau bermasalah.');
+      return false;
+    }
 
     // ── Step 3: DB save (durable) ──
     // P0-3 Fix: No rate-limit. If we need to save, we save.

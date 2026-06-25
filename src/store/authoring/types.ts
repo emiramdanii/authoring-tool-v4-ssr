@@ -390,7 +390,7 @@ export interface AuthoringState {
   // System actions
   markDirty: () => void;
   markClean: () => void;
-  saveToStorage: () => void;
+  saveToStorage: () => boolean;
   loadFromStorage: () => boolean;
   setTeacherMode: (mode: 'lengkap' | 'sederhana') => void;
 

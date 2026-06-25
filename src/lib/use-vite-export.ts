@@ -155,9 +155,12 @@ export function useViteExport() {
 
     try {
       await exportHTML();
+      // BATCH-01: Success — toast.success already shown by exportHTML.
+      // Clear the loading toast.
+      toast.dismiss('export-primary');
     } catch (err: unknown) {
-      // Path A failed — do NOT silently fall back to degraded export.
-      // Show clear error so the user knows the export is not available.
+      // BATCH-01: Path A failed — do NOT silently fall back.
+      // Show clear error so the user knows the export failed.
       const errMsg = err instanceof Error ? err.message : String(err);
       logger.error('Export', 'Vite SSR export gagal: ' + errMsg);
 
@@ -171,6 +174,10 @@ export function useViteExport() {
         : `Export gagal: ${errMsg}. Hubungi admin jika masalah berlanjut.`;
 
       toast.error(userMessage, { id: 'export-primary', duration: 8000 });
+
+      // BATCH-01: Re-throw so callers (ExportPanelV5, useExportActions) know
+      // the export failed and do NOT proceed to success path.
+      throw err;
     }
   }, [exportHTML, pages]);
 

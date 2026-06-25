@@ -351,7 +351,7 @@ export interface CanvaState {
   loadGoldenPreset: (presetId: string) => Promise<void>;
 
   // ── Actions: Persistence ─────────────────────────────────────
-  saveToStorage: () => void;
+  saveToStorage: () => boolean;
   loadFromStorage: () => boolean;
   loadFromDB: (data: DBProjectData) => boolean;
   /** Factory reset — clear all localStorage and reset to default state.

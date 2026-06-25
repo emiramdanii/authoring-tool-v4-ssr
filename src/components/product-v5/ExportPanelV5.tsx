@@ -22,8 +22,15 @@ export function ExportPanelV5({ onBack }: ExportPanelV5Props) {
   const [lastExportAt, setLastExportAt] = useState<string | null>(null);
 
   const handleExport = useCallback(async () => {
-    await exportHtml();
-    setLastExportAt(new Date().toLocaleTimeString('id-ID'));
+    try {
+      await exportHtml();
+      // BATCH-01: Only set lastExportAt if exportHtml succeeded (no throw).
+      setLastExportAt(new Date().toLocaleTimeString('id-ID'));
+    } catch {
+      // BATCH-01: Export failed — do NOT set lastExportAt.
+      // Error toast is already shown by exportHtml/exportWithFallback.
+      // lastExportAt stays as previous value (or null if never succeeded).
+    }
   }, [exportHtml]);
 
   return (

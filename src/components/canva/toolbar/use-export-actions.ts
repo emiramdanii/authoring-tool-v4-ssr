@@ -29,6 +29,9 @@ export function useExportActions() {
     try {
       await exportWithFallback();
       window.dispatchEvent(new CustomEvent('silse-export-success'));
+    } catch {
+      // BATCH-01: Export failed — exportWithFallback already shows error toast.
+      // Do NOT dispatch success event. isExporting reset in finally.
     } finally {
       setIsExporting(false);
     }
