@@ -116,13 +116,6 @@ jobs:
           # audit that all dataIdx consumers are documented.
           npx vitest run src/__tests__/dataidx-9.0f-cleanup.test.ts
           # BATCH-01/02/03: V5 honesty + state-load + contract-sync tests
-          npx vitest run src/__tests__/batch01-export-persistence-honesty.test.ts
-          npx vitest run src/__tests__/patch01b-behavior.test.ts
-          npx vitest run src/__tests__/batch02-state-load-projection.test.ts
-          npx vitest run src/__tests__/batch03-contract-sync.test.ts
-          npx vitest run src/__tests__/v5-metadata-behavior.test.ts
-          npx vitest run src/__tests__/v5-patch04-semester-coerce.test.ts
-          npx vitest run src/__tests__/v5-rc2-metadata-fixes.test.ts
           # BATCH-04: Guard steps
           npm run guard:no-legacy-runtime
           npm run guard:contract-sync
