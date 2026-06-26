@@ -105,7 +105,9 @@ import { resolve } from 'node:path';
 
 describe('V3-PHASE-1B — CanvaBuilder route lock source contract', () => {
   it('CanvaBuilder.tsx gates V2 on appMode alone (no teacherMode in route condition)', () => {
-    const path = resolve(process.cwd(), 'src/components/canva/CanvaBuilder.tsx');
+    // BATCH-12-02: CanvaBuilder.tsx moved to src/legacy-disabled/. This test
+    // is NOT in CI (not in ci.yml). Updated path for local-run consistency.
+    const path = resolve(process.cwd(), 'src/legacy-disabled/components/canva/CanvaBuilder.tsx');
     const src = readFileSync(path, 'utf8');
 
     // The Phase-1B gate must be present.

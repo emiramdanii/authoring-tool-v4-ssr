@@ -1,0 +1,214 @@
+// @ts-nocheck — BATCH-12: quarantined to src/legacy-disabled/, not type-checked
+'use client';
+
+// ═══════════════════════════════════════════════════════════════
+// BLOCK PROPERTIES PANEL — Schema-driven dynamic property editor
+// ═══════════════════════════════════════════════════════════════
+// ARCHITECTURE (v2 — Schema-Driven Visual Editing Engine):
+//
+//   1. Block is selected → store.selectedBlockId/Type set
+//   2. getBlockPropertySchema(blockType) → list of editable PropertyFields
+//   3. Dynamic editor auto-generates form from PropertyField[]
+//   4. Changes call updateSchemaBlock() → deep patch merge → rerender
+//
+// FASE 2: Single source of truth — property schema comes from
+// SCENE_REGISTRY via getBlockPropertySchema(). No more dual source.
+//
+// Dot-notation support: Property schemas can use keys like 'cta.label'
+// which read from block.cta.label and write via deep merge preserving
+// sibling properties.
+//
+// Key principles:
+//   - Schema is SINGLE SOURCE OF TRUTH (editor reads from schema store)
+//   - Deep patch merge (not full block replace)
+//   - Type-aware editing (each block shows only relevant fields)
+//   - Capability-based (capabilities control what's editable)
+
+import { useCanvaStore } from '@/store/canva-store';
+import { getBlockDefinition, getBlockCapabilities, getBlockPropertySchema } from '@/core/registry/SceneRegistry';
+import { getBlockCapabilities as getDerivedCapabilities, isBlockTypeInteractive, isBlockTypeCompressionCapable, isBlockTypeSplittable, isBlockTypeMeasurable, isBlockTypeRendererHandlesCompression, type BlockCapabilityInfo } from '@/core/schema/capability-registry';
+// All icons migrated to Material Symbols Outlined
+import { Button } from '@/components/ui/button';
+import { useSelectedBlock } from './use-selected-block';
+import { SchemaDrivenEditor } from './SchemaDrivenEditor';
+import { CapabilityBadge } from './CapabilityBadge';
+import { BlockVariantSwitcher } from './BlockVariantSwitcher';
+import { teacherTerm } from '@/core/i18n/teacher-terminology';
+import { applyGuidedSchemaPatch } from '@/core/schema/guided-patch';
+
+export default function BlockPropertiesPanel() {
+  const selectedBlockId = useCanvaStore(s => s.selectedBlockId);
+  const selectedBlockType = useCanvaStore(s => s.selectedBlockType);
+  const selectBlock = useCanvaStore(s => s.selectBlock);
+  const currentPageId = useCanvaStore(s => {
+    const page = s.pages[s.currentPageIndex];
+    return page?.id ?? '';
+  });
+  const editingBlockId = useCanvaStore(s => s.editingBlockId);
+  const stopEditing = useCanvaStore(s => s.stopEditing);
+  const teacherMode = useCanvaStore(s => s.teacherMode);
+  const { block } = useSelectedBlock();
+
+  if (!selectedBlockId || !selectedBlockType) return null;
+
+  const definition = getBlockDefinition(selectedBlockType);
+  const capabilities = getBlockCapabilities(selectedBlockType);
+  // FASE 2: Single source of truth — property schema comes from SCENE_REGISTRY.
+  // Fallback to a minimal generic schema for unregistered block types.
+  const propertySchema = getBlockPropertySchema(selectedBlockType) ?? {
+    blockType: selectedBlockType,
+    properties: [{ key: 'variant', type: 'variant' as const, label: 'Varian' }],
+    redirectToAuthoring: true,
+    redirectNote: `Block type "${selectedBlockType}" — editor belum tersedia`,
+  };
+
+  // If this block type is not editable, show minimal info
+  if (!capabilities.editable) {
+    return (
+      <div className="border-b border-silse-outline-variant/20">
+        <div className="px-3 py-2 flex items-center gap-1.5 bg-silse-primary-container/5">
+          <span className="material-symbols-outlined text-silse-primary" style={ { fontSize: '12px' } }>settings</span>
+          <span className="text-[10px] font-bold text-silse-on-primary-container uppercase tracking-widest">{teacherTerm('Block', teacherMode)}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => selectBlock(null)}
+            className="ml-auto h-5 w-5 text-silse-on-surface-variant hover:text-silse-on-surface-variant"
+          >
+            <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>close</span>
+          </Button>
+        </div>
+        <div className="px-3 pb-3 pt-2">
+          <div className="text-[9px] text-silse-on-surface-variant italic">Block ini tidak dapat diedit</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-b border-silse-outline-variant/20" data-testid="block-properties-panel">
+      {/* Header */}
+      <div className="px-3 py-2 flex items-center gap-1.5 bg-silse-primary-container/5">
+        <span className="material-symbols-outlined text-silse-primary" style={ { fontSize: '12px' } }>settings</span>
+        <span className="text-[10px] font-bold text-silse-on-primary-container uppercase tracking-widest">{teacherMode ? 'Properti Konten' : 'Block Properti'}</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => { selectBlock(null); stopEditing(); }}
+          className="ml-auto h-5 w-5 text-silse-on-surface-variant hover:text-silse-on-surface-variant"
+        >
+          <span className="material-symbols-outlined" style={ { fontSize: '10px' } }>close</span>
+        </Button>
+      </div>
+
+      <div className="px-3 pb-3 pt-2 space-y-2">
+        {/* Block type badge */}
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{definition?.icon || '📦'}</span>
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px] font-bold text-silse-on-surface truncate">{teacherTerm(definition?.name || selectedBlockType, teacherMode)}</div>
+            <div className="text-[9px] text-silse-on-surface-variant">{teacherMode ? (definition?.category || '') : `${definition?.category || 'unknown'} · ${selectedBlockType}`}</div>
+          </div>
+          {editingBlockId === selectedBlockId && (
+            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-silse-primary-container/20 text-silse-primary">
+              EDITING
+            </span>
+          )}
+        </div>
+
+        {/* Block Variant Switcher */}
+        {block && <BlockVariantSwitcher block={block} />}
+
+        {/* Block ID — hidden in teacher mode (not meaningful for teachers) */}
+        {!teacherMode && (
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-silse-on-surface-variant w-14">ID</span>
+            <span className="text-[10px] text-silse-on-surface-variant font-mono truncate flex-1">{selectedBlockId}</span>
+          </div>
+        )}
+
+        {/* ═══ SCHEMA-DRIVEN DYNAMIC EDITOR ═════════════════ */}
+        {block && (
+          <SchemaDrivenEditor
+            block={block}
+            schema={propertySchema}
+            onUpdate={(updates) => applyGuidedSchemaPatch({
+              pageId: currentPageId,
+              blockId: selectedBlockId!,
+              patch: updates,
+              overflowPolicy: 'warn',
+              source: 'user',
+            })}
+          />
+        )}
+
+        {/* Capabilities — hidden in teacher mode, shown in advanced mode */}
+        {!teacherMode && definition && (
+          <details className="mt-2">
+            <summary className="text-[9px] font-bold text-silse-on-surface-variant uppercase tracking-wider cursor-pointer hover:text-silse-on-surface-variant">
+              Kemampuan Editor
+            </summary>
+            <div className="grid grid-cols-2 gap-1 mt-1">
+              <CapabilityBadge label="Dapat Diedit" value={definition.capabilities.editable} />
+              <CapabilityBadge label="Dapat Diubah Ukuran" value={definition.capabilities.resizable} />
+              <CapabilityBadge label="Dapat Dipindah" value={definition.capabilities.movable} />
+              <CapabilityBadge label="Interaktif" value={definition.capabilities.interactive} />
+              <CapabilityBadge label="Auto-gen" value={definition.capabilities.autoGeneratable} />
+              <CapabilityBadge label="Komposit" value={definition.capabilities.composite} />
+            </div>
+          </details>
+        )}
+
+        {/* Derived Capabilities — hidden in teacher mode */}
+        {!teacherMode && (
+          <details className="mt-1">
+            <summary className="text-[9px] font-bold text-silse-on-surface-variant uppercase tracking-wider cursor-pointer hover:text-silse-on-surface-variant">
+              Kemampuan Layout
+            </summary>
+            <div className="grid grid-cols-2 gap-1 mt-1">
+              <CapabilityBadge label="Kompresi" value={isBlockTypeCompressionCapable(selectedBlockType)} />
+              <CapabilityBadge label="Splittable" value={isBlockTypeSplittable(selectedBlockType)} />
+              <CapabilityBadge label="Interaktif" value={isBlockTypeInteractive(selectedBlockType)} />
+              <CapabilityBadge label="Measurable" value={isBlockTypeMeasurable(selectedBlockType)} />
+              <CapabilityBadge label="Renderer Kompresi" value={isBlockTypeRendererHandlesCompression(selectedBlockType)} />
+            </div>
+            {/* Source traceability — show where each capability was derived from */}
+            <div className="mt-1 space-y-0.5">
+              {(() => {
+                const info: BlockCapabilityInfo = getDerivedCapabilities({ type: selectedBlockType } as import('@/core/schema/types').SchemaBlock);
+                return Object.entries(info.sources).map(([cap, source]) => (
+                  <div key={cap} className="flex items-center gap-1 text-[8px] text-silse-on-surface-variant">
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      source === 'hint' ? 'bg-silse-primary' : source === 'definition' ? 'bg-silse-secondary-container' : 'bg-silse-on-surface-variant'
+                    }`} />
+                    <span className="font-mono">{cap}</span>
+                    <span className="opacity-60">← {source}</span>
+                  </div>
+                ));
+              })()}
+            </div>
+          </details>
+        )}
+
+        {/* Layout info — hidden in teacher mode */}
+        {!teacherMode && definition && (
+          <details className="mt-1">
+            <summary className="text-[9px] font-bold text-silse-on-surface-variant uppercase tracking-wider cursor-pointer hover:text-silse-on-surface-variant">
+              Layout
+            </summary>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[10px] text-silse-on-surface-variant">Posisi</span>
+              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                definition.defaultLayout.position === 'flow'
+                  ? 'bg-silse-primary-container/20 text-silse-primary'
+                  : 'bg-silse-secondary-container/20 text-silse-secondary'
+              }`}>
+                {definition.defaultLayout.position}
+              </span>
+            </div>
+          </details>
+        )}
+      </div>
+    </div>
+  );
+}

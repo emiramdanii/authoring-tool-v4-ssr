@@ -467,9 +467,11 @@ describe('Sprint 9.0F — F. dataIdx consumers are bounded + documented', () => 
     ]);
 
     // Walk src/ for dataIdx mentions
+    // BATCH-12-02: Exclude src/legacy-disabled/ — quarantined files are
+    // not active code and shouldn't be flagged as undocumented consumers.
     const { execSync } = require('node:child_process');
     const grepResult = execSync(
-      `grep -rl "dataIdx" src/ --include="*.ts" --include="*.tsx" | sort`,
+      `grep -rl "dataIdx" src/ --include="*.ts" --include="*.tsx" | grep -v "src/legacy-disabled/" | sort`,
       { cwd: process.cwd(), encoding: 'utf-8' },
     ).trim().split('\n').filter(Boolean);
 

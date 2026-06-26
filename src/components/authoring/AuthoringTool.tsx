@@ -35,7 +35,12 @@ const Riwayat = React.lazy(() => import('./Riwayat'));
 const LivePreview = React.lazy(() => import('./live-preview'));
 
 // Lazy-load CanvaBuilder (heavy component, SSR disabled)
-const CanvaBuilder = dynamic(() => import('@/components/canva/CanvaBuilder'), {
+// BATCH-12-02: CanvaBuilder moved to src/legacy-disabled/. AuthoringTool
+// is itself legacy (not in V5 runtime graph — page.tsx imports ProductShell,
+// not AuthoringTool). The dynamic import is updated to point to the new
+// location. Target files have @ts-nocheck pragma so no type errors propagate.
+// This file is never executed in V5 runtime.
+const CanvaBuilder = dynamic(() => import('@/legacy-disabled/components/canva/CanvaBuilder'), {
   ssr: false,
   loading: () => <PanelSkeleton />,
 });
@@ -100,7 +105,7 @@ const PRELOAD_MAP: Record<string, () => Promise<unknown>> = {
   dashboard: () => import('./Dashboard'),
   dokumen: () => import('./Dokumen'),
   konten: () => import('./Konten'),
-  canva: () => import('@/components/canva/CanvaBuilder'),
+  canva: () => import('@/legacy-disabled/components/canva/CanvaBuilder'),
   autogen: () => import('./auto-generate'),
   projects: () => import('./Projects'),
   import: () => import('./import-export'),

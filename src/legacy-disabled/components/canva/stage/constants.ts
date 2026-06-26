@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12: quarantined to src/legacy-disabled/, not type-checked
 import type { ResizeDir } from '../types';
 
 // ── Z-Index Scale (canonical — use across all canva components) ──

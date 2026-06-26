@@ -36,5 +36,20 @@ potential future restoration, but are excluded from the active codebase.
 - `src/components/canva/stage/` → `src/legacy-disabled/components/canva/stage/`
   - Reason: 7 files, only imported by CanvaBuilder (legacy, not in V5 runtime)
 
+### Batch 12-02 (RC-FIXPACK-02 / Batch 12 — LEGACY-QUARANTINE-02)
+- `src/components/canva/CanvaBuilder.tsx` → `src/legacy-disabled/components/canva/CanvaBuilder.tsx`
+  - Reason: only imported by AuthoringTool (legacy, not in V5 runtime)
+- `src/components/canva/mpi-editor/` (8 files) → `src/legacy-disabled/components/canva/mpi-editor/`
+  - Reason: only imported by CanvaBuilder (now quarantined)
+- `src/components/canva/right-panel/` (18+ files) → `src/legacy-disabled/components/canva/right-panel/`
+  - Reason: only imported by CanvaBuilder (now quarantined)
+
+**Fixups required**:
+- `AuthoringTool.tsx`: updated 2 dynamic imports to point to new location
+- All 50+ quarantined files: added `// @ts-nocheck` pragma (prevents tsc from
+  checking files with broken relative imports — they're not in V5 runtime)
+- `dataidx-9.0f-cleanup.test.ts`: updated grep to exclude `src/legacy-disabled/`
+- `phase-1b-route-lock.test.ts`: updated path to new location (not in CI)
+
 **Verification**: guard:no-legacy-runtime PASS, guard:contract-sync PASS,
-build PASS, all 500 batch tests PASS, CI 4/4 success.
+TypeScript 0 errors, all 537 tests PASS (500 batch + 37 dataidx), CI 4/4 success.
