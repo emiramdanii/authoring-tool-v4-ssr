@@ -4288,3 +4288,159 @@ Stage Summary:
 - Fail-safe: REJECT when in doubt (false negative recoverable, false
   positive = security incident)
 - Ready for senior audit
+
+---
+Task ID: BATCH-09A
+Agent: Super Z (main)
+Task: SILSE Batch 09A — IMPORT-JSON-UI-LIGHT
+
+Work Log:
+- Senior audit Batch 08 CLOSED. 2 notes:
+  P3: komentar schemaVersion inconsistency (header said "must be present"
+      but impl accepts undefined/null as legacy)
+  P2: validator belum di-wire ke UI (sesuai batasan Batch 08)
+- Senior suggested Batch 09A (Import JSON UI Light) sebelum Style Engine
+  karena "validator sudah ada tapi belum bisa dipakai guru"
+- Fixed P3 doc inconsistency di silse-import-validator.ts:
+  * Header comment: "schemaVersion optional for legacy imports; if
+    present, must be numeric and <= CURRENT_PROJECT_SCHEMA_VERSION"
+  * Layer 1 comment: "Optional for legacy imports; if present, must be
+    numeric and ≤ CURRENT"
+  * Removed old "Must be present, numeric, finite, positive" comment
+- Created ImportJsonPanelV5.tsx (modal, 326 lines):
+  * Props: open + onClose (modal pattern, not a ProductShell view)
+  * Textarea for JSON paste (spellcheck=false, font-mono)
+  * "Validasi" button → calls validateSilseImportJsonString(jsonInput)
+  * "Bersihkan" button → clears textarea + result
+  * "Salin JSON Valid" button → clipboard.writeText(SAMPLE_VALID_JSON)
+  * "Salin JSON Invalid" button → clipboard.writeText(SAMPLE_INVALID_JSON)
+  * Result display:
+    - Valid: green card with check_circle + summary (pages, judul,
+      mapel, kelas) + note "Import ke proyek aktif akan tersedia di
+      batch mendatang"
+    - Invalid: red card with cancel icon + reason code + path +
+      expandable "Semua error" details (if >1 error)
+  * Character count display when textarea non-empty
+  * Escape key handler → onClose
+  * Loading state "Memvalidasi..." during validation (setTimeout 50ms
+    to let UI update before synchronous validation)
+  * Empty input handler → shows "Tempel JSON terlebih dahulu" message
+    (not crash)
+  * role="dialog" + aria-modal="true" + aria-labelledby for a11y
+  * data-testid attributes for E2E: import-json-panel-v5,
+    import-json-textarea, import-json-validate-btn, import-json-clear-btn,
+    import-json-copy-valid-btn, import-json-copy-invalid-btn,
+    import-json-result, import-json-result-title,
+    import-json-result-message, import-json-result-reason,
+    import-json-result-path, import-json-result-all-errors,
+    import-json-result-summary-pages, import-json-result-summary-judul,
+    import-json-char-count
+  * NO store imports (no useCanvaStore, useAuthoringStore,
+    updateSchemaBlock, applyGuidedSchemaPatch) — pure validation UI
+  * NO "Import to Project" button (senior constraint: "Belum apply
+    ke store")
+  * SAMPLE_VALID_JSON: schemaVersion=1, full meta, 1 cover page
+  * SAMPLE_INVALID_JSON: schemaVersion=99, empty meta, empty pages
+    (triggers 3 errors: future-version + missing-meta + empty-pages)
+- Patched DashboardV5.tsx:
+  * Added optional onOpenImport prop
+  * Added "Validasi JSON Import" button below existing actions
+    (only rendered when onOpenImport is provided — backward compatible)
+  * data-testid="dashboard-import-json-btn"
+- Patched ProductShell.tsx:
+  * Imported ImportJsonPanelV5
+  * Added importPanelOpen state + openImportPanel/closeImportPanel
+    callbacks
+  * Passed onOpenImport={openImportPanel} to DashboardV5
+  * Rendered <ImportJsonPanelV5 open={importPanelOpen} onClose=
+    {closeImportPanel} /> OUTSIDE the view switch (modal overlay,
+    not a persisted view — 'import' NOT added to ProductView union)
+- Created src/__tests__/batch09a-import-json-ui.test.ts (47 tests):
+  * ImportJsonPanelV5 contract (35 tests):
+    - exports + props (open + onClose)
+    - returns null when open=false
+    - imports validateSilseImportJsonString
+    - NO store imports (no mutation)
+    - data-testid for all interactive elements
+    - role=dialog + aria-modal + aria-labelledby
+    - Escape key handler
+    - SAMPLE_VALID_JSON + SAMPLE_INVALID_JSON constants
+    - sample valid has schemaVersion=1 + meta + canva.pages
+    - sample invalid has schemaVersion=99
+    - validates via validateSilseImportJsonString
+    - NO "Import to Project" button (senior constraint)
+    - handles empty input gracefully
+    - uses clipboard API with fallback
+    - loading state "Memvalidasi..."
+    - no legacy editor refs
+  * DashboardV5 trigger (4 tests):
+    - optional onOpenImport prop
+    - button only rendered when prop provided
+    - data-testid + aria-label
+  * ProductShell wiring (6 tests):
+    - imports ImportJsonPanelV5
+    - importPanelOpen state
+    - openImportPanel + closeImportPanel callbacks
+    - passes onOpenImport to DashboardV5
+    - renders ImportJsonPanelV5 with open + onClose
+    - renders OUTSIDE view switch (modal overlay)
+    - 'import' NOT in ProductView union (not persisted)
+  * P3 fix verification (3 tests):
+    - header comment says "optional for legacy imports"
+    - does NOT say "must be present"
+    - layer 1 comment says "Optional for legacy imports"
+- Created e2e/v9a-import-json-ui.spec.ts (9 Playwright tests, HARD ASSERT):
+  1. modal opens from dashboard + has all required elements (textarea,
+     validate button, copy buttons, clear button, role=dialog)
+  2. valid JSON → green result + summary (1 halaman, judul "Test")
+  3. invalid JSON → red result + reason + path + all-errors details
+  4. dangerous JSON (script tag) → reason="dangerous-html-script"
+  5. copy sample valid JSON → clipboard contains valid JSON
+  6. clear button → clears textarea + result
+  7. Escape key → closes modal
+  8. Tutup button → closes modal
+  9. empty input → shows "Tempel JSON" message (not crash)
+- Test iteration: empty input test failed initially because Validasi
+  button was disabled when textarea empty. Fix: removed !jsonInput.trim()
+  from disabled condition (handler gracefully handles empty input with
+  helpful message anyway). Test updated to use regular click (no force).
+
+Local verification:
+- 47/47 unit tests PASS (batch09a-import-json-ui)
+- 9/9 Playwright E2E tests PASS (all HARD ASSERT):
+  * modal opens: 13.7s
+  * valid JSON: 14.4s
+  * invalid JSON: 14.4s
+  * dangerous JSON: 14.1s
+  * copy sample: 14.4s
+  * clear button: 14.8s
+  * Escape key: 14.0s
+  * Tutup button: 13.9s
+  * empty input: 14.6s
+- 70/70 Batch 08 tests still PASS (no regression)
+- 79/79 Batch 07B tests still PASS (no regression)
+- 31/31 Batch 07A tests still PASS (no regression)
+- Total: 47 + 70 + 79 + 31 = 227 tests PASS
+- guard:no-legacy-runtime PASS (328 files, 0 legacy symbols)
+- guard:contract-sync PASS (block types match)
+- Agent Browser end-to-end verification:
+  * Dashboard shows "Validasi JSON import" button
+  * Click → modal opens with textarea + sample buttons + validate
+  * Paste valid JSON → click Validasi → "JSON Valid" + check_circle +
+    summary (1 halaman, Test, PPKn, Kelas 7)
+  * No page errors throughout
+
+Stage Summary:
+- Files modified: 3 (silse-import-validator.ts P3 fix, DashboardV5.tsx,
+  ProductShell.tsx)
+- Files baru: 3 (ImportJsonPanelV5.tsx, batch09a-import-json-ui.test.ts,
+  v9a-import-json-ui.spec.ts)
+- Tests added: 47 unit + 9 E2E = 56 new tests
+- No source code in save/export/load paths touched (Batch 01-08
+  integrity surfaces preserved)
+- No new dependencies added
+- P3 doc inconsistency from Batch 08 FIXED
+- P2 (validator not wired to UI) CLOSED — teacher can now validate
+  JSON via modal triggered from Dashboard
+- NO store mutation (validator only — no import to active project)
+- Ready for senior audit

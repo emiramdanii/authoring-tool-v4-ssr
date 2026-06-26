@@ -23,6 +23,7 @@ import { TemplatePickerV5 } from './TemplatePickerV5';
 import { CleanEditorV5 } from './CleanEditorV5';
 import { PreviewV5 } from './PreviewV5';
 import { ExportPanelV5 } from './ExportPanelV5';
+import { ImportJsonPanelV5 } from './ImportJsonPanelV5';
 import { useCanvaStore } from '@/store/canva-store';
 import { ProjectProvider } from '@/hooks/use-project-manager';
 import { CanvaAutoSaveSync } from '@/components/canva/CanvaAutoSaveSync';
@@ -109,6 +110,13 @@ export function ProductShell({ initialView }: ProductShellProps) {
   const goPreview = useCallback(() => setView('preview'), []);
   const goExport = useCallback(() => setView('export'), []);
 
+  // BATCH-09A: Import JSON modal state. This is a MODAL, not a view —
+  // it doesn't go through the persistence layer (no 'import' in
+  // ProductView union). Opens from Dashboard, closes back to Dashboard.
+  const [importPanelOpen, setImportPanelOpen] = useState(false);
+  const openImportPanel = useCallback(() => setImportPanelOpen(true), []);
+  const closeImportPanel = useCallback(() => setImportPanelOpen(false), []);
+
   return (
     <ProjectProvider>
       <div
@@ -128,6 +136,7 @@ export function ProductShell({ initialView }: ProductShellProps) {
             onResumeEdit={goEditor}
             hasProject={pages.length > 0}
             pageCount={pages.length}
+            onOpenImport={openImportPanel}
           />
         )}
         {view === 'template' && (
@@ -154,6 +163,14 @@ export function ProductShell({ initialView }: ProductShellProps) {
             onBack={goEditor}
           />
         )}
+
+        {/* BATCH-09A: Import JSON validation modal.
+            Rendered OUTSIDE the view switch because it's a modal overlay,
+            not a view. Can be opened from Dashboard via onOpenImport prop. */}
+        <ImportJsonPanelV5
+          open={importPanelOpen}
+          onClose={closeImportPanel}
+        />
       </div>
     </ProjectProvider>
   );

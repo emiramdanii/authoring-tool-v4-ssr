@@ -6,7 +6,8 @@
 // Design goals (per senior audit scope):
 //   1. Typed SilseImportJson (TypeScript type for the expected shape)
 //   2. Validator with 6 check layers:
-//        a. version — schemaVersion must be present, numeric, ≤ CURRENT
+//        a. version — schemaVersion optional for legacy imports; if present,
+//           must be numeric and <= CURRENT_PROJECT_SCHEMA_VERSION
 //        b. metadata — meta object with required fields (judulPertemuan,
 //           mapel, kelas) and safe string values
 //        c. learningFlow/pages — canva.pages must be a non-empty array
@@ -306,7 +307,7 @@ export function validateSilseImport(raw: unknown): SilseImportValidationResult {
   const doc = raw as Record<string, unknown>;
 
   // ── Layer 1: schemaVersion ────────────────────────────────────
-  // Must be present, numeric, finite, positive, ≤ CURRENT.
+  // Optional for legacy imports; if present, must be numeric and ≤ CURRENT.
   // Missing/null → legacy (acceptable, will be migrated to CURRENT).
   // Future version (> CURRENT) → REJECT (cannot migrate down).
   // Non-numeric / NaN / negative → REJECT (malformed).

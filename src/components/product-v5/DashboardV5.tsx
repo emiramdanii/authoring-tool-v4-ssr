@@ -24,9 +24,11 @@ export interface DashboardV5Props {
   hasProject: boolean;
   /** Page count (passed from ProductShell which already reads canvaStore) */
   pageCount?: number;
+  /** BATCH-09A: Open the Import JSON validation panel */
+  onOpenImport?: () => void;
 }
 
-export function DashboardV5({ onPickTemplate, onResumeEdit, hasProject, pageCount = 0 }: DashboardV5Props) {
+export function DashboardV5({ onPickTemplate, onResumeEdit, hasProject, pageCount = 0, onOpenImport }: DashboardV5Props) {
   // BATCH-06: Read metadata from authoring store to populate resume card.
   // We read once at render — DashboardV5 only re-renders on view switch,
   // so this is cheap. No subscriptions needed.
@@ -190,6 +192,22 @@ export function DashboardV5({ onPickTemplate, onResumeEdit, hasProject, pageCoun
               </div>
               <div className="text-base font-semibold text-slate-800 mb-1">Mulai dari Template</div>
               <div className="text-sm text-slate-500">Pilih dari template siap pakai</div>
+            </button>
+          </div>
+        )}
+
+        {/* BATCH-09A: Import JSON validation link — opens modal, no store mutation */}
+        {onOpenImport && (
+          <div className="mt-8">
+            <button
+              onClick={onOpenImport}
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg border border-slate-200 hover:border-emerald-200 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+              aria-label="Validasi JSON import"
+              data-testid="dashboard-import-json-btn"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '14px' }}>file_json</span>
+              Validasi JSON Import
             </button>
           </div>
         )}
