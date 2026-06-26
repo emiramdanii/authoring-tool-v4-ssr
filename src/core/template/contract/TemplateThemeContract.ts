@@ -639,6 +639,111 @@ registerContract(GOLDEN_PERTEMUAN_CONTRACT);
 registerContract(MACAM_NORMA_CONTRACT);
 
 // ═══════════════════════════════════════════════════════════════════
+// BATCH-10C-Patch-3: MODERN_EDUCATOR_CONTRACT — defined HERE (not in MEC.ts)
+// This eliminates the circular dependency:
+//   TTC → MEC (import) → TTC (import registerContract) = CYCLE
+// Now TTC owns ALL contract definitions. MEC.ts is a compatibility re-export.
+// ═══════════════════════════════════════════════════════════════════
+
+export const MODERN_EDUCATOR_CONTRACT: TemplateThemeContract = {
+  id: 'modern-educator',
+  name: '🌿 Modern Educator',
+  description: 'Light theme — Emerald Green + Royal Blue + Amber. Based on the Stitch design system for Indonesian educators.',
+
+  colors: {
+    background: '#f7f9fb',
+    surface: '#ffffff',
+    card: '#ffffff',
+    text: '#191c1e',
+    muted: '#6c7a71',
+    accent: '#006c49',
+    accentBg: 'rgba(0,108,73,0.08)',
+    accentBorder: 'rgba(0,108,73,0.20)',
+    maxAccents: 3,
+    accentTokens: ['e', 'b', 'a'],
+  },
+
+  typography: {
+    heroSize: 48,
+    titleSize: 36,
+    headingSize: 26,
+    bodyLgSize: 22,
+    bodySize: 20,
+    captionSize: 16,
+    microSize: 14,
+    displayFont: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif",
+    bodyFont: "var(--font-nunito), 'Nunito Sans', sans-serif",
+    minFontSize: 16,
+  },
+
+  spacing: {
+    pagePadding: 32,
+    cardPadding: 24,
+    blockGap: 24,
+    itemGap: 16,
+    nestedPadding: 20,
+  },
+
+  borders: {
+    cardRadius: 24,
+    pillRadius: 9999,
+    cardBorder: '1px solid rgba(224, 227, 229, 1)',
+  },
+
+  shadows: {
+    card: '0 1px 2px rgba(0,0,0,0.04)',
+    elevated: '0 4px 12px rgba(0,0,0,0.06)',
+  },
+
+  maxContentHeight: 640,
+  cardTreatment: 'flat',
+  headerTreatment: 'accented',
+
+  pageAccents: {
+    cover:       { accentToken: 'e', bgTint: 'rgba(0,108,73,0.04)' },
+    petunjuk:    { accentToken: 'b', bgTint: 'rgba(0,88,190,0.04)' },
+    tujuan:      { accentToken: 'b', bgTint: 'rgba(0,88,190,0.04)' },
+    motivasi:    { accentToken: 'a', bgTint: 'rgba(226,145,0,0.04)' },
+    materi:      { accentToken: 'e', bgTint: 'rgba(0,108,73,0.04)' },
+    skenario:    { accentToken: 'a', bgTint: 'rgba(226,145,0,0.04)' },
+    kuis:        { accentToken: 'b', bgTint: 'rgba(0,88,190,0.04)' },
+    diskusi:     { accentToken: 'b', bgTint: 'rgba(0,88,190,0.04)' },
+    refleksi:    { accentToken: 'e', bgTint: 'rgba(0,108,73,0.04)' },
+    rangkuman:   { accentToken: 'e', bgTint: 'rgba(0,108,73,0.04)' },
+    hasil:       { accentToken: 'e', bgTint: 'rgba(0,108,73,0.04)' },
+    penutup:     { accentToken: 'a', bgTint: 'rgba(226,145,0,0.04)' },
+    dokumen:     { accentToken: 'b', bgTint: 'rgba(0,88,190,0.04)' },
+    custom:      { accentToken: 'e', bgTint: 'rgba(0,108,73,0.04)' },
+  },
+
+  pageLayouts: {
+    cover: { maxBlocks: 1, density: 'sparse', canSplit: false, allowedBlockTypes: ['cover'], pattern: 'Judul besar + Subjudul + Identitas + Tombol mulai' },
+    petunjuk: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['petunjuk'], pattern: 'Judul + 3 langkah instruksi' },
+    tujuan: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['tujuan-display', 'tp'], pattern: 'Judul + 3-4 tujuan dalam kartu' },
+    motivasi: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['motivasi'], pattern: 'Pertanyaan pemantik + Koneksi konsep' },
+    materi: { maxBlocks: 3, density: 'dense', canSplit: true, allowedBlockTypes: ['materi-section', 'def-box', 'nc-grid'], pattern: 'Judul + Konsep inti + Contoh' },
+    skenario: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['skenario'], pattern: 'Instruksi + Langkah 1-3 + Aksi siswa' },
+    kuis: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['kuis'], pattern: '1 pertanyaan per layar + 4 opsi + feedback' },
+    diskusi: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['diskusi'], pattern: 'Pertanyaan diskusi + Petunjuk' },
+    refleksi: { maxBlocks: 2, density: 'sparse', canSplit: true, allowedBlockTypes: ['refleksi'], pattern: 'Pertanyaan besar + Isian singkat + Penutup emosional' },
+    rangkuman: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['rangkuman'], pattern: 'Ringkasan konsep + Penutup' },
+    hasil: { maxBlocks: 1, density: 'sparse', canSplit: false, allowedBlockTypes: ['hasil'], pattern: 'Skor + Capaian' },
+    penutup: { maxBlocks: 1, density: 'sparse', canSplit: false, allowedBlockTypes: ['penutup'], pattern: 'Ringkasan + Pesan akhir + Lanjutkan' },
+    dokumen: { maxBlocks: 3, density: 'dense', canSplit: true, allowedBlockTypes: ['tp', 'alur'], pattern: 'Tujuan + Alur kegiatan' },
+    custom: { maxBlocks: 5, density: 'dense', canSplit: true, allowedBlockTypes: [], pattern: 'Bebas — tapi tetap taat aturan contract' },
+  },
+
+  variantOverrides: {
+    A: {},
+    B: { accent: '#0058be', accentBg: 'rgba(0,88,190,0.12)', accentBorder: 'rgba(0,88,190,0.25)' },
+    C: { accent: '#e29100', accentBg: 'rgba(226,145,0,0.12)', accentBorder: 'rgba(226,145,0,0.25)' },
+  },
+};
+
+// Auto-register the Modern Educator contract
+registerContract(MODERN_EDUCATOR_CONTRACT);
+
+// ═══════════════════════════════════════════════════════════════════
 // CONTRACT ENFORCEMENT — Resolve style with contract priority
 // ═══════════════════════════════════════════════════════════════════
 // Priority: TemplateThemeContract > Scene Style > Block Default
@@ -814,18 +919,17 @@ export function resolveContractStyle(
   for (const [token, color] of Object.entries(palette)) {
     accentTokenMap[token] = color;
   }
-  // Override the primary accent token with the contract's accent (with variant)
-  accentTokenMap[primaryAccentToken] = variantColors.accent || contract.colors.accent;
-  // For variant A, the primary accent IS the contract's accent color.
-  // For variants B/C, the primary accent is overridden by variant colors.
-  // The token 'y' should always map to the contract's identity gold
-  // UNLESS 'y' IS the primary accent token (in which case variant overrides apply).
-  if (primaryAccentToken === 'y') {
-    accentTokenMap['y'] = variantColors.accent || contract.colors.accent;
-  }
-
-  // Resolve the primary accent color
-  const resolvedAccent = accentTokenMap[primaryAccentToken]!;
+  // Override the primary accent token with the resolved accent (with variant)
+  // BATCH-10C-Patch-3: Use palette[primaryAccentToken] as base, then apply
+  // variant override. This prevents all page accents from becoming the
+  // contract's identity accent (#006c49 for modern-educator).
+  // Algorithm:
+  //   variant A: resolvedAccent = palette[primaryAccentToken] || contract.colors.accent
+  //   variant B/C: resolvedAccent = variantColors.accent || palette[primaryAccentToken] || contract.colors.accent
+  const resolvedAccent = variantColors.accent
+    || palette[primaryAccentToken]
+    || contract.colors.accent;
+  accentTokenMap[primaryAccentToken] = resolvedAccent;
 
   // Build accent variants for the PRIMARY accent
   // These are derived from the primary accent color for THIS page
@@ -863,24 +967,3 @@ export function resolveContractStyle(
     primaryAccentToken,
   };
 }
-
-// BATCH-10C-Patch-2: Register MODERN_EDUCATOR_CONTRACT here (in TTC) rather
-// than relying on a side-effect import of ModernEducatorContract.ts.
-// This breaks the circular dependency:
-//   TTC → MEC (import) → TTC (import registerContract) = CYCLE
-// Instead we import the contract object lazily via dynamic import in
-// getContractOrGolden (already done in Patch-1). But we ALSO need the
-// contract to be registered at module load time so it's available for
-// synchronous lookups. The solution: define a minimal inline
-// registration that creates the contract from the accent palette
-// already defined in this file.
-//
-// Actually, the simplest fix: import MEC at the BOTTOM of TTC (after
-// all TTC definitions are complete). ES modules handle this correctly
-// when the import is at the end — TTC's exports are all defined before
-// MEC's registerContract() call runs.
-//
-// BUT: this still creates a cycle. The real fix is: don't use a
-// side-effect import. Instead, have the index.ts (barrel) import MEC.
-// The test should import from the index, not directly from TTC.
-// We'll update the tests to import from the barrel.
