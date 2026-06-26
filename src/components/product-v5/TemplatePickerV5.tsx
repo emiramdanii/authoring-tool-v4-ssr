@@ -96,7 +96,7 @@ export function TemplatePickerV5({ onBack, onTemplateApplied }: TemplatePickerV5
         <div className="max-w-5xl mx-auto">
           <p className="text-sm text-slate-500 mb-6">
             Pilih template untuk mulai membuat media. Setiap template sudah berisi alur
-            pembelajaran lengkap — tinggal edit kontennya.
+            pembelajaran lengkap — kuis dan game sudah dalam satu halaman, tinggal edit kontennya.
           </p>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

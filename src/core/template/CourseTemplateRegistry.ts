@@ -179,7 +179,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-ppkn-vii',
     name: 'Modul PPKn Kelas VII — Hakikat Norma',
-    description: 'Alur pembelajaran lengkap PPKn SMP kelas VII: Pembuka → Tujuan → Motivasi → Materi ×3 → Diskusi → Kuis → Refleksi → Penutup',
+    description: 'Pembelajaran lengkap untuk PPKn kelas 7. Materi, diskusi, kuis dengan 5 soal, dan refleksi dalam satu media.',
     subject: 'PPKn',
     grade: '7',
     semester: '1',
@@ -205,7 +205,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-ppkn-viii',
     name: 'Modul PPKn Kelas VIII',
-    description: 'Alur pembelajaran PPKn SMP kelas VIII dengan skenario interaktif: Cover → Tujuan → Skenario → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    description: 'Pembelajaran PPKn kelas 8 dengan skenario interaktif. Materi, diskusi, kuis, dan refleksi.',
     subject: 'PPKn',
     grade: '8',
     semester: '1',
@@ -228,7 +228,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-ipa-viii',
     name: 'Modul IPA Kelas VIII',
-    description: 'Alur pembelajaran IPA SMP kelas VIII: Cover → Tujuan → Skenario → Materi ×2 → Eksperimen → Kuis → Rangkuman',
+    description: 'Pembelajaran IPA kelas 8 dengan eksperimen. Materi, kuis, dan rangkuman.',
     subject: 'IPA',
     grade: '8',
     semester: '1',
@@ -251,7 +251,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-ipa-vii',
     name: 'Modul IPA Kelas VII',
-    description: 'Alur pembelajaran IPA SMP kelas VII: Cover → Tujuan → Motivasi → Materi ×2 → Diskusi → Kuis → Refleksi → Penutup',
+    description: 'Pembelajaran IPA kelas 7. Materi, diskusi, kuis, dan refleksi.',
     subject: 'IPA',
     grade: '7',
     semester: '1',
@@ -275,7 +275,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-mtk-vii',
     name: 'Modul Matematika Kelas VII',
-    description: 'Alur pembelajaran MTK SMP kelas VII: Cover → Tujuan → Motivasi → Materi → Contoh Soal → Latihan → Kuis → Rangkuman → Penutup',
+    description: 'Pembelajaran Matematika kelas 7. Materi, contoh soal, latihan, kuis, dan rangkuman.',
     subject: 'MTK',
     grade: '7',
     semester: '1',
@@ -298,7 +298,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-mtk-viii',
     name: 'Modul Matematika Kelas VIII',
-    description: 'Alur pembelajaran MTK SMP kelas VIII: Cover → Tujuan → Materi ×2 → Diskusi → Kuis → Refleksi → Penutup',
+    description: 'Pembelajaran Matematika kelas 8. Materi, diskusi, kuis, dan refleksi.',
     subject: 'MTK',
     grade: '8',
     semester: '1',
@@ -321,7 +321,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-bin-vii',
     name: 'Modul B. Indonesia Kelas VII',
-    description: 'Alur pembelajaran Bahasa Indonesia SMP kelas VII: Cover → Tujuan → Motivasi → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    description: 'Pembelajaran Bahasa Indonesia kelas 7. Materi, diskusi, kuis, dan refleksi.',
     subject: 'B.Indonesia',
     grade: '7',
     semester: '1',
@@ -344,7 +344,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-bin-viii',
     name: 'Modul B. Indonesia Kelas VIII',
-    description: 'Alur pembelajaran Bahasa Indonesia SMP kelas VIII: Cover → Tujuan → Skenario → Materi ×2 → Diskusi → Kuis → Rangkuman → Penutup',
+    description: 'Pembelajaran Bahasa Indonesia kelas 8. Skenario, materi, diskusi, kuis, dan rangkuman.',
     subject: 'B.Indonesia',
     grade: '8',
     semester: '1',
@@ -368,7 +368,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-bing-viii',
     name: 'Modul B. Inggris Kelas VIII',
-    description: 'Alur pembelajaran Bahasa Inggris SMP kelas VIII: Cover → Tujuan → Skenario → Materi → Diskusi → Kuis → Refleksi → Penutup',
+    description: 'Pembelajaran Bahasa Inggris kelas 8. Skenario, materi, diskusi, kuis, dan refleksi.',
     subject: 'B.Inggris',
     grade: '8',
     semester: '1',
@@ -392,7 +392,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-bing-vii',
     name: 'Modul B. Inggris Kelas VII',
-    description: 'Alur pembelajaran Bahasa Inggris SMP kelas VII: Cover → Tujuan → Materi → Diskusi → Kuis → Rangkuman → Penutup',
+    description: 'Pembelajaran Bahasa Inggris kelas 7. Materi, diskusi, kuis, dan rangkuman.',
     subject: 'B.Inggris',
     grade: '7',
     semester: '1',
@@ -415,7 +415,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-seni-vii',
     name: 'Modul Seni Budaya Kelas VII',
-    description: 'Alur pembelajaran Seni Budaya SMP kelas VII: Cover → Tujuan → Motivasi → Materi → Praktik → Diskusi → Refleksi → Penutup',
+    description: 'Pembelajaran Seni Budaya kelas 7. Materi, praktik, diskusi, dan refleksi.',
     subject: 'Seni',
     grade: '7',
     semester: '1',
@@ -438,7 +438,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-seni-viii',
     name: 'Modul Seni Budaya Kelas VIII',
-    description: 'Alur pembelajaran Seni Budaya SMP kelas VIII: Cover → Tujuan → Materi → Skenario Kreatif → Diskusi → Refleksi → Penutup',
+    description: 'Pembelajaran Seni Budaya kelas 8. Skenario kreatif, materi, diskusi, dan refleksi.',
     subject: 'Seni',
     grade: '8',
     semester: '1',
@@ -461,7 +461,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-pjok-vii',
     name: 'Modul PJOK Kelas VII',
-    description: 'Alur pembelajaran PJOK SMP kelas VII: Cover → Tujuan → Motivasi → Materi → Praktik → Kuis → Refleksi → Penutup',
+    description: 'Pembelajaran PJOK kelas 7. Materi, praktik, kuis, dan refleksi.',
     subject: 'PJOK',
     grade: '7',
     semester: '1',
@@ -485,7 +485,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-pjok-viii',
     name: 'Modul PJOK Kelas VIII',
-    description: 'Alur pembelajaran PJOK SMP kelas VIII: Cover → Tujuan → Materi → Skenario Olahraga → Diskusi → Kuis → Penutup',
+    description: 'Pembelajaran PJOK kelas 8. Skenario olahraga, materi, diskusi, dan kuis.',
     subject: 'PJOK',
     grade: '8',
     semester: '1',
@@ -508,7 +508,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-pjok-iv',
     name: 'Modul PJOK Kelas IV SD',
-    description: 'Alur pembelajaran PJOK SD kelas IV: Cover → Petunjuk → Tujuan → Materi ×3 → Kuis → Refleksi → Penutup',
+    description: 'Pembelajaran PJOK kelas 4 SD. Materi, kuis, dan refleksi.',
     subject: 'PJOK',
     grade: '4',
     semester: '1',
@@ -533,7 +533,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'modul-pjok-x',
     name: 'Modul PJOK Kelas X SMA',
-    description: 'Alur pembelajaran PJOK SMA kelas X: Cover → Tujuan → Materi ×2 → Studi Kasus → Kuis → Refleksi → Rangkuman → Penutup',
+    description: 'Pembelajaran PJOK kelas 10 SMA. Materi, studi kasus, kuis, dan rangkuman.',
     subject: 'PJOK',
     grade: '10',
     semester: '1',
@@ -565,7 +565,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'materi-kuis',
     name: 'Materi + Kuis',
-    description: 'Alur pembelajaran sederhana: Cover → Tujuan → Materi → Kuis → Penutup. Cocok untuk materi dengan asesmen singkat.',
+    description: 'Media singkat: materi dan kuis. Cocok untuk asesmen cepat.',
     subject: '*',
     grade: '*',
     semester: '*',
@@ -586,7 +586,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'materi-aktivitas',
     name: 'Materi + Aktivitas',
-    description: 'Alur dengan diskusi dan refleksi: Cover → Tujuan → Materi → Diskusi → Refleksi → Penutup. Cocok untuk pembelajaran kolaboratif.',
+    description: 'Materi dengan diskusi dan refleksi. Cocok untuk pembelajaran kolaboratif.',
     subject: '*',
     grade: '*',
     semester: '*',
@@ -608,7 +608,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'skenario-diskusi',
     name: 'Skenario + Diskusi',
-    description: 'Alur berbasis skenario interaktif: Cover → Tujuan → Skenario → Materi → Diskusi → Penutup. Cocok untuk studi kasus dan problem-based learning.',
+    description: 'Skenario interaktif dengan materi dan diskusi. Cocok untuk studi kasus.',
     subject: '*',
     grade: '*',
     semester: '*',
@@ -630,7 +630,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'game-sortir-kuis',
     name: 'Game Sortir + Kuis',
-    description: 'Alur dengan aktivitas sortir dan kuis: Cover → Tujuan → Materi → Aktivitas Sortir → Kuis → Penutup. Cocok untuk materi yang membutuhkan klasifikasi.',
+    description: 'Game sortir dan kuis dalam satu media. Cocok untuk materi yang butuh klasifikasi.',
     subject: '*',
     grade: '*',
     semester: '*',
@@ -652,7 +652,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'pertemuan-lengkap',
     name: 'Pertemuan Lengkap',
-    description: 'Alur pertemuan lengkap sesuai standar BSNP: Cover → Tujuan → Motivasi → Materi → Diskusi → Kuis → Refleksi → Penutup.',
+    description: 'Pertemuan lengkap sesuai standar BSNP. Materi, diskusi, kuis, dan refleksi.',
     subject: '*',
     grade: '*',
     semester: '*',
@@ -680,7 +680,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'macam-norma',
     name: 'Macam-Macam Norma',
-    description: 'Alur pembelajaran PPKn kelas VII: Cover → Tujuan → Motivasi → Materi ×3 → Diskusi → Kuis → Refleksi → Penutup. Konten stabil dan teruji.',
+    description: 'Pembelajaran PPKn kelas 7. Materi lengkap, diskusi, kuis, dan refleksi. Konten stabil dan teruji.',
     subject: 'PPKn',
     grade: '7',
     semester: '1',
@@ -707,7 +707,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'misi-penjelajah',
     name: 'Misi Penjelajah Pancasila',
-    description: 'Alur interaktif PPKn kelas VII: Cover → Tujuan → Skenario → Materi ×2 → Kuis → Refleksi → Penutup. Dengan skenario penjelajahan.',
+    description: 'Pembelajaran PPKn kelas 7 dengan skenario interaktif. Materi, kuis, dan refleksi.',
     subject: 'PPKn',
     grade: '7',
     semester: '1',
@@ -732,7 +732,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
   {
     id: 'template-kosong',
     name: 'Template Kosong',
-    description: 'Mulai dari nol dengan Cover dan Penutup saja. Tambahkan halaman sesuai kebutuhan.',
+    description: 'Mulai dari kosong. Tambahkan halaman sendiri sesuai kebutuhan.',
     subject: '*',
     grade: '*',
     semester: '*',

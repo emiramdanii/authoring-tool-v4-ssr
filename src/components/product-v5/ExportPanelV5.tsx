@@ -61,11 +61,11 @@ export function ExportPanelV5({ onBack }: ExportPanelV5Props) {
           </div>
 
           <h2 className="text-lg font-semibold text-slate-800 text-center mb-2">
-            Export ke HTML
+            Simpan ke HTML
           </h2>
           <p className="text-sm text-slate-500 text-center mb-6">
-            Media akan diexport ke file HTML siap pakai. Bisa dibuka di browser
-            manapun tanpa internet.
+            Media akan disimpan ke file HTML yang bisa dibuka di browser
+            manapun tanpa internet. Bagikan ke siswa via flashdisk atau Google Classroom.
           </p>
 
           {/* Stats */}
@@ -75,12 +75,12 @@ export function ExportPanelV5({ onBack }: ExportPanelV5Props) {
               <span className="font-medium text-slate-800">{pages.length}</span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-slate-500">Format</span>
-              <span className="font-medium text-slate-800">HTML standalone</span>
+              <span className="text-slate-500">Format file</span>
+              <span className="font-medium text-slate-800">HTML (buka di browser)</span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-slate-500">Renderer</span>
-              <span className="font-medium text-slate-800">Official (PageRenderer)</span>
+              <span className="text-slate-500">Butuh internet?</span>
+              <span className="font-medium text-slate-800">Tidak</span>
             </div>
           </div>
 
