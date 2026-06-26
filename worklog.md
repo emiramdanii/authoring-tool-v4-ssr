@@ -4444,3 +4444,155 @@ Stage Summary:
   JSON via modal triggered from Dashboard
 - NO store mutation (validator only — no import to active project)
 - Ready for senior audit
+
+---
+Task ID: BATCH-09B
+Agent: Super Z (main)
+Task: SILSE Batch 09B — IMPORT-JSON-ADAPTER-PREVIEW
+
+Work Log:
+- Senior audit Batch 09A CLOSED. 2 notes:
+  P2: validator belum import sungguhan (sesuai batasan 09A)
+  P3: UX copy "Validasi JSON Import" bisa lebih natural (skip, senior
+       bilang "tidak perlu patch sendiri")
+- Senior suggested Opsi A (Batch 09B Import Adapter Preview) sebelum
+  Style Engine karena "guru sudah bisa validasi JSON; langkah terdekat
+  adalah melihat isi JSON sebelum benar-benar import"
+- Riset block types dengan inspector editor:
+  * 16 types PUNYA editor: cover, hero, petunjuk, tujuan-display,
+    motivasi, materi-section, def-box, materi-blok, diskusi, kuis,
+    sortir-game, refleksi, rangkuman, penutup, tabel-accord, hasil
+  * 24 types TERDAFTAR tapi TIDAK punya editor: tp, alur, skenario,
+    nc-grid, flashcard-set, ftab, nk-card, roda-game, memory-game,
+    matching-game, fill-blank-game, word-search-game, true-false-game,
+    drag-drop-game, crossword-game, team-buzzer-game, tabel, gambar,
+    timeline, checklist, statistik, studi, compare, reveal
+  * Ini akan trigger warning 'no-editor' di preview
+- Created src/lib/silse-import-preview.ts (218 lines):
+  * SilseImportPreview interface (meta, totalPages, totalBlocks, pages,
+    blockTypeSummary, warnings)
+  * PreviewPageInfo (index, id, label, templateType, blockCount,
+    blockTypes)
+  * PreviewBlockTypeSummary (type, count, hasEditor)
+  * PreviewWarning + PreviewWarningCode ('no-editor' | 'empty-page' |
+    'missing-label')
+  * blockTypeHasEditor(blockType) — uses getBlockFields from
+    inspector-field-registry, returns false for FALLBACK_FIELDS
+  * getBlockTypesWithEditors() — returns 16 known types
+  * deriveSilseImportPreview(doc) — pure function, no side effects:
+    - Extracts meta (judulPertemuan, mapel, kelas, optional namaGuru/
+      namaSekolah only if non-empty)
+    - Iterates pages: builds PreviewPageInfo with label fallback
+      ("Halaman {i+1}"), templateType, blockCount, distinct blockTypes
+      (sorted)
+    - Counts block types across all pages
+    - Generates warnings:
+      * 'missing-label' if page.label empty
+      * 'empty-page' if page has 0 blocks
+      * 'no-editor' for each block type without dedicated editor
+    - Builds blockTypeSummary sorted by count desc, then type asc
+  * __TEST__ export for unit tests
+- Patched ImportJsonPanelV5.tsx:
+  * Imported deriveSilseImportPreview + SilseImportPreview type
+  * Added preview state
+  * Reset preview in: modal open effect, handleClear, handleValidate
+    empty-input branch, handleValidate invalid-result branch
+  * handleValidate: when validationResult.valid, wrap
+    deriveSilseImportPreview in try/catch (no crash if derivation
+    fails — logs + sets preview=null)
+  * Rendered preview section BELOW valid result summary:
+    - "Preview Konten" header with preview icon
+    - Stats row: totalPages + totalBlocks (green cards)
+    - "Daftar Halaman" ordered list with per-page detail:
+      index, label, templateType (code chip), blockCount, block type
+      chips (green if hasEditor, amber if not)
+    - "Ringkasan Tipe Blok" chip cloud with count + type + warning
+      icon for no-editor types
+    - "Peringatan" section (only if warnings exist) with per-warning
+      code + message
+  * data-testid attributes for E2E: import-json-preview,
+    preview-total-pages, preview-total-blocks, preview-page-list,
+    preview-page-{idx}, preview-page-{idx}-block-types,
+    preview-block-type-summary, preview-block-type-{type},
+    preview-warnings, preview-warnings-list, preview-warning-{idx}
+  * NO store mutation (preview is read-only display)
+  * NO "Import to Project" button (still senior constraint)
+- Created src/__tests__/batch09b-import-json-preview.test.ts (96 tests):
+  * Section A: source audit (11 tests) — exports, imports, 3 warning
+    codes
+  * Section B: blockTypeHasEditor (42 tests) — 16 types with editor
+    (all return true), 24 types without editor (all return false),
+    unknown type, empty string, getBlockTypesWithEditors returns 16
+  * Section C: deriveSilseImportPreview happy path (9 tests) — meta,
+    totalPages=3, totalBlocks=3, 3 page infos, 0-based index, 3 types
+    in summary, all hasEditor=true, all count=1, no warnings
+  * Section D: warnings (5 tests) — no-editor for 'tp', empty-page
+    for blocks=[], missing-label for no label field, multiple warnings
+    at once, warning paths point to affected field
+  * Section E: edge cases (5 tests) — single page+block, multiple
+    blocks same type (count=3), empty page (warning), missing optional
+    meta fields, whitespace namaGuru excluded
+  * Section F: block type summary (2 tests) — sort by count desc then
+    name asc, hasEditor flag correct per type
+  * Section G: ImportJsonPanelV5 source audit (22 tests) — imports,
+    preview state, reset in all paths, try/catch wrapper, renders
+    preview only when isValid && preview, all data-testids, warning
+    icon for no-editor types, no store mutation
+- Created e2e/v9b-import-json-preview.spec.ts (6 Playwright tests,
+  all HARD ASSERT):
+  1. valid multi-page JSON → preview with stats (3 pages, 3 blocks) +
+     page list (3 items) + block summary (3 types: cover, kuis,
+     refleksi) + no warnings
+  2. valid JSON with no-editor blocks (tp, skenario) → warnings
+     section visible with ≥2 warnings, mentions 'tp' + 'skenario' +
+     'belum punya editor'
+  3. block type chips show warning icon for no-editor types (tp,
+     skenario) but NOT for hasEditor types (cover)
+  4. clear button → clears preview + result + textarea
+  5. invalid JSON → result visible (data-valid=false) but preview
+     NOT visible (count=0)
+  6. preview shows correct meta (judul, mapel, kelas) in summary
+- Test iteration: first E2E run failed because
+  '[data-testid^="preview-page-"]' prefix match caught both
+  preview-page-0 AND preview-page-0-block-types (count=6 instead of 3).
+  Fix: use pageList.evaluate() with regex /^preview-page-\d+$/ to
+  filter exact match only.
+
+Local verification:
+- 96/96 unit tests PASS (batch09b-import-json-preview)
+- 6/6 Playwright E2E tests PASS (all HARD ASSERT, ~15s each)
+- 47/47 Batch 09A tests still PASS (no regression)
+- 70/70 Batch 08 tests still PASS (no regression)
+- 79/79 Batch 07B tests still PASS (no regression)
+- 31/31 Batch 07A tests still PASS (no regression)
+- Total: 96 + 6 + 47 + 70 + 79 + 31 = 329 tests PASS
+- guard:no-legacy-runtime PASS (328 files, 0 legacy symbols)
+- guard:contract-sync PASS (block types match)
+- Agent Browser end-to-end verification:
+  * Open modal → paste 3-page JSON (cover + kuis + refleksi) → click
+    Validasi
+  * Preview section appears with:
+    - "Preview Konten" header
+    - Stats: "3 Halaman", "3 Total Blok"
+    - Daftar Halaman: "1. Cover cover 1 blok cover", "2. Kuis kuis
+      1 blok kuis", "3. Refleksi refleksi 1 blok refleksi"
+    - Ringkasan Tipe Blok: "1× cover 1× kuis 1× refleksi"
+  * No page errors throughout
+- Screenshot: download/batch09b-import-preview.png (80 KB)
+
+Stage Summary:
+- Files modified: 1 (ImportJsonPanelV5.tsx — added preview state +
+  rendering)
+- Files baru: 3 (silse-import-preview.ts,
+  batch09b-import-json-preview.test.ts,
+  v9b-import-json-preview.spec.ts)
+- Tests added: 96 unit + 6 E2E = 102 new tests
+- No source code in save/export/load paths touched (Batch 01-09A
+  integrity surfaces preserved)
+- No new dependencies added
+- P2 (validator not wired to UI) from Batch 08 → already closed in 09A
+- New capability: teacher can now see PREVIEW of JSON content (pages,
+  block types, warnings) before future import
+- Still NO store mutation (preview is read-only display, sesuai
+  senior constraint "Belum apply ke store")
+- Ready for senior audit

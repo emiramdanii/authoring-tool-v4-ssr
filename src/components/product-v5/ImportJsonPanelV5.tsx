@@ -34,6 +34,7 @@ import {
   validateSilseImportJsonString,
   type SilseImportValidationResult,
 } from '@/lib/silse-import-validator';
+import { deriveSilseImportPreview, type SilseImportPreview } from '@/lib/silse-import-preview';
 
 export interface ImportJsonPanelV5Props {
   /** Whether the modal is open */
@@ -87,6 +88,7 @@ const SAMPLE_INVALID_JSON = `{
 export function ImportJsonPanelV5({ open, onClose }: ImportJsonPanelV5Props) {
   const [jsonInput, setJsonInput] = useState('');
   const [result, setResult] = useState<SilseImportValidationResult | null>(null);
+  const [preview, setPreview] = useState<SilseImportPreview | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -96,6 +98,7 @@ export function ImportJsonPanelV5({ open, onClose }: ImportJsonPanelV5Props) {
     if (open) {
       setJsonInput('');
       setResult(null);
+      setPreview(null);
       setIsValidating(false);
       setCopyStatus('idle');
     }
@@ -122,6 +125,7 @@ export function ImportJsonPanelV5({ open, onClose }: ImportJsonPanelV5Props) {
         message: 'Tempel JSON terlebih dahulu sebelum memvalidasi.',
         errors: [{ path: '', reason: 'invalid-json', message: 'Empty input' }],
       });
+      setPreview(null);
       return;
     }
 
@@ -132,6 +136,21 @@ export function ImportJsonPanelV5({ open, onClose }: ImportJsonPanelV5Props) {
     setTimeout(() => {
       const validationResult = validateSilseImportJsonString(jsonInput);
       setResult(validationResult);
+      // BATCH-09B: Derive preview only if valid. Invalid documents
+      // don't get a preview (they get the error display instead).
+      if (validationResult.valid && validationResult.document) {
+        try {
+          const previewData = deriveSilseImportPreview(validationResult.document);
+          setPreview(previewData);
+        } catch (err) {
+          // Preview derivation should never throw on a valid document,
+          // but if it does, we don't want to crash the modal. Log + null.
+          console.error('Preview derivation failed:', err);
+          setPreview(null);
+        }
+      } else {
+        setPreview(null);
+      }
       setIsValidating(false);
     }, 50);
   }, [jsonInput]);
@@ -156,6 +175,7 @@ export function ImportJsonPanelV5({ open, onClose }: ImportJsonPanelV5Props) {
   const handleClear = useCallback(() => {
     setJsonInput('');
     setResult(null);
+    setPreview(null);
     setCopyStatus('idle');
     textareaRef.current?.focus();
   }, []);
@@ -411,6 +431,150 @@ export function ImportJsonPanelV5({ open, onClose }: ImportJsonPanelV5Props) {
                   <p className="text-emerald-600 mt-2 italic">
                     ✓ JSON aman untuk diimpor. (Import ke proyek aktif akan tersedia di batch mendatang.)
                   </p>
+                </div>
+              )}
+
+              {/* ── BATCH-09B: Preview section (only when valid + preview derived) ── */}
+              {isValid && preview && (
+                <div
+                  className="mt-4 pt-4 border-t border-emerald-200 space-y-3"
+                  data-testid="import-json-preview"
+                >
+                  <h4 className="text-xs font-semibold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '14px' }}>preview</span>
+                    Preview Konten
+                  </h4>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-md px-2 py-1.5">
+                      <div className="text-emerald-600 font-semibold text-base" data-testid="preview-total-pages">
+                        {preview.totalPages}
+                      </div>
+                      <div className="text-emerald-700">Halaman</div>
+                    </div>
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-md px-2 py-1.5">
+                      <div className="text-emerald-600 font-semibold text-base" data-testid="preview-total-blocks">
+                        {preview.totalBlocks}
+                      </div>
+                      <div className="text-emerald-700">Total Blok</div>
+                    </div>
+                  </div>
+
+                  {/* Page list */}
+                  <div>
+                    <h5 className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                      Daftar Halaman
+                    </h5>
+                    <ol className="space-y-1 max-h-48 overflow-y-auto" data-testid="preview-page-list">
+                      {preview.pages.map((page) => (
+                        <li
+                          key={page.index}
+                          className="text-xs bg-white border border-slate-200 rounded-md px-2 py-1.5 flex items-start gap-2"
+                          data-testid={`preview-page-${page.index}`}
+                        >
+                          <span className="font-mono text-slate-400 flex-shrink-0">
+                            {page.index + 1}.
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium text-slate-800 truncate">
+                                {page.label}
+                              </span>
+                              <code className="text-[10px] px-1 py-0.5 bg-slate-100 text-slate-600 rounded font-mono">
+                                {page.templateType}
+                              </code>
+                              <span className="text-slate-400 text-[10px]">
+                                {page.blockCount} blok
+                              </span>
+                            </div>
+                            {page.blockTypes.length > 0 && (
+                              <div className="mt-1 flex flex-wrap gap-1" data-testid={`preview-page-${page.index}-block-types`}>
+                                {page.blockTypes.map((bt) => {
+                                  const hasEditor = preview.blockTypeSummary.find((s) => s.type === bt)?.hasEditor ?? false;
+                                  return (
+                                    <span
+                                      key={bt}
+                                      className={`text-[9px] px-1.5 py-0.5 rounded font-mono ${
+                                        hasEditor
+                                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                          : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                      }`}
+                                      title={hasEditor ? 'Punya editor khusus' : 'Belum punya editor khusus'}
+                                    >
+                                      {bt}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  {/* Block type summary */}
+                  {preview.blockTypeSummary.length > 0 && (
+                    <div>
+                      <h5 className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                        Ringkasan Tipe Blok
+                      </h5>
+                      <div className="flex flex-wrap gap-1.5" data-testid="preview-block-type-summary">
+                        {preview.blockTypeSummary.map((s) => (
+                          <span
+                            key={s.type}
+                            className={`text-[10px] px-2 py-0.5 rounded-full font-mono flex items-center gap-1 ${
+                              s.hasEditor
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}
+                            data-testid={`preview-block-type-${s.type}`}
+                          >
+                            <span className="font-semibold">{s.count}×</span>
+                            {s.type}
+                            {!s.hasEditor && (
+                              <span
+                                className="material-symbols-outlined"
+                                aria-hidden="true"
+                                style={{ fontSize: '10px' }}
+                                title="Belum punya editor khusus"
+                              >
+                                warning
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Warnings */}
+                  {preview.warnings.length > 0 && (
+                    <div
+                      className="bg-amber-50 border border-amber-200 rounded-md p-2.5"
+                      data-testid="preview-warnings"
+                    >
+                      <h5 className="text-[10px] font-semibold text-amber-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                        <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '12px' }}>warning</span>
+                        Peringatan ({preview.warnings.length})
+                      </h5>
+                      <ul className="space-y-1 max-h-32 overflow-y-auto" data-testid="preview-warnings-list">
+                        {preview.warnings.map((w, idx) => (
+                          <li
+                            key={idx}
+                            className="text-[10px] text-amber-700 flex items-start gap-1.5"
+                            data-testid={`preview-warning-${idx}`}
+                          >
+                            <span className="font-mono text-amber-500 flex-shrink-0">
+                              [{w.code}]
+                            </span>
+                            <span className="flex-1">{w.message}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
