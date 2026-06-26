@@ -157,8 +157,12 @@ describe('BATCH-10C: golden-pertemuan still registered (legacy-only)', () => {
     expect(src).toContain('registerContract(GOLDEN_PERTEMUAN_CONTRACT)');
   });
 
-  it('MODERN_EDUCATOR_CONTRACT is also registered', () => {
-    const src = readSrc('core/template/contract/ModernEducatorContract.ts');
-    expect(src).toContain('registerContract(MODERN_EDUCATOR_CONTRACT)');
+  it('MODERN_EDUCATOR_CONTRACT is registered (Patch-3: moved from MEC.ts to TTC.ts)', () => {
+    // Patch-3 moved MODERN_EDUCATOR_CONTRACT definition + registration
+    // from ModernEducatorContract.ts (MEC) into TemplateThemeContract.ts (TTC)
+    // to eliminate the circular import risk. MEC.ts is now a re-export only.
+    // Registration must therefore be found in TTC.ts, not MEC.ts.
+    const ttcSrc = readSrc('core/template/contract/TemplateThemeContract.ts');
+    expect(ttcSrc).toContain('registerContract(MODERN_EDUCATOR_CONTRACT)');
   });
 });

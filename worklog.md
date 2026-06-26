@@ -4878,3 +4878,148 @@ Stage Summary:
 - CI workflow: +11 batch test suites + 1 E2E smoke job
 - Total batch tests: 500 (was 485)
 - Ready for push + CI verification
+
+---
+Task ID: BATCH-10C-Patch-2C
+Agent: Super Z (main)
+Task: REAL-REACT-DOM-PROOF-01
+
+Work Log:
+- Senior verdict on Patch-2B: PATCH REQUIRED. Reason: tests named "DOM
+  render" were actually source-string audits (readFileSync + toContain).
+  Senior demanded real React Testing Library mounting:
+    render(<Component ... />)
+    screen.getByText('Macam-Macam Norma')
+    expect(...).toBeInTheDocument()
+- Inspected vitest config: jsdom env, RTL 16.3.2, jest-dom 6.9.1 all
+  installed. No vitest setupFiles — must import jest-dom/vitest inline.
+- Inspected CoverRenderer.tsx: takes {block, tokens, interactive?, ...}
+  Title rendered inside <h1><InlineTextEditor ... /></h1>. InlineTextEditor
+  renders a <span> (default tag) in non-editing mode.
+- Inspected SortirGameRenderer.tsx: titleEditor created via useInlineEditor
+  but NEVER rendered in JSX (known gap). Pool items rendered as <button>.
+  Kolom labels rendered via SortirKolom inner component. aria-label on
+  outer div = "Sortir: X dari Y item ditempatkan".
+- Inspected SCENE_REGISTRY (src/core/registry/SceneRegistry.tsx):
+  'cover' → React.lazy(() => import CoverRenderer)
+  'kuis'  → React.lazy(() => import KuisRenderer)
+  'sortir-game' → React.lazy(() => import SortirGameRenderer)
+  NOT legacy QuizWidget/GameWidget.
+- Inspected createPpknNormaGoldenProject(): returns 13 pages, cover[0]
+  has title='Macam-Macam Norma', subtitle='PPKn Kelas VII — Semester 1',
+  icon='⚖️', 3 badges, cta={label:'Mulai Belajar →'}, meta.durasi='2 × 40 menit'.
+- Inspected TokenResolver: constructor takes (themeId?, displayMode?).
+  Used 'ios-light' for simplest light theme in tests.
+- Wrote src/__tests__/batch10c-patch2c-real-react-dom-proof.test.tsx:
+  28 tests across 6 sections (A-F).
+
+Section A — CoverRenderer REAL DOM render (8 tests):
+  - render(<CoverRenderer block={block} tokens={tokens} />)
+  - screen.getByText('Macam-Macam Norma') → in DOM ✓
+  - titleEl.tagName === 'SPAN' (InlineTextEditor)
+  - titleEl.closest('h1') not null (wrapped by <h1>)
+  - subtitle, icon ⚖️, CTA button (getByRole button), meta "2 × 40 menit",
+    all 3 badges, "Pancasila · Kelas D" label — all in DOM ✓
+  - Anti-pass-on-empty: empty title → queryByText returns null ✓
+
+Section B — CoverRenderer all 3 variants render title (4 tests):
+  - variant A/B/C all render 'Macam-Macam Norma' in DOM
+  - variant undefined → defaults to A → renders title
+
+Section C — SCENE_REGISTRY dispatch (4 tests):
+  - SCENE_REGISTRY['cover'].renderer defined (React.lazy object)
+  - Render via <Suspense><RegisteredRenderer .../></Suspense>
+  - await screen.findByText('Macam-Macam Norma') → in DOM ✓
+  - SCENE_REGISTRY['kuis'] and ['sortir-game'] also registered
+
+Section D — SortirGameRenderer REAL DOM render (5 tests):
+  - Default sr-only instruction "Pilih item dari kolam" in DOM ✓
+  - aria-label "Sortir: 0 dari 4 item ditempatkan" on game container ✓
+  - All 4 kolom labels (Norma Agama/Kesopanan/Hukum/Kesusilaan) in DOM ✓
+  - All 4 pool items (Mencuri tetangga/Menghormati guru/Membayar pajak/
+    Berkata jujur) in DOM ✓
+  - Anti-pass-on-empty: empty pool → queryByText all 4 items returns null
+  - Documented gap: titleEditor created but not rendered in JSX,
+    block.title not visible. Out of scope for DOM-render proof.
+
+Section E — PPKn schema → DOM cross-check (4 tests):
+  - Schema cover block has title/subtitle/cta matching DOM assertions
+  - Schema kuis block has questions
+  - Schema materi page has def-box with content
+  (These are NOT DOM proofs — they're schema-vs-DOM consistency checks.
+   The DOM proofs are in sections A-D.)
+
+Section F — Honest PENDING status (3 tests):
+  - EXPORT_PROOF: status = 'PENDING_BY_DEV' (not 'PASS')
+    Honest: export-output/index.html is a React SPA shell — content
+    renders client-side at runtime. Static file read does NOT prove
+    cover title appears in runtime DOM.
+  - BROWSER_PROOF: status = 'PENDING_BY_DEV' (not 'PASS')
+    Honest: no Playwright agent-browser smoke performed in this batch.
+  - DOM_RENDER_PROOF: status = 'PASS'
+    Sections A/B/C/D above use real RTL — this is the proof that was
+    missing in Patch-2B.
+
+Mocks used (minimal, surgical):
+  - '@/store/canva-store' and '@/store/canva/store' (both specifiers):
+    editingBlockId=null, updateSchemaBlock=noop, etc. CoverRenderer
+    calls useCanvaStore((s) => s.updateSchemaBlock) just to memoize a
+    callback — not needed for read-only render.
+  - '@/store/interactive-store': mode='design', reportScore=noop.
+    KuisRenderer/SortirGameRenderer use this for score reporting —
+    not invoked in non-interactive render.
+  - '@/lib/sounds', '@/lib/confetti', '@/lib/a11y': noop — these pull
+    in authoring store / feature flags not needed for proof.
+  - matchMedia, IntersectionObserver, ResizeObserver polyfills in beforeAll.
+
+NO mocks for:
+  - CoverRenderer.tsx (the component under test)
+  - SortirGameRenderer.tsx (the component under test)
+  - InlineTextEditor.tsx (real production path)
+  - TokenResolver class (real instance with 'ios-light' theme)
+  - createPpknNormaGoldenProject() (real PPKn schema factory)
+  - SCENE_REGISTRY (real registry from src/core/registry/SceneRegistry.tsx)
+
+Fixed 2 stale tests (carried over from Patch-3 contract reorganization):
+  - batch10b-style-actual-effect.test.ts: PPKn template contractId
+    assertion updated from 'golden-pertemuan' → 'modern-educator'
+    (Patch-3 fixed the cover-hitam bug by switching default contract).
+  - batch10c-contract-cleanup.test.ts: MODERN_EDUCATOR_CONTRACT
+    registration assertion moved from ModernEducatorContract.ts →
+    TemplateThemeContract.ts (Patch-3 eliminated circular import
+    by moving definition + registration into TTC).
+
+Verification:
+  - TypeScript gate: 0 errors
+  - export:build: PASS (export-output/index.html, 1.97 MB, gzip 467 KB)
+  - Next.js build: PASS (1 turbopack warning, no errors)
+  - New test file: 28/28 PASS
+  - All 6 batch10b/c test files: 171/171 PASS
+    (batch10b-style-actual-effect 28, batch10c-contract-cleanup 18,
+     batch10c-patch2b-visual-runtime-proof 33,
+     batch10c-patch3-style-contract-ci-sync 28,
+     batch10c-patch2c-real-react-dom-proof 28,
+     batch10c-patch2-visual-stabilization 36)
+  - Other pre-existing test failures (a11y-9.0d, autosave-persistence,
+    flow-guru-gate, etc.) are NOT caused by this patch — they were
+    already failing before Patch-2C work began.
+
+Stage Summary:
+- Files created: 1
+  (src/__tests__/batch10c-patch2c-real-react-dom-proof.test.tsx)
+- Files modified: 2
+  (src/__tests__/batch10b-style-actual-effect.test.ts — stale contract
+   assertion updated for Patch-3 reorganization;
+   src/__tests__/batch10c-contract-cleanup.test.ts — stale registration
+   assertion updated for Patch-3 TTC ownership)
+- Real DOM render tests: 21 (across sections A/B/C/D)
+  - 8 CoverRenderer DOM tests (title/subtitle/icon/CTA/meta/badges/label/anti-empty)
+  - 4 CoverRenderer variant tests (A/B/C/default)
+  - 4 SCENE_REGISTRY dispatch tests
+  - 5 SortirGameRenderer DOM tests (instructions/aria-label/kolom/pool/anti-empty)
+- Honest PENDING tests: 2 (EXPORT_PROOF, BROWSER_PROOF)
+- DOM_RENDER_PROOF: PASS
+- Senior blocker P1 ("Real React DOM render test") RESOLVED.
+- Senior blocker P1 ("Actual export DOM/content proof") remains PENDING
+  (honestly recorded, not falsely claimed PASS).
+- Senior blocker P2 ("Browser smoke") remains PENDING (honestly recorded).

@@ -221,8 +221,10 @@ describe('BATCH-10B: PageRenderer contractId priority (source audit)', () => {
 describe('BATCH-10B: PPKn template contractId cleared by style family', () => {
   const src = readSrc('presets/ppkn/norma-golden-schema.ts');
 
-  it('PPKn template sets contractId = golden-pertemuan', () => {
-    expect(src).toContain("contractId = 'golden-pertemuan'");
+  it('PPKn template sets contractId = modern-educator (Patch-3: was golden-pertemuan)', () => {
+    // Patch-3 moved default contract from golden-pertemuan (dark) to
+    // modern-educator (light) to fix the "cover hitam" bug.
+    expect(src).toContain("contractId = 'modern-educator'");
   });
 
   it('style family engine source clears contractId', () => {
