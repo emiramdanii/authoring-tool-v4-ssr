@@ -4596,3 +4596,127 @@ Stage Summary:
 - Still NO store mutation (preview is read-only display, sesuai
   senior constraint "Belum apply ke store")
 - Ready for senior audit
+
+---
+Task ID: BATCH-10
+Agent: Super Z (main)
+Task: SILSE Batch 10 — STYLE-GLOBAL-ENGINE-01
+
+Work Log:
+- Senior audit Batch 09B CLOSED. Next: Batch 10 Style Engine dengan scope:
+  1. 3 style family: modern-clean, mission-game, formal-edu
+  2. Style hanya ubah tampilan (themeId, navbarStyle, scoreDisplayStyle)
+  3. Jangan ubah content (title, body, questions, ans, ex, page order)
+  4. Test: style swap tidak ubah content, hanya style fields
+- Riset existing style system:
+  * 6 StylePresetId: academic-clean, school-cheerful, mission-adventure,
+    dark-elegant, nusantara-nature, modern-interactive
+  * WorkspaceStyleMenu.applyStyleGlobal() only patched themeId (not
+    navbarStyle or scoreDisplayStyle)
+  * No "style family" abstraction existed
+- Created src/lib/style-family-engine.ts (224 lines):
+  * StyleFamily interface (id, label, description, icon, accentColor,
+    themeId, navbarStyle, scoreDisplayStyle)
+  * NavbarStyle = 'colorful' | 'minimal' | 'dark'
+  * ScoreDisplayStyle = 'stars' | 'percentage' | 'points'
+  * STYLE_FAMILIES array with 3 families:
+    - modern-clean: Modern Bersih, themeId=modern-interactive,
+      navbarStyle=minimal, scoreDisplayStyle=points
+    - mission-game: Misi Game, themeId=mission-adventure,
+      navbarStyle=colorful, scoreDisplayStyle=stars
+    - formal-edu: Formal Edu, themeId=academic-clean,
+      navbarStyle=dark, scoreDisplayStyle=percentage
+  * DEFAULT_STYLE_FAMILY_ID = 'modern-clean'
+  * getStyleFamily(id): returns family or null
+  * getAllStyleFamilyIds(): returns ['modern-clean','mission-game','formal-edu']
+  * detectStyleFamily(pages): reverse-maps themeId → family ID, returns
+    DEFAULT if unknown/empty
+  * PROTECTED_CONTENT_FIELDS: list of content fields that must NEVER be
+    touched (title, subtitle, content, body, questions, q, opts, ans, ex,
+    pool, kolom, badges, cta, teks, petunjuk, id, templateType, etc.)
+  * applyStyleFamily(pages, familyId): PURE function, no store mutation:
+    - Patches schema.themeId, templateData.schemaThemeId,
+      templateData.scoreDisplayStyle, navConfig.navbarStyle
+    - Preserves ALL content fields (title, questions, opts, ans, etc.)
+    - Returns new pages array (no input mutation)
+    - Unknown familyId → returns pages unchanged (no-op)
+    - Handles missing schema/templateData/navConfig (creates them)
+  * verifyContentPreserved(original, styled): helper that deep-compares
+    pages excluding style-only fields, returns true if content unchanged
+  * __TEST__ export: PROTECTED_CONTENT_FIELDS, STYLE_ONLY_FIELDS
+- Patched WorkspaceStyleMenu.tsx:
+  * Replaced old applyStyleGlobal() with applyStyleFamily() from engine
+  * Replaced getAllStylePresets() with STYLE_FAMILIES from engine
+  * Replaced currentThemeId detection with detectStyleFamily()
+  * applyStyleFamilyActive(family): calls _pushHistory + applyStyleFamily
+    + useCanvaStore.setState (single write path preserved)
+  * Renders 3 family buttons with data-testid={`style-family-btn-${family.id}`}
+  * Added data-testid="workspace-style-menu-btn" on trigger button
+  * Removed old STYLE_LABELS map (labels now come from family.label)
+  * Removed old getAllStylePresets import (old system fully replaced)
+- Created src/__tests__/batch10-style-engine.test.ts (77 tests):
+  * Section A: source audit (11 tests) — exports, imports, types
+  * Section B: 3 families defined (8 tests) — each family has correct
+    label, themeId, navbarStyle, scoreDisplayStyle, icon, accentColor
+  * Section C: getStyleFamily edge cases (2 tests) — null/undefined/123
+  * Section D: detectStyleFamily (8 tests) — reverse mapping for all
+    3 families, templateData fallback, unknown→default, empty→default,
+    first-page-wins
+  * Section E: applyStyleFamily style fields updated (10 tests) —
+    themeId, schemaThemeId, navbarStyle, scoreDisplayStyle all change;
+    all 3 families tested; unknown family = no-op; no input mutation;
+    multiple pages; missing schema/templateData/navConfig handled;
+    empty array
+  * Section F: content preservation CRITICAL (18 tests) — does NOT
+    change title, subtitle, icon, badges, cta, questions, ans, ex,
+    page.id, page.label, page.templateType, page order, block.id,
+    block.type, custom templateData fields, navConfig fields other than
+    navbarStyle, blocks array length; all 3 families preserve content
+  * Section G: verifyContentPreserved (1 test) — real scenario with
+    applyStyleFamily
+  * Section H: PROTECTED_CONTENT_FIELDS contract (10 tests) — includes
+    title/questions/ans/opts/ex/pool/kolom, excludes style fields,
+    STYLE_ONLY_FIELDS has exactly 4
+  * Section I: WorkspaceStyleMenu source audit (9 tests) — imports
+    from engine, uses applyStyleFamily, detectStyleFamily, 3 family
+    buttons, data-testid, _pushHistory, setState, no old imports
+- Created e2e/v10-style-engine.spec.ts (4 Playwright tests, HARD ASSERT):
+  1. style menu opens with 3 family options (all buttons visible)
+  2. swap to mission-game → canvas content preserved exactly
+  3. swap to formal-edu → swap back to modern-clean → content survives
+     round-trip
+  4. all 3 families applied sequentially → content survives each swap
+- Test iteration: first E2E run failed because h1 selector found hidden
+  element (line-clamp-4 CSS). Fix: use canvas region textContent instead
+  of h1 textContent for content comparison.
+
+Local verification:
+- 77/77 unit tests PASS (batch10-style-engine)
+- 4/4 Playwright E2E tests PASS (all HARD ASSERT):
+  * menu opens: 21.5s
+  * swap mission-game: 23.8s
+  * round-trip: 25.3s
+  * sequential: 27.0s
+- 96/96 Batch 09B tests still PASS (no regression)
+- 70/70 Batch 08 tests still PASS (no regression)
+- 6/6 Batch 01 tests still PASS (no regression)
+- Total: 77 + 4 + 96 + 70 + 6 = 253 tests PASS
+- guard:no-legacy-runtime PASS (328 files, 0 legacy symbols)
+- guard:contract-sync PASS (block types match)
+
+Stage Summary:
+- Files modified: 1 (WorkspaceStyleMenu.tsx — replaced old style system)
+- Files baru: 3 (style-family-engine.ts, batch10-style-engine.test.ts,
+  v10-style-engine.spec.ts)
+- Tests added: 77 unit + 4 E2E = 81 new tests
+- No source code in save/export/load paths touched (Batch 01-09B
+  integrity surfaces preserved)
+- No new dependencies added
+- 3 style families defined: modern-clean, mission-game, formal-edu
+- applyStyleFamily is PURE (no store mutation) — caller owns setState
+- Content preservation verified by 18 dedicated tests + 4 E2E tests
+- PROTECTED_CONTENT_FIELDS documents the contract: which fields must
+  NEVER be touched by style swap
+- Old applyStyleGlobal removed from WorkspaceStyleMenu (replaced by
+  engine)
+- Ready for senior audit

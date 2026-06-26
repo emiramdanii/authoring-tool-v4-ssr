@@ -3,17 +3,25 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useCanvaStore } from '@/store/canva-store';
-import { getAllStylePresets, type StylePresetDefinition } from '@/core/style/preset-registry';
 import { toast } from 'sonner';
+import {
+  STYLE_FAMILIES,
+  applyStyleFamily,
+  detectStyleFamily,
+  type StyleFamily,
+} from '@/lib/style-family-engine';
 
-const STYLE_LABELS: Record<string, string> = {
-  'modern-interactive': 'Modern Interaktif',
-  'school-cheerful': 'Sekolah Ceria',
-  'mission-adventure': 'Misi Petualangan',
-  'nusantara-nature': 'Nusantara Alam',
-  'academic-clean': 'Akademik Bersih',
-  'dark-elegant': 'Gelap Elegan',
-};
+// ═══════════════════════════════════════════════════════════════
+// BATCH-10: WorkspaceStyleMenu now uses StyleFamily engine.
+//
+// Previously: applyStyleGlobal() only patched schema.themeId.
+// Now: applyStyleFamilyActive() patches themeId + navbarStyle +
+//      scoreDisplayStyle — a coherent bundle of style fields.
+//
+// Content fields (title, body, questions, ans, ex, etc.) are NEVER
+// touched. The applyStyleFamily() function is pure and tested to
+// preserve all content.
+// ═══════════════════════════════════════════════════════════════
 
 export function WorkspaceStyleMenu() {
   const pages = useCanvaStore((s) => s.pages);
@@ -25,7 +33,6 @@ export function WorkspaceStyleMenu() {
   useLayoutEffect(() => {
     if (open && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      // Position: below the button, right-aligned to button's right edge
       const menuWidth = 224; // w-56 = 14rem = 224px
       const left = Math.max(8, rect.right - menuWidth);
       const top = rect.bottom + 8;
@@ -33,30 +40,20 @@ export function WorkspaceStyleMenu() {
     }
   }, [open]);
 
-  const currentThemeId = React.useMemo(() => {
-    for (const page of pages) {
-      const tid = page?.schema?.themeId || (page?.templateData?.schemaThemeId as string | undefined);
-      if (tid) return tid;
-    }
-    return 'modern-interactive';
-  }, [pages]);
+  // BATCH-10: Detect current family from pages (reverse-maps themeId → family)
+  const currentFamilyId = React.useMemo(() => detectStyleFamily(pages), [pages]);
+  const currentFamily = STYLE_FAMILIES.find((f) => f.id === currentFamilyId);
+  const currentLabel = currentFamily?.label ?? 'Modern Bersih';
 
-  const currentLabel = STYLE_LABELS[currentThemeId] || 'Modern Interaktif';
-  const presets = getAllStylePresets();
-
-  const applyStyleGlobal = (presetId: string) => {
+  // BATCH-10: Apply style family — patches themeId + navbarStyle + scoreDisplayStyle
+  // Does NOT touch content fields (verified by tests + verifyContentPreserved).
+  const applyStyleFamilyActive = (family: StyleFamily) => {
     const state = useCanvaStore.getState();
     state._pushHistory();
-    const newPages = state.pages.map((page) => {
-      const updatedTemplateData = { ...(page.templateData || {}), schemaThemeId: presetId };
-      if (page.schema) {
-        return { ...page, schema: { ...page.schema, themeId: presetId }, templateData: updatedTemplateData };
-      }
-      return { ...page, templateData: updatedTemplateData };
-    });
+    const newPages = applyStyleFamily(state.pages, family.id);
     useCanvaStore.setState({ pages: newPages });
     setOpen(false);
-    toast.success(`Style diterapkan: ${STYLE_LABELS[presetId] || presetId}`);
+    toast.success(`Style diterapkan: ${family.label}`);
   };
 
   // V3-1A: Portal at document.body with position from buttonRef rect
@@ -70,22 +67,22 @@ export function WorkspaceStyleMenu() {
         aria-label="Pilih style media"
       >
         <div className="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">Style Media</div>
-        {presets.map((preset: StylePresetDefinition) => {
-          const isActive = currentThemeId === preset.id;
-          const label = STYLE_LABELS[preset.id] || preset.id;
+        {STYLE_FAMILIES.map((family) => {
+          const isActive = currentFamilyId === family.id;
           return (
             <button
-              key={preset.id}
-              onClick={() => applyStyleGlobal(preset.id)}
+              key={family.id}
+              onClick={() => applyStyleFamilyActive(family)}
               className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left transition-colors ${isActive ? 'bg-emerald-50 text-emerald-800 font-medium' : 'text-slate-700 hover:bg-slate-50'}`}
               role="menuitem"
               type="button"
+              aria-label={`Terapkan style ${family.label}`}
+              data-testid={`style-family-btn-${family.id}`}
             >
               <div className="flex gap-0.5 flex-shrink-0">
-                <div className="w-3 h-3 rounded-full border border-slate-200" style={{ background: preset.colors.accent }} aria-hidden="true" />
-                <div className="w-3 h-3 rounded-full border border-slate-200" style={{ background: preset.semantic.accents.cyan }} aria-hidden="true" />
+                <div className="w-3 h-3 rounded-full border border-slate-200" style={{ background: family.accentColor }} aria-hidden="true" />
               </div>
-              <span className="flex-1">{label}</span>
+              <span className="flex-1">{family.label}</span>
               {isActive && <span className="material-symbols-outlined text-emerald-600" aria-hidden="true" style={{ fontSize: '16px' }}>check</span>}
             </button>
           );
@@ -105,6 +102,7 @@ export function WorkspaceStyleMenu() {
         aria-label="Pilih style media"
         aria-expanded={open}
         type="button"
+        data-testid="workspace-style-menu-btn"
       >
         <span className="material-symbols-outlined text-emerald-600" aria-hidden="true" style={{ fontSize: '16px' }}>palette</span>
         <span className="hidden lg:inline">{currentLabel}</span>
