@@ -37,7 +37,9 @@ import type { SceneType } from '../edu/education-scene-types';
 // token each page type uses. These MUST match the contract's pageAccents.
 // If the contract changes, these must change too.
 
-import { getContractOrGolden } from '../template/contract/TemplateThemeContract';
+// BATCH-10C-Patch-2B: Import from barrel (not direct TTC) to ensure
+// modern-educator is registered when getContractOrGolden is called.
+import { getContractOrGolden } from '../template/contract';
 
 const SECTION_LABELS: Record<string, string> = {
   cover: 'Cover',
