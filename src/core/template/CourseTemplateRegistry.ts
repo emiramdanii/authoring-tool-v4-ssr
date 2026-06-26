@@ -183,8 +183,8 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     subject: 'PPKn',
     grade: '7',
     semester: '1',
-    theme: 'golden-presentation',
-    contractId: 'golden-pertemuan',
+    theme: 'modern-interactive',
+    contractId: 'modern-educator',
     status: 'active',
     scenes: [
       { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -373,7 +373,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'globalisasi',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -397,7 +397,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'ham-hak-kewajiban',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -420,7 +420,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'perilaku-patuh',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -443,7 +443,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'bhinneka-tunggal-ika',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -466,7 +466,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'nilai-pancasila',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -490,7 +490,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '8',
     semester: '1',
     theme: 'globalisasi',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -513,7 +513,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '4',
     semester: '1',
     theme: 'nilai-pancasila',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -538,7 +538,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '10',
     semester: '1',
     theme: 'globalisasi',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     status: 'legacy',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -571,7 +571,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '*',
     theme: 'default',
     status: 'active',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -592,7 +592,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '*',
     theme: 'default',
     status: 'active',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -614,7 +614,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '*',
     theme: 'default',
     status: 'active',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -636,7 +636,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '*',
     theme: 'default',
     status: 'active',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -658,7 +658,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '*',
     theme: 'default',
     status: 'active',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
@@ -684,9 +684,9 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     subject: 'PPKn',
     grade: '7',
     semester: '1',
-    theme: 'golden-presentation',
+    theme: 'modern-interactive',
     status: 'active',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     presetId: 'macam-norma',
     scenes: [
       { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -711,9 +711,9 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     subject: 'PPKn',
     grade: '7',
     semester: '1',
-    theme: 'golden-presentation',
+    theme: 'modern-interactive',
     status: 'active',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     presetId: 'misi-penjelajah-pancasila',
     scenes: [
       { templateType: 'cover', label: 'Pembuka', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -738,7 +738,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     semester: '*',
     theme: 'default',
     status: 'active',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
@@ -906,7 +906,7 @@ export async function createProjectFromTemplate(
           templateData: raw.templateData,
           pageMode: 'schema' as const,
           schema: raw.schema,
-          contractId: (raw as { contractId?: string }).contractId || template.contractId || 'golden-pertemuan',
+          contractId: (raw as { contractId?: string }).contractId || template.contractId || 'modern-educator',
         }));
 
         // Cover pages should show navbar + progress

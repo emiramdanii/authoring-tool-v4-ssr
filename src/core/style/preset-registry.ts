@@ -168,42 +168,40 @@ function buildSemanticPalette(accents: {
 export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
   // ─────────────────────────────────────────────────────────────
   // academic-clean
-  // Mirrors legacy 'golden-presentation' theme (golden accent + navy bg).
-  // Also serves as the default for unmapped PPKn domain themes
-  // (hakikat-norma, nilai-pancasila, etc.) which inherit golden accent.
-  // Includes macam-norma categories in case old PPKn projects migrate.
+  // BATCH-10C: Changed from dark navy (golden mirror) to LIGHT theme.
+  // Was: background #0f172a, text #ffffff (dark — misleading name "clean")
+  // Now: background #f8fafc, text #1e293b (actually clean/light)
+  // Legacy golden-presentation projects still render via contract fallback.
   // ─────────────────────────────────────────────────────────────
   'academic-clean': {
     id: 'academic-clean',
     label: 'Akademik Bersih',
     description:
-      'Tampilan tenang dan profesional dengan aksen emas. Cocok untuk materi formal dan presentasi akademik.',
+      'Tampilan terang dan profesional dengan aksen emas. Cocok untuk materi formal dan presentasi akademik.',
     colors: {
-      background: '#0f172a',
-      surface: 'rgba(255,255,255,0.06)',
-      surfaceStrong: '#1e293b',
-      text: '#ffffff',
+      background: '#f8fafc',
+      surface: '#ffffff',
+      surfaceStrong: '#f1f5f9',
+      text: '#1e293b',
       textMuted: '#64748b',
-      accent: '#fbbf24',
-      accentContrast: '#1a1a1a',
-      border: 'rgba(255,255,255,0.1)',
-      success: '#4ade80',
-      error: '#f87171',
+      accent: '#d97706',
+      accentContrast: '#ffffff',
+      border: '#e2e8f0',
+      success: '#16a34a',
+      error: '#dc2626',
     },
     semantic: buildSemanticPalette({
-      yellow: '#fbbf24',
-      cyan: '#2563eb',
-      red: '#f87171',
-      purple: '#c084fc',
-      green: '#4ade80',
-      orange: '#fb923c',
-      // macam-norma categories — preserved so PPKn projects keep their
-      // 4-color norma distinction after migration
+      yellow: '#d97706',
+      cyan: '#0284c7',
+      red: '#dc2626',
+      purple: '#7c3aed',
+      green: '#16a34a',
+      orange: '#ea580c',
       categories: {
-        agama: '#fbbf24',
-        kesusilaan: '#f87171',
-        kesopanan: '#38bdf8',
-        hukum: '#c084fc',
+        agama: '#d97706',
+        kesusilaan: '#dc2626',
+        kesopanan: '#0284c7',
+        hukum: '#7c3aed',
       },
     }),
     typography: {
@@ -213,15 +211,15 @@ export const STYLE_PRESETS: Record<StylePresetId, StylePresetDefinition> = {
       bodyScale: '0.92rem',
     },
     shape: {
-      radius: '16px',
+      radius: '12px',
       borderWidth: '1px',
-      shadow: '0 4px 6px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.12)',
+      shadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
     },
     spacing: {
       density: 'comfortable',
     },
     navigation: {
-      style: 'colorful',
+      style: 'minimal',
     },
     _legacyThemeId: 'golden-presentation',
     _legacyContractId: 'golden-pertemuan',

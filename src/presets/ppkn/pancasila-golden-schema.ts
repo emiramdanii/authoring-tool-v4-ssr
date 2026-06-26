@@ -7,7 +7,7 @@
 //   - TP max 4 items per page
 //   - Max 3 active colors per page
 //   - No placeholder text
-//   - contractId = 'golden-pertemuan' on every page
+//   - contractId = 'modern-educator' on every page
 //   - sectionLabel + sectionColor on every page
 //   - body fontSize minimum 20px (enforced by contract)
 //   - cover title minimum 48px (enforced by contract)
@@ -52,7 +52,7 @@ function makeSchemaPage(
   const page = createPage(label, templateType as CanvaPage['templateType']);
   page.label = label;
   page.templateVariant = 'A';
-  page.contractId = 'golden-pertemuan'; // STANDAR: One contract per full pertemuan
+  page.contractId = 'modern-educator'; // STANDAR: One contract per full pertemuan
 
   const schema: ScreenSchema = {
     id: `screen-${bid()}`,

@@ -63,7 +63,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         pageMode: 'schema' as const,
         schema: raw.schema,
         // STANDAR: Contract ID for TemplateThemeContract enforcement
-        contractId: (raw as { contractId?: string }).contractId || 'golden-pertemuan',
+        contractId: (raw as { contractId?: string }).contractId || 'modern-educator',
       }));
 
       // Cover pages should hide the top navbar
@@ -129,7 +129,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
         pageMode: 'schema' as const,
         schema: raw.schema,
         // STANDAR: Contract ID for TemplateThemeContract enforcement
-        contractId: (raw as { contractId?: string }).contractId || 'golden-pertemuan',
+        contractId: (raw as { contractId?: string }).contractId || 'modern-educator',
       }));
 
       // Cover pages should show navbar + progress
@@ -185,7 +185,7 @@ export const createSchemaPresetSlice: StateCreator<CanvaState, [], [], SchemaPre
       // Ensure every page has proper defaults
       const safePages: CanvaPage[] = pages.map((page) => ({
         ...page,
-        contractId: page.contractId || 'golden-pertemuan',
+        contractId: page.contractId || 'modern-educator',
         pageMode: (page.pageMode || 'schema') as CanvaPage['pageMode'],
       }));
 

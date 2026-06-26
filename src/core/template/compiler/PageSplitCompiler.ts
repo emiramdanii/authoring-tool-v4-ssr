@@ -234,7 +234,7 @@ function makeSchemaPage(
   const page = createPage(label, templateType as CanvaPage['templateType']);
   page.label = label;
   page.templateVariant = variant || 'A';
-  page.contractId = contractId || 'golden-pertemuan';
+  page.contractId = contractId || 'modern-educator';
 
   const schema: ScreenSchema = {
     id: `screen-${bid()}`,

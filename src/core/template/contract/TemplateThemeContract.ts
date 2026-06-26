@@ -19,6 +19,8 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { BlockVariant } from '@/core/schema/types/base';
+// BATCH-10C: Import MODERN_EDUCATOR_CONTRACT for light default fallback
+import { MODERN_EDUCATOR_CONTRACT } from './ModernEducatorContract';
 
 // Modern Educator accent palette — defined here to avoid circular imports
 // with ModernEducatorContract
@@ -50,7 +52,9 @@ export function getContract(contractId: string): TemplateThemeContract | undefin
 }
 
 export function getContractOrGolden(contractId?: string): TemplateThemeContract {
-  return CONTRACT_REGISTRY.get(contractId || '') || GOLDEN_PERTEMUAN_CONTRACT;
+  // BATCH-10C: Default fallback is now MODERN_EDUCATOR_CONTRACT (light theme),
+  // not GOLDEN_PERTEMUAN_CONTRACT (dark navy). Golden pertemuan is legacy-only.
+  return CONTRACT_REGISTRY.get(contractId || '') || MODERN_EDUCATOR_CONTRACT;
 }
 
 // ── Contract Types ──────────────────────────────────────────────

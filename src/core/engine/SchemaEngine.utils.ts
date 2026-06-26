@@ -116,7 +116,7 @@ export function schemaToCanvaPages(schema: LessonSchema): Array<{
       // STANDAR: Contract enforcement on every page
       // Map themeId → contractId: 'macam-norma' theme uses the 'macam-norma' contract
       // (teal accent, solid dark cards), everything else uses golden-pertemuan
-      contractId: schema.themeId === 'macam-norma' ? 'macam-norma' : 'golden-pertemuan',
+      contractId: schema.themeId === 'macam-norma' ? 'macam-norma' : 'modern-educator',
       // Navigation config: cover pages hide navbar, all others show it
       navConfig: {
         showNavbar: screen.templateType !== 'cover',

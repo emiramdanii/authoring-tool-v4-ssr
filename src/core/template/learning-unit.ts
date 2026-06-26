@@ -132,12 +132,12 @@ let _compilerIdCounter = 0;
  *   - Block IDs are stabilized
  *
  * @param units - The learning units to compile
- * @param contractId - The TemplateThemeContract ID (default: 'golden-pertemuan')
+ * @param contractId - The TemplateThemeContract ID (default: 'modern-educator')
  * @returns CanvaPage[] ready for the canva store
  */
 export function compileLearningUnitsToPages(
   units: LearningUnit[],
-  contractId: string = 'golden-pertemuan',
+  contractId: string = 'modern-educator',
 ): CanvaPage[] {
   _compilerIdCounter = 0;
   const pages: CanvaPage[] = [];
@@ -223,7 +223,7 @@ export function splitKuisIntoUnits(
       } as SchemaBlock],
       order: baseOrder + i,
       durasi: '±2\'',
-      contractId: 'golden-pertemuan',
+      contractId: 'modern-educator',
     };
   });
 }
@@ -258,7 +258,7 @@ export function splitTpIntoUnits(
       blocks: [tpBlock],
       order: baseOrder,
       durasi: '±5\'',
-      contractId: 'golden-pertemuan',
+      contractId: 'modern-educator',
     }];
   }
 
@@ -287,7 +287,7 @@ export function splitTpIntoUnits(
     } as SchemaBlock],
     order: baseOrder + i,
     durasi: '±3\'',
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
   }));
 }
 
@@ -322,6 +322,6 @@ export function unitFromBlock(
     order: options?.order ?? 0,
     durasi: options?.durasi,
     background: options?.background,
-    contractId: 'golden-pertemuan',
+    contractId: 'modern-educator',
   };
 }
