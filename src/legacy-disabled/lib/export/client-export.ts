@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12-05: quarantined to src/legacy-disabled/, not type-checked
 // ═══════════════════════════════════════════════════════════════════════
 // CLIENT-SIDE EXPORT — Minimal client-side HTML export
 // ═══════════════════════════════════════════════════════════════════════

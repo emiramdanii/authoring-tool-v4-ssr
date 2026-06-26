@@ -145,11 +145,15 @@ export type { BlockCrashRecord, SafeModeLevel, SafeModeStatus } from '../../rend
 export { BlockErrorBoundary } from '../../renderer/BlockErrorBoundary';
 
 // ── Boot Recovery Orchestrator (FASE 6: Unified Boot Sequence) ──
-export { BootRecoveryOrchestrator, bootRecoveryOrchestrator } from '../boot-recovery';
-export type {
-  BootReport,
-  SafeModeBootResult,
-  TransactionRecoveryResult,
-  IntegrityCheckBootResult,
-  SchemaHealingBootResult,
-} from '../boot-recovery';
+// BATCH-12-05: boot-recovery.ts moved to src/legacy-disabled/. The re-exports
+// are commented out because the module is no longer in the active codebase.
+// V5 does not use the legacy boot recovery orchestrator — AppErrorBoundary
+// in layout.tsx handles runtime errors, and DashboardV5 handles resume.
+// export { BootRecoveryOrchestrator, bootRecoveryOrchestrator } from '../boot-recovery';
+// export type {
+//   BootReport,
+//   SafeModeBootResult,
+//   TransactionRecoveryResult,
+//   IntegrityCheckBootResult,
+//   SchemaHealingBootResult,
+// } from '../boot-recovery';

@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12-05: quarantined to src/legacy-disabled/, not type-checked
 // ═══════════════════════════════════════════════════════════════════════
 // @LEGACY_EXPORT_PATH — PHASE-3A
 // This is the STATIC HTML export renderer. It is NOT the official

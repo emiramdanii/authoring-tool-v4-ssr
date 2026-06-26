@@ -121,7 +121,8 @@ import AddBlockPanel from '@/components/canva/left-panel/AddBlockPanel';
 import { ExportSuccessDialog } from '@/components/shared/ExportSuccessDialog';
 import { SkipNavLink } from '@/components/shared/SkipNavLink';
 import { useCanvaStore } from '@/store/canva-store';
-import type { BootReport } from '@/core/editor/boot-recovery';
+// BATCH-12-05: boot-recovery.ts moved to legacy-disabled. BootReport type + makeBootReport helper removed.
+// import type { BootReport } from '@/core/editor/boot-recovery';
 
 // ─────────────────────────────────────────────────────────────────
 // Audit helpers — emulate axe-core's most important checks
@@ -294,26 +295,7 @@ function auditAll(container: HTMLElement): string[] {
 // Shared fixtures
 // ─────────────────────────────────────────────────────────────────
 
-function makeBootReport(overrides: Partial<BootReport> = {}): BootReport {
-  return {
-    needsRecovery: true, severity: 'moderate',
-    safeMode: { initialized: true, safeBlockCount: 0, safeBlockIds: [] },
-    transactionRecovery: {
-      hasIncompleteTransaction: true,
-      recoveryData: {
-        transactionId: 'synthetic-txn-001', beganAt: Date.now(),
-        preSnapshot: { id: 'schema-synthetic', templateType: 'materi', blocks: [] },
-      } as never,
-      autoRecovered: false,
-    },
-    integrity: { status: 'no-checksum', healed: false, healedCount: 0, healReport: [], integrityResult: null },
-    schemaHealing: { neededHealing: false, totalBlocksExamined: 0, totalBlocksRepaired: 0, totalBlocksRemoved: 0, pageReports: [] },
-    healedPages: [],
-    durationMs: 5, bootTimestamp: Date.now(),
-    summary: '[MODERATE] test report',
-    ...overrides,
-  };
-}
+// BATCH-12-05: makeBootReport removed (BootReport type quarantined, function was unused after RecoveryDialog removal)
 
 function makeMinimalPages() {
   return [{

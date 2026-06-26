@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12-05: quarantined to src/legacy-disabled/, not type-checked
 // ═══════════════════════════════════════════════════════════════════
 // SPRINT 9.0E — Performance Baseline Gate
 // ═══════════════════════════════════════════════════════════════════

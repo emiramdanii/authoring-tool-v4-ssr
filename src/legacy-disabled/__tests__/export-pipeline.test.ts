@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12-05: quarantined to src/legacy-disabled/, not type-checked
 // ═══════════════════════════════════════════════════════════════════════
 // EXPORT PIPELINE TESTS — Block renderers, quiz renderers, navigation
 // renderers, utility functions, and renderer dispatch chain
