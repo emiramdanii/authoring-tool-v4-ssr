@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12-07: quarantined to src/legacy-disabled/
 // ═══════════════════════════════════════════════════════════════════
 // RC STABILIZATION REGRESSION TESTS — Export Parity + Overflow Edge Cases
 // ═══════════════════════════════════════════════════════════════════

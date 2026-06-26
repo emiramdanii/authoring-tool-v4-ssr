@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12-07: quarantined to src/legacy-disabled/
 // ═══════════════════════════════════════════════════════════════════════
 // GAME RENDERERS — Interactive game block HTML rendering for export
 // ═══════════════════════════════════════════════════════════════════════
