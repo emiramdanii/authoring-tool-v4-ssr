@@ -2,7 +2,7 @@
 
 **Status**: SPEC DOCUMENT (Batch 13A — QUIZ-GAME-GOLDEN-REFERENCE-AUDIT-01)
 **Date**: 2026-06-26
-**HEAD**: `8c41744`
+**HEAD**: `8a9e15b` (BATCH-13A)
 **Purpose**: Document legacy quiz/game behavior that must be preserved in V5.
 
 ---

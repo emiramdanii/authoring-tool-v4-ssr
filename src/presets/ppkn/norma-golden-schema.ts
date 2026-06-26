@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════
 // STANDAR UTAMA SILSE compliant:
 //   - 1 page = 1 learning focus
-//   - Quiz = 1 question per page
+//   - Quiz = all questions in 1 page (BATCH-13B: was 1 soal per halaman)
 //   - TP max 4 items per page
 //   - Max 3 active colors per page
 //   - No placeholder text
@@ -328,8 +328,10 @@ function createDiskusiPage(): SchemaCanvaPage {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// PAGES 10-14 — KUIS (1 pertanyaan per halaman)
-// STANDAR: Quiz = 1 question per page, max 4 options
+// PAGE 10 — KUIS (semua soal dalam 1 halaman)
+// BATCH-13B: Changed from 5 kuis pages (1 soal per halaman) to 1 page with all 5 questions.
+// QuizWidget already supports multi-question step-reveal (Q1→Q2→...→Result).
+// This fixes the "PowerPoint web" problem — quiz now has internal state.
 // ═══════════════════════════════════════════════════════════════════
 
 const QUIZ_QUESTIONS = [
@@ -365,25 +367,23 @@ const QUIZ_QUESTIONS = [
   },
 ];
 
-function createKuisPages(): SchemaCanvaPage[] {
-  return QUIZ_QUESTIONS.map((q, i) => {
-    return makeSchemaPage(
-      `Kuis ${i + 1}`,
-      'kuis',
-      [{
-        type: 'kuis',
-        id: bid(),
-        title: `Kuis: Macam-Macam Norma (${i + 1}/${QUIZ_QUESTIONS.length})`,
-        questions: [q], // STANDAR: 1 question per page
-        variant: 'A',
-        compression: { priority: 'high', strategy: 'scroll', splittable: true },
-        semantic: { topic: 'Macam-Macam Norma', learningPhase: 'inti', interactionType: 'choose', importance: 0.9 },
-      }],
-      'assessment',
-      `📝 Kuis ${i + 1}/${QUIZ_QUESTIONS.length}`,
-      'g',
-    );
-  });
+function createKuisPage(): SchemaCanvaPage {
+  return makeSchemaPage(
+    'Kuis',
+    'kuis',
+    [{
+      type: 'kuis',
+      id: bid(),
+      title: 'Kuis: Macam-Macam Norma',
+      questions: QUIZ_QUESTIONS, // BATCH-13B: All questions in 1 block
+      variant: 'A',
+      compression: { priority: 'high', strategy: 'scroll', splittable: true },
+      semantic: { topic: 'Macam-Macam Norma', learningPhase: 'inti', interactionType: 'choose', importance: 0.9 },
+    }],
+    'assessment',
+    '📝 Kuis',
+    'g',
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -465,7 +465,7 @@ function createPenutupPage(): SchemaCanvaPage {
 
 // ═══════════════════════════════════════════════════════════════════
 // MAIN: Create the Golden Project
-// STANDAR UTAMA SILSE compliant — 17 pages
+// BATCH-13B: 13 pages (was 17 — collapsed 5 kuis pages into 1)
 // ═══════════════════════════════════════════════════════════════════
 
 export function createPpknNormaGoldenProject(metadata: NormaGoldenMetadata = {}): CanvaPage[] {
@@ -482,10 +482,10 @@ export function createPpknNormaGoldenProject(metadata: NormaGoldenMetadata = {})
     createMateri2Page(),             // 7. Materi 2: 4 Jenis Norma (4 cards = max)
     createMateri3Page(),             // 8. Materi 3: Sumber & Sanksi
     createDiskusiPage(),             // 9. Diskusi (2 questions)
-    ...createKuisPages(),            // 10-14. Kuis (1 question per page × 5)
-    createRefleksiPage(),            // 15. Refleksi (2 questions + penugasan)
-    createRangkumanPage(),           // 16. Rangkuman (4 concepts = max)
-    createPenutupPage(),             // 17. Penutup
+    createKuisPage(),                // 10. Kuis (5 questions in 1 page — BATCH-13B)
+    createRefleksiPage(),            // 11. Refleksi (2 questions + penugasan)
+    createRangkumanPage(),           // 12. Rangkuman (4 concepts = max)
+    createPenutupPage(),             // 13. Penutup
   ];
 
   return pages;
