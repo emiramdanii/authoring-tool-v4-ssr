@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12-03: quarantined to src/legacy-disabled/, not type-checked
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';

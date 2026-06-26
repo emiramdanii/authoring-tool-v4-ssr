@@ -6,7 +6,9 @@ import { Fredoka, Nunito, Plus_Jakarta_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { A11yProvider } from "@/components/providers/A11yProvider";
 import { StoreInit } from "@/components/providers/StoreInit";
-import { ShortcutHelpOverlay } from "@/components/shared/ShortcutHelpOverlay";
+// BATCH-12-03: ShortcutHelpOverlay moved to legacy-disabled (depends on
+// quarantined shortcuts/ module). V5 doesn't use keyboard shortcuts.
+// import { ShortcutHelpOverlay } from "@/components/shared/ShortcutHelpOverlay";
 import { SkipNavLink } from "@/components/shared/SkipNavLink";
 import { LiveAnnouncer } from "@/components/shared/LiveAnnouncer";
 import AutoSaveRecovery from "@/components/shared/AutoSaveRecovery";
@@ -121,7 +123,7 @@ export default function RootLayout({
               <div id="main-content">
                 {children}
               </div>
-              <ShortcutHelpOverlay />
+              {/* BATCH-12-03: ShortcutHelpOverlay quarantined — V5 doesn't use keyboard shortcuts */}
               <LiveAnnouncer />
               <AutoSaveRecovery />
             </A11yProvider>

@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12-03: quarantined to src/legacy-disabled/, not type-checked
 // ═══════════════════════════════════════════════════════════════════
 // USE KEYBOARD SHORTCUTS — React hook for registering shortcuts
 // ═══════════════════════════════════════════════════════════════════
