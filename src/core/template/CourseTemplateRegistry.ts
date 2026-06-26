@@ -641,7 +641,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
       { templateType: 'dokumen', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
       { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['materi-section'], variant: 'A', sceneType: 'concept' },
-      { templateType: 'kuis', label: 'Aktivitas Sortir', suggestedBlocks: ['kuis'], variant: 'B', sceneType: 'assessment' },
+      { templateType: 'game', label: 'Aktivitas Sortir', suggestedBlocks: ['sortir-game'], variant: 'A', sceneType: 'assessment' },
       { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
       { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
     ],

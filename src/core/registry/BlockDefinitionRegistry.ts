@@ -479,8 +479,20 @@ export const BLOCK_DEFINITIONS: Record<string, BlockDefinitionMeta> = {
     estimatedHeight: { A: 400, B: 400, C: 400 },
     createDefault: () => ({
       title: 'Game Sortir',
-      pool: [{ id: 's1', text: 'Item 1', category: 'kolom-1' }],
-      kolom: [{ id: 'kolom-1', label: 'Kolom 1', color: 'y' }],
+      // BATCH-13E: Default sortir-game now has multiple items + multiple kolom
+      // (was 1 item + 1 kolom — not useful as a game)
+      pool: [
+        { id: 's1', text: 'Beribadah', category: 'kolom-1' },
+        { id: 's2', text: 'Antri tertib', category: 'kolom-2' },
+        { id: 's3', text: 'Tidak berbohong', category: 'kolom-3' },
+        { id: 's4', text: 'Patuh aturan lalu lintas', category: 'kolom-4' },
+      ],
+      kolom: [
+        { id: 'kolom-1', label: 'Norma Agama', color: 'y' },
+        { id: 'kolom-2', label: 'Norma Kesopanan', color: 'c' },
+        { id: 'kolom-3', label: 'Norma Kesusilaan', color: 'g' },
+        { id: 'kolom-4', label: 'Norma Hukum', color: 'r' },
+      ],
       interactive: true,
     }),
   },
