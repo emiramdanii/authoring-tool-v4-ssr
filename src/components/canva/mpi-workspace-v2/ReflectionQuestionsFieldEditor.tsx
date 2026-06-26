@@ -142,7 +142,7 @@ export function ReflectionQuestionsFieldEditor({
         </div>
       ) : (
         questions.map((q, qIdx) => {
-          const qObj = q as Record<string, unknown>;
+          const qObj = q as unknown as Record<string, unknown>;
           const teks = String(qObj.teks ?? '');
           const petunjuk = String(qObj.petunjuk ?? '');
           const icon = String(qObj.icon ?? DEFAULT_ICON);
@@ -295,7 +295,7 @@ export function ReflectionQuestionsFieldEditor({
 
       {/* Summary */}
       <div className="text-[10px] text-slate-400 text-center" data-testid="reflection-questions-summary">
-        {questions.length} pertanyaan · {questions.filter((q) => String((q as Record<string, unknown>)?.teks ?? '').trim()).length} terisi
+        {questions.length} pertanyaan · {questions.filter((q) => String((q as unknown as Record<string, unknown>)?.teks ?? '').trim()).length} terisi
       </div>
     </div>
   );

@@ -50,8 +50,13 @@ export function WorkspaceStyleMenu() {
   const applyStyleFamilyActive = (family: StyleFamily) => {
     const state = useCanvaStore.getState();
     state._pushHistory();
-    const newPages = applyStyleFamily(state.pages, family.id);
-    useCanvaStore.setState({ pages: newPages });
+    // Cast pages to Record<string, unknown>[] for the pure applyStyleFamily
+    // function. The function only patches style fields (themeId, navbarStyle,
+    // scoreDisplayStyle) and preserves all content fields. The cast is safe
+    // because CanvaPage is a plain object with string keys.
+    const pagesAsRecords = state.pages as unknown as Record<string, unknown>[];
+    const newPages = applyStyleFamily(pagesAsRecords, family.id);
+    useCanvaStore.setState({ pages: newPages as unknown as typeof state.pages });
     setOpen(false);
     toast.success(`Style diterapkan: ${family.label}`);
   };

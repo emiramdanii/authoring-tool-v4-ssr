@@ -46,8 +46,14 @@ export function ProductShell({ initialView }: ProductShellProps) {
   // Use a lazy initializer so restoreLastView runs ONCE on first render,
   // not on every re-render. This is the recommended React pattern for
   // "compute initial state from external source".
-  const pagesRef = useRef<number | null>(null);
-  if (pagesRef.current === null) {
+  //
+  // RC-FIXPACK-01: Changed from `useRef<number | null>(null)` to
+  // `useRef<number>(-1)` (sentinel) — TypeScript can't narrow `null → number`
+  // across the try/catch, so the ref type stays `number | null` and
+  // `restoreLastView(pagesRef.current)` fails typecheck. Using -1 as
+  // sentinel keeps the type as `number` throughout.
+  const pagesRef = useRef<number>(-1);
+  if (pagesRef.current === -1) {
     // Read once synchronously — do NOT subscribe (we subscribe below
     // for reactivity, this is just for the initial view decision).
     try {

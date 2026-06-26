@@ -176,11 +176,11 @@ export const PROTECTED_CONTENT_FIELDS = [
  */
 export function applyStyleFamily<
   T extends Record<string, unknown>,
->(pages: T[], familyId: string): T[] {
+>(pages: readonly T[], familyId: string): T[] {
   const family = getStyleFamily(familyId);
   if (!family) {
     // Unknown family — return pages unchanged (no-op, no crash)
-    return pages;
+    return [...pages];
   }
 
   return pages.map((page) => {
@@ -215,8 +215,17 @@ export function applyStyleFamily<
 
 /**
  * Verify that applying a style family did NOT change any content fields.
- * Compares the original and styled pages field-by-field, excluding
- * known style fields (themeId, schemaThemeId, navbarStyle, scoreDisplayStyle).
+ * Compares the original and styled pages using DEEP RECURSIVE comparison,
+ * excluding known style fields (themeId, schemaThemeId, navbarStyle,
+ * scoreDisplayStyle) at every level of the tree.
+ *
+ * RC-FIXPACK-01: Rewritten to be properly recursive. Previous version
+ * only went 1 level deep and used reference equality for nested objects
+ * (which always fails for arrays). Now handles:
+ *   - Nested objects (schema, templateData, navConfig, blocks[i], etc.)
+ *   - Arrays (blocks[], questions[], opts[], badges[], etc.)
+ *   - Primitive values (string, number, boolean, null, undefined)
+ *   - Style fields at any depth (skipped during comparison)
  *
  * @returns true if content is preserved, false if any content field changed
  */
@@ -225,59 +234,83 @@ export function verifyContentPreserved<
 >(originalPages: T[], styledPages: T[]): boolean {
   if (originalPages.length !== styledPages.length) return false;
 
-  const STYLE_ONLY_FIELDS = new Set([
-    'themeId',
-    'schemaThemeId',
-    'navbarStyle',
-    'scoreDisplayStyle',
-  ]);
-
   for (let i = 0; i < originalPages.length; i++) {
-    const orig = originalPages[i];
-    const styled = styledPages[i];
-
-    // Check top-level page fields
-    const origKeys = new Set(Object.keys(orig));
-    const styledKeys = new Set(Object.keys(styled));
-    if (origKeys.size !== styledKeys.size) return false;
-    for (const key of origKeys) {
-      if (!styledKeys.has(key)) return false;
-
-      // Skip style-only fields — they SHOULD change
-      if (STYLE_ONLY_FIELDS.has(key)) continue;
-
-      // For nested objects (schema, templateData, navConfig), check
-      // their children but skip style-only sub-fields
-      const origVal = orig[key];
-      const styledVal = styled[key];
-
-      if (origVal !== styledVal) {
-        // If both are objects, deep-compare excluding style fields
-        if (
-          typeof origVal === 'object' &&
-          origVal !== null &&
-          typeof styledVal === 'object' &&
-          styledVal !== null
-        ) {
-          const origNested = origVal as Record<string, unknown>;
-          const styledNested = styledVal as Record<string, unknown>;
-          const nestedKeys = new Set([
-            ...Object.keys(origNested),
-            ...Object.keys(styledNested),
-          ]);
-          for (const nk of nestedKeys) {
-            if (STYLE_ONLY_FIELDS.has(nk)) continue;
-            if (origNested[nk] !== styledNested[nk]) return false;
-          }
-        } else {
-          // Non-object values that differ — content changed
-          return false;
-        }
-      }
+    if (!deepCompareExcludingStyleFields(originalPages[i], styledPages[i])) {
+      return false;
     }
   }
-
   return true;
+}
+
+// ── Deep recursive comparison helper ────────────────────────────
+
+const STYLE_ONLY_FIELDS_SET = new Set([
+  'themeId',
+  'schemaThemeId',
+  'navbarStyle',
+  'scoreDisplayStyle',
+]);
+
+/**
+ * Deep-compare two values, excluding style-only fields at every level.
+ *
+ * - For objects: compare all keys (union), skip style-only fields,
+ *   recurse into each value.
+ * - For arrays: compare length, recurse into each element.
+ * - For primitives: strict equality (===).
+ *
+ * Returns true if content is identical (excluding style fields),
+ * false if any content differs.
+ */
+function deepCompareExcludingStyleFields(a: unknown, b: unknown): boolean {
+  // Fast path: identical reference or primitive equality
+  if (a === b) return true;
+
+  // If one is null/undefined and the other isn't, they differ
+  if (a == null || b == null) return a === b;
+
+  // Both must be the same type from here
+  const aType = typeof a;
+  const bType = typeof b;
+  if (aType !== bType) return false;
+
+  // Handle arrays
+  if (Array.isArray(a)) {
+    if (!Array.isArray(b)) return false;
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!deepCompareExcludingStyleFields(a[i], b[i])) return false;
+    }
+    return true;
+  }
+
+  // Handle objects (plain objects, not arrays)
+  if (aType === 'object') {
+    if (typeof b !== 'object' || Array.isArray(b)) return false;
+
+    const aObj = a as Record<string, unknown>;
+    const bObj = b as Record<string, unknown>;
+
+    // Get all keys from both objects (union)
+    const allKeys = new Set([...Object.keys(aObj), ...Object.keys(bObj)]);
+
+    for (const key of allKeys) {
+      // Skip style-only fields at EVERY level of the tree
+      if (STYLE_ONLY_FIELDS_SET.has(key)) continue;
+
+      // Both must have the key (unless it's a style field, already skipped)
+      if (!(key in aObj) || !(key in bObj)) return false;
+
+      if (!deepCompareExcludingStyleFields(aObj[key], bObj[key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Primitives (string, number, boolean, bigint, symbol) — already
+  // handled by `a === b` fast path above
+  return false;
 }
 
 // ───────────────────────────────────────────────────────────────

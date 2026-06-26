@@ -51,13 +51,12 @@ function normalizeQuestions(value: unknown): KuisQuestion[] {
   if (!Array.isArray(value)) return [];
   return value.map((q) => {
     const obj = (q ?? {}) as Record<string, unknown>;
+    const optsRaw = (Array.isArray(obj.opts) ? obj.opts : []) as unknown[];
     return {
       q: typeof obj.q === 'string' ? obj.q : '',
-      opts: Array.isArray(obj.opts)
-        ? Array.from({ length: OPTION_COUNT }, (_, i) =>
-            typeof obj.opts?.[i] === 'string' ? (obj.opts[i] as string) : ''
-          )
-        : Array.from({ length: OPTION_COUNT }, () => ''),
+      opts: Array.from({ length: OPTION_COUNT }, (_, i) =>
+        typeof optsRaw[i] === 'string' ? (optsRaw[i] as string) : ''
+      ),
       ans: typeof obj.ans === 'number' && obj.ans >= 0 && obj.ans < OPTION_COUNT
         ? obj.ans
         : 0,

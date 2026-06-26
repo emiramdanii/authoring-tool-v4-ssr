@@ -476,6 +476,333 @@ describe('BATCH-10: verifyContentPreserved — helper', () => {
 });
 
 // ───────────────────────────────────────────────────────────────
+// G2. verifyContentPreserved — DEEP RECURSIVE (RC-FIXPACK-01)
+// ───────────────────────────────────────────────────────────────
+
+describe('BATCH-10 RC-FIXPACK-01: verifyContentPreserved — deep recursive', () => {
+  it('detects content change in deeply nested array element (questions[0].q)', () => {
+    const original = [{
+      id: 'p1',
+      schema: {
+        themeId: 'old',
+        blocks: [{
+          id: 'b1',
+          type: 'kuis',
+          questions: [{ q: 'original question', opts: ['A', 'B', 'C', 'D'], ans: 0, ex: 'expl' }],
+        }],
+      },
+      templateData: {},
+      navConfig: {},
+    }];
+    const styled = [{
+      id: 'p1',
+      schema: {
+        themeId: 'new', // style field — OK to change
+        blocks: [{
+          id: 'b1',
+          type: 'kuis',
+          questions: [{ q: 'CHANGED question', opts: ['A', 'B', 'C', 'D'], ans: 0, ex: 'expl' }],
+        }],
+      },
+      templateData: {},
+      navConfig: {},
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('detects content change in nested array element (opts[2])', () => {
+    const original = [{
+      id: 'p1',
+      schema: {
+        themeId: 'old',
+        blocks: [{
+          id: 'b1',
+          type: 'kuis',
+          questions: [{ q: 'q', opts: ['A', 'B', 'C', 'D'], ans: 0, ex: 'expl' }],
+        }],
+      },
+      templateData: {},
+      navConfig: {},
+    }];
+    const styled = [{
+      id: 'p1',
+      schema: {
+        themeId: 'new',
+        blocks: [{
+          id: 'b1',
+          type: 'kuis',
+          questions: [{ q: 'q', opts: ['A', 'B', 'CHANGED', 'D'], ans: 0, ex: 'expl' }],
+        }],
+      },
+      templateData: {},
+      navConfig: {},
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('detects content change in nested answer key (ans)', () => {
+    const original = [{
+      schema: {
+        themeId: 'old',
+        blocks: [{
+          type: 'kuis',
+          questions: [{ q: 'q', opts: ['A', 'B', 'C', 'D'], ans: 0, ex: 'expl' }],
+        }],
+      },
+    }];
+    const styled = [{
+      schema: {
+        themeId: 'new',
+        blocks: [{
+          type: 'kuis',
+          questions: [{ q: 'q', opts: ['A', 'B', 'C', 'D'], ans: 3, ex: 'expl' }], // ans changed 0→3
+        }],
+      },
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('detects content change in block.title (nested in schema.blocks[0])', () => {
+    const original = [{
+      schema: {
+        themeId: 'old',
+        blocks: [{ id: 'b1', type: 'cover', title: 'Original Title' }],
+      },
+    }];
+    const styled = [{
+      schema: {
+        themeId: 'new',
+        blocks: [{ id: 'b1', type: 'cover', title: 'Changed Title' }],
+      },
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('detects content change in sortir-game pool item text', () => {
+    const original = [{
+      schema: {
+        themeId: 'old',
+        blocks: [{
+          type: 'sortir-game',
+          pool: [
+            { id: 'i1', text: 'Original', category: 'c1' },
+            { id: 'i2', text: 'Keep', category: 'c2' },
+          ],
+        }],
+      },
+    }];
+    const styled = [{
+      schema: {
+        themeId: 'new',
+        blocks: [{
+          type: 'sortir-game',
+          pool: [
+            { id: 'i1', text: 'CHANGED', category: 'c1' },
+            { id: 'i2', text: 'Keep', category: 'c2' },
+          ],
+        }],
+      },
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('detects array length change (block added)', () => {
+    const original = [{
+      schema: {
+        themeId: 'old',
+        blocks: [{ id: 'b1', type: 'cover' }],
+      },
+    }];
+    const styled = [{
+      schema: {
+        themeId: 'new',
+        blocks: [{ id: 'b1', type: 'cover' }, { id: 'b2', type: 'kuis' }], // added block
+      },
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('detects array length change (question removed)', () => {
+    const original = [{
+      schema: {
+        themeId: 'old',
+        blocks: [{
+          type: 'kuis',
+          questions: [
+            { q: 'q1', opts: [], ans: 0, ex: '' },
+            { q: 'q2', opts: [], ans: 0, ex: '' },
+          ],
+        }],
+      },
+    }];
+    const styled = [{
+      schema: {
+        themeId: 'new',
+        blocks: [{
+          type: 'kuis',
+          questions: [
+            { q: 'q1', opts: [], ans: 0, ex: '' },
+            // q2 removed
+          ],
+        }],
+      },
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('returns TRUE when only style fields change at any depth', () => {
+    const original = [{
+      id: 'p1',
+      label: 'Cover',
+      schema: {
+        id: 's1',
+        themeId: 'old-theme',
+        blocks: [{
+          id: 'b1',
+          type: 'cover',
+          title: 'My Title',
+          badges: [{ id: 'bg1', label: 'Guru', icon: '👨‍🏫' }],
+        }],
+      },
+      templateData: { schemaThemeId: 'old-theme', customField: 'keep' },
+      navConfig: { navbarStyle: 'old', showNavbar: true },
+    }];
+    const styled = [{
+      id: 'p1',
+      label: 'Cover',
+      schema: {
+        id: 's1',
+        themeId: 'new-theme', // style field changed
+        blocks: [{
+          id: 'b1',
+          type: 'cover',
+          title: 'My Title',
+          badges: [{ id: 'bg1', label: 'Guru', icon: '👨‍🏫' }],
+        }],
+      },
+      templateData: { schemaThemeId: 'new-theme', customField: 'keep', scoreDisplayStyle: 'stars' }, // style fields changed
+      navConfig: { navbarStyle: 'new', showNavbar: true }, // navbarStyle changed
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(true);
+  });
+
+  it('detects key added to nested object (not in original)', () => {
+    const original = [{
+      schema: {
+        themeId: 'old',
+        blocks: [{ id: 'b1', type: 'cover', title: 'T' }],
+      },
+    }];
+    const styled = [{
+      schema: {
+        themeId: 'new',
+        blocks: [{ id: 'b1', type: 'cover', title: 'T', newField: 'injected' }], // newField added
+      },
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('detects key removed from nested object', () => {
+    const original = [{
+      schema: {
+        themeId: 'old',
+        blocks: [{ id: 'b1', type: 'cover', title: 'T', subtitle: 'S' }],
+      },
+    }];
+    const styled = [{
+      schema: {
+        themeId: 'new',
+        blocks: [{ id: 'b1', type: 'cover', title: 'T' }], // subtitle removed
+      },
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('handles empty arrays correctly', () => {
+    const original = [{ schema: { themeId: 'old', blocks: [] } }];
+    const styled = [{ schema: { themeId: 'new', blocks: [] } }];
+    expect(verifyContentPreserved(original, styled)).toBe(true);
+  });
+
+  it('handles null values correctly', () => {
+    const original = [{ schema: { themeId: 'old', background: null } }];
+    const styled = [{ schema: { themeId: 'new', background: null } }];
+    expect(verifyContentPreserved(original, styled)).toBe(true);
+  });
+
+  it('detects null → object change', () => {
+    const original = [{ schema: { themeId: 'old', background: null } }];
+    const styled = [{ schema: { themeId: 'new', background: { type: 'gradient' } } }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+
+  it('handles deeply nested 4+ levels (schema.blocks[0].questions[0].opts[0])', () => {
+    const original = [{
+      schema: {
+        themeId: 'old',
+        blocks: [{
+          type: 'kuis',
+          questions: [{
+            q: 'q',
+            opts: ['A', 'B', 'C', 'D'],
+            ans: 0,
+            ex: 'expl',
+          }],
+        }],
+      },
+    }];
+    // Same content, only themeId changed
+    const styled = [{
+      schema: {
+        themeId: 'new',
+        blocks: [{
+          type: 'kuis',
+          questions: [{
+            q: 'q',
+            opts: ['A', 'B', 'C', 'D'],
+            ans: 0,
+            ex: 'expl',
+          }],
+        }],
+      },
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(true);
+  });
+
+  it('detects change at 4+ levels deep (opts[3] changed)', () => {
+    const original = [{
+      schema: {
+        themeId: 'old',
+        blocks: [{
+          type: 'kuis',
+          questions: [{
+            q: 'q',
+            opts: ['A', 'B', 'C', 'D'],
+            ans: 0,
+            ex: 'expl',
+          }],
+        }],
+      },
+    }];
+    const styled = [{
+      schema: {
+        themeId: 'new',
+        blocks: [{
+          type: 'kuis',
+          questions: [{
+            q: 'q',
+            opts: ['A', 'B', 'C', 'CHANGED'], // opts[3] changed
+            ans: 0,
+            ex: 'expl',
+          }],
+        }],
+      },
+    }];
+    expect(verifyContentPreserved(original, styled)).toBe(false);
+  });
+});
+
+// ───────────────────────────────────────────────────────────────
 // H. PROTECTED_CONTENT_FIELDS — contract
 // ───────────────────────────────────────────────────────────────
 
@@ -567,7 +894,9 @@ describe('BATCH-10: WorkspaceStyleMenu — source audit', () => {
   });
 
   it('uses useCanvaStore.setState (single write path)', () => {
-    expect(src()).toContain('useCanvaStore.setState({ pages: newPages })');
+    // RC-FIXPACK-01: Source now has `as unknown as typeof state.pages` cast
+    // for TypeScript safety. The contract is: setState is called with pages.
+    expect(src()).toContain('useCanvaStore.setState({ pages:');
   });
 
   it('does NOT import getAllStylePresets (old system removed)', () => {

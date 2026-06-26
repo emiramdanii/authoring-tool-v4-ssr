@@ -5,10 +5,12 @@
 # menghapus semua logika inline dan memanggil normalize-ts-errors.js
 # sebagai SATU source of truth untuk TypeScript gate.
 #
-# Three jobs:
-#   1. test  — vitest run (core + smoke + listener + store-init + normalizer)
-#   2. types — node scripts/normalize-ts-errors.js --check
-#   3. build — npm run build (exit code + artifact verification)
+# RC-FIXPACK-01: Added batch unit tests (01-10) + 1 E2E smoke to CI.
+# Previously CI only ran sprint-era tests. Now CI runs:
+#   1. test      — vitest run (sprint-era + batch 01-10 + guards)
+#   2. types     — node scripts/normalize-ts-errors.js --check
+#   3. build     — npm run build (exit code + artifact verification)
+#   4. e2e-smoke — 1 Playwright route smoke (dashboard → template → editor → preview → export)
 #
 # Uses `npm ci` (requires package-lock.json committed — see CI-002).
 # Uses `process.execPath + typescript/bin/tsc` via the normalizer
@@ -115,6 +117,21 @@ jobs:
           # bounds checks, auto-heal, new-element contract, and source
           # audit that all dataIdx consumers are documented.
           npx vitest run src/__tests__/dataidx-9.0f-cleanup.test.ts
+          # RC-FIXPACK-01: SILSE V5 Batch 01-10 unit tests.
+          # These are the curated batch tests that verify the V5 baseline:
+          # export/save honesty, state load, contract sync, view persistence,
+          # interaction editors, import JSON validator, style engine.
+          npx vitest run src/__tests__/batch01-export-persistence-honesty.test.ts
+          npx vitest run src/__tests__/batch02-state-load-projection.test.ts
+          npx vitest run src/__tests__/batch03-contract-sync.test.ts
+          npx vitest run src/__tests__/batch06-teacher-workflow-ux.test.ts
+          npx vitest run src/__tests__/batch06b-view-persistence.test.ts
+          npx vitest run src/__tests__/batch07-interaction-editor.test.ts
+          npx vitest run src/__tests__/batch07b-interaction-editor-closeout.test.ts
+          npx vitest run src/__tests__/batch08-import-json-validator.test.ts
+          npx vitest run src/__tests__/batch09a-import-json-ui.test.ts
+          npx vitest run src/__tests__/batch09b-import-json-preview.test.ts
+          npx vitest run src/__tests__/batch10-style-engine.test.ts
           # BATCH-01/02/03: V5 honesty + state-load + contract-sync tests
           # BATCH-04: Guard steps
           npm run guard:no-legacy-runtime
@@ -185,4 +202,40 @@ jobs:
           echo "✅ Build artifacts verified (.next/BUILD_ID exists)"
           echo "--- .next/ size ---"
           du -sh .next/
+
+  # RC-FIXPACK-01: Minimal E2E smoke — 1 test only.
+  # Runs the v5-route-smoke test (dashboard → template → editor → preview → export).
+  # This is the most stable E2E test — no file:// URLs, no export HTML render,
+  # just route navigation. Other E2E tests remain local-only.
+  e2e-smoke:
+    name: E2E Smoke (1 route test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (reproducible)
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E route smoke
+        # Only runs v5-route-smoke.spec.ts — the simplest, most stable E2E.
+        # Sets CI=true so the test is NOT skipped (v5-route-smoke doesn't
+        # have test.skip(CI), unlike other V5 E2E tests).
+        env:
+          CI: 'true'
+        run: npx playwright test e2e/v5-route-smoke.spec.ts --project=chromium --reporter=line --timeout=60000 --retries=1
 
