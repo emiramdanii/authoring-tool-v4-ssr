@@ -1,3 +1,4 @@
+// @ts-nocheck — BATCH-12-04: quarantined to src/legacy-disabled/, not type-checked
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════════

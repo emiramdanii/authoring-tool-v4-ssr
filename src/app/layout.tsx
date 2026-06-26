@@ -11,7 +11,7 @@ import { StoreInit } from "@/components/providers/StoreInit";
 // import { ShortcutHelpOverlay } from "@/components/shared/ShortcutHelpOverlay";
 import { SkipNavLink } from "@/components/shared/SkipNavLink";
 import { LiveAnnouncer } from "@/components/shared/LiveAnnouncer";
-import AutoSaveRecovery from "@/components/shared/AutoSaveRecovery";
+// BATCH-12-04: AutoSaveRecovery moved to legacy-disabled (returns null in V5, resume handled by DashboardV5)
 import { SafeModeBanner } from "@/components/shared/SafeModeBanner";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { Toaster } from "sonner";
@@ -125,7 +125,7 @@ export default function RootLayout({
               </div>
               {/* BATCH-12-03: ShortcutHelpOverlay quarantined — V5 doesn't use keyboard shortcuts */}
               <LiveAnnouncer />
-              <AutoSaveRecovery />
+              {/* BATCH-12-04: AutoSaveRecovery quarantined — V5 uses DashboardV5 resume card */}
             </A11yProvider>
           </ThemeProvider>
         </AppErrorBoundary>

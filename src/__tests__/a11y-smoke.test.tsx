@@ -82,8 +82,7 @@ vi.mock('@/core/schema/capability-registry', () => ({
 import { SkipNavLink } from '@/components/shared/SkipNavLink';
 import { A11yProvider, useA11yPreferences } from '@/components/providers/A11yProvider';
 import { useGameA11y } from '@/lib/use-game-a11y';
-import RecoveryDialog from '@/components/shared/RecoveryDialog';
-import type { BootReport } from '@/core/editor/boot-recovery';
+// BATCH-12-04: RecoveryDialog moved to legacy-disabled — import + tests removed
 
 // ─────────────────────────────────────────────────────────────────
 // Helpers
@@ -241,58 +240,5 @@ describe('Sprint 8.5B — Accessibility Smoke Tests', () => {
     expect(label).not.toContain('Skor');
   });
 
-  // ── RecoveryDialog a11y (cross-cover with 8.5A suite) ────────
-
-  it('RecoveryDialog has role=dialog + aria-modal=true when shown with bootReport', async () => {
-    const report = makeBootReport();
-    render(<RecoveryDialog bootReport={report} />);
-    await act(async () => { /* flush */ });
-    const dialog = screen.getByRole('dialog');
-    expect(dialog).not.toBeNull();
-    expect(dialog.getAttribute('aria-modal')).toBe('true');
-  });
-
-  it('RecoveryDialog has aria-labelledby pointing to visible title element', async () => {
-    const report = makeBootReport();
-    render(<RecoveryDialog bootReport={report} />);
-    await act(async () => { /* flush */ });
-    const dialog = screen.getByRole('dialog');
-    const labelledBy = dialog.getAttribute('aria-labelledby');
-    expect(labelledBy).toBeTruthy();
-    const titleEl = document.getElementById(labelledBy!);
-    expect(titleEl).not.toBeNull();
-    expect(titleEl!.textContent).toContain('Pemulihan');
-  });
-
-  it('RecoveryDialog Tab focus trap cycles within dialog', async () => {
-    const report = makeBootReport();
-    render(<RecoveryDialog bootReport={report} />);
-    await act(async () => { /* flush */ });
-
-    const dialog = screen.getByRole('dialog');
-    const buttons = dialog.querySelectorAll('button');
-    expect(buttons.length).toBeGreaterThanOrEqual(2);
-
-    const lastBtn = buttons[buttons.length - 1] as HTMLElement;
-    lastBtn.focus();
-    expect(document.activeElement).toBe(lastBtn);
-
-    fireEvent.keyDown(window, { key: 'Tab', shiftKey: false });
-    await act(async () => { /* flush */ });
-    expect(document.activeElement).toBe(buttons[0]);
-  });
-
-  it('RecoveryDialog Esc key triggers Mulai Baru (discard recovery)', async () => {
-    const report = makeBootReport();
-    render(<RecoveryDialog bootReport={report} />);
-    await act(async () => { /* flush */ });
-
-    expect(screen.queryByText('Pemulihan Boot Aman')).not.toBeNull();
-
-    fireEvent.keyDown(window, { key: 'Escape' });
-    await act(async () => { /* flush */ });
-
-    // Dialog should be gone after Esc = Mulai Baru
-    expect(screen.queryByText('Pemulihan Boot Aman')).toBeNull();
-  });
+  // BATCH-12-04: RecoveryDialog test cases removed (component quarantined to legacy-disabled)
 });

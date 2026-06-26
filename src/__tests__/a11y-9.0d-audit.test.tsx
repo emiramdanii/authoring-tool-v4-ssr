@@ -116,7 +116,8 @@ vi.mock('@/hooks/use-project-manager', () => ({
 import ModuleEditorModal from '@/components/authoring/ModuleEditorModal';
 import TemplateWizard from '@/components/canva/TemplateWizard';
 import AddBlockPanel from '@/components/canva/left-panel/AddBlockPanel';
-import RecoveryDialog from '@/components/shared/RecoveryDialog';
+// BATCH-12-04: RecoveryDialog moved to legacy-disabled — import removed
+// import RecoveryDialog from '@/components/shared/RecoveryDialog';
 import { ExportSuccessDialog } from '@/components/shared/ExportSuccessDialog';
 import { SkipNavLink } from '@/components/shared/SkipNavLink';
 import { useCanvaStore } from '@/store/canva-store';
@@ -540,26 +541,10 @@ describe('Sprint 9.0D — C. AddBlockPanel a11y', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// D. RecoveryDialog — re-verify dialog a11y (cross-cover with a11y-smoke)
+// D. RecoveryDialog — BATCH-12-04: quarantined to legacy-disabled, tests removed
 // ═══════════════════════════════════════════════════════════════════
 
-describe('Sprint 9.0D — D. RecoveryDialog a11y (cross-cover)', () => {
-  it('passes auditDialogA11y — has aria-label/aria-labelledby + aria-modal', async () => {
-    const report = makeBootReport();
-    const { container } = render(<RecoveryDialog bootReport={report} />);
-    await act(async () => { /* flush */ });
-    const violations = auditDialogA11y(container);
-    expect(violations).toEqual([]);
-  });
-
-  it('RecoveryDialog buttons all have accessible names', async () => {
-    const report = makeBootReport();
-    const { container } = render(<RecoveryDialog bootReport={report} />);
-    await act(async () => { /* flush */ });
-    const violations = auditButtonNames(container);
-    expect(violations).toEqual([]);
-  });
-});
+// BATCH-12-04: RecoveryDialog describe block removed (component quarantined)
 
 // ═══════════════════════════════════════════════════════════════════
 // E. ExportSuccessDialog — Radix Dialog a11y

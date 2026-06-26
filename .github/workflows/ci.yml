@@ -71,10 +71,11 @@ jobs:
           npx vitest run src/__tests__/listener-cleanup-integration.test.tsx
           npx vitest run src/__tests__/store-init-bootstrap.test.tsx
           npx vitest run src/__tests__/normalize-ts-errors.test.ts
-          npx vitest run src/__tests__/recovery-boot-bridge.test.tsx
-          npx vitest run src/__tests__/recovery-safe-boot.test.tsx
-          npx vitest run src/__tests__/recovery-dialog-a11y.test.tsx
-          npx vitest run src/__tests__/recovery-clean-boot-regression.test.tsx
+          # BATCH-12-04: recovery-* tests moved to legacy-disabled (test legacy RecoveryDialog)
+          # npx vitest run src/__tests__/recovery-boot-bridge.test.tsx
+          # npx vitest run src/__tests__/recovery-safe-boot.test.tsx
+          # npx vitest run src/__tests__/recovery-dialog-a11y.test.tsx
+          # npx vitest run src/__tests__/recovery-clean-boot-regression.test.tsx
           npx vitest run src/__tests__/middleware-security.test.ts
           npx vitest run src/__tests__/a11y-smoke.test.tsx
           npx vitest run src/__tests__/api-no-stack-leak.test.ts
