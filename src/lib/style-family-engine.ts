@@ -205,6 +205,21 @@ export function applyStyleFamily<
       navbarStyle: family.navbarStyle,
     };
 
+    // ── BATCH-10B: Clear contractId so style family actually takes effect ──
+    // PageRenderer priority: contractId > themeId. If contractId is set
+    // (e.g., 'golden-pertemuan' from PPKn template), it OVERRIDES the
+    // themeId that style family just set. This means the style swap was
+    // silently defeated on any page with a contractId.
+    //
+    // Fix: When applying a style family, clear the contractId so the
+    // themeId from the family becomes the authority. The contract was
+    // a legacy mechanism for template-locked styles — style families
+    // are the V5 replacement.
+    //
+    // We set contractId to undefined (not null) so it's cleanly absent
+    // from the page object, matching how non-contract pages work.
+    newPage.contractId = undefined;
+
     return newPage as T;
   });
 }
@@ -249,6 +264,7 @@ const STYLE_ONLY_FIELDS_SET = new Set([
   'schemaThemeId',
   'navbarStyle',
   'scoreDisplayStyle',
+  'contractId', // BATCH-10B: cleared by applyStyleFamily to prevent override
 ]);
 
 /**
@@ -319,5 +335,5 @@ function deepCompareExcludingStyleFields(a: unknown, b: unknown): boolean {
 
 export const __TEST__ = {
   PROTECTED_CONTENT_FIELDS,
-  STYLE_ONLY_FIELDS: ['themeId', 'schemaThemeId', 'navbarStyle', 'scoreDisplayStyle'],
+  STYLE_ONLY_FIELDS: ['themeId', 'schemaThemeId', 'navbarStyle', 'scoreDisplayStyle', 'contractId'],
 };

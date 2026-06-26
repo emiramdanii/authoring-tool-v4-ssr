@@ -842,9 +842,9 @@ describe('BATCH-10: PROTECTED_CONTENT_FIELDS — contract', () => {
     expect(PROTECTED_CONTENT_FIELDS).not.toContain('scoreDisplayStyle');
   });
 
-  it('__TEST__.STYLE_ONLY_FIELDS has exactly 4 style fields', () => {
+  it('__TEST__.STYLE_ONLY_FIELDS has exactly 5 style fields (BATCH-10B: +contractId)', () => {
     expect(__TEST__.STYLE_ONLY_FIELDS).toEqual([
-      'themeId', 'schemaThemeId', 'navbarStyle', 'scoreDisplayStyle',
+      'themeId', 'schemaThemeId', 'navbarStyle', 'scoreDisplayStyle', 'contractId',
     ]);
   });
 });
