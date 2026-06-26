@@ -169,35 +169,33 @@ describe('BATCH-12-06: serializeForHtmlScript — XSS safety', () => {
 // ───────────────────────────────────────────────────────────────
 // C. export-output/index.html — template structure
 // ───────────────────────────────────────────────────────────────
-// NOTE: export-output/ is in .gitignore (built by `npm run export:build`).
-// In CI, the template may not exist unless the build job runs first.
-// These tests are conditional — they skip gracefully if the template
-// is missing. The structural checks are still valuable locally.
+// BATCH-12-06B: CI now runs `npm run export:build` before this test,
+// so export-output/index.html is guaranteed to exist. No skipIf needed.
+// These tests are MANDATORY — they verify the V5 export template is valid.
 
 const templatePath = resolve(__dirname, '../../export-output/index.html');
-const templateExists = existsSync(templatePath);
 
 describe('BATCH-12-06: export-output/index.html — template structure', () => {
-  it.skipIf(!templateExists)('template file exists', () => {
-    expect(existsSync(templatePath), 'export-output/index.html must exist').toBe(true);
+  it('template file exists', () => {
+    expect(existsSync(templatePath), 'export-output/index.html must exist (run npm run export:build)').toBe(true);
   });
 
-  it.skipIf(!templateExists)('template has <div id="root">', () => {
+  it('template has <div id="root">', () => {
     const html = readFileSync(templatePath, 'utf-8');
     expect(html).toMatch(/<div[^>]*id=["']root["']/);
   });
 
-  it.skipIf(!templateExists)('template has <script type="module"> (Vite bundle)', () => {
+  it('template has <script type="module"> (Vite bundle)', () => {
     const html = readFileSync(templatePath, 'utf-8');
     expect(html).toMatch(/<script[^>]*type=["']module["']/);
   });
 
-  it.skipIf(!templateExists)('template does NOT contain __EXPORT_DATA__ (injected at runtime by API)', () => {
+  it('template does NOT contain __EXPORT_DATA__ (injected at runtime by API)', () => {
     const html = readFileSync(templatePath, 'utf-8');
     expect(html).not.toContain('window.__EXPORT_DATA__=');
   });
 
-  it.skipIf(!templateExists)('template size is reasonable (>100KB, <5MB)', () => {
+  it('template size is reasonable (>100KB, <5MB)', () => {
     const stat = statSync(templatePath);
     const sizeKB = stat.size / 1024;
     expect(sizeKB, `template size ${sizeKB.toFixed(0)}KB should be > 100KB`).toBeGreaterThan(100);
@@ -291,26 +289,26 @@ describe('BATCH-12-06: Export pipeline — no legacy imports', () => {
 // ───────────────────────────────────────────────────────────────
 
 describe('BATCH-12-06: Structural budget — export template', () => {
-  // templatePath + templateExists defined above in Section C
+  // templatePath defined above in Section C. CI runs export:build before this test.
 
-  it.skipIf(!templateExists)('template has no live <script> with onerror/onload handlers', () => {
+  it('template has no live <script> with onerror/onload handlers', () => {
     const html = readFileSync(templatePath, 'utf-8');
     expect(html).not.toMatch(/<script[^>]*onerror\s*=/i);
     expect(html).not.toMatch(/<script[^>]*onload\s*=/i);
   });
 
-  it.skipIf(!templateExists)('template has no javascript: URLs in href attributes', () => {
+  it('template has no javascript: URLs in href attributes', () => {
     const html = readFileSync(templatePath, 'utf-8');
     // Check href attributes only (javascript: in CSS or other contexts may be false positive)
     expect(html).not.toMatch(/href\s*=\s*["']javascript:/i);
   });
 
-  it.skipIf(!templateExists)('template has charset meta tag', () => {
+  it('template has charset meta tag', () => {
     const html = readFileSync(templatePath, 'utf-8');
     expect(html).toMatch(/<meta[^>]*charset/i);
   });
 
-  it.skipIf(!templateExists)('template has viewport meta tag', () => {
+  it('template has viewport meta tag', () => {
     const html = readFileSync(templatePath, 'utf-8');
     expect(html).toMatch(/<meta[^>]*viewport/i);
   });
