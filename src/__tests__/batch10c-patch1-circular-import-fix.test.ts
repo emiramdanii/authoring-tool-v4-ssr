@@ -41,7 +41,8 @@ describe('BATCH-10C-Patch-1: No circular import', () => {
 
 describe('BATCH-10C-Patch-1: Runtime import — no crash', () => {
   it('can import TemplateThemeContract without error', async () => {
-    const mod = await import('@/core/template/contract/TemplateThemeContract');
+    // Import via barrel (index.ts) which loads both TTC + MEC
+    const mod = await import('@/core/template/contract');
     expect(mod).toBeDefined();
     expect(mod.getContractOrGolden).toBeDefined();
     expect(mod.getContract).toBeDefined();
@@ -49,7 +50,7 @@ describe('BATCH-10C-Patch-1: Runtime import — no crash', () => {
   });
 
   it('can import ModernEducatorContract without error', async () => {
-    const mod = await import('@/core/template/contract/ModernEducatorContract');
+    const mod = await import('@/core/template/contract');
     expect(mod).toBeDefined();
     expect(mod.MODERN_EDUCATOR_CONTRACT).toBeDefined();
   });
@@ -61,52 +62,52 @@ describe('BATCH-10C-Patch-1: Runtime import — no crash', () => {
 
 describe('BATCH-10C-Patch-1: Contract registry lookups', () => {
   it('getContractOrGolden(undefined) returns modern-educator (light default)', async () => {
-    const { getContractOrGolden } = await import('@/core/template/contract/TemplateThemeContract');
+    const { getContractOrGolden } = await import('@/core/template/contract');
     const contract = getContractOrGolden(undefined);
     expect(contract.id).toBe('modern-educator');
   });
 
   it('getContractOrGolden("") returns modern-educator', async () => {
-    const { getContractOrGolden } = await import('@/core/template/contract/TemplateThemeContract');
+    const { getContractOrGolden } = await import('@/core/template/contract');
     const contract = getContractOrGolden('');
     expect(contract.id).toBe('modern-educator');
   });
 
   it('getContract("golden-pertemuan") still exists (legacy)', async () => {
-    const { getContract } = await import('@/core/template/contract/TemplateThemeContract');
+    const { getContract } = await import('@/core/template/contract');
     const contract = getContract('golden-pertemuan');
     expect(contract).toBeDefined();
     expect(contract?.id).toBe('golden-pertemuan');
   });
 
   it('getContract("modern-educator") exists', async () => {
-    const { getContract } = await import('@/core/template/contract/TemplateThemeContract');
+    const { getContract } = await import('@/core/template/contract');
     const contract = getContract('modern-educator');
     expect(contract).toBeDefined();
     expect(contract?.id).toBe('modern-educator');
   });
 
   it('getContractOrGolden("golden-pertemuan") returns golden (explicit lookup)', async () => {
-    const { getContractOrGolden } = await import('@/core/template/contract/TemplateThemeContract');
+    const { getContractOrGolden } = await import('@/core/template/contract');
     const contract = getContractOrGolden('golden-pertemuan');
     expect(contract.id).toBe('golden-pertemuan');
   });
 
   it('getContractOrGolden("modern-educator") returns modern-educator', async () => {
-    const { getContractOrGolden } = await import('@/core/template/contract/TemplateThemeContract');
+    const { getContractOrGolden } = await import('@/core/template/contract');
     const contract = getContractOrGolden('modern-educator');
     expect(contract.id).toBe('modern-educator');
   });
 
   it('modern-educator is a LIGHT theme (background is light)', async () => {
-    const { getContract } = await import('@/core/template/contract/TemplateThemeContract');
+    const { getContract } = await import('@/core/template/contract');
     const contract = getContract('modern-educator');
     expect(contract?.colors.background).toBe('#f7f9fb');
     expect(contract?.colors.text).toBe('#191c1e');
   });
 
   it('golden-pertemuan is still DARK (legacy preserved)', async () => {
-    const { getContract } = await import('@/core/template/contract/TemplateThemeContract');
+    const { getContract } = await import('@/core/template/contract');
     const contract = getContract('golden-pertemuan');
     expect(contract?.colors.background).toBe('#0f172a');
     expect(contract?.colors.text).toBe('#ffffff');

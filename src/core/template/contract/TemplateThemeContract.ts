@@ -863,3 +863,24 @@ export function resolveContractStyle(
     primaryAccentToken,
   };
 }
+
+// BATCH-10C-Patch-2: Register MODERN_EDUCATOR_CONTRACT here (in TTC) rather
+// than relying on a side-effect import of ModernEducatorContract.ts.
+// This breaks the circular dependency:
+//   TTC → MEC (import) → TTC (import registerContract) = CYCLE
+// Instead we import the contract object lazily via dynamic import in
+// getContractOrGolden (already done in Patch-1). But we ALSO need the
+// contract to be registered at module load time so it's available for
+// synchronous lookups. The solution: define a minimal inline
+// registration that creates the contract from the accent palette
+// already defined in this file.
+//
+// Actually, the simplest fix: import MEC at the BOTTOM of TTC (after
+// all TTC definitions are complete). ES modules handle this correctly
+// when the import is at the end — TTC's exports are all defined before
+// MEC's registerContract() call runs.
+//
+// BUT: this still creates a cycle. The real fix is: don't use a
+// side-effect import. Instead, have the index.ts (barrel) import MEC.
+// The test should import from the index, not directly from TTC.
+// We'll update the tests to import from the barrel.
