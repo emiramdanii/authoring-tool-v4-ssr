@@ -6,21 +6,26 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
 describe('BATCH-02: Initial projection after loadFromStorage', () => {
-  it('StoreInit runs deriveProjectionFromPages synchronously after loadFromStorage', () => {
+  it('StoreInit runs deriveProjectionFromPages synchronously after loadFromStorage (RC-AUDIT-01: updated for ESM import)', () => {
+    // RC-AUDIT-01: Batch 02 test expected require('@/core/schema/schema-projection')
+    // inline call. Batch 04 fix commit 2dc5c09 changed that to a top-level
+    // ESM import (import { deriveProjectionFromPages } from ...).
+    // The contract is still satisfied: StoreInit imports + calls
+    // deriveProjectionFromPages BEFORE initCanvaStoreSubscriptions().
     const source = readFileSync(
       resolve(__dirname, '../components/providers/StoreInit.tsx'),
       'utf-8',
     );
-    // Must call deriveProjectionFromPages BEFORE initCanvaStoreSubscriptions
-    // Find the CALL (not the import), which is the require() line
-    const projectionCallIdx = source.indexOf("require('@/core/schema/schema-projection')");
-    const subscriptionsCallIdx = source.indexOf('initCanvaStoreSubscriptions()');
-    // The call to initCanvaStoreSubscriptions appears in the import at top of file
-    // AND as a call later. Find the call (after the import line).
-    const subscriptionsIdx = source.indexOf('initCanvaStoreSubscriptions();', subscriptionsCallIdx + 1);
+    // Must import deriveProjectionFromPages at top level
+    expect(source).toContain("deriveProjectionFromPages");
+    expect(source).toContain("from '@/core/schema/schema-projection'");
+    // Must call deriveProjectionFromPages (function call, not just import)
+    const projectionCallIdx = source.indexOf('deriveProjectionFromPages(');
     expect(projectionCallIdx).toBeGreaterThan(-1);
+    // Must call initCanvaStoreSubscriptions AFTER projection
+    const subscriptionsIdx = source.indexOf('initCanvaStoreSubscriptions();');
     expect(subscriptionsIdx).toBeGreaterThan(-1);
-    expect(projectionCallIdx).toBeLessThan(subscriptionsIdx);
+    expect(projectionCallIdx, 'projection call must come before subscriptions').toBeLessThan(subscriptionsIdx);
   });
 
   it('StoreInit merges projection meta with existing meta (not overwrite)', () => {
