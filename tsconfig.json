@@ -42,6 +42,7 @@
   "exclude": [
     "node_modules",
     "src/legacy",
+    "src/legacy-disabled",
     "src/__tests__",
     "skills",
     "vite.export.config.ts"

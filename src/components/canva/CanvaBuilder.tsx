@@ -12,7 +12,12 @@ import { CanvaAutoSaveSync } from './CanvaAutoSaveSync';
 import Toolbar from './Toolbar';
 import StatusBar from './StatusBar';
 import LeftPanel from './LeftPanel';
-import Stage from './stage';
+// BATCH-12: stage/ moved to src/legacy-disabled/. CanvaBuilder is itself
+// legacy (not in V5 runtime graph — only imported by AuthoringTool which
+// is also legacy). The Stage import is commented out because the module
+// has been quarantined. CanvaBuilder is never executed in V5 runtime —
+// if it were ever restored, Stage would need to be restored too.
+// import Stage from './stage';  // BATCH-12: quarantined to src/legacy-disabled/
 import RightPanel from './right-panel';
 import { UndoRedoToast } from '@/components/shared/StatusToast';
 import { OfflineIndicator } from '@/components/shared/OfflineIndicator';
@@ -297,7 +302,9 @@ export default function CanvaBuilder() {
           >
             <div className="flex flex-col h-full relative overflow-hidden bg-silse-surface-dim canvas-bg" data-tour="canvas-stage" data-testid="canvas-stage" role="main" aria-label="Area kerja editor">
               <ProfilerWrapper id="Stage">
-                <Stage />
+                {/* BATCH-12: <Stage /> quarantined to src/legacy-disabled/.
+                    CanvaBuilder is legacy (not in V5 runtime). */}
+                <></>
               </ProfilerWrapper>
             </div>
           </ResizablePanel>
