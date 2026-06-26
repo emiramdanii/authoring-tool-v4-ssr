@@ -19,8 +19,10 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import type { BlockVariant } from '@/core/schema/types/base';
-// BATCH-10C: Import MODERN_EDUCATOR_CONTRACT for light default fallback
-import { MODERN_EDUCATOR_CONTRACT } from './ModernEducatorContract';
+// BATCH-10C-Patch-1: Removed direct import of MODERN_EDUCATOR_CONTRACT to
+// break circular dependency:
+//   TemplateThemeContract.ts → ModernEducatorContract.ts → TemplateThemeContract.ts
+// Instead, getContractOrGolden() now does a lazy registry lookup by ID.
 
 // Modern Educator accent palette — defined here to avoid circular imports
 // with ModernEducatorContract
@@ -52,9 +54,19 @@ export function getContract(contractId: string): TemplateThemeContract | undefin
 }
 
 export function getContractOrGolden(contractId?: string): TemplateThemeContract {
-  // BATCH-10C: Default fallback is now MODERN_EDUCATOR_CONTRACT (light theme),
-  // not GOLDEN_PERTEMUAN_CONTRACT (dark navy). Golden pertemuan is legacy-only.
-  return CONTRACT_REGISTRY.get(contractId || '') || MODERN_EDUCATOR_CONTRACT;
+  // BATCH-10C-Patch-1: Lazy lookup to avoid circular import.
+  // ModernEducatorContract.ts registers itself via registerContract() at
+  // module load time. By the time getContractOrGolden() is CALLED (not
+  // when the module is loaded), the registry is fully populated.
+  // Previously this used a direct import of MODERN_EDUCATOR_CONTRACT,
+  // creating a circular dependency.
+  const found = CONTRACT_REGISTRY.get(contractId || '');
+  if (found) return found;
+  // Default fallback: modern-educator (light theme) — NOT golden-pertemuan
+  const modernEdu = CONTRACT_REGISTRY.get('modern-educator');
+  if (modernEdu) return modernEdu;
+  // Last resort: golden-pertemuan (should always be registered first)
+  return GOLDEN_PERTEMUAN_CONTRACT;
 }
 
 // ── Contract Types ──────────────────────────────────────────────
