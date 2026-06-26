@@ -113,6 +113,10 @@ jobs:
           # BATCH-12-05: performance-baseline-9.0e.test.ts moved to legacy-disabled
           # (tests legacy html-templates.ts export renderer, not V5 Vite export path).
           # npx vitest run src/__tests__/performance-baseline-9.0e.test.ts
+          # BATCH-12-06: V5 Export Gate — replaces quarantined performance test.
+          # Verifies the ACTIVE V5 Vite export pipeline (use-vite-export, API route,
+          # serializeForHtmlScript, export-output template, ExportPanelV5).
+          npx vitest run src/__tests__/batch12-06-v5-export-gate.test.ts
           # Sprint 9.0F: dataIdx Fallback Cleanup Gate (closes BLOCK-001).
           # Verifies resolver priority contract (moduleId > dataIdx),
           # bounds checks, auto-heal, new-element contract, and source
