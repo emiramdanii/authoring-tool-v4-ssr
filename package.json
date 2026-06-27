@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max-old-space-size=2048 next dev -p 3000",
-  "dev:full": "vite build --config vite.export.config.ts 2>/dev/null; cross-env NODE_OPTIONS=--max-old-space-size=2048 next dev -p 3000",
+    "dev:full": "vite build --config vite.export.config.ts 2>/dev/null; cross-env NODE_OPTIONS=--max-old-space-size=2048 next dev -p 3000",
     "build:app": "vite build --config vite.export.config.ts && cross-env NODE_OPTIONS=--max-old-space-size=2048 next build",
     "build": "npm run build:app",
     "start": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=2048 node node_modules/.bin/next start -p 8080",
@@ -61,6 +61,7 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@babel/preset-react": "^8.0.1",
     "@next/bundle-analyzer": "^16.2.6",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
