@@ -98,6 +98,17 @@ export interface MeasuredBlockProps {
   onMeasured?: (blockId: string, height: number) => void;
   /** The block content to measure */
   children: React.ReactNode;
+  /**
+   * BATCH-11B-FIX: When true, the wrapper div fills its parent's height
+   * (height: 100%, minHeight: 100%). Required for full-page blocks
+   * (cover, hero) whose content uses `absolute inset-0` — without
+   * this, the wrapper collapses to height 0 because absolute children
+   * don't contribute to parent height.
+   *
+   * For 'autoResize' blocks (def-box, kuis, materi), leave false —
+   * those blocks let content determine height naturally.
+   */
+  fillParent?: boolean;
 }
 
 /**
@@ -123,6 +134,7 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
   blockId,
   onMeasured,
   children,
+  fillParent = false,
 }: MeasuredBlockProps) {
   const ref = useRef<HTMLDivElement>(null);
   const observerRef = useRef<ResizeObserver | null>(null);
@@ -161,8 +173,11 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
         // V5-P3-FIX: Only warn if both conditions met:
         //   1. At least 4 observations (skip first 3 transient frames)
         //   2. At least 500ms since observation started (skip initial layout)
+        // BATCH-11B-FIX: Skip warning entirely for fillParent blocks —
+        // their height is set by parent (always 720px), not by content.
         if (process.env.NODE_ENV !== 'production'
           && height <= 0
+          && !fillParent
           && observationCount > MIN_OBSERVATIONS_BEFORE_WARN
           && (Date.now() - observationStartTime) > MIN_TIME_BEFORE_WARN_MS
         ) {
@@ -188,7 +203,7 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
     return () => {
       observerRef.current?.disconnect();
     };
-  }, [blockId]);
+  }, [blockId, fillParent]);
 
   // When blockId changes, clean up old measurement
   useEffect(() => {
@@ -202,12 +217,21 @@ export const MeasuredBlock = React.memo(function MeasuredBlock({
     <div
       ref={ref}
       data-measured-block={blockId}
-      // FIX: Removed height:100% / minHeight:100% — these create circular
-      // dependency with absolute-positioned parents that have no explicit height.
-      // For 'autoResize' blocks, parent has minHeight but no height,
-      // so height:100% resolves to 0 (percentage requires definite containing block).
-      // Instead, let the content determine height naturally.
-      style={{ width: '100%' }}
+      // BATCH-11B-FIX: fillParent prop controls height behavior.
+      //
+      // fillParent=false (default, for autoResize blocks like def-box/kuis):
+      //   Only width: 100%. Content determines height naturally.
+      //   Parent has no height dependency — content flows.
+      //
+      // fillParent=true (for full-page blocks like cover/hero):
+      //   height: 100% + minHeight: 100%. Required because cover content
+      //   uses `absolute inset-0` which doesn't contribute to parent
+      //   height. Without this, the wrapper collapses to 0 and the
+      //   cover appears blank/white.
+      style={fillParent
+        ? { width: '100%', height: '100%', minHeight: '100%' }
+        : { width: '100%' }
+      }
     >
       {children}
     </div>

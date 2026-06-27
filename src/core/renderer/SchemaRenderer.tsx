@@ -48,7 +48,7 @@ import { useCanvaStore } from '@/store/canva-store';
 import { useCanvasBlockDrag } from '@/hooks/use-canvas-block-drag';
 import { EDU_MODE_BG } from '@/core/edu/education-colors';
 import type { EduDisplayMode } from '@/core/edu/education-typography';
-import { isFullPageBlockType, isBlockInteractive, isBlockTypeRendererHandlesCompression } from '../schema/capability-registry';
+import { isFullPageBlockType, isFullPageBlockTypeExplicit, isBlockInteractive, isBlockTypeRendererHandlesCompression } from '../schema/capability-registry';
 import { OverflowIndicator } from './blocks/OverflowIndicator';
 import { validatePage, formatValidationResult } from '@/core/template/contract';
 
@@ -721,6 +721,7 @@ export const SchemaScreenRenderer = React.memo(function SchemaScreenRenderer({
             <MeasuredBlock
               blockId={blockId}
               onMeasured={handleBlockMeasured}
+              fillParent={isFullPageBlockTypeExplicit(resolved.block.type)}
             >
               <SchemaBlockRenderer
                 block={resolved.block}

@@ -46,9 +46,16 @@ export function TemplatePickerV5({ onBack, onTemplateApplied }: TemplatePickerV5
     if (!freshTemplate || applying) return;
     setApplying(FRESH_TEMPLATE_ID);
     try {
+      // BATCH-11B-FIX: Pass the real PPKn cover title, NOT the
+      // template display name. The template display name is for UI
+      // (gallery card) — the cover title is the actual lesson title
+      // shown on the cover page. Using freshTemplate.name here was
+      // causing the cover title to show "SILSE Fresh — Hidup Tertib
+      // dengan Norma" (template name) instead of just "Hidup Tertib
+      // dengan Norma" (the real lesson title).
       const result = await applyTemplateToStore(FRESH_TEMPLATE_ID, {
         metadata: {
-          title: freshTemplate.name,
+          title: 'Hidup Tertib dengan Norma',  // real PPKn cover title
           mapel: freshTemplate.subject === '*' ? 'Umum' : freshTemplate.subject,
           kelas: freshTemplate.grade === '*' ? '7' : freshTemplate.grade,
         },

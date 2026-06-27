@@ -5591,3 +5591,100 @@ Stage Summary:
 - Fresh game: Tertib vs Tidak Tertib (was Kolom A/B/C/D)
 - Browser proof: RE-RUN with fresh content, 9/9 PASS, zero errors
 - CI_PROOF: PENDING_BY_DEV (unchanged)
+
+---
+Task ID: BATCH-11B
+Agent: Super Z (main)
+Task: COVER-HEIGHT-COLLAPSE-FIX-01 — fix cover putih tidak muncul
+
+Work Log:
+- Senior report: "cover belum muncul hanya warna putih"
+- Investigasi via agent-browser (real Chromium):
+  * Buka app → Dashboard → "Mulai dari template" → click SILSE Fresh
+  * Snapshot accessibility: hanya "SILSE Fresh — Hidup Tertib
+    dengan Norma" + "Mulai Belajar" CTA yang muncul
+  * DOM inspect: cover content ADA (icon ⚖️, title, subtitle, badges)
+    TAPI height = 0px
+- ROOT CAUSE #1: MeasuredBlock wrapper div punya `style={{ width: '100%' }}`
+  saja (no height). Comment di file bilang ini "FIX" untuk autoResize
+  blocks. Tapi untuk FULL-PAGE blocks (cover, hero) yang content-nya
+  `absolute inset-0`, wrapper collapse ke height 0 karena absolute
+  children tidak kontribusi parent height.
+  Akibat: cover content ter-clip ke 0px → blank white canvas.
+  Bug ini ADA SEJAK Patch-2B yang "fix" autoResize tapi break
+  full-page blocks. Patch-2B prediksi bug ini tapi hanya tulis
+  source-string test, tidak pernah fix beneran.
+- ROOT CAUSE #2: Cover title pakai template.name ("SILSE Fresh —
+  Hidup Tertib dengan Norma") bukan judul PPKn ("Hidup Tertib
+  dengan Norma"). TemplatePickerV5.handlePickFresh pass
+  `title: freshTemplate.name` ke metadata, lalu createSilseFreshPpknProject
+  pakai meta.title sebagai cover title.
+
+FIX #1 — MeasuredBlock fillParent prop:
+  - Added `fillParent?: boolean` prop ke MeasuredBlockProps
+  - When fillParent=true: style = { width:100%, height:100%, minHeight:100% }
+    → wrapper fills parent (yang punya explicit 720px height dari
+    SceneLayoutEngine)
+  - When fillParent=false (default): style = { width:100% } only
+    → content determines height (autoResize behavior preserved)
+  - Suppress zero-height warning for fillParent blocks (height is
+    set by parent, not content)
+  - Updated SchemaRenderer: pass `fillParent={isFullPageBlockTypeExplicit(block.type)}`
+    ke MeasuredBlock. Pakai `isFullPageBlockTypeExplicit` (set literal
+    cover/hero), BUKAN `isFullPageBlockType` (yang cek `!measurable`
+    — akan false-positive untuk game blocks yang juga !measurable).
+
+FIX #2 — Cover title:
+  - TemplatePickerV5.handlePickFresh: ganti `title: freshTemplate.name`
+    → `title: 'Hidup Tertib dengan Norma'` (real PPKn lesson title)
+  - Cover sekarang tampil dengan judul PPKn yang benar
+
+VERIFIKASI via agent-browser (real Chromium):
+  Before fix:
+    - cover block: width=688px, height=0px, visible=false
+    - H1 text: "SILSE Fresh — Hidup Tertib dengan Norma" (template name)
+  After fix:
+    - cover block: width=688px, height=387px, visible=true ✅
+    - H1 text: "Hidup Tertib dengan Norma" (real PPKn title) ✅
+  Screenshot saved: download/cover-fixed-screenshot.png (76KB, was 62KB)
+  Snapshot accessibility sekarang nangkap: ⚖️ icon, "Pancasila · Kelas D"
+  label, "Hidup Tertib dengan Norma" h1, "PPKn Kelas VII" subtitle,
+  "Mulai Belajar" CTA button.
+
+  Navigasi ke halaman lain juga verified:
+    - Kuis page: question "Pilih jawaban yang benar..." + 4 options
+    - Game page: 4 pool items (Mengantre, Membuang sampah, Memotong
+      antrean, Bermain HP) + 2 kolom (Perilaku Tertib, Perilaku
+      Tidak Tertib)
+
+NEW FILE:
+  src/__tests__/batch11b-cover-height-collapse-fix.test.ts (26 tests PASS)
+    Section A: MeasuredBlock fillParent prop (4 tests)
+    Section B: SchemaRenderer fillParent dispatch (2 tests)
+    Section C: isFullPageBlockTypeExplicit correctness (10 tests)
+    Section D: Fresh template cover gets fillParent (4 tests)
+    Section E: Cover title fix (2 tests)
+    Section F: Proof status (4 tests)
+
+MODIFIED FILES:
+  src/core/layout/BlockMeasurer.tsx — added fillParent prop
+  src/core/renderer/SchemaRenderer.tsx — import isFullPageBlockTypeExplicit,
+    pass fillParent to MeasuredBlock
+  src/components/product-v5/TemplatePickerV5.tsx — pass real PPKn title
+
+Acceptance criteria:
+  1. Cover renders properly (height > 0) ✅ verified via browser
+  2. Cover title shows PPKn lesson name (not template name) ✅
+  3. autoResize blocks still work (fillParent=false preserved) ✅
+  4. TypeScript PASS ✅ (0 errors)
+  5. Build PASS ✅ (0 errors)
+  6. export:build PASS ✅ (1.98 MB)
+  7. Existing tests: 180/180 PASS (no regression)
+  8. Existing v5-export-browser-proof: 3/3 PASS (no regression)
+
+Status:
+  - COVER_HEIGHT_COLLAPSE_FIX_PROOF = PASS (verified via browser)
+  - COVER_TITLE_FIX_PROOF = PASS
+  - AUTO_RESIZE_BLOCKS_STILL_WORK = PASS (no regression)
+  - BROWSER_PROOF = PASS_VERIFIED_VIA_BROWSER
+  - CI_PROOF = PENDING_BY_DEV (unchanged)
