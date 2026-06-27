@@ -618,7 +618,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '*',
     semester: '*',
     theme: 'default',
-    status: 'active',
+    status: 'legacy',
     contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -639,7 +639,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '*',
     semester: '*',
     theme: 'default',
-    status: 'active',
+    status: 'legacy',
     contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -661,7 +661,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '*',
     semester: '*',
     theme: 'default',
-    status: 'active',
+    status: 'legacy',
     contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -683,7 +683,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '*',
     semester: '*',
     theme: 'default',
-    status: 'active',
+    status: 'legacy',
     contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -705,7 +705,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '*',
     semester: '*',
     theme: 'default',
-    status: 'active',
+    status: 'legacy',
     contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },
@@ -733,7 +733,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'modern-interactive',
-    status: 'active',
+    status: 'legacy',
     contractId: 'modern-educator',
     presetId: 'macam-norma',
     scenes: [
@@ -760,7 +760,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '7',
     semester: '1',
     theme: 'modern-interactive',
-    status: 'active',
+    status: 'legacy',
     contractId: 'modern-educator',
     presetId: 'misi-penjelajah-pancasila',
     scenes: [
@@ -785,7 +785,7 @@ const COURSE_TEMPLATES: CourseTemplate[] = [
     grade: '*',
     semester: '*',
     theme: 'default',
-    status: 'active',
+    status: 'legacy',
     contractId: 'modern-educator',
     scenes: [
       { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'A', sceneType: 'intro' },

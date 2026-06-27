@@ -5412,3 +5412,182 @@ Stage Summary:
 - Browser proof: inherited from Patch-2E (fresh template uses same renderers)
 - CI_PROOF: PENDING_BY_DEV (unchanged)
 - Tool/renderer/editor/store/ExportApp: UNCHANGED (per senior instruction)
+
+---
+Task ID: BATCH-11A
+Agent: Super Z (main)
+Task: V5-DEFAULT-PAGE-TEMPLATE-PURGE-01
+
+Work Log:
+- Senior verdict on Batch 11: PARTIAL ACCEPT. Need Patch 11A.
+  Reasons:
+    1. Generic course templates still status='active' (materi-kuis,
+       materi-aktivitas, skenario-diskusi, game-sortir-kuis,
+       pertemuan-lengkap, template-kosong, macam-norma, misi-penjelajah)
+    2. Page preset/default page registry not audited — new pages
+       could inherit legacy contracts
+    3. Fresh PPKn content was too generic ("Belajar Bersama SILSE")
+       — not real PPKn curriculum
+
+Scope A — Purge active course template defaults:
+  - Created scripts/batch11a-purge-templates.js (one-shot script)
+  - Ran script: flipped 8 generic templates from 'active' to 'legacy':
+    materi-kuis, materi-aktivitas, skenario-diskusi, game-sortir-kuis,
+    pertemuan-lengkap, macam-norma, misi-penjelajah, template-kosong
+  - Now only 1 active template: silse-fresh-ppkn
+  - All 24 legacy templates still callable via createProjectFromTemplate
+    for backward compat (existing saved projects still work)
+
+Scope A — TemplatePickerV5 rewrite:
+  - REMOVED V5_TEMPLATE_IDS array (was showing 6 templates)
+  - NEW design: only 2 buttons in the picker
+    1. silse-fresh-ppkn template card (the fresh active default)
+    2. "Mulai Kosong" button (separate, NOT a template card) —
+       creates a single blank cover page with contractId='silse-fresh'
+       (NOT legacy modern-educator)
+  - No legacy template IDs appear in the picker source
+
+Scope B — Purge active page defaults:
+  - Updated src/core/preset/PagePresetRegistry.ts createPageFromPreset:
+    added default contractId='silse-fresh' when no contract is set.
+  - New pages created via "add page" path now get silse-fresh contract
+    automatically (NOT modern-educator, NOT golden-pertemuan).
+  - This closes the backdoor: users could previously add new pages
+    that inherited legacy contracts via the page preset system.
+
+Scope C — Fresh PPKn content with real curriculum:
+  - Rewrote src/presets/fresh/silse-fresh-ppkn-schema.ts
+  - Title: "Hidup Tertib dengan Norma" (was: "Belajar Bersama SILSE")
+  - Subtitle: "PPKn Kelas VII — Memahami Norma dalam Kehidupan Sehari-hari"
+  - Materi page: def-box with real PPKn definition of norma +
+    nc-grid with 4 cards: Di Sekolah, Di Rumah, Di Masyarakat,
+    Fungsi Norma (was: generic "Konsep Inti", "Ciri-Ciri", etc.)
+  - Game sortir page: real PPKn examples
+    - 2 kolom: "Perilaku Tertib" vs "Perilaku Tidak Tertib"
+      (was: generic "Kolom A/B/C/D")
+    - 4 pool items: "Mengantre dengan tertib di kantin",
+      "Membuang sampah di tempat sampah", "Memotong antrean teman",
+      "Bermain HP saat guru menjelaskan"
+  - Kuis page: 5 real PPKn questions (was: 3 generic questions)
+    Q1: Apa pengertian norma?
+    Q2: Contoh penerapan norma di sekolah?
+    Q3: Apa fungsi utama norma?
+    Q4: Mengantre di kantin = norma apa? (Norma Kesopanan)
+    Q5: Jika tidak ada norma, apa yang terjadi?
+  - Refleksi page: penerapan norma di kelas + komitmen tertib
+  - Penutup page: PPKn-specific summary
+  - Version bumped: 1.0.0 → 1.1.0
+
+Scope D — Tests:
+
+  Updated src/__tests__/batch11-template-reinstall.test.ts (51 tests PASS):
+    - "fresh template: NO page references old PPKn TITLES" — relaxed
+      to check only old TITLES (Macam-Macam Norma, Hakikat Norma) and
+      old QUIZ QUESTIONS (sanksinya berupa dosa, etc). The words
+      "Norma Agama" / "Norma Hukum" ARE valid PPKn content (4 types
+      of norma) and appear as quiz options — they're NOT legacy leakage.
+    - "fresh template: cover title is Hidup Tertib dengan Norma" —
+      was checking "Belajar Bersama SILSE" (generic), now checks the
+      real PPKn title.
+    - "fresh template: kuis has 5 PPKn questions" — was 3, now 5.
+    - "fresh template: sortir game has 4 pool + 2 kolom" — was 4+4,
+      now 4+2 (Tertib vs Tidak Tertib).
+    - "legacy template is NOT in TemplatePickerV5 default UI" —
+      updated to check no static template-card-<legacy-id> refs.
+    - "fresh schema file does NOT import from legacy PPKn schema" —
+      checks import block only (file mentions legacy in comments as
+      part of quarantine explanation).
+
+  Created src/__tests__/batch11a-default-page-template-purge.test.ts
+  (40 tests PASS, 10 sub-tests per senior spec):
+    Test 1: V5 gallery shows only silse-fresh-ppkn + blank option
+    Test 2: Generic templates NOT in TemplatePickerV5
+    Test 3: CourseTemplateRegistry default = fresh only
+    Test 4: Page default contract = silse-fresh (not legacy)
+    Test 5: Fresh PPKn content is REAL PPKn, not placeholder
+    Test 6: Fresh kuis has minimal 5 PPKn questions
+    Test 7: Fresh game has real PPKn examples (Tertib vs Tidak Tertib)
+    Test 8: All fresh pages contractId = silse-fresh
+    Test 9: All fresh pages elements = []
+    Test 10: Fresh contract has no legacy inheritance
+
+Scope D — Browser proof RE-RUN with fresh content (NOT inherited):
+  Created e2e/batch11a-fresh-ppkn-browser-proof.spec.ts (9 tests PASS):
+    Phase A: POST /api/export with fresh PPKn pages → 1.98 MB HTML
+    Phase B: Open file:// in Chromium → assert "Hidup Tertib dengan Norma"
+             cover title ATTACHED, CTA ATTACHED, subtitle ATTACHED,
+             page indicator "Halaman 1 dari 8" visible
+    Phase C: Click dot 5 (game page) → assert "Perilaku Tertib" +
+             "Perilaku Tidak Tertib" labels ATTACHED, all 4 pool items
+             (Mengantre, Membuang sampah, Memotong antrean, Bermain HP)
+             ATTACHED, "Halaman 5 dari 8" visible
+    Phase D: Click dot 6 (kuis page) → assert "Apa pengertian norma"
+             question ATTACHED, kuis title ATTACHED, first option
+             (correct answer) ATTACHED, "Halaman 6 dari 8" visible
+    Phase E: Assert zero page errors + write proof result JSON
+    Plus 4 artifact-existence tests (cover/game/kuis screenshots + JSON)
+
+  Proof artifacts saved to download/batch11a-fresh-ppkn-browser-proof/:
+    - fresh-ppkn-export.html (1.99 MB)
+    - fresh-cover-page.png (11 KB)
+    - fresh-game-page.png (33 KB)
+    - fresh-kuis-page.png (51 KB)
+    - fresh-ppkn-browser-proof-result.json:
+      {
+        "batch": "BATCH-11A",
+        "proofId": "FRESH-PPKN-BROWSER-PROOF-01",
+        "status": "PASS",
+        "freshCoverTitleVisible": true,
+        "freshCoverCtaVisible": true,
+        "freshGameTertibLabelsVisible": true,
+        "freshKuisQuestionVisible": true,
+        "browserErrors": [],
+        "browserErrorCount": 0
+      }
+
+Acceptance criteria verification (14/14 PASS):
+  1. V5 gallery tidak menampilkan template default lama ✅
+  2. CourseTemplateRegistry active fresh path bersih ✅ (only 1 active)
+  3. Page default lama tidak aktif di fresh V5 ✅ (default = silse-fresh)
+  4. Fresh PPKn berisi konten PPKn nyata ✅ ("Hidup Tertib dengan Norma")
+  5. Fresh kuis minimal 5 soal PPKn ✅ (exactly 5)
+  6. Fresh game berisi contoh PPKn nyata ✅ (Tertib vs Tidak Tertib)
+  7. Semua fresh pages contractId = silse-fresh ✅
+  8. Semua fresh pages elements = [] ✅
+  9. Tidak ada golden-pertemuan di fresh path ✅
+  10. Tidak ada academic-clean di fresh path ✅
+  11. Tidak ada modern-educator di fresh path ✅
+  12. DOM proof PASS ✅ (Patch-2C still PASS — same CoverRenderer)
+  13. Export proof PASS ✅ (Patch-2D still PASS — same ExportApp)
+  14. Browser proof fresh template PASS ✅ (RE-RUN with fresh content,
+      NOT inherited — 9/9 Playwright tests PASS in 8.9s)
+
+Verification:
+  - Batch 11 tests: 51/51 PASS (updated for new content)
+  - Batch 11A tests: 40/40 PASS
+  - Patch-2C/2D/2E tests: 63/63 PASS (no regression)
+  - Patch-11A Playwright browser proof: 9/9 PASS (8.9s)
+  - Existing v5-export-browser-proof: 3/3 PASS (no regression)
+  - TypeScript gate: 0 errors
+  - export:build: PASS (1.98 MB, jsxDEV count = 0)
+  - Next.js build: PASS (no errors)
+  - Dev server: HTTP 200, no errors
+
+Stage Summary:
+- Files created: 3
+  (e2e/batch11a-fresh-ppkn-browser-proof.spec.ts,
+   src/__tests__/batch11a-default-page-template-purge.test.ts,
+   scripts/batch11a-purge-templates.js)
+- Files modified: 4
+  (CourseTemplateRegistry.ts — 8 templates flipped to legacy,
+   TemplatePickerV5.tsx — complete rewrite (only fresh + blank),
+   PagePresetRegistry.ts — default contractId='silse-fresh',
+   silse-fresh-ppkn-schema.ts — real PPKn content rewrite,
+   batch11-template-reinstall.test.ts — updated assertions)
+- Active templates: 1 (silse-fresh-ppkn) — was 9
+- Legacy templates: 24 (all generic + old PPKn) — backward compat preserved
+- Fresh PPKn content: real curriculum (Hidup Tertib dengan Norma)
+- Fresh kuis: 5 PPKn questions (was 3 generic)
+- Fresh game: Tertib vs Tidak Tertib (was Kolom A/B/C/D)
+- Browser proof: RE-RUN with fresh content, 9/9 PASS, zero errors
+- CI_PROOF: PENDING_BY_DEV (unchanged)

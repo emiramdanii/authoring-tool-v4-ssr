@@ -371,6 +371,15 @@ export function createPageFromPreset(
   // Presets create schemas directly via ensurePageSchema().
   page.templateData = {};
 
+  // BATCH-11A: Fresh V5 add-page default contract.
+  // New pages created via the "add page" path get the fresh contract
+  // (silse-fresh) — NOT legacy modern-educator, NOT golden-pertemuan.
+  // This ensures the fresh V5 path stays clean even when users add
+  // new pages manually.
+  if (!page.contractId) {
+    page.contractId = 'silse-fresh';
+  }
+
   // Schema-first: create native schema directly via preset.
   // No TemplateAdapter bridge — pure one-way data flow.
   let hasSchema = false;

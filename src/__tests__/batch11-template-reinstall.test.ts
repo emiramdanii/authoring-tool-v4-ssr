@@ -92,20 +92,34 @@ describe('BATCH-11 Section A: Fresh template anti-legacy-content', () => {
     }
   });
 
-  it('fresh template: NO page references "Macam-Macam Norma" (old PPKn content)', () => {
-    // Fresh template is generic — should not inherit specific old content
+  it('fresh template: NO page references old PPKn TITLES ("Macam-Macam Norma" / "Hakikat Norma")', () => {
+    // BATCH-11A: fresh template has its OWN PPKn title
+    // ("Hidup Tertib dengan Norma") — must not reuse old titles.
+    //
+    // Note: "Norma Agama", "Norma Hukum", "Norma Kesopanan",
+    // "Norma Kesusilaan" ARE valid PPKn content (the 4 types of
+    // norma) and legitimately appear as quiz options. They are NOT
+    // legacy inheritance — they're correct curriculum content.
+    //
+    // We only check for OLD TITLES / OLD QUIZ QUESTIONS that
+    // indicate legacy content leakage.
     const allText = JSON.stringify(freshPages);
+    // Old titles — must NOT appear
     expect(allText).not.toContain('Macam-Macam Norma');
-    expect(allText).not.toContain('Norma Agama');
-    expect(allText).not.toContain('Norma Hukum');
+    expect(allText).not.toContain('Hakikat Norma');
+    // Old quiz question text — must NOT appear
+    expect(allText).not.toContain('sanksinya berupa dosa');  // old Q1
+    expect(allText).not.toContain('Seseorang merasa bersalah');  // old Q2
+    expect(allText).not.toContain('Pelanggaran lampu merah');  // old Q3
   });
 
-  it('fresh template: cover title is generic (not inherited from old PPKn)', () => {
+  it('fresh template: cover title is "Hidup Tertib dengan Norma" (real PPKn curriculum)', () => {
+    // BATCH-11A: title changed from generic "Belajar Bersama SILSE"
+    // to real PPKn curriculum topic.
     const cover = freshPages[0];
     const coverBlock = cover?.schema?.blocks?.[0] as { title?: string };
     expect(coverBlock.title).toBeDefined();
-    // Default fresh cover title — not the old PPKn one
-    expect(coverBlock.title).toBe('Belajar Bersama SILSE');
+    expect(coverBlock.title).toBe('Hidup Tertib dengan Norma');
   });
 
   it('fresh template: cover CTA is "Mulai Belajar" (no arrow, teacher-friendly)', () => {
@@ -116,20 +130,25 @@ describe('BATCH-11 Section A: Fresh template anti-legacy-content', () => {
     expect(coverBlock.cta?.label).not.toContain('→');
   });
 
-  it('fresh template: kuis has 3 multi-choice questions in 1 page (STANDAR)', () => {
+  it('fresh template: kuis has 5 PPKn multi-choice questions in 1 page (STANDAR + 11A)', () => {
+    // BATCH-11A: senior scope C — minimal 5 soal PPKn nyata.
+    // Was 3 generic questions, now 5 real PPKn questions.
     const kuis = freshPages.find(p => p.templateType === 'kuis');
     const kuisBlock = kuis?.schema?.blocks?.[0] as { questions?: unknown[] };
-    expect(kuisBlock.questions?.length).toBe(3);
+    expect(kuisBlock.questions?.length).toBe(5);
   });
 
-  it('fresh template: sortir game has 4 pool items + 4 kolom (Batch 13E enrichment)', () => {
+  it('fresh template: sortir game has 4 pool items + 2 kolom (Tertib vs Tidak Tertib)', () => {
+    // BATCH-11A: senior scope C — real PPKn examples.
+    // Was 4 pool + 4 kolom (generic Kolom A/B/C/D).
+    // Now 4 pool + 2 kolom (Perilaku Tertib vs Tidak Tertib).
     const game = freshPages.find(p => p.templateType === 'game');
     const gameBlock = game?.schema?.blocks?.[0] as {
       pool?: unknown[];
       kolom?: unknown[];
     };
     expect(gameBlock.pool?.length).toBe(4);
-    expect(gameBlock.kolom?.length).toBe(4);
+    expect(gameBlock.kolom?.length).toBe(2);
   });
 });
 
@@ -272,13 +291,20 @@ describe('BATCH-11 Section D: Legacy quarantine (modul-ppkn-vii)', () => {
     expect(pages[0]?.contractId).toBe('modern-educator');
   });
 
-  it('legacy template is NOT in TemplatePickerV5 default list', () => {
+  it('legacy template is NOT in TemplatePickerV5 default UI (BATCH-11A: only fresh + blank)', () => {
+    // BATCH-11A: TemplatePickerV5 was rewritten to show ONLY
+    // silse-fresh-ppkn + a separate "Mulai Kosong" button.
+    // No V5_TEMPLATE_IDS array anymore — just direct fetch.
     const src = readSrc('components/product-v5/TemplatePickerV5.tsx');
     expect(src).toContain("'silse-fresh-ppkn'");
-    // modul-ppkn-vii should NOT be in V5_TEMPLATE_IDS anymore
-    const v5ListMatch = src.match(/const V5_TEMPLATE_IDS = \[([\s\S]*?)\]/);
-    expect(v5ListMatch?.[1]).not.toContain("'modul-ppkn-vii'");
-    expect(v5ListMatch?.[1]).toContain("'silse-fresh-ppkn'");
+    // modul-ppkn-vii and other legacy IDs should NOT appear as
+    // template card IDs in the picker.
+    expect(src).not.toMatch(/template-card-modul-ppkn-vii/);
+    expect(src).not.toMatch(/template-card-materi-kuis/);
+    expect(src).not.toMatch(/template-card-game-sortir-kuis/);
+    // "Mulai Kosong" is a SEPARATE button (not a template card)
+    expect(src).toContain('Mulai Kosong');
+    expect(src).toContain("'blank'");
   });
 });
 
@@ -381,10 +407,15 @@ describe('BATCH-11 Section F: Fresh vs Legacy structural isolation', () => {
 // ═══════════════════════════════════════════════════════════════
 
 describe('BATCH-11 Section G: Source-level anti-legacy guarantees', () => {
-  it('fresh schema file does NOT import from norma-golden-schema', () => {
+  it('fresh schema file does NOT import from legacy PPKn schema', () => {
     const src = readSrc('presets/fresh/silse-fresh-ppkn-schema.ts');
-    expect(src).not.toContain('norma-golden-schema');
-    expect(src).not.toContain('createPpknNormaGoldenProject');
+    // The fresh file must not import createPpknNormaGoldenProject
+    // (note: the file may mention it in COMMENTS as part of the
+    // quarantine explanation, but must not IMPORT it)
+    const importLines = src.split('\n').filter(l => l.trim().startsWith('import'));
+    const importBlock = importLines.join('\n');
+    expect(importBlock).not.toContain('norma-golden-schema');
+    expect(importBlock).not.toContain('createPpknNormaGoldenProject');
   });
 
   it('fresh schema file does NOT reference "golden-pertemuan"', () => {
