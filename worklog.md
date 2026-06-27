@@ -5688,3 +5688,115 @@ Status:
   - AUTO_RESIZE_BLOCKS_STILL_WORK = PASS (no regression)
   - BROWSER_PROOF = PASS_VERIFIED_VIA_BROWSER
   - CI_PROOF = PENDING_BY_DEV (unchanged)
+
+---
+Task ID: BATCH-11C
+Agent: Super Z (main)
+Task: SILSE-STUDIO-EDITABLE-MPI-01 — fresh MPI siap edit dari nol
+
+Work Log:
+- Senior feedback: "bentuk content masih jelek, buat 1 set MPI yang
+  bisa di-edit dari nol, jangan remake, jangan sentuh legacy"
+- Investigasi via agent-browser: screenshot semua 8 halaman fresh PPKn.
+  Found: content terlalu panjang/terisi PPKn spesifik, guru susah edit
+  karena harus hapus dulu sebelum ganti.
+- Solusi: buat SILSE STUDIO — template fresh dengan MINIMAL content
+  (short placeholders) + PREMIUM layout. Setiap teks adalah placeholder
+  singkat yang guru bisa klik → edit langsung.
+
+NEW FILE: src/presets/fresh/silse-studio-schema.ts
+  - createSilseStudioProject() — 8 halaman minimal + premium
+  - SILSE_STUDIO_TEMPLATE_META — id='silse-studio', status='active'
+  - Cover variant B (Sinematik — bottom-anchored, watermark icon)
+  - 2 badges (bukan 3), 3 petunjuk items (bukan 4)
+  - 3 objectives (bukan 4), 3 nc-grid cards (bukan 4)
+  - 3 sortir pool + 2 kolom (bukan 4+4)
+  - 3 kuis questions (bukan 5), 1 refleksi question (bukan 2)
+  - 2 penutup preview items (bukan 3)
+  - Semua text fields < 80 chars (mudah edit inline)
+  - Block IDs pakai prefix 'silse-studio-' (bukan 'silse-fresh-' atau
+    'norma-golden-')
+  - TIDAK ada konten PPKn spesifik (Hidup Tertib, Norma Agama, dll)
+  - TIDAK import dari norma-golden-schema atau silse-fresh-ppkn-schema
+
+MODIFIED FILES:
+  src/core/template/CourseTemplateRegistry.ts
+    - Import createSilseStudioProject + SILSE_STUDIO_TEMPLATE_META
+    - Tambah entry 'silse-studio' sebagai FIRST active template (primary)
+    - silse-fresh-ppkn jadi SECOND active (secondary)
+    - Tambah fast path: if (templateId === 'silse-studio') return
+      createSilseStudioProject(...)
+
+  src/components/product-v5/TemplatePickerV5.tsx
+    - Rewrite dengan renderTemplateCard helper (DRY)
+    - 3 cards: SILSE Studio (primary, badge "Direkomendasikan") +
+      SILSE Fresh PPKn (secondary) + Mulai Kosong
+    - handlePick generic function dengan defaultTitle per template
+    - Studio defaultTitle: 'Judul Media Pembelajaran'
+    - Fresh defaultTitle: 'Hidup Tertib dengan Norma'
+
+UPDATED TESTS:
+  src/__tests__/batch11-template-reinstall.test.ts
+    - Updated "first entry" assertion: silse-studio first, silse-fresh-ppkn second
+  src/__tests__/batch11a-default-page-template-purge.test.ts
+    - Updated "only 1 active" → "2 active templates"
+    - Updated gallery filter test untuk 2 active
+    - Updated TemplatePickerV5 test untuk dynamic template-card ref
+  src/__tests__/batch11b-cover-height-collapse-fix.test.ts
+    - Updated TemplatePickerV5 title assertion untuk handlePick pattern
+
+NEW TEST: src/__tests__/batch11c-silse-studio-editable-mpi.test.ts (35 tests)
+  Section A: Studio template structure (5 tests)
+  Section B: Minimal content (10 tests — verify counts: 2 badges, 3 items,
+    3 objectives, 3 cards, 3 pool, 2 kolom, 3 questions, 1 refleksi Q,
+    2 preview items)
+  Section C: Short placeholder text (5 tests — all under char limits)
+  Section D: No legacy inheritance (4 tests — no PPKn content, no legacy imports)
+  Section E: Registry + picker integration (5 tests)
+  Section F: Proof status (5 tests)
+
+VERIFIKASI via agent-browser (real Chromium):
+  - Buka app → Dashboard → "Mulai dari template"
+  - Gallery sekarang tampilkan 3 cards:
+    1. SILSE Studio (badge "Direkomendasikan", border emerald)
+    2. SILSE Fresh PPKn (border slate)
+    3. Mulai Kosong (dashed border)
+  - Click SILSE Studio → 8 halaman load
+  - Cover: width=688px, height=387px, visible=true
+  - H1 title: "Judul Media Pembelajaran" (placeholder siap edit)
+  - Snapshot accessibility nangkap: ✨ icon, "Pembelajaran · Kelas D"
+    label, "Judul Media Pembelajaran" h1, "Klik untuk edit subtitle"
+    subtitle, 2 badges (🏫 Nama Sekolah, 👨‍🏫 Nama Guru), "Mulai Belajar" CTA
+  - Navigasi semua 8 halaman: cover/petunjuk/tujuan/materi/game/kuis/
+    refleksi/penutup — semua render dengan rapi
+  - Screenshots saved: download/studio-{cover,petunjuk,tujuan,materi,
+    game,kuis,refleksi,penutup}.png
+
+Acceptance criteria:
+  1. 1 set MPI siap edit dari nol ✅ (SILSE Studio)
+  2. Layout premium/rapi ✅ (variant B + tighter counts)
+  3. Bisa di-edit inline ✅ (semua text fields adalah short placeholders)
+  4. Tidak remake template lama ✅ (Studio file baru, tidak sentuh
+     norma-golden-schema atau silse-fresh-ppkn-schema)
+  5. Tidak sentuh legacy ✅ (no imports from legacy, no PPKn content)
+  6. TypeScript PASS ✅ (0 errors)
+  7. Build PASS ✅ (0 errors)
+  8. export:build PASS ✅ (1.98 MB)
+  9. All tests: 215/215 PASS (no regression)
+
+Verification:
+  - Batch 11C tests: 35/35 PASS
+  - All batch10/11 tests: 215/215 PASS (no regression)
+  - TypeScript gate: 0 errors
+  - export:build: PASS (1.98 MB)
+  - Next.js build: PASS
+  - Browser verified: cover height 387px, all 8 pages render
+
+Stage Summary:
+- Files created: 2 (silse-studio-schema.ts + batch11c test)
+- Files modified: 3 (CourseTemplateRegistry, TemplatePickerV5, 3 existing tests)
+- Active templates: 2 (silse-studio primary + silse-fresh-ppkn secondary)
+- Studio pages: 8 (all minimal content, premium layout)
+- Studio block IDs: all use 'silse-studio-' prefix
+- Browser verified: all 8 pages render properly
+- CI_PROOF: PENDING_BY_DEV (unchanged)

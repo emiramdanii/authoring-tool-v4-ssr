@@ -43,18 +43,16 @@ const readSrc = (rel: string) =>
 // ═══════════════════════════════════════════════════════════════
 
 describe('BATCH-11A Test 1: V5 gallery shows only silse-fresh-ppkn + blank option', () => {
-  it('TemplatePickerV5 source only renders silse-fresh-ppkn template card + blank button', () => {
+  it('TemplatePickerV5 source renders fresh templates (silse-studio + silse-fresh-ppkn) + blank', () => {
     const src = readSrc('components/product-v5/TemplatePickerV5.tsx');
 
-    // Fresh template card IS rendered (via dynamic template literal)
-    expect(src).toContain('template-card-${freshTemplate.id}');
+    // BATCH-11C: Both fresh templates rendered via dynamic template literal
+    expect(src).toContain('template-card-${template.id}');
     // Blank button IS rendered (separate from template cards)
     expect(src).toContain("template-card-blank");
     expect(src).toContain("Mulai Kosong");
 
     // Legacy/generic template IDs are NOT referenced as template cards.
-    // The picker only fetches FRESH_TEMPLATE_ID — no legacy IDs appear
-    // in the source at all (except in comments listing what's NOT shown).
     const legacyIds = [
       'modul-ppkn-vii',
       'materi-kuis',
@@ -67,9 +65,6 @@ describe('BATCH-11A Test 1: V5 gallery shows only silse-fresh-ppkn + blank optio
       'template-kosong',
     ];
     for (const id of legacyIds) {
-      // The legacy ID should not appear in a template-card-${id} pattern
-      // (it would only appear in comments listing what's NOT shown).
-      // Check that no static `template-card-<id>` literal exists.
       expect(src, `legacy template "${id}" must NOT have a static template-card ref`).not.toContain(`template-card-${id}`);
     }
   });
@@ -107,11 +102,14 @@ describe('BATCH-11A Test 2: Generic templates not in TemplatePickerV5', () => {
     }
   });
 
-  it('only silse-fresh-ppkn is status=active in registry', () => {
+  it('only fresh templates are status=active in registry (silse-studio + silse-fresh-ppkn)', () => {
+    // BATCH-11C: 2 active templates — silse-studio (primary) + silse-fresh-ppkn
     const all = getAllCourseTemplates();
     const active = all.filter(t => t.status === 'active');
-    expect(active.length, 'exactly 1 active template (silse-fresh-ppkn)').toBe(1);
-    expect(active[0]?.id).toBe('silse-fresh-ppkn');
+    expect(active.length, 'exactly 2 active templates').toBe(2);
+    const activeIds = active.map(t => t.id);
+    expect(activeIds).toContain('silse-studio');
+    expect(activeIds).toContain('silse-fresh-ppkn');
   });
 });
 
@@ -120,19 +118,24 @@ describe('BATCH-11A Test 2: Generic templates not in TemplatePickerV5', () => {
 // ═══════════════════════════════════════════════════════════════
 
 describe('BATCH-11A Test 3: CourseTemplateRegistry default = fresh only', () => {
-  it('getCourseTemplatesFiltered returns only silse-fresh-ppkn by default', () => {
+  it('getCourseTemplatesFiltered returns only fresh templates by default', () => {
+    // BATCH-11C: 2 active templates shown by default
     const filtered = getCourseTemplatesFiltered(undefined, undefined, false);
-    expect(filtered.length).toBe(1);
-    expect(filtered[0]?.id).toBe('silse-fresh-ppkn');
-    expect(filtered[0]?.status).toBe('active');
+    expect(filtered.length).toBe(2);
+    const ids = filtered.map(t => t.id);
+    expect(ids).toContain('silse-studio');
+    expect(ids).toContain('silse-fresh-ppkn');
+    for (const t of filtered) {
+      expect(t.status).toBe('active');
+    }
   });
 
   it('getCourseTemplatesFiltered with showLegacy=true returns legacy templates too', () => {
     const filtered = getCourseTemplatesFiltered(undefined, undefined, true);
     const legacyCount = filtered.filter(t => t.status === 'legacy').length;
     expect(legacyCount, 'legacy templates still accessible via showLegacy').toBeGreaterThan(0);
-    // Fresh template still first
-    expect(filtered[0]?.id).toBe('silse-fresh-ppkn');
+    // silse-studio still first (primary)
+    expect(filtered[0]?.id).toBe('silse-studio');
   });
 });
 

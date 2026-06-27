@@ -26,8 +26,11 @@ import { TEMPLATE_TO_SCENE, SCENE_TYPES } from '@/core/edu/education-scene-types
 // BATCH-11: legacy PPKn template still imported for backward-compat
 // lookup, but is NO LONGER the active default. New default is
 // createSilseFreshPpknProject from '@/presets/fresh/silse-fresh-ppkn-schema'.
+// BATCH-11C: Added SILSE Studio — minimal content, premium layout,
+// editable from scratch.
 import { createPpknNormaGoldenProject } from '@/presets/ppkn/norma-golden-schema';
 import { createSilseFreshPpknProject, SILSE_FRESH_TEMPLATE_META } from '@/presets/fresh/silse-fresh-ppkn-schema';
+import { createSilseStudioProject, SILSE_STUDIO_TEMPLATE_META } from '@/presets/fresh/silse-studio-schema';
 import { loadPreset, schemaToCanvaPages } from '@/core/engine/SchemaEngine.utils';
 import { generatePageId } from '@/core/schema/ensure-schema';
 import { DEFAULT_NAV_CONFIG } from '@/components/canva/types';
@@ -178,7 +181,48 @@ export const SEMESTER_OPTIONS = [
 
 const COURSE_TEMPLATES: CourseTemplate[] = [
   // ═══════════════════════════════════════════════════════════════
-  // BATCH-11: SILSE FRESH PPKn — NEW ACTIVE DEFAULT
+  // BATCH-11C: SILSE STUDIO — FRESH EDITABLE TEMPLATE (premium layout)
+  // ═══════════════════════════════════════════════════════════════
+  // Senior feedback Batch 11C: "bentuk content masih jelek, buat 1
+  // set MPI yang bisa di-edit dari nol". This template is INTENTIONALLY
+  // minimal in content but MAXIMAL in layout polish. Every field is a
+  // short placeholder that teachers can click to edit inline.
+  //
+  // Visual polish:
+  //   - Cover variant B (Sinematik — bottom-anchored, watermark icon)
+  //   - 3 objectives (not 4), 3 cards (not 4), 3 pool items (not 4)
+  //   - 3 quiz questions (not 5), 1 refleksi question (not 2)
+  //   - 2 penutup preview items (not 3)
+  // ═══════════════════════════════════════════════════════════════
+  {
+    id: SILSE_STUDIO_TEMPLATE_META.id,  // 'silse-studio'
+    name: SILSE_STUDIO_TEMPLATE_META.name,
+    description: SILSE_STUDIO_TEMPLATE_META.description,
+    subject: SILSE_STUDIO_TEMPLATE_META.subject,
+    grade: SILSE_STUDIO_TEMPLATE_META.grade,
+    semester: SILSE_STUDIO_TEMPLATE_META.semester,
+    theme: SILSE_STUDIO_TEMPLATE_META.theme,
+    contractId: SILSE_STUDIO_TEMPLATE_META.contractId,  // 'silse-fresh'
+    status: 'active',
+    scenes: [
+      { templateType: 'cover', label: 'Cover', suggestedBlocks: ['cover'], variant: 'B', sceneType: 'intro' },
+      { templateType: 'petunjuk', label: 'Petunjuk', suggestedBlocks: ['petunjuk'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'tujuan', label: 'Tujuan Pembelajaran', suggestedBlocks: ['tujuan-display'], variant: 'A', sceneType: 'intro' },
+      { templateType: 'materi', label: 'Materi Pembelajaran', suggestedBlocks: ['def-box', 'nc-grid'], variant: 'A', sceneType: 'concept' },
+      { templateType: 'game', label: 'Aktivitas Sortir', suggestedBlocks: ['sortir-game'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'kuis', label: 'Kuis', suggestedBlocks: ['kuis'], variant: 'A', sceneType: 'assessment' },
+      { templateType: 'refleksi', label: 'Refleksi', suggestedBlocks: ['refleksi'], variant: 'A', sceneType: 'reflection' },
+      { templateType: 'penutup', label: 'Penutup', suggestedBlocks: ['penutup'], variant: 'A', sceneType: 'summary' },
+    ],
+    metadata: {
+      icon: SILSE_STUDIO_TEMPLATE_META.icon,
+      author: SILSE_STUDIO_TEMPLATE_META.author,
+      version: SILSE_STUDIO_TEMPLATE_META.version,
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // BATCH-11: SILSE FRESH PPKn — PPKn curriculum template
   // ═══════════════════════════════════════════════════════════════
   // Senior decision: old PPKn template (modul-ppkn-vii / norma-golden)
   // is "OS rusak" — content + style + contract + cover-hitam all mixed.
@@ -897,9 +941,30 @@ export async function createProjectFromTemplate(
   }
 
   // ═══════════════════════════════════════════════════════════════════
+  // BATCH-11C: SILSE STUDIO FAST PATH (silse-studio)
+  // ═══════════════════════════════════════════════════════════════════
+  // Senior feedback: "bentuk content masih jelek, buat 1 set MPI yang
+  // bisa di-edit dari nol". SILSE Studio is the NEW active default —
+  // minimal content, premium layout, every field inline-editable.
+  // Uses createSilseStudioProject() which generates 8 pages with:
+  //   - contractId = 'silse-fresh' (light cream + deep teal)
+  //   - Cover variant B (Sinematik — premium look)
+  //   - 3 objectives, 3 cards, 3 pool, 3 quiz Qs, 1 refleksi Q
+  //   - Schema-first, no legacy elements[]
+  // ═══════════════════════════════════════════════════════════════════
+
+  if (templateId === 'silse-studio') {
+    return createSilseStudioProject({
+      title: metadata.title,
+      guru: metadata.guru,
+      sekolah: metadata.sekolah,
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   // BATCH-11: FRESH TEMPLATE FAST PATH (silse-fresh-ppkn)
   // ═══════════════════════════════════════════════════════════════════
-  // The new active default. Uses createSilseFreshPpknProject() which
+  // PPKn curriculum template. Uses createSilseFreshPpknProject() which
   // generates 8 fresh pages with:
   //   - contractId = 'silse-fresh' (light cream + deep teal)
   //   - Schema-first, no legacy elements[]

@@ -191,12 +191,16 @@ describe('BATCH-11B Section D: Fresh template cover gets fillParent', () => {
 // ═══════════════════════════════════════════════════════════════
 
 describe('BATCH-11B Section E: Cover title fix (no template name leak)', () => {
-  it('TemplatePickerV5 passes real PPKn title, not template.name', () => {
+  it('TemplatePickerV5 uses handlePick with default title per template (not template.name)', () => {
     const src = readSrc('components/product-v5/TemplatePickerV5.tsx');
-    // Must pass the real PPKn lesson title
-    expect(src).toContain("title: 'Hidup Tertib dengan Norma'");
-    // Must NOT pass freshTemplate.name as title
+    // BATCH-11C: TemplatePickerV5 now uses handlePick(templateId, template, defaultTitle)
+    // with explicit default titles — NOT template.name
+    expect(src).toContain("handlePick(STUDIO_TEMPLATE_ID, studioTemplate, 'Judul Media Pembelajaran')");
+    expect(src).toContain("handlePick(FRESH_TEMPLATE_ID, freshTemplate, 'Hidup Tertib dengan Norma')");
+    // Must NOT pass template.name as title
+    expect(src).not.toMatch(/title:\s*template\.name/);
     expect(src).not.toMatch(/title:\s*freshTemplate\.name/);
+    expect(src).not.toMatch(/title:\s*studioTemplate\.name/);
   });
 
   it('fresh cover title is "Hidup Tertib dengan Norma" (not template name)', () => {

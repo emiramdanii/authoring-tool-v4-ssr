@@ -219,9 +219,11 @@ describe('BATCH-11 Section C: Registry default = silse-fresh-ppkn', () => {
     expect(tmpl?.status).toBe('active');
   });
 
-  it('fresh template is the FIRST entry in COURSE_TEMPLATES (default position)', () => {
+  it('silse-fresh-ppkn is in COURSE_TEMPLATES (BATCH-11C: silse-studio is first, fresh is second)', () => {
     const all = getAllCourseTemplates();
-    expect(all[0]?.id).toBe('silse-fresh-ppkn');
+    // BATCH-11C: silse-studio is now the primary (first), silse-fresh-ppkn second
+    expect(all[0]?.id).toBe('silse-studio');
+    expect(all[1]?.id).toBe('silse-fresh-ppkn');
   });
 
   it('fresh template appears in getCourseTemplatesFiltered (default gallery)', () => {
