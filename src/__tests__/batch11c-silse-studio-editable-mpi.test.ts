@@ -24,6 +24,8 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { createSilseStudioProject, SILSE_STUDIO_TEMPLATE_META } from '@/presets/fresh/silse-studio-schema';
 import { getCourseTemplate, createProjectFromTemplate } from '@/core/template/CourseTemplateRegistry';
+import { getContract } from '@/core/template/contract';
+import { SILSE_STUDIO_ACCENT_PALETTE, MODERN_EDUCATOR_ACCENT_PALETTE } from '@/core/template/contract/TemplateThemeContract';
 
 const readSrc = (rel: string) =>
   readFileSync(resolve(__dirname, '..', rel), 'utf-8');
@@ -44,9 +46,12 @@ describe('BATCH-11C Section A: Studio template structure', () => {
     ]);
   });
 
-  it('every page has contractId = "silse-fresh"', () => {
+  it('every page has contractId = "silse-studio" (BATCH-11D: warm sunset palette)', () => {
+    // BATCH-11D: Studio uses its OWN contract (silse-studio) with warm
+    // sunset palette (orange + amber + rose). Visually distinct from
+    // silse-fresh (teal).
     for (const page of studioPages) {
-      expect(page.contractId).toBe('silse-fresh');
+      expect(page.contractId).toBe('silse-studio');
     }
   });
 
@@ -268,11 +273,11 @@ describe('BATCH-11C Section D: No legacy inheritance', () => {
 // ═══════════════════════════════════════════════════════════════
 
 describe('BATCH-11C Section E: Registry + picker integration', () => {
-  it('getCourseTemplate("silse-studio") returns active template', () => {
+  it('getCourseTemplate("silse-studio") returns active template with silse-studio contract', () => {
     const tmpl = getCourseTemplate('silse-studio');
     expect(tmpl).toBeDefined();
     expect(tmpl?.id).toBe('silse-studio');
-    expect(tmpl?.contractId).toBe('silse-fresh');
+    expect(tmpl?.contractId).toBe('silse-studio');  // BATCH-11D: warm sunset
     expect(tmpl?.status).toBe('active');
   });
 
@@ -287,7 +292,7 @@ describe('BATCH-11C Section E: Registry + picker integration', () => {
     expect(studioIdx, 'silse-studio must be defined BEFORE silse-fresh-ppkn').toBeLessThan(freshIdx);
   });
 
-  it('createProjectFromTemplate("silse-studio") returns 8 studio pages', async () => {
+  it('createProjectFromTemplate("silse-studio") returns 8 studio pages with silse-studio contract', async () => {
     const pages = await createProjectFromTemplate('silse-studio', {
       title: 'Test Studio',
       mapel: 'Umum',
@@ -295,7 +300,7 @@ describe('BATCH-11C Section E: Registry + picker integration', () => {
     });
     expect(pages.length).toBe(8);
     for (const page of pages) {
-      expect(page.contractId).toBe('silse-fresh');
+      expect(page.contractId).toBe('silse-studio');  // BATCH-11D
       expect(page.elements).toEqual([]);
     }
   });
@@ -317,6 +322,97 @@ describe('BATCH-11C Section E: Registry + picker integration', () => {
     expect(src).toContain('handlePickStudio');
     expect(src).toContain('Direkomendasikan');
     expect(src).toContain('isPrimary');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// SECTION G — Warm Sunset palette (BATCH-11D — visually distinct)
+// ═══════════════════════════════════════════════════════════════
+
+describe('BATCH-11D Section G: Warm Sunset palette (visually distinct from Fresh PPKn)', () => {
+  it('silse-studio contract is registered with id="silse-studio"', () => {
+    const contract = getContract('silse-studio');
+    expect(contract).toBeDefined();
+    expect(contract?.id).toBe('silse-studio');
+  });
+
+  it('silse-studio contract background is warm cream (#fff7ed) — NOT silse-fresh #fafaf9', () => {
+    const studio = getContract('silse-studio');
+    const fresh = getContract('silse-fresh');
+    expect(studio?.colors.background).toBe('#fff7ed');  // warm cream
+    expect(fresh?.colors.background).toBe('#fafaf9');   // cool cream
+    expect(studio?.colors.background).not.toBe(fresh?.colors.background);
+  });
+
+  it('silse-studio contract accent is deep orange (#ea580c) — NOT silse-fresh teal #0f766e', () => {
+    const studio = getContract('silse-studio');
+    const fresh = getContract('silse-fresh');
+    expect(studio?.colors.accent).toBe('#ea580c');   // deep orange
+    expect(fresh?.colors.accent).toBe('#0f766e');    // deep teal
+    expect(studio?.colors.accent).not.toBe(fresh?.colors.accent);
+  });
+
+  it('silse-studio uses warm accent tokens (o=orange, a=amber, r=rose)', () => {
+    expect(SILSE_STUDIO_ACCENT_PALETTE.o).toBe('#ea580c');  // orange
+    expect(SILSE_STUDIO_ACCENT_PALETTE.a).toBe('#f59e0b');  // amber
+    expect(SILSE_STUDIO_ACCENT_PALETTE.r).toBe('#e11d48');  // rose
+  });
+
+  it('silse-studio palette is distinct from silse-fresh palette (primary accent differs)', () => {
+    // Studio primary identity = 'o' (orange #ea580c)
+    // Fresh primary identity = 'e' (emerald #006c49)
+    // These MUST differ — that's what makes them visually distinct.
+    expect(SILSE_STUDIO_ACCENT_PALETTE.o).toBe('#ea580c');
+    expect(MODERN_EDUCATOR_ACCENT_PALETTE.e).toBe('#006c49');
+    expect(SILSE_STUDIO_ACCENT_PALETTE.o).not.toBe(MODERN_EDUCATOR_ACCENT_PALETTE.e);
+    // Studio palette does NOT use emerald as primary
+    expect(SILSE_STUDIO_ACCENT_PALETTE.e).not.toBe('#006c49');  // studio 'e' maps to orange
+    // Fresh palette does NOT use orange as primary
+    expect(MODERN_EDUCATOR_ACCENT_PALETTE.o).not.toBe('#f59e0b');  // amber, not orange-primary
+  });
+
+  it('studio cover block colors use orange/amber tokens (not teal/blue)', () => {
+    const studioPages = createSilseStudioProject();
+    const cover = studioPages[0];
+    const coverBlock = cover?.schema?.blocks?.[0] as {
+      badges?: Array<{ color?: string }>;
+    };
+    // Cover badges use 'o' (orange) and 'a' (amber) — NOT 't' (teal) or 'b' (blue)
+    const badgeColors = coverBlock.badges?.map(b => b.color) ?? [];
+    expect(badgeColors).toContain('o');
+    expect(badgeColors).toContain('a');
+    expect(badgeColors).not.toContain('t');
+    expect(badgeColors).not.toContain('b');
+  });
+
+  it('studio section colors use warm tokens (o/a/r) across all 8 pages', () => {
+    const studioPages = createSilseStudioProject();
+    const sectionColors = studioPages.map(p => {
+      const schema = (p as { schema?: { sectionColor?: string } }).schema;
+      return schema?.sectionColor;
+    });
+    // All section colors must be warm palette tokens
+    const warmTokens = ['o', 'a', 'r'];
+    for (const sc of sectionColors) {
+      expect(warmTokens, `section color "${sc}" must be warm token (o/a/r)`).toContain(sc);
+    }
+    // Must NOT use cool tokens
+    expect(sectionColors).not.toContain('t');  // teal
+    expect(sectionColors).not.toContain('b');  // blue
+    expect(sectionColors).not.toContain('e');  // emerald
+  });
+
+  it('studio schema does NOT reference silse-fresh contract', () => {
+    const src = readSrc('presets/fresh/silse-studio-schema.ts');
+    // The studio file must set contractId = 'silse-studio', not 'silse-fresh'
+    expect(src).toContain("contractId = 'silse-studio'");
+    // In active code (not comments), must NOT reference silse-fresh contract
+    const codeLines = src.split('\n').filter(l =>
+      !l.trim().startsWith('//') && !l.trim().startsWith('*')
+    );
+    const codeBlock = codeLines.join('\n');
+    expect(codeBlock).not.toMatch(/contractId.*silse-fresh/);
   });
 });
 

@@ -65,7 +65,11 @@ function makeStudioPage(
   const page = createPage(label, templateType as CanvaPage['templateType']);
   page.label = label;
   page.templateVariant = 'A';
-  page.contractId = 'silse-fresh';
+  // BATCH-11D: Studio uses its OWN contract (silse-studio) — warm sunset
+  // palette (orange + amber + rose). Visually DISTINCT from silse-fresh
+  // (teal). This is the fix for senior feedback: "Warna sama bentuk sama
+  // semua sama dengan legacy apanya yang baru".
+  page.contractId = 'silse-studio';
 
   const schema: ScreenSchema = {
     id: `screen-${sbid()}`,
@@ -95,8 +99,8 @@ function createStudioCoverPage(meta: SilseStudioMetadata): SchemaCanvaPage {
       title: meta.title || 'Judul Media Pembelajaran',
       subtitle: meta.subtitle || 'Klik untuk edit subtitle',
       badges: [
-        { icon: '🏫', text: meta.sekolah || 'Nama Sekolah', color: 't' },
-        { icon: '👨\u200d🏫', text: meta.guru || 'Nama Guru', color: 'b' },
+        { icon: '🏫', text: meta.sekolah || 'Nama Sekolah', color: 'o' },
+        { icon: '👨\u200d🏫', text: meta.guru || 'Nama Guru', color: 'a' },
       ],
       meta: {
         durasi: '2 × 40 menit',
@@ -109,7 +113,7 @@ function createStudioCoverPage(meta: SilseStudioMetadata): SchemaCanvaPage {
       compression: { priority: 'high', strategy: 'none' },
       semantic: { topic: 'Media Pembelajaran', learningPhase: 'pendahuluan', importance: 1.0 },
     },
-  ], 'intro', '✨ Cover', 't');
+  ], 'intro', '✨ Cover', 'o');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -129,12 +133,12 @@ function createStudioPetunjukPage(): SchemaCanvaPage {
         { icon: '🪞', title: 'Refleksi', body: 'Renungkan pertanyaan akhir.' },
       ],
       tips: 'Gunakan tombol navigasi di bawah untuk berpindah halaman.',
-      tipsColor: 't',
+      tipsColor: 'o',
       variant: 'A',
       compression: { priority: 'high', strategy: 'accordion' },
       semantic: { learningPhase: 'pendahuluan', interactionType: 'read' },
     },
-  ], 'intro', '📌 Petunjuk', 'b');
+  ], 'intro', '📌 Petunjuk', 'a');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -149,17 +153,17 @@ function createStudioTujuanPage(): SchemaCanvaPage {
       title: 'Tujuan Pembelajaran',
       bsnpRequired: true,
       objectives: [
-        { icon: '🎯', text: 'Memahami konsep utama yang dipelajari', color: 't' },
-        { icon: '🎯', text: 'Menerapkan konsep melalui aktivitas interaktif', color: 'b' },
-        { icon: '🎯', text: 'Merefleksikan pembelajaran untuk pengembangan diri', color: 'a' },
+        { icon: '🎯', text: 'Memahami konsep utama yang dipelajari', color: 'o' },
+        { icon: '🎯', text: 'Menerapkan konsep melalui aktivitas interaktif', color: 'a' },
+        { icon: '🎯', text: 'Merefleksikan pembelajaran untuk pengembangan diri', color: 'r' },
       ],
       profil: 'Bernalar Kritis, Kreatif, Mandiri',
-      profilColor: 't',
+      profilColor: 'o',
       variant: 'A',
       compression: { priority: 'high', strategy: 'none' },
       semantic: { bsnpRelevant: true, topic: 'Tujuan Pembelajaran', learningPhase: 'pendahuluan', importance: 0.9 },
     },
-  ], 'intro', '🎯 Tujuan', 'b');
+  ], 'intro', '🎯 Tujuan', 'a');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -171,7 +175,7 @@ function createStudioMateriPage(): SchemaCanvaPage {
     {
       type: 'def-box',
       id: sbid(),
-      borderColor: 't',
+      borderColor: 'o',
       content: '<strong>Konsep Utama.</strong> Klik untuk edit penjelasan singkat tentang konsep yang akan dipelajari.',
       compression: { priority: 'high', strategy: 'accordion' },
       semantic: { learningPhase: 'inti', interactionType: 'read' },
@@ -180,14 +184,14 @@ function createStudioMateriPage(): SchemaCanvaPage {
       type: 'nc-grid',
       id: sbid(),
       cards: [
-        { icon: '💡', title: 'Poin Pertama', body: 'Klik untuk edit. Jelaskan poin utama pertama.', color: 't' },
-        { icon: '🔍', title: 'Poin Kedua', body: 'Klik untuk edit. Jelaskan poin utama kedua.', color: 'b' },
-        { icon: '📊', title: 'Poin Ketiga', body: 'Klik untuk edit. Jelaskan poin utama ketiga.', color: 'a' },
+        { icon: '💡', title: 'Poin Pertama', body: 'Klik untuk edit. Jelaskan poin utama pertama.', color: 'o' },
+        { icon: '🔍', title: 'Poin Kedua', body: 'Klik untuk edit. Jelaskan poin utama kedua.', color: 'a' },
+        { icon: '📊', title: 'Poin Ketiga', body: 'Klik untuk edit. Jelaskan poin utama ketiga.', color: 'r' },
       ],
       compression: { priority: 'medium', strategy: 'scroll' },
       semantic: { learningPhase: 'inti', interactionType: 'read' },
     },
-  ], 'concept', '📖 Materi', 't');
+  ], 'concept', '📖 Materi', 'o');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -206,15 +210,15 @@ function createStudioGamePage(): SchemaCanvaPage {
         { id: 'sp3', text: 'Item Ketiga', category: 'sk2' },
       ],
       kolom: [
-        { id: 'sk1', label: 'Kolom A', color: 't' },
-        { id: 'sk2', label: 'Kolom B', color: 'a' },
+        { id: 'sk1', label: 'Kolom A', color: 'o' },
+        { id: 'sk2', label: 'Kolom B', color: 'r' },
       ],
-      accentColor: 'a',
+      accentColor: 'r',
       variant: 'A',
       compression: { priority: 'high', strategy: 'none' },
       semantic: { learningPhase: 'inti', interactionType: 'drag', importance: 0.85 },
     },
-  ], 'assessment', '🎮 Aktivitas', 'a');
+  ], 'assessment', '🎮 Aktivitas', 'r');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -251,7 +255,7 @@ function createStudioKuisPage(): SchemaCanvaPage {
       compression: { priority: 'high', strategy: 'scroll', splittable: true },
       semantic: { topic: 'Kuis Pemahaman', learningPhase: 'inti', interactionType: 'choose', importance: 0.9 },
     },
-  ], 'assessment', '📝 Kuis', 'b');
+  ], 'assessment', '📝 Kuis', 'a');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -266,7 +270,7 @@ function createStudioRefleksiPage(): SchemaCanvaPage {
       title: 'Refleksi Pembelajaran',
       intro: 'Renungkan pertanyaan berikut.',
       questions: [
-        { teks: 'Hal baru apa yang kamu pelajari?', petunjuk: 'Tuliskan 2 hal baru.', warna: 'b', icon: '🪞' },
+        { teks: 'Hal baru apa yang kamu pelajari?', petunjuk: 'Tuliskan 2 hal baru.', warna: 'a', icon: '🪞' },
       ],
       penugasan: {
         judul: 'Komitmen Pribadi',
@@ -277,7 +281,7 @@ function createStudioRefleksiPage(): SchemaCanvaPage {
       compression: { priority: 'high', strategy: 'none' },
       semantic: { topic: 'Refleksi', learningPhase: 'penutup', interactionType: 'reflect', importance: 0.8 },
     },
-  ], 'reflection', '🪞 Refleksi', 't');
+  ], 'reflection', '🪞 Refleksi', 'o');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -292,15 +296,15 @@ function createStudioPenutupPage(): SchemaCanvaPage {
       title: 'Penutup',
       subtitle: 'Pembelajaran Selesai',
       preview: [
-        { icon: '📚', judul: 'Materi', isi: 'Konsep utama yang telah dipelajari', warna: 't' },
-        { icon: '🎯', judul: 'Tujuan', isi: 'Memahami dan menerapkan konsep', warna: 'b' },
+        { icon: '📚', judul: 'Materi', isi: 'Konsep utama yang telah dipelajari', warna: 'o' },
+        { icon: '🎯', judul: 'Tujuan', isi: 'Memahami dan menerapkan konsep', warna: 'a' },
       ],
       layout: { position: 'absolute', x: 0, y: 0, width: 'auto', height: 'auto' },
       variant: 'A',
       compression: { priority: 'high', strategy: 'none' },
       semantic: { topic: 'Penutup', learningPhase: 'penutup', importance: 0.7 },
     },
-  ], 'summary', '🏁 Penutup', 'a');
+  ], 'summary', '🏁 Penutup', 'r');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -351,15 +355,15 @@ export function createSilseStudioProject(metadata: SilseStudioMetadata = {}): Ca
 export const SILSE_STUDIO_TEMPLATE_META = {
   id: 'silse-studio',
   name: 'SILSE Studio — Media Siap Edit',
-  description: 'Template kosong premium dengan layout rapi. Klik setiap teks untuk edit langsung. 8 halaman: cover, petunjuk, tujuan, materi, game, kuis, refleksi, penutup. Tanpa konten panjang — siap diisi guru.',
+  description: 'Template kosong premium dengan layout rapi + palet Warm Sunset (orange + cream). Klik setiap teks untuk edit langsung. 8 halaman: cover, petunjuk, tujuan, materi, game, kuis, refleksi, penutup. Tanpa konten panjang — siap diisi guru.',
   icon: '🎨',
   subject: '*',
   grade: '*',
   semester: '*',
   theme: 'default',
-  contractId: 'silse-fresh',
+  contractId: 'silse-studio',  // BATCH-11D: warm sunset palette (orange + amber + rose)
   status: 'active' as const,
   author: 'SILSE',
-  version: '1.0.0',
+  version: '1.1.0',  // Bumped in 11D — new contract with distinct palette
   pageCount: 8,
 } as const;

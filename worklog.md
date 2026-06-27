@@ -5800,3 +5800,100 @@ Stage Summary:
 - Studio block IDs: all use 'silse-studio-' prefix
 - Browser verified: all 8 pages render properly
 - CI_PROOF: PENDING_BY_DEV (unchanged)
+
+---
+Task ID: BATCH-11D
+Agent: Super Z (main)
+Task: SILSE-STUDIO-WARM-SUNSET-PALETTE-01 — visually distinct dari Fresh PPKn
+
+Work Log:
+- Senior feedback Batch 11C: "Warna sama bentuk sama semua sama dengan
+  legacy apanya yang baru". Studio + Fresh PPKn pakai contract SAMA
+  (silse-fresh) → visually identik. Tidak ada yang "baru".
+- Investigasi via agent-browser: konfirmasi Studio cover CTA button
+  masih teal (#0f766e) — SAMA dengan Fresh PPKn. Tidak ada perbedaan
+  visual yang visible.
+- ROOT CAUSE: Studio pakai contractId='silse-fresh' (same as Fresh PPKn).
+  Contract menentukan accent color, jadi keduanya teal.
+
+FIX: Buat contract BARU 'silse-studio' dengan palet Warm Sunset:
+  - Background: warm cream (#fff7ed) — warmer than silse-fresh #fafaf9
+  - Accent: deep orange (#ea580c) — vs silse-fresh teal #0f766e
+  - Secondary: amber (#f59e0b)
+  - Tertiary: rose (#e11d48)
+  - Display font: Fredoka (friendly rounded) vs Plus Jakarta Sans
+  - Border: amber-tinted
+  - Shadows: warm orange tint
+
+NEW: SILSE_STUDIO_ACCENT_PALETTE
+  - o = #ea580c (deep orange — primary)
+  - a = #f59e0b (amber — secondary)
+  - r = #e11d48 (rose — tertiary)
+  - Plus compat tokens (y/c/g/p/e/b/t) mapped to warm palette
+  - Visual guarantee: any block asking for any token gets warm color
+
+MODIFIED:
+  src/core/template/contract/TemplateThemeContract.ts
+    - Added SILSE_STUDIO_ACCENT_PALETTE (warm sunset)
+    - Added SILSE_STUDIO_CONTRACT constant (full TemplateThemeContract)
+    - registerContract(SILSE_STUDIO_CONTRACT)
+    - Updated resolveContractStyle: detect isSilseStudio → use
+      SILSE_STUDIO_ACCENT_PALETTE + primaryAccentToken='o'
+
+  src/presets/fresh/silse-studio-schema.ts
+    - contractId: 'silse-fresh' → 'silse-studio'
+    - All block colors: t/b → o/a/r (warm tokens)
+    - All sectionColor: t/b/a → o/a/r
+    - borderColor, accentColor, tipsColor, profilColor: → warm tokens
+    - Version: 1.0.0 → 1.1.0
+
+  src/__tests__/batch11c-silse-studio-editable-mpi.test.ts
+    - Updated contract assertions: 'silse-fresh' → 'silse-studio'
+    - Added Section G (8 new tests) — Warm Sunset palette verification
+
+VERIFIKASI via agent-browser (real Chromium):
+  Setelah restart dev server (untuk pick up contract registry changes):
+  - Click SILSE Studio → 8 halaman load
+  - Cover CTA button: rgb(234, 88, 12) = #ea580c = DEEP ORANGE ✅
+    (vs Fresh PPKn teal #0f766e)
+  - Cover CTA text: rgb(255, 247, 237) = #fff7ed = WARM CREAM ✅
+  - Badge 1 background: rgba(234, 88, 12, 0.1) = orange tint ✅
+  - Badge 2 background: rgba(245, 158, 11, 0.1) = amber tint ✅
+  - Bottom accent line: rgb(234, 88, 12) = deep orange ✅
+  - Semua 8 halaman screenshot: studio-warm-{cover,petunjuk,tujuan,
+    materi,game,kuis,refleksi,penutup}.png
+
+Perbedaan visual yang sekarang VISIBLE:
+  Fresh PPKn:
+    - Cover variant A (centered)
+    - Accent: teal #0f766e
+    - Badges: teal/blue tint
+    - CTA: teal button
+    - Display font: Plus Jakarta Sans
+
+  SILSE Studio:
+    - Cover variant B (Sinematik — bottom-anchored, watermark icon)
+    - Accent: deep orange #ea580c
+    - Badges: orange/amber tint
+    - CTA: deep orange button with warm cream text
+    - Display font: Fredoka (friendly rounded)
+    - Border: amber-tinted
+    - Shadows: warm orange tint
+
+Acceptance:
+  1. Studio visually distinct dari Fresh PPKn ✅ (orange vs teal)
+  2. Contract silse-studio terdaftar ✅
+  3. Palette warm sunset (o/a/r) ✅
+  4. Cover CTA button orange #ea580c ✅ (verified via browser)
+  5. TypeScript PASS ✅
+  6. Build PASS ✅
+  7. export:build PASS ✅ (1.98 MB)
+  8. All tests: 205/205 PASS (no regression)
+
+Verification:
+  - Batch 11C tests: 43/43 PASS (with new Section G)
+  - All batch10/11 tests: 205/205 PASS
+  - TypeScript gate: 0 errors
+  - export:build: PASS
+  - Next.js build: PASS
+  - Browser verified: CTA button rgb(234,88,12) = orange, NOT teal

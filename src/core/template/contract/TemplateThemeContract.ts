@@ -38,6 +38,28 @@ export const MODERN_EDUCATOR_ACCENT_PALETTE: Record<string, string> = {
   r: '#dc2626',  // Red (error/danger)
 };
 
+/**
+ * BATCH-11D: SILSE_STUDIO_ACCENT_PALETTE — Warm Sunset
+ * Used by silse-studio contract. Visually distinct from silse-fresh (teal).
+ *   o = deep orange (primary identity — energy, action)
+ *   a = amber (secondary — warmth, motivation)
+ *   r = rose (tertiary — emphasis, reflection)
+ * Plus compatibility tokens mapped to the warm palette so any block
+ * that asks for y/c/g/p still gets a warm-family color.
+ */
+export const SILSE_STUDIO_ACCENT_PALETTE: Record<string, string> = {
+  o: '#ea580c',  // Deep Orange — primary identity
+  a: '#f59e0b',  // Amber — secondary
+  r: '#e11d48',  // Rose — tertiary
+  y: '#f59e0b',  // Amber (maps to 'a' for compat)
+  c: '#ea580c',  // Orange (maps to 'o' for compat)
+  g: '#f59e0b',  // Amber (maps to 'a' for compat — warm palette only)
+  p: '#e11d48',  // Rose (maps to 'r' for compat)
+  e: '#ea580c',  // Orange (maps to 'o' for compat — replaces emerald)
+  b: '#f59e0b',  // Amber (maps to 'a' for compat — replaces blue)
+  t: '#ea580c',  // Orange (maps to 'o' for compat — replaces teal)
+};
+
 // ── Contract Registry — Module-level Map, deferred registration ──
 // We use a deferred registration pattern: contracts call registerContract(),
 // but the actual Map is created synchronously at module load time.
@@ -863,6 +885,125 @@ export const SILSE_FRESH_CONTRACT: TemplateThemeContract = {
 registerContract(SILSE_FRESH_CONTRACT);
 
 // ═══════════════════════════════════════════════════════════════════
+// BATCH-11D: SILSE_STUDIO_CONTRACT — Warm Sunset palette
+// ═══════════════════════════════════════════════════════════════════
+// Senior feedback Batch 11C: "Warna sama bentuk sama semua sama dengan
+// legacy apanya yang baru". Studio + Fresh PPKn pakai contract yang
+// SAMA (silse-fresh) → visually identik. Tidak ada yang "baru".
+//
+// Fix: buat contract BARU dengan palet BERBEDA — Warm Sunset:
+//   - Background: warm cream (#fff7ed) — warmer than silse-fresh's #fafaf9
+//   - Accent: deep orange (#ea580c) — vs silse-fresh's deep teal #0f766e
+//   - Secondary accent: amber (#f59e0b)
+//   - Tertiary: rose (#e11d48)
+//   - Typography: same scale, different display font (Fredoka for friendly feel)
+//
+// This makes Studio VISUALLY DISTINCT from Fresh PPKn at first glance:
+//   - Fresh PPKn = teal + cool cream (calm, professional)
+//   - Studio     = orange + warm cream (energetic, friendly)
+// ═══════════════════════════════════════════════════════════════════
+
+export const SILSE_STUDIO_CONTRACT: TemplateThemeContract = {
+  id: 'silse-studio',
+  name: '🎨 Silse Studio — Warm Sunset',
+  description: 'Warm Sunset palette — deep orange accent + warm cream bg. Energetic, friendly feel. Visually distinct from silse-fresh (teal). Built for SILSE Studio editable template.',
+
+  colors: {
+    background: '#fff7ed',  // warm cream (warmer than silse-fresh #fafaf9)
+    surface: '#ffffff',
+    card: '#ffffff',
+    text: '#1c1917',
+    muted: '#78716c',
+    accent: '#ea580c',  // deep orange (vs silse-fresh #0f766e teal)
+    accentBg: 'rgba(234,88,12,0.08)',
+    accentBorder: 'rgba(234,88,12,0.20)',
+    maxAccents: 3,
+    accentTokens: ['o', 'a', 'r'],  // orange, amber, rose
+  },
+
+  typography: {
+    heroSize: 52,
+    titleSize: 38,
+    headingSize: 28,
+    bodyLgSize: 24,
+    bodySize: 22,
+    captionSize: 16,
+    microSize: 14,
+    displayFont: "var(--font-fredoka), 'Fredoka', cursive",  // friendly rounded
+    bodyFont: "var(--font-nunito), 'Nunito Sans', sans-serif",
+    minFontSize: 16,
+  },
+
+  spacing: {
+    pagePadding: 40,
+    cardPadding: 28,
+    blockGap: 28,
+    itemGap: 18,
+    nestedPadding: 22,
+  },
+
+  borders: {
+    cardRadius: 20,
+    pillRadius: 9999,
+    cardBorder: '1px solid rgba(251,191,36,0.25)',  // amber-tinted border
+  },
+
+  shadows: {
+    card: '0 1px 3px rgba(234,88,12,0.06)',  // warm shadow
+    elevated: '0 6px 16px rgba(234,88,12,0.10)',
+  },
+
+  maxContentHeight: 640,
+  cardTreatment: 'flat',
+  headerTreatment: 'accented',
+
+  pageAccents: {
+    cover:       { accentToken: 'o', bgTint: 'rgba(234,88,12,0.04)' },
+    petunjuk:    { accentToken: 'a', bgTint: 'rgba(245,158,11,0.04)' },
+    tujuan:      { accentToken: 'a', bgTint: 'rgba(245,158,11,0.04)' },
+    motivasi:    { accentToken: 'r', bgTint: 'rgba(225,29,72,0.04)' },
+    materi:      { accentToken: 'o', bgTint: 'rgba(234,88,12,0.04)' },
+    skenario:    { accentToken: 'r', bgTint: 'rgba(225,29,72,0.04)' },
+    kuis:        { accentToken: 'a', bgTint: 'rgba(245,158,11,0.04)' },
+    diskusi:     { accentToken: 'a', bgTint: 'rgba(245,158,11,0.04)' },
+    refleksi:    { accentToken: 'o', bgTint: 'rgba(234,88,12,0.04)' },
+    rangkuman:   { accentToken: 'o', bgTint: 'rgba(234,88,12,0.04)' },
+    hasil:       { accentToken: 'o', bgTint: 'rgba(234,88,12,0.04)' },
+    penutup:     { accentToken: 'r', bgTint: 'rgba(225,29,72,0.04)' },
+    dokumen:     { accentToken: 'a', bgTint: 'rgba(245,158,11,0.04)' },
+    game:        { accentToken: 'r', bgTint: 'rgba(225,29,72,0.04)' },
+    custom:      { accentToken: 'o', bgTint: 'rgba(234,88,12,0.04)' },
+  },
+
+  pageLayouts: {
+    cover: { maxBlocks: 1, density: 'sparse', canSplit: false, allowedBlockTypes: ['cover'], pattern: 'Judul besar + Subjudul + Identitas + Tombol mulai' },
+    petunjuk: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['petunjuk'], pattern: 'Judul + 3-4 langkah instruksi' },
+    tujuan: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['tujuan-display', 'tp'], pattern: 'Judul + 3-4 tujuan dalam kartu' },
+    motivasi: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['motivasi'], pattern: 'Pertanyaan pemantik + Koneksi konsep' },
+    materi: { maxBlocks: 3, density: 'dense', canSplit: true, allowedBlockTypes: ['materi-section', 'def-box', 'nc-grid'], pattern: 'Judul + Konsep inti + Contoh' },
+    skenario: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['skenario'], pattern: 'Instruksi + Langkah 1-3 + Aksi siswa' },
+    kuis: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['kuis'], pattern: '1-5 pertanyaan per halaman + 4 opsi + feedback' },
+    diskusi: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['diskusi'], pattern: 'Pertanyaan diskusi + Petunjuk' },
+    refleksi: { maxBlocks: 2, density: 'sparse', canSplit: true, allowedBlockTypes: ['refleksi'], pattern: 'Pertanyaan besar + Isian singkat + Penutup emosional' },
+    rangkuman: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['rangkuman'], pattern: 'Ringkasan konsep + Penutup' },
+    hasil: { maxBlocks: 1, density: 'sparse', canSplit: false, allowedBlockTypes: ['hasil'], pattern: 'Skor + Capaian' },
+    penutup: { maxBlocks: 1, density: 'sparse', canSplit: false, allowedBlockTypes: ['penutup'], pattern: 'Ringkasan + Pesan akhir + Lanjutkan' },
+    dokumen: { maxBlocks: 3, density: 'dense', canSplit: true, allowedBlockTypes: ['tp', 'alur'], pattern: 'Tujuan + Alur kegiatan' },
+    game: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['sortir-game', 'memory-game', 'matching-game'], pattern: 'Game interaktif + Instruksi' },
+    custom: { maxBlocks: 5, density: 'dense', canSplit: true, allowedBlockTypes: [], pattern: 'Bebas — tapi tetap taat aturan contract' },
+  },
+
+  variantOverrides: {
+    A: {},
+    B: { accent: '#f59e0b', accentBg: 'rgba(245,158,11,0.12)', accentBorder: 'rgba(245,158,11,0.25)' },  // amber
+    C: { accent: '#e11d48', accentBg: 'rgba(225,29,72,0.12)', accentBorder: 'rgba(225,29,72,0.25)' },  // rose
+  },
+};
+
+// Auto-register the Silse Studio contract
+registerContract(SILSE_STUDIO_CONTRACT);
+
+// ═══════════════════════════════════════════════════════════════════
 // CONTRACT ENFORCEMENT — Resolve style with contract priority
 // ═══════════════════════════════════════════════════════════════════
 // Priority: TemplateThemeContract > Scene Style > Block Default
@@ -1005,9 +1146,15 @@ export function resolveContractStyle(
   // Detect contract type — must be before primaryAccentToken resolution
   const isModernEducator = contract.id === 'modern-educator';
   const isMacamNorma = contract.id === 'macam-norma';
+  const isSilseFresh = contract.id === 'silse-fresh';
+  const isSilseStudio = contract.id === 'silse-studio';
 
   // Resolve which token is the primary accent for this page type
-  const primaryAccentToken = pageAccent.accentToken || (isModernEducator ? 'e' : 'y');
+  const primaryAccentToken = pageAccent.accentToken
+    || (isModernEducator ? 'e'
+      : isSilseFresh ? 't'
+      : isSilseStudio ? 'o'
+      : 'y');
 
   // ═══ BUILD THE ACCENT TOKEN MAP ═════════════════════════════════
   // This is the KEY fix. Every accent token gets a contract-compliant
@@ -1015,25 +1162,19 @@ export function resolveContractStyle(
   // accent color (with variant override). Other tokens get their
   // identity colors from the contract palette.
   //
-  // Example for materi page (accentToken='p'):
-  //   accentTokenMap.y = '#fbbf24'  (gold — identity, always present)
-  //   accentTokenMap.c = '#2563eb'  (blue — identity)
-  //   accentTokenMap.g = '#4ade80'  (green — identity)
-  //   accentTokenMap.p = '#c084fc'  (purple — PRIMARY for this page)
-  //   accentTokenMap.o = '#fb923c'  (orange — identity)
-  //   accentTokenMap.r = '#f87171'  (red — identity)
-  //
-  // All block renderers on this page that call tokens.color('p')
-  // will get #c084fc — the contract's curated purple, NOT the theme
-  // default which could be a different shade.
+  // BATCH-11D: Added silse-studio palette (warm sunset — orange/amber/rose).
+  // Visually distinct from silse-fresh (teal) at first glance.
   const accentTokenMap: Record<string, string> = {};
   // Use the Modern Educator palette if that contract is active
   // Use the Macam Norma palette if that contract is active (teal replaces blue)
-  // (isModernEducator and isMacamNorma already declared above)
+  // Use the Silse Studio palette if that contract is active (warm sunset)
+  // (isModernEducator, isMacamNorma, isSilseStudio already declared above)
   const palette = isModernEducator
     ? MODERN_EDUCATOR_ACCENT_PALETTE
     : isMacamNorma
     ? MACAM_NORMA_ACCENT_PALETTE
+    : isSilseStudio
+    ? SILSE_STUDIO_ACCENT_PALETTE
     : CONTRACT_ACCENT_PALETTE;
   for (const [token, color] of Object.entries(palette)) {
     accentTokenMap[token] = color;
