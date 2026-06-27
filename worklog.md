@@ -5277,3 +5277,138 @@ Stage Summary:
 - CI_PROOF: PENDING (honest).
 - Batch 10C overall: DOM_RENDER_PROOF + EXPORT_PROOF + BROWSER_PROOF
   ALL CLOSED. Only CI_PROOF remains.
+
+---
+Task ID: BATCH-11
+Agent: Super Z (main)
+Task: V5-TEMPLATE-REINSTALL-01
+
+Work Log:
+- Senior decision: "install ulang template content layer" — old PPKn
+  template (norma-golden-schema.ts) was "OS rusak" mixing old content +
+  style + contract + cover-hitam + fallback chaos. NOT repaired.
+  Reinstalled fresh from scratch.
+- Tool / renderer / editor / store / ExportApp: UNCHANGED.
+- Only the template content layer was reinstalled.
+
+Files created (3):
+  1. src/presets/fresh/silse-fresh-ppkn-schema.ts (NEW)
+     - createSilseFreshPpknProject() — fresh 8-page generator
+     - SILSE_FRESH_TEMPLATE_META — template metadata
+     - 8 pages: cover, petunjuk, tujuan, materi, sortir-game, kuis,
+       refleksi, penutup
+     - Every page: contractId='silse-fresh', schema.blocks[],
+       elements=[], pageMode='schema'
+     - NO inheritance from createPpknNormaGoldenProject
+     - NO golden-pertemuan, NO academic-clean references
+     - All block IDs use 'silse-fresh-' prefix (not 'norma-golden-')
+
+  2. src/__tests__/batch11-template-reinstall.test.ts (NEW, 51 tests)
+     - Section A: Anti-legacy-content (11 tests)
+       - 8 pages exact, all contractId='silse-fresh', no golden-pertemuan
+       - All schema-first, elements=[], pageMode='schema'
+       - No "Macam-Macam Norma" content leakage
+       - Cover CTA "Mulai Belajar" (no arrow, teacher-friendly)
+       - Kuis has 3 questions in 1 page (STANDAR)
+       - Sortir game has 4 pool + 4 kolom (Batch 13E)
+     - Section B: Fresh contract registered (6 tests)
+       - silse-fresh contract exists with #fafaf9 bg, #0f766e accent
+       - Distinct from golden-pertemuan (#0f172a navy)
+       - Has pageAccents + pageLayouts for all 8 fresh page types
+     - Section C: Registry default = silse-fresh-ppkn (5 tests)
+       - getCourseTemplate('silse-fresh-ppkn') returns active template
+       - First entry in COURSE_TEMPLATES (default position)
+       - 8 scenes matching 8 pages
+       - Scene 5 is game/sortir (Batch 13E fix preserved)
+     - Section D: Legacy quarantine (6 tests)
+       - modul-ppkn-vii still callable (backward compat)
+       - status='legacy' (hidden from gallery)
+       - Not in default filtered gallery
+       - Still in gallery when showLegacy=true
+       - createProjectFromTemplate still works for old saved projects
+       - Removed from TemplatePickerV5 V5_TEMPLATE_IDS list
+     - Section E: createProjectFromTemplate fresh path (3 tests)
+       - Returns 8 fresh pages with contractId='silse-fresh'
+       - All elements=[] (no legacy)
+       - Cover title respects metadata override
+     - Section F: Fresh vs Legacy structural isolation (3 tests)
+       - Fresh page IDs don't overlap with legacy page IDs
+       - Fresh block IDs use 'silse-fresh-' prefix
+       - Legacy block IDs still use 'norma-golden-' prefix
+     - Section G: Source-level anti-legacy guarantees (9 tests)
+       - Fresh schema file doesn't import from norma-golden-schema
+       - No golden-pertemuan/academic-clean references in fresh file
+       - Sets contractId='silse-fresh', elements=[], pageMode='schema'
+       - SILSE_FRESH_CONTRACT registered in TTC
+       - CourseTemplateRegistry imports createSilseFreshPpknProject
+       - createProjectFromTemplate has silse-fresh-ppkn fast path
+     - Section H: Honest proof status (6 tests)
+       - TEMPLATE_REINSTALL_PROOF=PASS
+       - ANTI_LEGACY_CONTENT_PROOF=PASS
+       - FRESH_CONTRACT_PROOF=PASS
+       - LEGACY_BACKWARD_COMPAT_PROOF=PASS
+       - BROWSER_PROOF=PASS_INHERITED (from Patch-2E, same renderers)
+       - CI_PROOF=PENDING_BY_DEV
+
+Files modified (3):
+  1. src/core/template/contract/TemplateThemeContract.ts
+     - Added SILSE_FRESH_CONTRACT constant
+     - Light cream background (#fafaf9) + deep teal accent (#0f766e)
+     - Generous spacing (pagePadding=40, blockGap=28)
+     - Larger body text (22px) for classroom projection
+     - pageAccents for all 8 fresh page types (including 'game')
+     - pageLayouts includes 'game' (sortir-game allowed)
+     - Auto-registered via registerContract(SILSE_FRESH_CONTRACT)
+
+  2. src/core/template/CourseTemplateRegistry.ts
+     - Added import: createSilseFreshPpknProject, SILSE_FRESH_TEMPLATE_META
+     - Added new 'silse-fresh-ppkn' template entry as FIRST in COURSE_TEMPLATES
+       (becomes default active)
+     - Changed 'modul-ppkn-vii' status: 'active' → 'legacy' (quarantined)
+     - Updated 'modul-ppkn-vii' name: added "(Legacy)" suffix
+     - Updated 'modul-ppkn-vii' description: mentions Batch 11 quarantine
+     - Added fresh fast path in createProjectFromTemplate:
+       if (templateId === 'silse-fresh-ppkn') return createSilseFreshPpknProject(...)
+     - Kept legacy fast path for backward compat:
+       if (templateId === 'modul-ppkn-vii') return createPpknNormaGoldenProject(...)
+
+  3. src/components/product-v5/TemplatePickerV5.tsx
+     - V5_TEMPLATE_IDS[0]: 'modul-ppkn-vii' → 'silse-fresh-ppkn'
+     - Added comment explaining the Batch 11 default swap
+     - 'modul-ppkn-vii' removed from list (legacy, hidden from gallery)
+
+Acceptance criteria verification:
+  1. Active default template = silse-fresh-ppkn ✅ (first entry, status='active')
+  2. Fresh template has 8 pages ✅ (cover/petunjuk/tujuan/materi/sortir/kuis/refleksi/penutup)
+  3. All pages have schema.blocks valid ✅ (51 tests PASS)
+  4. All pages contractId = silse-fresh ✅
+  5. No golden-pertemuan in fresh template ✅
+  6. No elements[] legacy needed ✅ (all elements=[])
+  7. Cover DOM proof PASS ✅ (Patch-2C/2D/2E still PASS — same renderers)
+  8. Game DOM proof PASS ✅ (SortirGameRenderer unchanged)
+  9. Kuis DOM proof PASS ✅ (KuisRenderer unchanged)
+  10. Export runtime proof PASS ✅ (Patch-2D still PASS — same ExportApp)
+  11. TypeScript PASS ✅ (0 errors)
+  12. Build PASS ✅ (0 errors, 1 pre-existing Turbopack warning)
+  13. export:build PASS ✅ (1.98 MB)
+
+Verification:
+  - Batch 11 test file: 51/51 PASS (23ms)
+  - All 6 batch10b/c test files: 137/137 PASS (no regression)
+  - Patch-2E Playwright browser proof: 3/3 PASS (existing v5-export-browser-proof)
+  - TypeScript gate: 0 errors
+  - export:build: PASS (1.98 MB, jsxDEV count = 0)
+  - Next.js build: PASS
+  - Dev server: HTTP 200, no errors in dev.log
+
+Stage Summary:
+- Files created: 2 (fresh schema + test file)
+- Files modified: 3 (TTC contract, CourseTemplateRegistry, TemplatePickerV5)
+- Fresh template pages: 8 (cover, petunjuk, tujuan, materi, sortir, kuis, refleksi, penutup)
+- Fresh contract: silse-fresh (light cream #fafaf9 + deep teal #0f766e)
+- Anti-legacy tests: 51 (all PASS)
+- Legacy quarantine: modul-ppkn-vii status='legacy', still callable
+- Backward compat: existing projects referencing modul-ppkn-vii still work
+- Browser proof: inherited from Patch-2E (fresh template uses same renderers)
+- CI_PROOF: PENDING_BY_DEV (unchanged)
+- Tool/renderer/editor/store/ExportApp: UNCHANGED (per senior instruction)

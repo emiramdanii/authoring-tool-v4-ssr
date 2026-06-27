@@ -22,9 +22,12 @@ export interface TemplatePickerV5Props {
 }
 
 // Curated short list — only show top stable templates.
-// No "show legacy", no filter, no search. Just pick one and go.
+// BATCH-11: 'silse-fresh-ppkn' is the NEW active default.
+// 'modul-ppkn-vii' (legacy) is removed from this list — it is now
+// status='legacy' and hidden from the gallery. Existing projects
+// that reference it still work via createProjectFromTemplate().
 const V5_TEMPLATE_IDS = [
-  'modul-ppkn-vii',
+  'silse-fresh-ppkn',  // BATCH-11: NEW active default
   'materi-kuis',
   'materi-aktivitas',
   'skenario-diskusi',

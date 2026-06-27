@@ -744,6 +744,125 @@ export const MODERN_EDUCATOR_CONTRACT: TemplateThemeContract = {
 registerContract(MODERN_EDUCATOR_CONTRACT);
 
 // ═══════════════════════════════════════════════════════════════════
+// BATCH-11: SILSE_FRESH_CONTRACT — Fresh template reinstall
+// ═══════════════════════════════════════════════════════════════════
+// Senior decision: template content layer needs reinstall.
+// Old PPKn template (norma-golden-schema) was quarantined as legacy.
+// Fresh template uses silse-fresh contract — light, clean, NO
+// golden-pertemuan, NO academic-clean inheritance.
+//
+// Design principles (fresh contract):
+//   - Light background (#fafaf9 warm cream, NOT pure white)
+//   - Single accent: deep teal (#0f766e) — calm, educator-friendly
+//   - Generous whitespace (pagePadding 40, blockGap 28)
+//   - Larger body text (22px) for classroom projection
+//   - Max 3 accent tokens per page (teal/blue/amber)
+//   - No dark variants — fresh template is light-only by design
+//   - Flat cards, no neon glows
+//   - Borders subtle (1px soft gray)
+// ═══════════════════════════════════════════════════════════════════
+
+export const SILSE_FRESH_CONTRACT: TemplateThemeContract = {
+  id: 'silse-fresh',
+  name: '🌱 Silse Fresh',
+  description: 'Fresh template contract — warm cream background, deep teal accent. Built from scratch for V5 fresh template. No legacy inheritance.',
+
+  colors: {
+    background: '#fafaf9',
+    surface: '#ffffff',
+    card: '#ffffff',
+    text: '#1c1917',
+    muted: '#78716c',
+    accent: '#0f766e',
+    accentBg: 'rgba(15,118,110,0.08)',
+    accentBorder: 'rgba(15,118,110,0.20)',
+    maxAccents: 3,
+    accentTokens: ['t', 'b', 'a'],
+  },
+
+  typography: {
+    heroSize: 52,
+    titleSize: 38,
+    headingSize: 28,
+    bodyLgSize: 24,
+    bodySize: 22,
+    captionSize: 16,
+    microSize: 14,
+    displayFont: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif",
+    bodyFont: "var(--font-nunito), 'Nunito Sans', sans-serif",
+    minFontSize: 16,
+  },
+
+  spacing: {
+    pagePadding: 40,
+    cardPadding: 28,
+    blockGap: 28,
+    itemGap: 18,
+    nestedPadding: 22,
+  },
+
+  borders: {
+    cardRadius: 20,
+    pillRadius: 9999,
+    cardBorder: '1px solid rgba(231, 229, 228, 1)',
+  },
+
+  shadows: {
+    card: '0 1px 3px rgba(28,25,23,0.04)',
+    elevated: '0 6px 16px rgba(28,25,23,0.06)',
+  },
+
+  maxContentHeight: 640,
+  cardTreatment: 'flat',
+  headerTreatment: 'accented',
+
+  pageAccents: {
+    cover:       { accentToken: 't', bgTint: 'rgba(15,118,110,0.04)' },
+    petunjuk:    { accentToken: 'b', bgTint: 'rgba(37,99,235,0.04)' },
+    tujuan:      { accentToken: 'b', bgTint: 'rgba(37,99,235,0.04)' },
+    motivasi:    { accentToken: 'a', bgTint: 'rgba(217,119,6,0.04)' },
+    materi:      { accentToken: 't', bgTint: 'rgba(15,118,110,0.04)' },
+    skenario:    { accentToken: 'a', bgTint: 'rgba(217,119,6,0.04)' },
+    kuis:        { accentToken: 'b', bgTint: 'rgba(37,99,235,0.04)' },
+    diskusi:     { accentToken: 'b', bgTint: 'rgba(37,99,235,0.04)' },
+    refleksi:    { accentToken: 't', bgTint: 'rgba(15,118,110,0.04)' },
+    rangkuman:   { accentToken: 't', bgTint: 'rgba(15,118,110,0.04)' },
+    hasil:       { accentToken: 't', bgTint: 'rgba(15,118,110,0.04)' },
+    penutup:     { accentToken: 'a', bgTint: 'rgba(217,119,6,0.04)' },
+    dokumen:     { accentToken: 'b', bgTint: 'rgba(37,99,235,0.04)' },
+    game:        { accentToken: 'a', bgTint: 'rgba(217,119,6,0.04)' },
+    custom:      { accentToken: 't', bgTint: 'rgba(15,118,110,0.04)' },
+  },
+
+  pageLayouts: {
+    cover: { maxBlocks: 1, density: 'sparse', canSplit: false, allowedBlockTypes: ['cover'], pattern: 'Judul besar + Subjudul + Identitas + Tombol mulai' },
+    petunjuk: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['petunjuk'], pattern: 'Judul + 3-4 langkah instruksi' },
+    tujuan: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['tujuan-display', 'tp'], pattern: 'Judul + 3-4 tujuan dalam kartu' },
+    motivasi: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['motivasi'], pattern: 'Pertanyaan pemantik + Koneksi konsep' },
+    materi: { maxBlocks: 3, density: 'dense', canSplit: true, allowedBlockTypes: ['materi-section', 'def-box', 'nc-grid'], pattern: 'Judul + Konsep inti + Contoh' },
+    skenario: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['skenario'], pattern: 'Instruksi + Langkah 1-3 + Aksi siswa' },
+    kuis: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['kuis'], pattern: '1-5 pertanyaan per halaman + 4 opsi + feedback' },
+    diskusi: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['diskusi'], pattern: 'Pertanyaan diskusi + Petunjuk' },
+    refleksi: { maxBlocks: 2, density: 'sparse', canSplit: true, allowedBlockTypes: ['refleksi'], pattern: 'Pertanyaan besar + Isian singkat + Penutup emosional' },
+    rangkuman: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['rangkuman'], pattern: 'Ringkasan konsep + Penutup' },
+    hasil: { maxBlocks: 1, density: 'sparse', canSplit: false, allowedBlockTypes: ['hasil'], pattern: 'Skor + Capaian' },
+    penutup: { maxBlocks: 1, density: 'sparse', canSplit: false, allowedBlockTypes: ['penutup'], pattern: 'Ringkasan + Pesan akhir + Lanjutkan' },
+    dokumen: { maxBlocks: 3, density: 'dense', canSplit: true, allowedBlockTypes: ['tp', 'alur'], pattern: 'Tujuan + Alur kegiatan' },
+    game: { maxBlocks: 2, density: 'comfortable', canSplit: true, allowedBlockTypes: ['sortir-game', 'memory-game', 'matching-game'], pattern: 'Game interaktif + Instruksi' },
+    custom: { maxBlocks: 5, density: 'dense', canSplit: true, allowedBlockTypes: [], pattern: 'Bebas — tapi tetap taat aturan contract' },
+  },
+
+  variantOverrides: {
+    A: {},
+    B: { accent: '#2563eb', accentBg: 'rgba(37,99,235,0.12)', accentBorder: 'rgba(37,99,235,0.25)' },
+    C: { accent: '#d97706', accentBg: 'rgba(217,119,6,0.12)', accentBorder: 'rgba(217,119,6,0.25)' },
+  },
+};
+
+// Auto-register the Silse Fresh contract
+registerContract(SILSE_FRESH_CONTRACT);
+
+// ═══════════════════════════════════════════════════════════════════
 // CONTRACT ENFORCEMENT — Resolve style with contract priority
 // ═══════════════════════════════════════════════════════════════════
 // Priority: TemplateThemeContract > Scene Style > Block Default
